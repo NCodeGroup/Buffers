@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+  <PropertyGroup>
+    <Description>A high-performance .NET library providing secure memory management, zero-allocation buffer utilities, and efficient string splitting operations.</Description>
+    <PackageTags>crypto secure buffer pin zero poh encoding</PackageTags>
+  </PropertyGroup>
+
+</Project>
