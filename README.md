@@ -26,6 +26,7 @@ A unified API for renting and creating secure memory buffers:
 - **Rent buffers** - Rent pooled buffers with optional secure zeroing on return
 - **Create pinned arrays** - Allocate GC-pinned arrays that are zeroed on disposal
 - **Create pooled buffer writers** - Build sequences incrementally with automatic secure disposal
+- **Create array buffer writers** - Simple, non-pooled buffer writers for general-purpose use
 
 ```csharp
 // Rent a sensitive buffer (pinned + zeroed on dispose)
@@ -40,6 +41,9 @@ Span<byte> pinnedBuffer = lifetime;
 using var writer = BufferFactory.CreatePooledBufferWriter<byte>(isSensitive: true);
 var span = writer.GetSpan(100);
 // Write data, then call writer.Advance(bytesWritten)
+
+// Create a simple array buffer writer (non-sensitive data)
+var arrayWriter = BufferFactory.CreateArrayBufferWriter<byte>(1024);
 ```
 
 #### SecureMemoryPool&lt;T&gt;
@@ -226,3 +230,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Release Notes
 * v4.0.0 - Consolidated from other multiple projects.
+* v4.1.0 - Added `CreateArrayBufferWriter` methods to `BufferFactory` for simple, non-pooled buffer writers.

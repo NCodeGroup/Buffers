@@ -324,4 +324,132 @@ public static class BufferFactory
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="minimumSpanLength"/> is negative.</exception>
     public static Sequence<byte> CreatePooledBufferWriter(bool isSensitive, int minimumSpanLength = 0)
         => CreatePooledBufferWriter<byte>(isSensitive, minimumSpanLength);
+
+    /// <summary>
+    /// Creates a new <see cref="ArrayBufferWriter{T}"/> with the default initial capacity.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the buffer. Must be an unmanaged value type.</typeparam>
+    /// <returns>
+    /// A new <see cref="ArrayBufferWriter{T}"/> instance that implements <see cref="IBufferWriter{T}"/>.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// The returned <see cref="ArrayBufferWriter{T}"/> is a simple, non-pooled buffer writer that uses
+    /// a single contiguous array that grows as needed. Unlike <see cref="CreatePooledBufferWriter{T}"/>,
+    /// this method does not provide secure memory handling.
+    /// </para>
+    /// <para>
+    /// Use this method when you need a simple buffer writer for non-sensitive data and do not require
+    /// the overhead of memory pooling.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// using var writer = BufferFactory.CreateArrayBufferWriter&lt;int&gt;();
+    /// var span = writer.GetSpan(10);
+    /// // Write data to span
+    /// writer.Advance(10);
+    /// // Access the written data
+    /// ReadOnlySpan&lt;int&gt; data = writer.WrittenSpan;
+    /// </code>
+    /// </example>
+    public static ArrayBufferWriter<T> CreateArrayBufferWriter<T>()
+        where T : struct
+        => new();
+
+    /// <summary>
+    /// Creates a new <see cref="ArrayBufferWriter{T}"/> with the specified initial capacity.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the buffer. Must be an unmanaged value type.</typeparam>
+    /// <param name="initialCapacity">The initial capacity of the underlying buffer.</param>
+    /// <returns>
+    /// A new <see cref="ArrayBufferWriter{T}"/> instance that implements <see cref="IBufferWriter{T}"/>.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// The returned <see cref="ArrayBufferWriter{T}"/> is a simple, non-pooled buffer writer that uses
+    /// a single contiguous array. Specifying an appropriate initial capacity can help reduce reallocations
+    /// when the expected data size is known in advance.
+    /// </para>
+    /// <para>
+    /// Unlike <see cref="CreatePooledBufferWriter{T}"/>, this method does not provide secure memory handling.
+    /// Use this method when you need a simple buffer writer for non-sensitive data.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// using var writer = BufferFactory.CreateArrayBufferWriter&lt;int&gt;(1024);
+    /// var span = writer.GetSpan(100);
+    /// // Write data to span
+    /// writer.Advance(100);
+    /// // Access the written data
+    /// ReadOnlySpan&lt;int&gt; data = writer.WrittenSpan;
+    /// </code>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="initialCapacity"/> is not positive.</exception>
+    public static ArrayBufferWriter<T> CreateArrayBufferWriter<T>(int initialCapacity)
+        where T : struct
+        => new(initialCapacity);
+
+    /// <summary>
+    /// Creates a new <see cref="ArrayBufferWriter{T}"/> for bytes with the default initial capacity.
+    /// </summary>
+    /// <returns>
+    /// A new <see cref="ArrayBufferWriter{T}"/> instance that implements <see cref="IBufferWriter{T}"/>.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This is a convenience overload for the common case of working with byte buffers.
+    /// The returned <see cref="ArrayBufferWriter{T}"/> is a simple, non-pooled buffer writer that uses
+    /// a single contiguous array that grows as needed.
+    /// </para>
+    /// <para>
+    /// Unlike <see cref="CreatePooledBufferWriter(bool, int)"/>, this method does not provide secure memory handling.
+    /// Use this method when you need a simple buffer writer for non-sensitive byte data.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// using var writer = BufferFactory.CreateArrayBufferWriter();
+    /// var span = writer.GetSpan(100);
+    /// // Write byte data to span
+    /// writer.Advance(100);
+    /// // Access the written data
+    /// ReadOnlySpan&lt;byte&gt; data = writer.WrittenSpan;
+    /// </code>
+    /// </example>
+    public static ArrayBufferWriter<byte> CreateArrayBufferWriter()
+        => new();
+
+    /// <summary>
+    /// Creates a new <see cref="ArrayBufferWriter{T}"/> for bytes with the specified initial capacity.
+    /// </summary>
+    /// <param name="initialCapacity">The initial capacity of the underlying buffer.</param>
+    /// <returns>
+    /// A new <see cref="ArrayBufferWriter{T}"/> instance that implements <see cref="IBufferWriter{T}"/>.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This is a convenience overload for the common case of working with byte buffers.
+    /// Specifying an appropriate initial capacity can help reduce reallocations when the expected
+    /// data size is known in advance.
+    /// </para>
+    /// <para>
+    /// Unlike <see cref="CreatePooledBufferWriter(bool, int)"/>, this method does not provide secure memory handling.
+    /// Use this method when you need a simple buffer writer for non-sensitive byte data.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// using var writer = BufferFactory.CreateArrayBufferWriter(1024);
+    /// var span = writer.GetSpan(100);
+    /// // Write byte data to span
+    /// writer.Advance(100);
+    /// // Access the written data
+    /// ReadOnlySpan&lt;byte&gt; data = writer.WrittenSpan;
+    /// </code>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="initialCapacity"/> is not positive.</exception>
+    public static ArrayBufferWriter<byte> CreateArrayBufferWriter(int initialCapacity)
+        => new(initialCapacity);
 }
