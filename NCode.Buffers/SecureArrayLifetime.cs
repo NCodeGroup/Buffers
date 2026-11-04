@@ -16,7 +16,6 @@
 
 #endregion
 
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using JetBrains.Annotations;
 
@@ -57,6 +56,7 @@ public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable
     /// </summary>
     /// <param name="length">The length of the array to allocate.</param>
     /// <returns>A new <see cref="SecureArrayLifetime{T}"/> instance.</returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Shipped public API; renaming or moving it would be a breaking change.")]
     public static SecureArrayLifetime<T> Create(int length) => new(length);
 
     /// <summary>

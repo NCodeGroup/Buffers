@@ -16,7 +16,6 @@
 
 #endregion
 
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using JetBrains.Annotations;
 
