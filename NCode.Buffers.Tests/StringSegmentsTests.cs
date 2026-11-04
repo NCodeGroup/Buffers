@@ -525,7 +525,9 @@ public class StringSegmentsTests
     {
         var segments = StringSegments.Split("a.b.c.d.e", '.');
 
+#pragma warning disable CA1829 // The test deliberately compares the LINQ count with the Count property.
         var enumeratedCount = segments.Count();
+#pragma warning restore CA1829
 
         Assert.Equal(segments.Count, enumeratedCount);
     }

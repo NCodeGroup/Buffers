@@ -348,7 +348,7 @@ public class RefSpanLeaseTests
 
     #endregion
 
-    private class TestDisposable : IDisposable
+    private sealed class TestDisposable : IDisposable
     {
         public bool IsDisposed { get; private set; }
         public int DisposeCount { get; private set; }
@@ -360,7 +360,7 @@ public class RefSpanLeaseTests
         }
     }
 
-    private class ThrowingDisposable : IDisposable
+    private sealed class ThrowingDisposable : IDisposable
     {
         public void Dispose()
         {

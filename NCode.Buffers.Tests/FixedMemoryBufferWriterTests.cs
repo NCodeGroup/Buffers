@@ -856,7 +856,7 @@ public class FixedMemoryBufferWriterTests
 
     #region Test Helpers
 
-    private class BufferWriterHolder
+    private sealed class BufferWriterHolder
     {
         public FixedMemoryBufferWriter<byte>? Writer { get; set; }
     }
