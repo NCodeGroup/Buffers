@@ -30,10 +30,14 @@ Built-in instruments and spans of .NET and ASP.NET Core are not listed unless th
 
 ## Meters and Instruments
 
+NCode.Buffers defines no meters, instruments, activity sources or spans yet.
+
 | Name | Type | Unit | Attributes and their values | Owner |
 | --- | --- | --- | --- | --- |
 
 ## Activity Sources and Spans
+
+NCode.Buffers defines no meters, instruments, activity sources or spans yet.
 
 | Activity source | Span | Mirrors histogram | Attributes and their values | Owner |
 | --- | --- | --- | --- | --- |

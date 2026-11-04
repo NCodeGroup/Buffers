@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Updated the project from project-template v0.41.0 to v0.61.2: workflow instructions, build settings and analyzers, CI and Dependabot configuration.
-- Narrowly suppressed analyzer rules that flag the shipped public API (CA1000, CA1708, CA1710), and made two `Gen2GcCallback.Register` calls explicit about discarding the self-registering instance. Behavior and public API are unchanged.
+- `AssemblyVersion` now moves only with the major version (`4.0.0.0` for every 4.x release); `FileVersion` and `InformationalVersion` keep the exact version. Earlier releases set `AssemblyVersion` to the full version, such as `4.1.0.0`.
+- Internal analyzer clean-up (suppressions with justifications and a discarded `Gen2GcCallback` instance); behavior and public API are unchanged.
+- Project updated from project-template v0.41.0 to v0.61.2 (build, CI and contribution tooling).
 
 [Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v4.1.0...HEAD

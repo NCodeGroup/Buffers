@@ -237,5 +237,7 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE.txt](LI
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Release Notes
+See [CHANGELOG.md](CHANGELOG.md) for the full history.
+
 * v4.0.0 - Consolidated from other multiple projects.
 * v4.1.0 - Added `CreateArrayBufferWriter` methods to `BufferFactory` for simple, non-pooled buffer writers.
