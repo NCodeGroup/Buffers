@@ -220,6 +220,14 @@ dotnet add package NCode.Buffers
 - .NET 8.0
 - .NET 10.0
 
+## Project
+
+- [CONTRIBUTING.md](CONTRIBUTING.md): how to set up, build, test and propose a change.
+- [SECURITY.md](SECURITY.md): how to report a vulnerability privately.
+- [docs/decisions/](docs/decisions/README.md): the decisions behind the design, the project's and the template's.
+- [CHANGELOG.md](CHANGELOG.md): what changed in each release, in the Keep a Changelog format.
+- [LICENSE.txt](LICENSE.txt): the license.
+
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE.txt](LICENSE.txt) file for details.
@@ -229,5 +237,7 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE.txt](LI
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Release Notes
+See [CHANGELOG.md](CHANGELOG.md) for the full history.
+
 * v4.0.0 - Consolidated from other multiple projects.
 * v4.1.0 - Added `CreateArrayBufferWriter` methods to `BufferFactory` for simple, non-pooled buffer writers.

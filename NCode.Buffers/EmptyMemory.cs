@@ -57,6 +57,7 @@ public sealed class EmptyMemory<T> : IMemoryOwner<T>
     /// Use this property to avoid allocating new instances when an empty <see cref="IMemoryOwner{T}"/> is needed.
     /// The singleton is safe to use across multiple threads and can be disposed multiple times without side effects.
     /// </remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Shipped public API; the shared per-type singleton is intentional.")]
     public static EmptyMemory<T> Singleton { get; } = new();
 
     /// <inheritdoc />

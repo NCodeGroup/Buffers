@@ -415,7 +415,7 @@ public class BufferExtensionsTests
         Assert.Equal(0x42, writer.WrittenSpan[0]);
     }
 
-    private class WriterHolder
+    private sealed class WriterHolder
     {
         public FixedMemoryBufferWriter<byte>? Writer { get; set; }
     }

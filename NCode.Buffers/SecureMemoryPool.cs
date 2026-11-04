@@ -82,6 +82,7 @@ public class SecureMemoryPool<T> : MemoryPool<T> where T : struct
     /// Use this property to access a global instance of the pool without creating your own.
     /// The shared instance is suitable for most applications.
     /// </remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Shipped public API; renaming or moving it would be a breaking change.")]
     public new static SecureMemoryPool<T> Shared { get; } = new();
 
     private int _disposed;

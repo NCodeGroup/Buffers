@@ -49,6 +49,7 @@ namespace NCode.Buffers;
 /// </code>
 /// </example>
 [PublicAPI]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1710:Identifiers should have correct suffix", Justification = "Shipped public API; renaming would be a breaking change.")]
 public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegment<char>>
 {
     /// <summary>

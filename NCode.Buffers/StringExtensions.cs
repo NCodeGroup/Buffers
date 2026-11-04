@@ -43,6 +43,7 @@ namespace NCode.Buffers;
 /// </code>
 /// </example>
 [PublicAPI]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1708:Identifiers should differ by more than case", Justification = "Shipped public API; the two extension blocks are compiler-generated.")]
 public static class StringExtensions
 {
     /// <param name="value">The string to split into substrings.</param>
