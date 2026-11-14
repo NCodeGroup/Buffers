@@ -17,7 +17,6 @@
 #endregion
 
 using System.Buffers;
-using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using Nerdbank.Streams;
 
@@ -62,7 +61,6 @@ namespace NCode.Buffers;
 /// </code>
 /// </example>
 [PublicAPI]
-[ExcludeFromCodeCoverage]
 public static class BufferFactory
 {
     /// <summary>
@@ -209,7 +207,10 @@ public static class BufferFactory
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="length"/> is negative.</exception>
     public static SecureArrayLifetime<T> CreatePinnedArray<T>(int length)
         where T : struct
-        => SecureArrayLifetime<T>.Create(length);
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
+        return SecureArrayLifetime<T>.Create(length);
+    }
 
     /// <summary>
     /// Creates a pinned byte array wrapped in a <see cref="SecureArrayLifetime{T}"/> that securely zeroes the memory upon disposal.
@@ -284,10 +285,13 @@ public static class BufferFactory
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="minimumSpanLength"/> is negative.</exception>
     public static Sequence<T> CreatePooledBufferWriter<T>(bool isSensitive, int minimumSpanLength = 0)
         where T : struct
-        => new(ChoosePool<T>(isSensitive))
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(minimumSpanLength);
+        return new(ChoosePool<T>(isSensitive))
         {
             MinimumSpanLength = minimumSpanLength
         };
+    }
 
     /// <summary>
     /// Creates a new <see cref="Sequence{T}"/> buffer writer for building sequences of byte data incrementally.
@@ -389,7 +393,10 @@ public static class BufferFactory
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="initialCapacity"/> is not positive.</exception>
     public static ArrayBufferWriter<T> CreateArrayBufferWriter<T>(int initialCapacity)
         where T : struct
-        => new(initialCapacity);
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(initialCapacity);
+        return new(initialCapacity);
+    }
 
     /// <summary>
     /// Creates a new <see cref="ArrayBufferWriter{T}"/> for bytes with the default initial capacity.
@@ -451,5 +458,8 @@ public static class BufferFactory
     /// </example>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="initialCapacity"/> is not positive.</exception>
     public static ArrayBufferWriter<byte> CreateArrayBufferWriter(int initialCapacity)
-        => new(initialCapacity);
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(initialCapacity);
+        return new(initialCapacity);
+    }
 }

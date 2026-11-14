@@ -18,6 +18,7 @@ Run from the repository root in PowerShell 7.
 
 - Build: `dotnet build`
 - Test: `dotnet test`
+- Coverage: `./build/Test-Coverage.ps1` runs the tests with coverage, lists every line no test runs, and fails below 98% line or branch coverage; CI runs it after the Definition of Done
 - Definition of Done: `./build/dod.ps1` (the full gate CI runs) or `./build/dod.ps1 -Fast` (Debug, no pack); it ends with `Definition of Done: PASSED`. Record a public API change with `./build/Update-PublicApi.ps1`
 
 ## Landing

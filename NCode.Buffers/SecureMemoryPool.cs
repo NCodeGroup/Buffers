@@ -18,7 +18,7 @@
 
 using System.Buffers;
 using System.Collections.Concurrent;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 
 namespace NCode.Buffers;
@@ -84,6 +84,9 @@ public class SecureMemoryPool<T> : MemoryPool<T> where T : struct
     /// </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Shipped public API; renaming or moving it would be a breaking change.")]
     public new static SecureMemoryPool<T> Shared { get; } = new();
+
+    // The number of elements in one pooled buffer of PageSize bytes, and at least one for an element larger than a page.
+    private static readonly int ElementsPerPage = Math.Max(1, PageSize / Unsafe.SizeOf<T>());
 
     private int _disposed;
 
@@ -165,10 +168,10 @@ public class SecureMemoryPool<T> : MemoryPool<T> where T : struct
             return EmptyMemory<T>.Singleton;
         }
 
-        var byteCount = minBufferSize == -1 ? PageSize : minBufferSize * Marshal.SizeOf<T>();
+        var byteCount = minBufferSize == -1 ? PageSize : (long)minBufferSize * Unsafe.SizeOf<T>();
         if (byteCount <= PageSize)
         {
-            return MemoryQueue.TryDequeue(out var memory) ? memory : new SecureMemory<T>(this, PageSize);
+            return MemoryQueue.TryDequeue(out var memory) ? memory : new SecureMemory<T>(this, ElementsPerPage);
         }
 
         // non-pooled

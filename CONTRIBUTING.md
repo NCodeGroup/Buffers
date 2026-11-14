@@ -21,6 +21,7 @@ Once in each clone, run `git config core.hooksPath .githooks`. It turns on `.git
 | Definition of Done, the full gate | `./build/dod.ps1` |
 | The local gate before a push | `./build/dod.ps1 -Fast` |
 | Only the tests a filter matches | `./build/dod.ps1 -Fast -Filter 'FullyQualifiedName~OrderStore'` |
+| Code coverage: lists every line no test runs, and fails below 98% line or branch coverage, as CI does | `./build/Test-Coverage.ps1` |
 
 The Definition of Done checks the decision index, builds in Release with warnings as errors, runs the tests, packs and ends with `Definition of Done: PASSED`. CI runs `./build/dod.ps1` on every pull request.
 
