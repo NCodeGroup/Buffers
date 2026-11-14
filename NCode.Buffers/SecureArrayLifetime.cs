@@ -1,20 +1,5 @@
-﻿#region Copyright Preamble
-
-// Copyright @ 2026 NCode Group
-//
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
-//
-//        http://www.apache.org/licenses/LICENSE-2.0
-//
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
-
-#endregion
+// Copyright © NCode Group
+// SPDX-License-Identifier: Apache-2.0
 
 using System.Security.Cryptography;
 using JetBrains.Annotations;
@@ -56,7 +41,11 @@ public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable
     /// </summary>
     /// <param name="length">The length of the array to allocate.</param>
     /// <returns>A new <see cref="SecureArrayLifetime{T}"/> instance.</returns>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Shipped public API; renaming or moving it would be a breaking change.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Design",
+        "CA1000:Do not declare static members on generic types",
+        Justification = "Shipped public API; renaming or moving it would be a breaking change."
+    )]
     public static SecureArrayLifetime<T> Create(int length) => new(length);
 
     /// <summary>
@@ -89,8 +78,7 @@ public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable
     /// This conversion provides direct access to the underlying pinned array. The array remains
     /// managed by this lifetime and will be securely zeroed when <see cref="Dispose"/> is called.
     /// </remarks>
-    public static implicit operator T[](SecureArrayLifetime<T> lifetime) =>
-        lifetime.PinnedArray;
+    public static implicit operator T[](SecureArrayLifetime<T> lifetime) => lifetime.PinnedArray;
 
     /// <summary>
     /// Implicitly converts a <see cref="SecureArrayLifetime{T}"/> to a <see cref="Span{T}"/>.

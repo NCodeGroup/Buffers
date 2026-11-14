@@ -80,3 +80,11 @@ trim_trailing_whitespace = false
 # Web Files
 [*.{htm,html,cshtml,js,ts,css,scss}]
 indent_size = 2
+
+# Every C# file starts with the two-line header file_header_template sets above; the build fails without it, generated code excepted (ADR-1002).
+[*.cs]
+dotnet_diagnostic.IDE0073.severity = warning
+
+# Project and solution files take the 2-space indent of the other MSBuild files.
+[*.{csproj,slnx}]
+indent_size = 2

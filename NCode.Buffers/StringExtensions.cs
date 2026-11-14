@@ -1,21 +1,5 @@
-#region Copyright Preamble
-
-//
-//    Copyright @ 2023 NCode Group
-//
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
-//
-//        http://www.apache.org/licenses/LICENSE-2.0
-//
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
-
-#endregion
+// Copyright © NCode Group
+// SPDX-License-Identifier: Apache-2.0
 
 using JetBrains.Annotations;
 
@@ -43,7 +27,11 @@ namespace NCode.Buffers;
 /// </code>
 /// </example>
 [PublicAPI]
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1708:Identifiers should differ by more than case", Justification = "Shipped public API; the two extension blocks are compiler-generated.")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1708:Identifiers should differ by more than case",
+    Justification = "Shipped public API; the two extension blocks are compiler-generated."
+)]
 public static class StringExtensions
 {
     /// <param name="value">The string to split into substrings.</param>
@@ -87,8 +75,10 @@ public static class StringExtensions
         /// Use this overload when you need case-insensitive or culture-aware separator matching.
         /// Empty segments are included in the result when consecutive separators are encountered.
         /// </remarks>
-        public StringSegments SplitSegments(ReadOnlySpan<char> separator, StringComparison comparisonType) =>
-            StringSegments.Split(value, separator, comparisonType);
+        public StringSegments SplitSegments(
+            ReadOnlySpan<char> separator,
+            StringComparison comparisonType
+        ) => StringSegments.Split(value, separator, comparisonType);
     }
 
     /// <param name="value">The <see cref="ReadOnlyMemory{T}">ReadOnlyMemory&lt;char&gt;</see> to split into substrings.</param>
@@ -134,7 +124,9 @@ public static class StringExtensions
         /// Use this overload when you need case-insensitive or culture-aware separator matching.
         /// Empty segments are included in the result when consecutive separators are encountered.
         /// </remarks>
-        public StringSegments SplitSegments(ReadOnlySpan<char> separator, StringComparison comparisonType) =>
-            StringSegments.Split(value, separator, comparisonType);
+        public StringSegments SplitSegments(
+            ReadOnlySpan<char> separator,
+            StringComparison comparisonType
+        ) => StringSegments.Split(value, separator, comparisonType);
     }
 }

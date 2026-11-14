@@ -1,20 +1,5 @@
-﻿#region Copyright Preamble
-
-// Copyright @ 2024 NCode Group
-//
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
-//
-//        http://www.apache.org/licenses/LICENSE-2.0
-//
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
-
-#endregion
+// Copyright © NCode Group
+// SPDX-License-Identifier: Apache-2.0
 
 using System.Buffers;
 using JetBrains.Annotations;
@@ -57,7 +42,11 @@ public sealed class EmptyMemory<T> : IMemoryOwner<T>
     /// Use this property to avoid allocating new instances when an empty <see cref="IMemoryOwner{T}"/> is needed.
     /// The singleton is safe to use across multiple threads and can be disposed multiple times without side effects.
     /// </remarks>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Shipped public API; the shared per-type singleton is intentional.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Design",
+        "CA1000:Do not declare static members on generic types",
+        Justification = "Shipped public API; the shared per-type singleton is intentional."
+    )]
     public static EmptyMemory<T> Singleton { get; } = new();
 
     /// <inheritdoc />

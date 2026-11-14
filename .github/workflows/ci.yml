@@ -44,10 +44,10 @@ jobs:
             ${{ runner.os }}-nuget-
       - name: Check the decision index
         run: ./.template/Test-AdrIndex.ps1
-      # The Definition of Done builds, tests and, for a library, packs, as build/dod.ps1 says.
+      # The gate checks the formatting with CSharpier, then runs the Definition of Done, which builds, tests and, for a library, packs and validates the package (ADR-1002, ADR-1001).
       - name: Definition of Done
         if: hashFiles('**/*.csproj', '**/*.sln', '**/*.slnx') != ''
-        run: ./build/dod.ps1
+        run: ./build/gate.ps1
       # Fails the build when line or branch coverage drops below build/Test-Coverage.ps1's minimums.
       - name: Code coverage
         if: hashFiles('**/*.csproj', '**/*.sln', '**/*.slnx') != ''

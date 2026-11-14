@@ -1,20 +1,5 @@
-#region Copyright Preamble
-
-// Copyright @ 2026 NCode Group
-//
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
-//
-//        http://www.apache.org/licenses/LICENSE-2.0
-//
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
-
-#endregion
+// Copyright © NCode Group
+// SPDX-License-Identifier: Apache-2.0
 
 using System.Security.Cryptography;
 
@@ -324,7 +309,12 @@ public class SecureArrayLifetimeTests
     {
         var lifetime = new SecureArrayLifetime<TestStruct>(4);
         for (var i = 0; i < lifetime.PinnedArray.Length; i++)
-            lifetime.PinnedArray[i] = new TestStruct { A = i, B = (byte)(i + 1), C = i * 1.5 };
+            lifetime.PinnedArray[i] = new TestStruct
+            {
+                A = i,
+                B = (byte)(i + 1),
+                C = i * 1.5,
+            };
 
         Assert.False(lifetime.PinnedArray.All(x => x is { A: 0, B: 0, C: 0 }));
 

@@ -19,7 +19,8 @@ Run from the repository root in PowerShell 7.
 - Build: `dotnet build`
 - Test: `dotnet test`
 - Coverage: `./build/Test-Coverage.ps1` runs the tests with coverage, lists every line no test runs, and fails below 98% line or branch coverage; CI runs it after the Definition of Done
-- Definition of Done: `./build/dod.ps1` (the full gate CI runs) or `./build/dod.ps1 -Fast` (Debug, no pack); it ends with `Definition of Done: PASSED`. Record a public API change with `./build/Update-PublicApi.ps1`
+- Gate: `./build/gate.ps1` (the full gate CI runs) or `./build/gate.ps1 -Fast` (Debug, no pack): the CSharpier check, then the Definition of Done, `./build/dod.ps1`, which ends with `Definition of Done: PASSED`. Record a public API change with `./build/Update-PublicApi.ps1`
+- Format: `dotnet tool restore` once, then `dotnet csharpier format .`
 
 ## Landing
 
@@ -32,7 +33,7 @@ How `/ship-plan` lands a reviewed plan. `integrate`: `pull-request` pushes the p
 - draft: no
 - follow-ups: issues
 - follow-up-label: follow-up
-- gate: ./build/dod.ps1 -Fast
+- gate: ./build/gate.ps1 -Fast
 - protect: none
 - pr-format: none
 - review-bots: ncode-review
@@ -43,3 +44,7 @@ How `/ship-plan` lands a reviewed plan. `integrate`: `pull-request` pushes the p
 
 - A public API change is recorded with `./build/Update-PublicApi.ps1`; a published GitHub release starts `.github/workflows/publish.yml`, which pushes the packages to nuget.org through trusted publishing, with no stored API key (ADR-0135 in `docs/decisions/project-template/`). `release: none` stays in the Landing section until the plan for the next release sets `release: tag+release` and its own `Release:` line, which has `.github/workflows/tag-release.yml` tag and publish each release as its pull request merges and start `publish.yml` (ADR-0016 and ADR-0137).
 - This repository accepts the template's ADR-0006 exception for `.github/workflows/code-review-auto-merge.yml`: a Dependabot pull request whose one change is the NCode Review pin may be auto-merged.
+- Versions come from `version.json` through Nerdbank.GitVersioning (ADR-1000 in `docs/decisions/`), which overrides project-template ADR-0136's version from the release tag: `version` is the version the next release ships. A change that adds public API raises it to the next minor version, a breaking change to the next major, and a plan with a `Release:` line sets it to that version, because `publish.yml` publishes nothing when the tag and `version.json` disagree.
+- Every pack is validated against the package `PackageValidationBaselineVersion` names in `NCode.Buffers/NCode.Buffers.csproj` (ADR-1001), and the first change after a release is on nuget.org raises it. `docs/api-compatibility.md` is the procedure for changing the public API.
+- CSharpier formats the code (ADR-1002): run `dotnet csharpier format .` before committing. Every C# file starts with the two lines `// Copyright © NCode Group` and `// SPDX-License-Identifier: Apache-2.0`.
+- Shipping code takes buffers from `BufferFactory` and text encodings from `SecureEncoding`: `BannedSymbols.Encoding.txt` and `BannedSymbols.Buffers.txt` ban the rest outside test projects (ADR-1003).

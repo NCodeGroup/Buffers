@@ -1,20 +1,7 @@
-﻿#region Copyright Preamble
+// Copyright © NCode Group
+// SPDX-License-Identifier: Apache-2.0
 
-// Copyright @ 2026 NCode Group
-//
-//    Licensed under the Apache License, Version 2.0 (the "License");
-//    you may not use this file except in compliance with the License.
-//    You may obtain a copy of the License at
-//
-//        http://www.apache.org/licenses/LICENSE-2.0
-//
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//    See the License for the specific language governing permissions and
-//    limitations under the License.
-
-#endregion
+#pragma warning disable RS0030 // The documentation names MemoryPool<T>.Shared, the pool for non-sensitive buffers (ADR-1003).
 
 using System.Buffers;
 using System.Diagnostics;
@@ -42,7 +29,8 @@ namespace NCode.Buffers;
 public static class SequenceExtensions
 {
     /// <typeparam name="T">The type of elements in the sequence. Must be an unmanaged value type.</typeparam>
-    extension<T>(Sequence<T> buffer) where T : struct
+    extension<T>(Sequence<T> buffer)
+        where T : struct
     {
         /// <summary>
         /// Gets a <see cref="RefSpanLease{T}"/> that provides access to the underlying data as a contiguous <see cref="ReadOnlySpan{T}"/>.
@@ -91,7 +79,11 @@ public static class SequenceExtensions
             }
 
             Debug.Assert(buffer.Length <= int.MaxValue, "Sequence length exceeds int.MaxValue.");
-            var owner = BufferFactory.Rent((int)buffer.Length, isSensitive, out Span<T> destination);
+            var owner = BufferFactory.Rent(
+                (int)buffer.Length,
+                isSensitive,
+                out Span<T> destination
+            );
             sequence.CopyTo(destination);
             return new RefSpanLease<T>(owner, destination);
         }
@@ -153,7 +145,11 @@ public static class SequenceExtensions
             }
 
             Debug.Assert(buffer.Length <= int.MaxValue, "Sequence length exceeds int.MaxValue.");
-            var owner = BufferFactory.Rent((int)buffer.Length, isSensitive, out Span<T> destination);
+            var owner = BufferFactory.Rent(
+                (int)buffer.Length,
+                isSensitive,
+                out Span<T> destination
+            );
             try
             {
                 sequence.CopyTo(destination);

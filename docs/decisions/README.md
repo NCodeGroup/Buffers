@@ -60,7 +60,9 @@ override in `AGENTS.md`.
 
 ## Index
 
-This project has no decision records of its own yet; its first will be numbered 1000.
-
 | ADR | Decision | Status |
 | --- | --- | --- |
+| [ADR-1000](1000-package-versions-come-from-version-json-through-nerdbank-gitversioning.md) | Package versions come from version.json through Nerdbank.GitVersioning | Accepted |
+| [ADR-1001](1001-each-package-is-validated-against-the-last-released-package.md) | Each package is validated against the last released package | Accepted |
+| [ADR-1002](1002-csharpier-formats-the-code-and-every-csharp-file-starts-with-an-spdx-header.md) | CSharpier formats the code, and every C# file starts with an SPDX header | Accepted |
+| [ADR-1003](1003-shipping-code-takes-buffers-and-encodings-through-bufferfactory-and-secureencoding.md) | Shipping code takes buffers and encodings through BufferFactory and SecureEncoding | Accepted |

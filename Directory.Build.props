@@ -1,21 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
-
   <!-- Shared settings from the project template; this file's own settings, after the import, override them. -->
   <Import Project="$(MSBuildThisFileDirectory)build/ProjectTemplate.props" />
 
-  <!-- 4.1.0 shipped with AssemblyVersion 4.1.0.0; the template's default of 4.0.0.0 for every 4.x would not load for an application built against it (ADR-0136). Remove this when the major version moves to 5. -->
-  <PropertyGroup>
-    <AssemblyVersion>4.1.0.0</AssemblyVersion>
-  </PropertyGroup>
+  <!-- Nerdbank.GitVersioning stamps every assembly and package from version.json, which also holds the 4.x AssemblyVersion, 4.1.0.0 (ADR-1000). -->
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
+  </ItemGroup>
 
-  <PropertyGroup>
-
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(MSBuildProjectName).xml</DocumentationFile>
-
-  </PropertyGroup>
+  <!-- Shipping code takes encodings from SecureEncoding and buffers from BufferFactory (ADR-1003); test projects compare against the standard ones. -->
+  <ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.Encoding.txt" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.Buffers.txt" />
+  </ItemGroup>
 </Project>
