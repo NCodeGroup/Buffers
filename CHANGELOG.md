@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `CONTRIBUTING.md`, `SECURITY.md`, architecture decision records in `docs/decisions/` and a Definition of Done gate (`build/dod.ps1`).
 - Publishing to nuget.org through trusted publishing: `.github/workflows/publish.yml` tests and packs the tagged commit without any credential, then pushes the packages and symbol packages from the protected `nuget` environment with a short-lived key, and runs when a GitHub release is published or when it is dispatched by hand with a tag ([#25](https://github.com/NCodeGroup/Buffers/issues/25), [ADR-0135](docs/decisions/project-template/0135-packages-are-published-from-a-github-release-through-trusted-publishing.md)).
 - Changelog sections for the 4.0.0 and 4.1.0 releases ([#25](https://github.com/NCodeGroup/Buffers/issues/25)).
+- Unit tests for every public member of `BufferFactory` and `CryptographicOperationsExtensions`, and for the internal `SecureMemory<T>` and `Gen2GcCallback`; and `build/Test-Coverage.ps1`, which CI runs to fail a pull request below 98% line or branch coverage.
 
 ### Changed
 
@@ -21,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project updated from project-template v0.41.0 to v0.86.1 (build, CI and contribution tooling) ([#26](https://github.com/NCodeGroup/Buffers/issues/26)).
 - A published GitHub release starts `publish.yml`, which pushes the packages to nuget.org; `AGENTS.md` keeps `release: none` until the plan for the next release sets `release: tag+release`, which has each release tagged and published as its pull request merges ([#25](https://github.com/NCodeGroup/Buffers/issues/25), [ADR-0016](docs/decisions/project-template/0016-releases-are-tagged-and-published-when-their-pull-request-merges.md)).
 - `SECURITY.md`, `CONTRIBUTING.md`, `AGENTS.md` and the README describe the new release path ([#25](https://github.com/NCodeGroup/Buffers/issues/25)).
+- `BufferFactory` is no longer excluded from code coverage, and `SequenceExtensions` no longer carries exception handlers that no input can reach; behavior and public API are unchanged.
 
 ### Removed
 
