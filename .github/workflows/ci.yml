@@ -48,6 +48,10 @@ jobs:
       - name: Definition of Done
         if: hashFiles('**/*.csproj', '**/*.sln', '**/*.slnx') != ''
         run: ./build/dod.ps1
+      # Fails the build when line or branch coverage drops below build/Test-Coverage.ps1's minimums.
+      - name: Code coverage
+        if: hashFiles('**/*.csproj', '**/*.sln', '**/*.slnx') != ''
+        run: ./build/Test-Coverage.ps1
       # A TRX file per test project, kept after a failure too, to see which test failed.
       - name: Upload test results
         if: always()

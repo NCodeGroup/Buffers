@@ -92,16 +92,8 @@ public static class SequenceExtensions
 
             Debug.Assert(buffer.Length <= int.MaxValue, "Sequence length exceeds int.MaxValue.");
             var owner = BufferFactory.Rent((int)buffer.Length, isSensitive, out Span<T> destination);
-            try
-            {
-                sequence.CopyTo(destination);
-                return new RefSpanLease<T>(owner, destination);
-            }
-            catch
-            {
-                owner.Dispose();
-                throw;
-            }
+            sequence.CopyTo(destination);
+            return new RefSpanLease<T>(owner, destination);
         }
 
         /// <summary>
@@ -138,10 +130,6 @@ public static class SequenceExtensions
         /// <strong>Multi-segment handling:</strong> When the sequence spans multiple segments, a buffer is rented,
         /// the data is copied into it, and the original sequence is disposed immediately.
         /// </para>
-        /// <para>
-        /// <strong>Exception safety:</strong> If an exception occurs during the copy operation,
-        /// the rented buffer is disposed before re-throwing the exception.
-        /// </para>
         /// </remarks>
         /// <example>
         /// <code>
@@ -171,11 +159,6 @@ public static class SequenceExtensions
                 sequence.CopyTo(destination);
                 span = destination;
                 return owner;
-            }
-            catch
-            {
-                owner.Dispose();
-                throw;
             }
             finally
             {
