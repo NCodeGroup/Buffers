@@ -222,7 +222,7 @@ public class BufferFactoryTests
     {
         using var writer = BufferFactory.CreatePooledBufferWriter<int>(isSensitive: true);
 
-        Assert.Equal(SecureMemoryPool<int>.PageSize, writer.GetMemory(1).Length);
+        Assert.Equal(SecureMemoryPool<int>.PageSize / sizeof(int), writer.GetMemory(1).Length);
     }
 
     [Fact]

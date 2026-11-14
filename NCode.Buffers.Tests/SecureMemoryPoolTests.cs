@@ -17,6 +17,7 @@
 #endregion
 
 using System.Buffers;
+using System.Runtime.InteropServices;
 
 namespace NCode.Buffers.Tests;
 
@@ -284,6 +285,45 @@ public class SecureMemoryPoolTests
         Assert.Equal(0xBB, lease.Memory.Span[99]);
     }
 
+    [Fact]
+    public void Rent_Int32Pool_ReturnsOnePageOfBytes()
+    {
+        using var pool = new SecureMemoryPool<int>();
+
+        using var owner = pool.Rent(1);
+
+        Assert.Equal(SecureMemoryPool<int>.PageSize / sizeof(int), owner.Memory.Length);
+    }
+
+    [Fact]
+    public void Rent_CharPool_ReturnsOnePageOfBytes()
+    {
+        using var pool = new SecureMemoryPool<char>();
+
+        using var owner = pool.Rent(-1);
+
+        Assert.Equal(SecureMemoryPool<char>.PageSize / sizeof(char), owner.Memory.Length);
+    }
+
+    [Fact]
+    public void Rent_ElementLargerThanPage_ReturnsOneElement()
+    {
+        using var pool = new SecureMemoryPool<LargeValue>();
+
+        using var owner = pool.Rent(-1);
+
+        Assert.Equal(1, owner.Memory.Length);
+    }
+
+    [Fact]
+    public void Rent_SizeWhoseByteCountOverflowsInt32_IsNotServedFromPool()
+    {
+        using var pool = new SecureMemoryPool<long>();
+
+        // int.MaxValue longs overflow a 32-bit byte count; the request must take the non-pooled path, whose allocation the runtime refuses, never a pooled page.
+        Assert.Throws<OutOfMemoryException>(() => pool.Rent(int.MaxValue));
+    }
+
     #endregion
 
     #region Return Tests
@@ -473,4 +513,7 @@ public class SecureMemoryPoolTests
     }
 
     #endregion
+
+    [StructLayout(LayoutKind.Sequential, Size = 8192)]
+    private struct LargeValue { }
 }
