@@ -22,4 +22,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The `Commit attribution` CI check and the `.githooks/commit-msg` hook: agent attribution is avoided, not enforced ([ADR-0018](docs/decisions/project-template/0018-agent-attribution-is-avoided-not-enforced.md)).
 
+## [4.1.0] - 2026-01-21
+
+### Added
+
+- `CreateArrayBufferWriter` methods on `BufferFactory` for simple, non-pooled buffer writers.
+
+## [4.0.0] - 2026-01-16
+
+### Added
+
+- First release after consolidating several projects into NCode.Buffers.
+
 [Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/NCodeGroup/Buffers/compare/v4.0.0...v4.1.0
+[4.0.0]: https://github.com/NCodeGroup/Buffers/releases/tag/v4.0.0
