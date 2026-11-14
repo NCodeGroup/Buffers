@@ -17,7 +17,6 @@
 #endregion
 
 using System.Buffers;
-using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using Nerdbank.Streams;
 
@@ -62,7 +61,6 @@ namespace NCode.Buffers;
 /// </code>
 /// </example>
 [PublicAPI]
-[ExcludeFromCodeCoverage]
 public static class BufferFactory
 {
     /// <summary>
