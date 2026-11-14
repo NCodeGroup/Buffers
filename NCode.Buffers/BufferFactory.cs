@@ -1,6 +1,8 @@
 // Copyright © NCode Group
 // SPDX-License-Identifier: Apache-2.0
 
+#pragma warning disable RS0030 // BufferFactory is the sanctioned wrapper over the shared pools and buffer writers that BannedSymbols.Buffers.txt bans (ADR-1003).
+
 using System.Buffers;
 using JetBrains.Annotations;
 using Nerdbank.Streams;

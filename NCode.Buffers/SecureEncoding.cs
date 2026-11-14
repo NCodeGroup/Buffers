@@ -1,6 +1,8 @@
 // Copyright © NCode Group
 // SPDX-License-Identifier: Apache-2.0
 
+#pragma warning disable RS0030 // SecureEncoding builds its strict encodings from the standard ones that BannedSymbols.Encoding.txt bans (ADR-1003).
+
 using System.Text;
 using JetBrains.Annotations;
 

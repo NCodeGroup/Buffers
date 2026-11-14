@@ -1,6 +1,8 @@
 // Copyright © NCode Group
 // SPDX-License-Identifier: Apache-2.0
 
+#pragma warning disable RS0030 // The documentation names MemoryPool<T>.Shared, the pool for non-sensitive buffers (ADR-1003).
+
 using System.Buffers;
 using System.Diagnostics;
 using JetBrains.Annotations;
