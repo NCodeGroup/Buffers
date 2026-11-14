@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `Commit attribution` CI check and the `.githooks/commit-msg` hook: agent attribution is avoided, not enforced ([ADR-0018](docs/decisions/project-template/0018-agent-attribution-is-avoided-not-enforced.md)).
 - `.github/workflows/main.yml`: its build and test duplicated `ci.yml`, and its publish job and the `NUGET_APIKEY` secret it used are replaced by `publish.yml`; delete the secret from the repository settings ([#25](https://github.com/NCodeGroup/Buffers/issues/25)).
 
+### Fixed
+
+- `BufferFactory.CreatePinnedArray`, `CreatePooledBufferWriter` and `CreateArrayBufferWriter` throw `ArgumentOutOfRangeException` for a negative length, a negative `minimumSpanLength` or a non-positive `initialCapacity`, as their documentation says; they threw `OverflowException` or `ArgumentException`, or accepted a negative `minimumSpanLength`.
+- `SecureMemoryPool<T>` pools buffers of `PageSize` (4096) bytes for every `T`, as its documentation says. It pooled `PageSize` elements, so a `SecureMemoryPool<int>` pinned 16 KB per buffer, it measured `char` and `bool` by their marshaled size, and a request whose byte count overflowed `int` could get a pooled buffer smaller than it asked for.
+
 ## [4.1.0] - 2026-01-21
 
 ### Added
