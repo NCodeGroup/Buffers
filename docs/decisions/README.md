@@ -60,7 +60,6 @@ override in `AGENTS.md`.
 
 ## Index
 
-This project has no decision records of its own yet; its first will be numbered 1000.
-
 | ADR | Decision | Status |
 | --- | --- | --- |
+| [ADR-1000](1000-package-versions-come-from-version-json-through-nerdbank-gitversioning.md) | Package versions come from version.json through Nerdbank.GitVersioning | Accepted |
