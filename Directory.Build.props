@@ -8,4 +8,10 @@
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
   </ItemGroup>
+
+  <!-- Shipping code takes encodings from SecureEncoding and buffers from BufferFactory (ADR-1003); test projects compare against the standard ones. -->
+  <ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.Encoding.txt" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.Buffers.txt" />
+  </ItemGroup>
 </Project>
