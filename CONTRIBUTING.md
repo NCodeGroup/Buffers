@@ -54,6 +54,6 @@ Most changes here are planned and executed with coding agents: a frontier model 
 
 ## Maintainers and Scope
 
-NCode Group maintains NCode.Buffers: they review pull requests, merge them and publish releases. NCode.Buffers covers what [README.md](README.md) describes; a change outside that starts as an issue, where the maintainers say whether it fits.
+NCode Group maintains NCode.Buffers: they review pull requests and merge them. A release is tagged and published as its pull request merges, and its packages reach nuget.org through trusted publishing after a maintainer approves the `nuget` environment, as [AGENTS.md](AGENTS.md)'s Landing section and `.github/workflows/publish.yml` describe. NCode.Buffers covers what [README.md](README.md) describes; a change outside that starts as an issue, where the maintainers say whether it fits.
 
 By contributing, you agree that your contribution is licensed under the project's license, [Apache-2.0](LICENSE.txt).
