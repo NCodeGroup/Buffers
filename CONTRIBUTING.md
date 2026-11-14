@@ -12,18 +12,21 @@ Issues and pull requests are welcome. [README.md](README.md) explains the projec
 
 Once in each clone, run `git config core.hooksPath .githooks`. It turns on `.githooks/pre-push`, which refuses a push to the default branch when the Landing section of `AGENTS.md` says `protect: hook`. When the clone already runs another tool's hooks, such as pre-commit, leave its hooks path alone.
 
+Then run `dotnet tool restore`, which installs the CSharpier version `.config/dotnet-tools.json` pins.
+
 ## Build and Test
 
 | Task | Command |
 | --- | --- |
 | Build | `dotnet build` |
 | Test | `dotnet test` |
-| Definition of Done, the full gate | `./build/dod.ps1` |
-| The local gate before a push | `./build/dod.ps1 -Fast` |
-| Only the tests a filter matches | `./build/dod.ps1 -Fast -Filter 'FullyQualifiedName~OrderStore'` |
+| Format | `dotnet csharpier format .` |
+| The full gate | `./build/gate.ps1` |
+| The local gate before a push | `./build/gate.ps1 -Fast` |
+| Only the tests a filter matches | `./build/gate.ps1 -Fast -Filter 'FullyQualifiedName~OrderStore'` |
 | Code coverage: lists every line no test runs, and fails below 98% line or branch coverage, as CI does | `./build/Test-Coverage.ps1` |
 
-The Definition of Done checks the decision index, builds in Release with warnings as errors, runs the tests, packs and ends with `Definition of Done: PASSED`. CI runs `./build/dod.ps1` on every pull request.
+The gate checks the formatting with CSharpier, then runs the Definition of Done, `./build/dod.ps1`, which checks the decision index, builds in Release with warnings as errors, runs the tests, packs, validates the package against the last release and ends with `Definition of Done: PASSED`. CI runs `./build/gate.ps1` on every pull request.
 
 ## Make a Change
 
@@ -31,7 +34,7 @@ The Definition of Done checks the decision index, builds in Release with warning
 2. A change consumers can observe, such as to the public API, behavior, validation or security posture, stored data or a wire format, has its decision recorded in [docs/decisions/](docs/decisions/README.md) before or with the pull request that builds it; that folder's README says how. Bug fixes and internal changes need no record.
 3. Work on a short-lived branch from the default branch.
 4. Keep `CHANGELOG.md` in the [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) format; the first change consumers can see creates it. While `AGENTS.md`'s Landing section says `pre-release: untracked` and no version tag of 1.0.0 or later exists, its `## [Unreleased]` section describes the product as it is, under `### Added` and `### Security` only: edit the entry a change adds, reshapes or removes, so it matches the code (ADR-0015 in `docs/decisions/project-template/`). Otherwise add an entry for each change consumers can see under `## [Unreleased]`, grouped under `### Added`, `### Changed`, `### Deprecated`, `### Removed`, `### Fixed` or `### Security`, and a release moves the entries into its version's section.
-5. Before you push, pass the gate: `./build/dod.ps1 -Fast`.
+5. Before you push, pass the gate: `./build/gate.ps1 -Fast`.
 6. Open a pull request into the default branch whose description ends with a `Closes #<issue>` line. The default branch takes changes only through pull requests: a maintainer merges yours once CI passes.
 
 ## Commit Attribution
@@ -44,6 +47,9 @@ Commits record the people who wrote them, so avoid AI agent attribution: don't a
 - `build/BannedSymbols.txt` bans APIs in every project (RS0030): blocking on tasks, `JsonDocument.Parse` and Newtonsoft.Json. The null-forgiving operator (`!`) fails the build outside test projects.
 - Change a build setting in `Directory.Build.props`, after its import of `build/ProjectTemplate.props`; never edit the template's files under `build/`.
 - Each packable project's public API is tracked in its `PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt`, and the build fails on a change they don't record. Run `./build/Update-PublicApi.ps1` to record one, and keep the diff in the pull request. Versions follow Semantic Versioning: a removal or a changed signature is a new major version, as [the decision](docs/decisions/project-template/0136-packages-follow-semantic-versioning-and-the-assembly-version-moves-only-with-the-major.md) says.
+- Versions come from `version.json` through Nerdbank.GitVersioning ([ADR-1000](docs/decisions/1000-package-versions-come-from-version-json-through-nerdbank-gitversioning.md)): a release tag must name the version it holds.
+- Every pack is validated against the last published package; [docs/api-compatibility.md](docs/api-compatibility.md) says how to change the public API.
+- Every C# file starts with `// Copyright © NCode Group` and `// SPDX-License-Identifier: Apache-2.0`, and shipping code takes buffers and encodings only through `BufferFactory` and `SecureEncoding` (ADR-1002, ADR-1003).
 
 ## Conventions
 
