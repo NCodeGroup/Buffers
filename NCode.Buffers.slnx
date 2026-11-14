@@ -1,4 +1,8 @@
 <Solution>
-  <Project Path="NCode.Buffers.Tests/NCode.Buffers.Tests.csproj" />
-  <Project Path="NCode.Buffers/NCode.Buffers.csproj" />
+  <Folder Name="/src/">
+    <Project Path="src/NCode.Buffers/NCode.Buffers.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/NCode.Buffers.Tests/NCode.Buffers.Tests.csproj" />
+  </Folder>
 </Solution>
