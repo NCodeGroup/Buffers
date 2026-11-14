@@ -1,0 +1,8 @@
+# Build and test output (CSharpier skips bin and obj by default; listed for clarity).
+**/bin/
+**/obj/
+artifacts/
+**/TestResults/
+
+# Owned by the project template; template updates replace it.
+build/ProjectTemplate.props
