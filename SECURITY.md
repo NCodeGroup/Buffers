@@ -33,7 +33,7 @@ Fixes ship as a patch of the latest minor version of the current major version. 
 
 ## Verify a Package
 
-The packages are built in CI from a tagged commit of this repository, deterministically and with Source Link. They are published to nuget.org by `.github/workflows/publish.yml` when a release is published, which `.github/workflows/tag-release.yml` does as the release's pull request merges. The job that builds and tests holds no credential; the job that pushes runs in the protected `nuget` environment, where a maintainer approves each publication, and exchanges its short-lived GitHub identity for a short-lived nuget.org key through trusted publishing, so no long-lived API key is stored.
+The packages are built in CI from a tagged commit of this repository, deterministically and with Source Link. They are published to nuget.org by `.github/workflows/publish.yml` when a GitHub release is published. The job that builds and tests holds no credential; the job that pushes runs in the protected `nuget` environment, where a maintainer approves each publication, and exchanges its short-lived GitHub identity for a short-lived nuget.org key through trusted publishing, so no long-lived API key is stored.
 
 - Each package's PDB maps every source file to its commit in this repository, and its symbol package (`.snupkg`) is on the nuget.org symbol server. With Source Link and the nuget.org symbol server turned on in your debugger, you step into the exact source a package was built from. NuGet Package Explorer shows whether a package's Source Link and deterministic build are valid.
 - nuget.org signs every package it accepts: `dotnet nuget verify --all <package>.nupkg` checks that signature.
