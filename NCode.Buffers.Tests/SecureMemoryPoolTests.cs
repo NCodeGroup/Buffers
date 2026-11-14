@@ -296,6 +296,28 @@ public class SecureMemoryPoolTests
     }
 
     [Fact]
+    public void Rent_Int32Pool_SizeEqualToPage_ReturnsPooledPageBuffer()
+    {
+        using var pool = new SecureMemoryPool<int>();
+
+        const int requestedSize = SecureMemoryPool<int>.PageSize / sizeof(int);
+        using var lease = pool.Rent(requestedSize);
+
+        Assert.Equal(requestedSize, lease.Memory.Length);
+    }
+
+    [Fact]
+    public void Rent_Int32Pool_SizeMoreThanPage_ReturnsExactSizeBuffer()
+    {
+        using var pool = new SecureMemoryPool<int>();
+
+        const int requestedSize = SecureMemoryPool<int>.PageSize / sizeof(int) + 1;
+        using var lease = pool.Rent(requestedSize);
+
+        Assert.Equal(requestedSize, lease.Memory.Length);
+    }
+
+    [Fact]
     public void Rent_CharPool_ReturnsOnePageOfBytes()
     {
         using var pool = new SecureMemoryPool<char>();
