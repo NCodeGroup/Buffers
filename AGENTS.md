@@ -40,5 +40,5 @@ How `/ship-plan` lands a reviewed plan. `integrate`: `pull-request` pushes the p
 
 ## Conventions
 
-- A public API change is recorded with `./build/Update-PublicApi.ps1`; releases are published to nuget.org from a GitHub release by the `publish` job of `.github/workflows/main.yml`.
+- A public API change is recorded with `./build/Update-PublicApi.ps1`; a published GitHub release starts `.github/workflows/publish.yml`, which pushes the packages to nuget.org through trusted publishing, with no stored API key (ADR-0135 in `docs/decisions/project-template/`). `release: none` stays in the Landing section until the plan for the next release sets `release: tag+release` and its own `Release:` line, which has `.github/workflows/tag-release.yml` tag and publish each release as its pull request merges and start `publish.yml` (ADR-0016 and ADR-0137).
 - This repository accepts the template's ADR-0006 exception for `.github/workflows/code-review-auto-merge.yml`: a Dependabot pull request whose one change is the NCode Review pin may be auto-merged.
