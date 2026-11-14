@@ -4,6 +4,11 @@
   <!-- Shared settings from the project template; this file's own settings, after the import, override them. -->
   <Import Project="$(MSBuildThisFileDirectory)build/ProjectTemplate.props" />
 
+  <!-- 4.1.0 shipped with AssemblyVersion 4.1.0.0; the template's default of 4.0.0.0 for every 4.x would not load for an application built against it (ADR-0136). Remove this when the major version moves to 5. -->
+  <PropertyGroup>
+    <AssemblyVersion>4.1.0.0</AssemblyVersion>
+  </PropertyGroup>
+
   <PropertyGroup>
 
     <ImplicitUsings>enable</ImplicitUsings>

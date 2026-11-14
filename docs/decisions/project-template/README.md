@@ -3,7 +3,7 @@
 These records hold the decisions behind the project template's rules: why its instruction files, build settings,
 workflow and repository setup are the way they are. They are template-owned: every template update replaces this
 folder, so never edit a file in it. A project that decides otherwise writes its own record in `docs/decisions/` that
-supersedes the template's by number (for example, "Supersedes: project-template ADR-0102"), and lists the override in
+supersedes the template's by number (for example, "Supersedes: project-template ADR-0004"), and lists the override in
 `AGENTS.md`, so every agent follows the project's decision instead of the template's.
 
 Their numbers are below 1000: 0001–0099 for every project and 0100–0999 for the records of a stack or an option. A
@@ -16,7 +16,7 @@ never brings a number the project already uses
 | ADR | Decision |
 | --- | --- |
 | [0001](0001-conventions-and-lessons-live-in-the-repository.md) | Conventions, decisions and lessons live in versioned files in the repository, not in an agent's memory |
-| [0002](0002-commits-are-attributed-to-people-not-agents.md) | A commit records the people who wrote it; an AI agent is never an author, committer or co-author |
+| [0002](0002-commits-are-attributed-to-people-not-agents.md) | A commit records the people who wrote it; an AI agent is never an author, committer or co-author (superseded by [0018](0018-agent-attribution-is-avoided-not-enforced.md)) |
 | [0003](0003-agent-work-is-planned-on-a-frontier-model-and-executed-on-a-cheaper-one.md) | A frontier model plans and re-plans; a cheaper model executes one verified step at a time and escalates |
 | [0004](0004-trunk-based-development-on-the-default-branch.md) | One trunk, `main`, with short-lived branches; no long-lived integration branch |
 | [0005](0005-the-default-branch-accepts-changes-only-through-pull-requests.md) | The default branch takes changes only through pull requests whose required checks pass |
@@ -29,6 +29,10 @@ never brings a number the project already uses
 | [0012](0012-the-templates-records-are-numbered-below-1000-a-projects-from-1000.md) | The template's records are numbered below 1000 and a project's from 1000, so an ADR number names one record |
 | [0013](0013-pull-requests-merge-with-a-merge-commit-or-by-rebasing.md) | A pull request merges with a merge commit or by rebasing; a project that squash-merges supersedes this record alone |
 | [0014](0014-every-pull-request-discussion-is-remediated-and-replied-to-before-it-merges.md) | Every pull request discussion is fixed, or answered with why not, and replied to before the merge; the person resolves it |
+| [0015](0015-a-pre-release-project-describes-the-product-as-it-is.md) | Until its first stable release, a project with `pre-release: untracked` describes the product as it is, in its changelog too, and keeps no compatibility |
+| [0016](0016-releases-are-tagged-and-published-when-their-pull-request-merges.md) | On GitHub, CI tags and publishes a release when its pull request merges, from the changelog or the pull request's `Release:` line; `/ship-plan` is the fallback |
+| [0017](0017-cloud-sessions-bootstrap-their-tools-through-ensure-scripts.md) | A Claude Code cloud session bootstraps its tools through `.claude/hooks/ensure-*.sh` scripts that `session-start.sh` runs; a project adds a tool by adding a script |
+| [0018](0018-agent-attribution-is-avoided-not-enforced.md) | Agents avoid adding attribution to commits and pull requests, and nothing enforces it: no hook, CI check or read-back fails, rewrites or reports work over it (supersedes 0002, amends 0005 and 0013) |
 
 ## .NET
 
@@ -42,7 +46,7 @@ never brings a number the project already uses
 | [0105](0105-the-canonical-implementation-is-named-defaultfoo.md) | The one canonical implementation of `IFoo` is the internal `DefaultFoo` |
 | [0106](0106-configuration-binds-strictly-and-is-validated-at-startup.md) | An unknown configuration key or an invalid value stops the host at startup |
 | [0107](0107-filtered-reads-push-filtering-to-the-database.md) | A filtered read runs its filter in the database, through an intent-named query |
-| [0108](0108-persisted-documents-are-versioned-and-additive.md) | Persisted JSON documents carry a schema version, change additively and are upcast step by step |
+| [0108](0108-persisted-documents-are-versioned-and-additive.md) | Persisted JSON documents are versioned envelopes that refuse any other document, change in place before a pre-release project's first stable release and additively after it, and are upcast step by step |
 | [0109](0109-a-lost-concurrency-race-is-a-store-neutral-exception.md) | A lost optimistic-concurrency race surfaces as one store-neutral exception |
 | [0110](0110-shared-state-is-changed-by-read-modify-write.md) | Shared stored state changes through one read-modify-write operation that retries a lost race |
 | [0111](0111-failures-carry-a-machine-readable-code.md) | A failure that callers act on carries a stable machine-readable code |
@@ -57,7 +61,7 @@ never brings a number the project already uses
 | [0140](0140-replicas-converge-through-reconciliation.md) | Caches expire absolutely, change notices are hints, and derived state is reconciled under a lease |
 | [0141](0141-side-effects-after-a-commit-go-through-an-outbox.md) | An effect that must follow a commit is written to an outbox with it and delivered at least once |
 | [0142](0142-data-that-grows-with-use-is-pruned-in-bounded-batches.md) | Data that grows with use has a retention period and is pruned in bounded batches |
-| [0143](0143-migrations-run-before-the-rollout-and-only-expand.md) | Migrations run in a step before the rollout, never at startup, and only expand until a later release contracts |
+| [0143](0143-migrations-run-before-the-rollout-and-only-expand.md) | Migrations run in a step before the rollout, never at startup, and only expand until a later release contracts; a pre-release project keeps one initial migration per context |
 | [0144](0144-correctness-guards-fail-closed-capacity-guards-fail-open.md) | A correctness guard fails closed with `503`; a capacity guard fails open behind a timeout and a breaker |
 | [0145](0145-outbound-calls-are-bounded-and-caller-supplied-urls-are-guarded.md) | Outbound calls are bounded; caller-supplied URLs go through a client that refuses private addresses |
 | [0146](0146-secrets-are-never-logged-compared-in-constant-time-and-shown-once.md) | Secrets never reach diagnostics, are compared in constant time, and are shown once and stored hashed |
@@ -87,4 +91,5 @@ never brings a number the project already uses
 | [0133](0133-abstractions-are-framework-free-and-tiered.md) | Abstractions packages are framework-free, tiered by dependency, and hold no logic |
 | [0134](0134-evolving-optional-parameters-are-a-dto.md) | A growing set of optional criteria is an init-only DTO, not positional parameters |
 | [0135](0135-packages-are-published-from-a-github-release-through-trusted-publishing.md) | Packages are published from a GitHub release through nuget.org trusted publishing |
+| [0137](0137-the-release-workflow-starts-package-publishing.md) | A release the Tag and publish release workflow publishes starts `publish.yml` through `workflow_dispatch` (amends 0135) |
 | [0136](0136-packages-follow-semantic-versioning-and-the-assembly-version-moves-only-with-the-major.md) | Versions follow Semantic Versioning from the release tag; `AssemblyVersion` moves only with the major |
