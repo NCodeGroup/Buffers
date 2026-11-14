@@ -38,7 +38,7 @@ consumer of that version fails.**
 ## References
 
 - [API compatibility](../api-compatibility.md)
-- `NCode.Buffers/NCode.Buffers.csproj`
+- `src/NCode.Buffers/NCode.Buffers.csproj`
 - [ADR-0131](project-template/0131-public-api-is-tracked-and-evolves-compatibly.md): the public API is tracked and
   evolves compatibly.
 - [ADR-0136](project-template/0136-packages-follow-semantic-versioning-and-the-assembly-version-moves-only-with-the-major.md):

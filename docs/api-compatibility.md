@@ -15,7 +15,7 @@ depends on. The rules are project-template
 ## What checks it
 
 1. The PublicAPI analyzer (`RS0016` for a symbol that is not listed, `RS0017` for a listed symbol that is gone) compares
-   the compiled public symbols against `NCode.Buffers/PublicAPI.Shipped.txt` and `NCode.Buffers/PublicAPI.Unshipped.txt`
+   the compiled public symbols against `src/NCode.Buffers/PublicAPI.Shipped.txt` and `src/NCode.Buffers/PublicAPI.Unshipped.txt`
    on every build.
 2. Package validation (`CP` diagnostics) compares the package with the one `PackageValidationBaselineVersion` names, on
    every `dotnet pack`: `./build/gate.ps1`, CI and `publish.yml`
@@ -32,12 +32,12 @@ depends on. The rules are project-template
 ## Releasing
 
 The release change runs `./build/Update-PublicApi.ps1 -Release` and sets `version.json` to the release version. The first
-change after the release is on nuget.org sets `PackageValidationBaselineVersion` in `NCode.Buffers/NCode.Buffers.csproj`
+change after the release is on nuget.org sets `PackageValidationBaselineVersion` in `src/NCode.Buffers/NCode.Buffers.csproj`
 to it.
 
 An intended break in a new major version is recorded with
-`dotnet pack NCode.Buffers -p:ApiCompatGenerateSuppressionFile=true`, which writes
-`NCode.Buffers/CompatibilitySuppressions.xml`. That file is reviewed like the API diff and deleted when the baseline moves
+`dotnet pack src/NCode.Buffers -p:ApiCompatGenerateSuppressionFile=true`, which writes
+`src/NCode.Buffers/CompatibilitySuppressions.xml`. That file is reviewed like the API diff and deleted when the baseline moves
 to the new major's first release.
 
 ## Hand-editing PublicAPI files

@@ -29,7 +29,7 @@ $results = Join-Path ([IO.Path]::GetTempPath()) "ncode-buffers-coverage-$([guid]
 $exitCode = 0
 
 try {
-    dotnet test (Join-Path $root 'NCode.Buffers.Tests') --collect 'XPlat Code Coverage' --results-directory $results
+    dotnet test (Join-Path $root 'tests/NCode.Buffers.Tests') --collect 'XPlat Code Coverage' --results-directory $results
     if ($LASTEXITCODE) { throw "dotnet test failed with exit code $LASTEXITCODE." }
 
     $reports = @(Get-ChildItem -LiteralPath $results -Recurse -Filter 'coverage.cobertura.xml')
