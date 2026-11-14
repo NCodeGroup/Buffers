@@ -124,9 +124,14 @@ public class BufferFactoryTests
     [InlineData(-1, false)]
     [InlineData(-2, true)]
     [InlineData(-2, false)]
-    public void Rent_Span_WhenSizeIsNegative_ThrowsArgumentOutOfRangeException(int size, bool isSensitive)
+    public void Rent_Span_WhenSizeIsNegative_ThrowsArgumentOutOfRangeException(
+        int size,
+        bool isSensitive
+    )
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => BufferFactory.Rent(size, isSensitive, out Span<byte> _));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            BufferFactory.Rent(size, isSensitive, out Span<byte> _)
+        );
     }
 
     [Theory]
@@ -134,9 +139,14 @@ public class BufferFactoryTests
     [InlineData(-1, false)]
     [InlineData(-2, true)]
     [InlineData(-2, false)]
-    public void Rent_Memory_WhenSizeIsNegative_ThrowsArgumentOutOfRangeException(int size, bool isSensitive)
+    public void Rent_Memory_WhenSizeIsNegative_ThrowsArgumentOutOfRangeException(
+        int size,
+        bool isSensitive
+    )
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => BufferFactory.Rent(size, isSensitive, out Memory<byte> _));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            BufferFactory.Rent(size, isSensitive, out Memory<byte> _)
+        );
     }
 
     #endregion
@@ -221,7 +231,10 @@ public class BufferFactoryTests
     [Fact]
     public void CreatePooledBufferWriter_WithMinimumSpanLength_RentsAtLeastThatLength()
     {
-        using var writer = BufferFactory.CreatePooledBufferWriter<int>(isSensitive: false, minimumSpanLength: 256);
+        using var writer = BufferFactory.CreatePooledBufferWriter<int>(
+            isSensitive: false,
+            minimumSpanLength: 256
+        );
 
         Assert.Equal(256, writer.MinimumSpanLength);
         Assert.True(writer.GetMemory(1).Length >= 256);
@@ -230,10 +243,13 @@ public class BufferFactoryTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void CreatePooledBufferWriter_WhenMinimumSpanLengthIsNegative_ThrowsArgumentOutOfRangeException(bool isSensitive)
+    public void CreatePooledBufferWriter_WhenMinimumSpanLengthIsNegative_ThrowsArgumentOutOfRangeException(
+        bool isSensitive
+    )
     {
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
-            BufferFactory.CreatePooledBufferWriter(isSensitive, minimumSpanLength: -1));
+            BufferFactory.CreatePooledBufferWriter(isSensitive, minimumSpanLength: -1)
+        );
 
         Assert.Equal("minimumSpanLength", exception.ParamName);
     }
@@ -280,15 +296,22 @@ public class BufferFactoryTests
     [Fact]
     public void CreateArrayBufferWriter_ReturnsNewInstanceOnEachCall()
     {
-        Assert.NotSame(BufferFactory.CreateArrayBufferWriter(), BufferFactory.CreateArrayBufferWriter());
+        Assert.NotSame(
+            BufferFactory.CreateArrayBufferWriter(),
+            BufferFactory.CreateArrayBufferWriter()
+        );
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
-    public void CreateArrayBufferWriter_Byte_WhenCapacityIsNotPositive_ThrowsArgumentOutOfRangeException(int capacity)
+    public void CreateArrayBufferWriter_Byte_WhenCapacityIsNotPositive_ThrowsArgumentOutOfRangeException(
+        int capacity
+    )
     {
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BufferFactory.CreateArrayBufferWriter(capacity));
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            BufferFactory.CreateArrayBufferWriter(capacity)
+        );
 
         Assert.Equal("initialCapacity", exception.ParamName);
     }
@@ -296,9 +319,13 @@ public class BufferFactoryTests
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
-    public void CreateArrayBufferWriter_Generic_WhenCapacityIsNotPositive_ThrowsArgumentOutOfRangeException(int capacity)
+    public void CreateArrayBufferWriter_Generic_WhenCapacityIsNotPositive_ThrowsArgumentOutOfRangeException(
+        int capacity
+    )
     {
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => BufferFactory.CreateArrayBufferWriter<int>(capacity));
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            BufferFactory.CreateArrayBufferWriter<int>(capacity)
+        );
 
         Assert.Equal("initialCapacity", exception.ParamName);
     }

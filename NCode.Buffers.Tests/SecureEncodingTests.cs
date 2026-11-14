@@ -98,7 +98,8 @@ public class SecureEncodingTests
         var encoding = SecureEncoding.ASCII;
 
         var exception = Assert.Throws<EncoderFallbackException>(() =>
-            encoding.GetBytes("caf\u00E9"));
+            encoding.GetBytes("caf\u00E9")
+        );
 
         Assert.Contains("00E9", exception.Message);
     }
@@ -109,7 +110,8 @@ public class SecureEncodingTests
         var encoding = SecureEncoding.ASCII;
 
         var exception = Assert.Throws<EncoderFallbackException>(() =>
-            encoding.GetBytes("\U0001F600"));
+            encoding.GetBytes("\U0001F600")
+        );
 
         Assert.Contains("1F600", exception.Message);
     }
@@ -119,8 +121,7 @@ public class SecureEncodingTests
     {
         var encoding = SecureEncoding.ASCII;
 
-        Assert.Throws<EncoderFallbackException>(() =>
-            encoding.GetBytes("\x80"));
+        Assert.Throws<EncoderFallbackException>(() => encoding.GetBytes("\x80"));
     }
 
     #endregion
@@ -169,11 +170,13 @@ public class SecureEncodingTests
         var encoding = SecureEncoding.ASCII;
 
         var exception = Assert.Throws<DecoderFallbackException>(() =>
-            encoding.GetString((byte[])[0x80]));
+            encoding.GetString((byte[])[0x80])
+        );
 
         Assert.Equal(
             "Unable to translate bytes [80] at index 0 from specified code page to Unicode.",
-            exception.Message);
+            exception.Message
+        );
     }
 
     [Fact]
@@ -182,7 +185,8 @@ public class SecureEncodingTests
         var encoding = SecureEncoding.ASCII;
 
         var exception = Assert.Throws<DecoderFallbackException>(() =>
-            encoding.GetString((byte[])[0x41, 0x42, 0xFF, 0x43]));
+            encoding.GetString((byte[])[0x41, 0x42, 0xFF, 0x43])
+        );
 
         Assert.Contains("index 2", exception.Message);
     }
@@ -193,7 +197,8 @@ public class SecureEncodingTests
         var encoding = SecureEncoding.ASCII;
 
         var exception = Assert.Throws<DecoderFallbackException>(() =>
-            encoding.GetString((byte[])[0x80, 0x81, 0x82]));
+            encoding.GetString((byte[])[0x80, 0x81, 0x82])
+        );
 
         Assert.Contains("index 0", exception.Message);
     }
@@ -296,11 +301,13 @@ public class SecureEncodingTests
         var encoding = SecureEncoding.UTF8;
 
         var exception = Assert.Throws<EncoderFallbackException>(() =>
-            encoding.GetBytes("a\ud800b"));
+            encoding.GetBytes("a\ud800b")
+        );
 
         Assert.Equal(
             @"Unable to translate Unicode character \\uD800 at index 1 to specified code page.",
-            exception.Message);
+            exception.Message
+        );
     }
 
     [Fact]
@@ -308,8 +315,7 @@ public class SecureEncodingTests
     {
         var encoding = SecureEncoding.UTF8;
 
-        Assert.Throws<EncoderFallbackException>(() =>
-            encoding.GetBytes("a\udc00b"));
+        Assert.Throws<EncoderFallbackException>(() => encoding.GetBytes("a\udc00b"));
     }
 
     [Fact]
@@ -317,8 +323,7 @@ public class SecureEncodingTests
     {
         var encoding = SecureEncoding.UTF8;
 
-        Assert.Throws<EncoderFallbackException>(() =>
-            encoding.GetBytes("\udc00\ud800")); // Low followed by high is invalid
+        Assert.Throws<EncoderFallbackException>(() => encoding.GetBytes("\udc00\ud800")); // Low followed by high is invalid
     }
 
     #endregion
@@ -374,11 +379,13 @@ public class SecureEncodingTests
         var encoding = SecureEncoding.UTF8;
 
         var exception = Assert.Throws<DecoderFallbackException>(() =>
-            encoding.GetString((byte[])[0x80]));
+            encoding.GetString((byte[])[0x80])
+        );
 
         Assert.Equal(
             "Unable to translate bytes [80] at index 0 from specified code page to Unicode.",
-            exception.Message);
+            exception.Message
+        );
     }
 
     [Fact]
@@ -386,8 +393,7 @@ public class SecureEncodingTests
     {
         var encoding = SecureEncoding.UTF8;
 
-        Assert.Throws<DecoderFallbackException>(() =>
-            encoding.GetString((byte[])[0xC3])); // Incomplete 2-byte sequence
+        Assert.Throws<DecoderFallbackException>(() => encoding.GetString((byte[])[0xC3])); // Incomplete 2-byte sequence
     }
 
     [Fact]
@@ -395,8 +401,7 @@ public class SecureEncodingTests
     {
         var encoding = SecureEncoding.UTF8;
 
-        Assert.Throws<DecoderFallbackException>(() =>
-            encoding.GetString((byte[])[0xC3, 0x00])); // Invalid continuation byte
+        Assert.Throws<DecoderFallbackException>(() => encoding.GetString((byte[])[0xC3, 0x00])); // Invalid continuation byte
     }
 
     [Fact]
@@ -405,8 +410,7 @@ public class SecureEncodingTests
         var encoding = SecureEncoding.UTF8;
 
         // Overlong encoding of '/' (U+002F) as 2 bytes instead of 1
-        Assert.Throws<DecoderFallbackException>(() =>
-            encoding.GetString((byte[])[0xC0, 0xAF]));
+        Assert.Throws<DecoderFallbackException>(() => encoding.GetString((byte[])[0xC0, 0xAF]));
     }
 
     [Fact]
@@ -416,7 +420,8 @@ public class SecureEncodingTests
 
         // Invalid 4-byte sequence (starts with F5, which is invalid)
         Assert.Throws<DecoderFallbackException>(() =>
-            encoding.GetString((byte[])[0xF5, 0x80, 0x80, 0x80]));
+            encoding.GetString((byte[])[0xF5, 0x80, 0x80, 0x80])
+        );
     }
 
     #endregion

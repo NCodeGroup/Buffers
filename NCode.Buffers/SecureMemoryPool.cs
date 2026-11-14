@@ -41,7 +41,8 @@ namespace NCode.Buffers;
 /// </code>
 /// </example>
 [PublicAPI]
-public class SecureMemoryPool<T> : MemoryPool<T> where T : struct
+public class SecureMemoryPool<T> : MemoryPool<T>
+    where T : struct
 {
     /// <summary>
     /// The default high pressure threshold when the memory pool should trim cached memory.
@@ -67,8 +68,12 @@ public class SecureMemoryPool<T> : MemoryPool<T> where T : struct
     /// Use this property to access a global instance of the pool without creating your own.
     /// The shared instance is suitable for most applications.
     /// </remarks>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "Shipped public API; renaming or moving it would be a breaking change.")]
-    public new static SecureMemoryPool<T> Shared { get; } = new();
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Design",
+        "CA1000:Do not declare static members on generic types",
+        Justification = "Shipped public API; renaming or moving it would be a breaking change."
+    )]
+    public static new SecureMemoryPool<T> Shared { get; } = new();
 
     // The number of elements in one pooled buffer of PageSize bytes, and at least one for an element larger than a page.
     private static readonly int ElementsPerPage = Math.Max(1, PageSize / Unsafe.SizeOf<T>());
@@ -156,7 +161,9 @@ public class SecureMemoryPool<T> : MemoryPool<T> where T : struct
         var byteCount = minBufferSize == -1 ? PageSize : (long)minBufferSize * Unsafe.SizeOf<T>();
         if (byteCount <= PageSize)
         {
-            return MemoryQueue.TryDequeue(out var memory) ? memory : new SecureMemory<T>(this, ElementsPerPage);
+            return MemoryQueue.TryDequeue(out var memory)
+                ? memory
+                : new SecureMemory<T>(this, ElementsPerPage);
         }
 
         // non-pooled
@@ -193,8 +200,8 @@ public class SecureMemoryPool<T> : MemoryPool<T> where T : struct
         var memoryInfo = GC.GetGCMemoryInfo();
 
         var isPressureHigh =
-            memoryInfo.MemoryLoadBytes >=
-            memoryInfo.HighMemoryLoadThresholdBytes * HighPressureThreshold;
+            memoryInfo.MemoryLoadBytes
+            >= memoryInfo.HighMemoryLoadThresholdBytes * HighPressureThreshold;
 
         if (isPressureHigh)
         {

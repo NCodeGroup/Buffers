@@ -33,7 +33,11 @@ namespace NCode.Buffers;
 /// </code>
 /// </example>
 [PublicAPI]
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1710:Identifiers should have correct suffix", Justification = "Shipped public API; renaming would be a breaking change.")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1710:Identifiers should have correct suffix",
+    Justification = "Shipped public API; renaming would be a breaking change."
+)]
 public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegment<char>>
 {
     /// <summary>
@@ -74,8 +78,7 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// </value>
     /// <exception cref="InvalidOperationException">Thrown when the current instance is empty.</exception>
     public ReadOnlySequenceSegment<char> First =>
-        FirstOrDefault ??
-        throw new InvalidOperationException("No segments found.");
+        FirstOrDefault ?? throw new InvalidOperationException("No segments found.");
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StringSegments"/> struct with the specified values.
@@ -87,7 +90,11 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// This constructor is typically not called directly. Use the static <see cref="Split(string, char)"/>
     /// or <see cref="Split(ReadOnlyMemory{char}, ReadOnlySpan{char}, StringComparison)"/> methods instead.
     /// </remarks>
-    public StringSegments(ReadOnlyMemory<char> original, int count, ReadOnlySequenceSegment<char> first)
+    public StringSegments(
+        ReadOnlyMemory<char> original,
+        int count,
+        ReadOnlySequenceSegment<char> first
+    )
     {
         Original = original;
         Count = count;
@@ -124,8 +131,8 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// This method uses ordinal comparison for the separator character.
     /// Empty segments are included in the result when consecutive separators are encountered.
     /// </remarks>
-    public static StringSegments Split(string value, char separator)
-        => Split(value.AsMemory(), separator);
+    public static StringSegments Split(string value, char separator) =>
+        Split(value.AsMemory(), separator);
 
     /// <summary>
     /// Splits a <see cref="ReadOnlyMemory{T}">ReadOnlyMemory&lt;char&gt;</see> into substrings based on a single character delimiter
@@ -180,8 +187,8 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// This method uses <see cref="StringComparison.Ordinal"/> comparison for the separator string.
     /// Empty segments are included in the result when consecutive separators are encountered.
     /// </remarks>
-    public static StringSegments Split(string value, ReadOnlySpan<char> separator)
-        => Split(value.AsMemory(), separator, StringComparison.Ordinal);
+    public static StringSegments Split(string value, ReadOnlySpan<char> separator) =>
+        Split(value.AsMemory(), separator, StringComparison.Ordinal);
 
     /// <summary>
     /// Splits a string into substrings based on a string delimiter without any additional heap allocations,
@@ -196,9 +203,11 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// Use this overload when you need case-insensitive or culture-aware separator matching.
     /// Empty segments are included in the result when consecutive separators are encountered.
     /// </remarks>
-    public static StringSegments Split(string value, ReadOnlySpan<char> separator, StringComparison comparisonType)
-        => Split(value.AsMemory(), separator, comparisonType);
-
+    public static StringSegments Split(
+        string value,
+        ReadOnlySpan<char> separator,
+        StringComparison comparisonType
+    ) => Split(value.AsMemory(), separator, comparisonType);
 
     /// <summary>
     /// Splits a <see cref="ReadOnlyMemory{T}">ReadOnlyMemory&lt;char&gt;</see> into substrings based on a string delimiter

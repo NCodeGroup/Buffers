@@ -293,7 +293,7 @@ public class RefSpanLeaseTests
         {
             new() { Value = 1 },
             new() { Value = 2 },
-            new() { Value = 3 }
+            new() { Value = 3 },
         };
 
         using var lease = new RefSpanLease<TestStruct>(null, testData);

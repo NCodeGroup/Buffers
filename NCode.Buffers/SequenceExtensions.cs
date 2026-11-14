@@ -29,7 +29,8 @@ namespace NCode.Buffers;
 public static class SequenceExtensions
 {
     /// <typeparam name="T">The type of elements in the sequence. Must be an unmanaged value type.</typeparam>
-    extension<T>(Sequence<T> buffer) where T : struct
+    extension<T>(Sequence<T> buffer)
+        where T : struct
     {
         /// <summary>
         /// Gets a <see cref="RefSpanLease{T}"/> that provides access to the underlying data as a contiguous <see cref="ReadOnlySpan{T}"/>.
@@ -78,7 +79,11 @@ public static class SequenceExtensions
             }
 
             Debug.Assert(buffer.Length <= int.MaxValue, "Sequence length exceeds int.MaxValue.");
-            var owner = BufferFactory.Rent((int)buffer.Length, isSensitive, out Span<T> destination);
+            var owner = BufferFactory.Rent(
+                (int)buffer.Length,
+                isSensitive,
+                out Span<T> destination
+            );
             sequence.CopyTo(destination);
             return new RefSpanLease<T>(owner, destination);
         }
@@ -140,7 +145,11 @@ public static class SequenceExtensions
             }
 
             Debug.Assert(buffer.Length <= int.MaxValue, "Sequence length exceeds int.MaxValue.");
-            var owner = BufferFactory.Rent((int)buffer.Length, isSensitive, out Span<T> destination);
+            var owner = BufferFactory.Rent(
+                (int)buffer.Length,
+                isSensitive,
+                out Span<T> destination
+            );
             try
             {
                 sequence.CopyTo(destination);

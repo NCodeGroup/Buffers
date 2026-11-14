@@ -194,7 +194,12 @@ public class SecureSpanLifetimeTests
     {
         var array = new TestStruct[4];
         for (var i = 0; i < array.Length; i++)
-            array[i] = new TestStruct { A = i, B = (byte)(i + 1), C = i * 1.5 };
+            array[i] = new TestStruct
+            {
+                A = i,
+                B = (byte)(i + 1),
+                C = i * 1.5,
+            };
 
         Assert.False(array.All(x => x is { A: 0, B: 0, C: 0 }));
 

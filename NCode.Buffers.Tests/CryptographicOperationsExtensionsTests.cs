@@ -43,7 +43,9 @@ public class CryptographicOperationsExtensionsTests
     [Fact]
     public void ZeroMemory_EmptySpan_DoesNotThrow()
     {
-        var exception = Record.Exception(() => CryptographicOperations.ZeroMemory<int>(Span<int>.Empty));
+        var exception = Record.Exception(() =>
+            CryptographicOperations.ZeroMemory<int>(Span<int>.Empty)
+        );
 
         Assert.Null(exception);
     }
@@ -100,7 +102,10 @@ public class CryptographicOperationsExtensionsTests
     [Fact]
     public void FixedTimeEquals_BothEmpty_ReturnsTrue()
     {
-        var result = CryptographicOperations.FixedTimeEquals<int>(ReadOnlySpan<int>.Empty, ReadOnlySpan<int>.Empty);
+        var result = CryptographicOperations.FixedTimeEquals<int>(
+            ReadOnlySpan<int>.Empty,
+            ReadOnlySpan<int>.Empty
+        );
 
         Assert.True(result);
     }

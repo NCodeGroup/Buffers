@@ -26,7 +26,8 @@ public static class BufferExtensions
     /// Extension methods for <see cref="Span{T}"/> where T is a value type.
     /// </summary>
     /// <typeparam name="T">The type of elements in the span.</typeparam>
-    extension<T>(Span<T> span) where T : struct
+    extension<T>(Span<T> span)
+        where T : struct
     {
         /// <summary>
         /// Wraps this span in a <see cref="SecureSpanLifetime{T}"/> that securely zeroes the memory upon disposal.

@@ -309,7 +309,12 @@ public class SecureArrayLifetimeTests
     {
         var lifetime = new SecureArrayLifetime<TestStruct>(4);
         for (var i = 0; i < lifetime.PinnedArray.Length; i++)
-            lifetime.PinnedArray[i] = new TestStruct { A = i, B = (byte)(i + 1), C = i * 1.5 };
+            lifetime.PinnedArray[i] = new TestStruct
+            {
+                A = i,
+                B = (byte)(i + 1),
+                C = i * 1.5,
+            };
 
         Assert.False(lifetime.PinnedArray.All(x => x is { A: 0, B: 0, C: 0 }));
 

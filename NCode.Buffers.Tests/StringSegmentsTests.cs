@@ -292,7 +292,11 @@ public class StringSegmentsTests
     [Fact]
     public void Split_String_StringSeparator_CaseInsensitive()
     {
-        var segments = StringSegments.Split("1ab2Ab3aB4ab5", "ab", StringComparison.OrdinalIgnoreCase);
+        var segments = StringSegments.Split(
+            "1ab2Ab3aB4ab5",
+            "ab",
+            StringComparison.OrdinalIgnoreCase
+        );
 
         Assert.Equal(5, segments.Count);
 

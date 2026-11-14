@@ -52,10 +52,7 @@ public class MemorySegment<T> : ReadOnlySequenceSegment<T>
     /// </remarks>
     public MemorySegment<T> Append(ReadOnlyMemory<T> memory)
     {
-        var next = new MemorySegment<T>(memory)
-        {
-            RunningIndex = RunningIndex + Memory.Length
-        };
+        var next = new MemorySegment<T>(memory) { RunningIndex = RunningIndex + Memory.Length };
 
         Next = next;
 

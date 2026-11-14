@@ -7,7 +7,8 @@ using System.Security.Cryptography;
 
 namespace NCode.Buffers;
 
-internal class SecureMemory<T> : IMemoryOwner<T> where T : struct
+internal class SecureMemory<T> : IMemoryOwner<T>
+    where T : struct
 {
     private int _disposed;
     private SecureMemoryPool<T>? Pool { get; }

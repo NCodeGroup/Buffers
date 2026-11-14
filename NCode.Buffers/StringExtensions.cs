@@ -27,7 +27,11 @@ namespace NCode.Buffers;
 /// </code>
 /// </example>
 [PublicAPI]
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1708:Identifiers should differ by more than case", Justification = "Shipped public API; the two extension blocks are compiler-generated.")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1708:Identifiers should differ by more than case",
+    Justification = "Shipped public API; the two extension blocks are compiler-generated."
+)]
 public static class StringExtensions
 {
     /// <param name="value">The string to split into substrings.</param>
@@ -71,8 +75,10 @@ public static class StringExtensions
         /// Use this overload when you need case-insensitive or culture-aware separator matching.
         /// Empty segments are included in the result when consecutive separators are encountered.
         /// </remarks>
-        public StringSegments SplitSegments(ReadOnlySpan<char> separator, StringComparison comparisonType) =>
-            StringSegments.Split(value, separator, comparisonType);
+        public StringSegments SplitSegments(
+            ReadOnlySpan<char> separator,
+            StringComparison comparisonType
+        ) => StringSegments.Split(value, separator, comparisonType);
     }
 
     /// <param name="value">The <see cref="ReadOnlyMemory{T}">ReadOnlyMemory&lt;char&gt;</see> to split into substrings.</param>
@@ -118,7 +124,9 @@ public static class StringExtensions
         /// Use this overload when you need case-insensitive or culture-aware separator matching.
         /// Empty segments are included in the result when consecutive separators are encountered.
         /// </remarks>
-        public StringSegments SplitSegments(ReadOnlySpan<char> separator, StringComparison comparisonType) =>
-            StringSegments.Split(value, separator, comparisonType);
+        public StringSegments SplitSegments(
+            ReadOnlySpan<char> separator,
+            StringComparison comparisonType
+        ) => StringSegments.Split(value, separator, comparisonType);
     }
 }

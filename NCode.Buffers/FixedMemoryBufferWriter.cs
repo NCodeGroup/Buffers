@@ -159,13 +159,18 @@ public class FixedMemoryBufferWriter<T> : IBufferWriter<T>
 
         if (count < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(count), count, "Count cannot be negative.");
+            throw new ArgumentOutOfRangeException(
+                nameof(count),
+                count,
+                "Count cannot be negative."
+            );
         }
 
         if (WrittenCount + count > Buffer.Length)
         {
             throw new InvalidOperationException(
-                $"Cannot advance past the end of the buffer. Current position: {WrittenCount}, Capacity: {Buffer.Length}, Requested advance: {count}.");
+                $"Cannot advance past the end of the buffer. Current position: {WrittenCount}, Capacity: {Buffer.Length}, Requested advance: {count}."
+            );
         }
 
         WrittenCount += count;
@@ -198,7 +203,11 @@ public class FixedMemoryBufferWriter<T> : IBufferWriter<T>
 
         if (sizeHint < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(sizeHint), sizeHint, "Size hint cannot be negative.");
+            throw new ArgumentOutOfRangeException(
+                nameof(sizeHint),
+                sizeHint,
+                "Size hint cannot be negative."
+            );
         }
 
         var freeCapacity = Buffer.Length - WrittenCount;
@@ -206,7 +215,8 @@ public class FixedMemoryBufferWriter<T> : IBufferWriter<T>
         if (sizeHint > freeCapacity)
         {
             throw new InvalidOperationException(
-                $"The requested size ({sizeHint}) exceeds the available free capacity ({freeCapacity}). This buffer cannot grow.");
+                $"The requested size ({sizeHint}) exceeds the available free capacity ({freeCapacity}). This buffer cannot grow."
+            );
         }
 
         return Buffer[WrittenCount..];
@@ -238,7 +248,11 @@ public class FixedMemoryBufferWriter<T> : IBufferWriter<T>
 
         if (sizeHint < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(sizeHint), sizeHint, "Size hint cannot be negative.");
+            throw new ArgumentOutOfRangeException(
+                nameof(sizeHint),
+                sizeHint,
+                "Size hint cannot be negative."
+            );
         }
 
         var freeCapacity = Buffer.Length - WrittenCount;
@@ -246,7 +260,8 @@ public class FixedMemoryBufferWriter<T> : IBufferWriter<T>
         if (sizeHint > freeCapacity)
         {
             throw new InvalidOperationException(
-                $"The requested size ({sizeHint}) exceeds the available free capacity ({freeCapacity}). This buffer cannot grow.");
+                $"The requested size ({sizeHint}) exceeds the available free capacity ({freeCapacity}). This buffer cannot grow."
+            );
         }
 
         return Buffer.Span[WrittenCount..];

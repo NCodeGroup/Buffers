@@ -58,8 +58,7 @@ public static class BufferFactory
     /// otherwise, returns <see cref="MemoryPool{T}.Shared"/>.</param>
     /// <returns>The selected <see cref="MemoryPool{T}"/> instance.</returns>
     internal static MemoryPool<T> ChoosePool<T>(bool isSensitive)
-        where T : struct
-        => isSensitive ? SecureMemoryPool<T>.Shared : MemoryPool<T>.Shared;
+        where T : struct => isSensitive ? SecureMemoryPool<T>.Shared : MemoryPool<T>.Shared;
 
     /// <summary>
     /// Rents a buffer that is at least the requested length from the appropriate memory pool.
@@ -106,8 +105,11 @@ public static class BufferFactory
     /// This is a convenience overload for the common case of working with byte buffers.
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="minBufferSize"/> is negative.</exception>
-    public static IMemoryOwner<byte> Rent(int minBufferSize, bool isSensitive, out Span<byte> buffer)
-        => Rent<byte>(minBufferSize, isSensitive, out buffer);
+    public static IMemoryOwner<byte> Rent(
+        int minBufferSize,
+        bool isSensitive,
+        out Span<byte> buffer
+    ) => Rent<byte>(minBufferSize, isSensitive, out buffer);
 
     /// <summary>
     /// Rents a buffer that is at least the requested length from the appropriate memory pool, returning it as <see cref="Memory{T}"/>.
@@ -160,8 +162,11 @@ public static class BufferFactory
     /// such as when passing the buffer to asynchronous methods.
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="minBufferSize"/> is negative.</exception>
-    public static IMemoryOwner<byte> Rent(int minBufferSize, bool isSensitive, out Memory<byte> buffer)
-        => Rent<byte>(minBufferSize, isSensitive, out buffer);
+    public static IMemoryOwner<byte> Rent(
+        int minBufferSize,
+        bool isSensitive,
+        out Memory<byte> buffer
+    ) => Rent<byte>(minBufferSize, isSensitive, out buffer);
 
     /// <summary>
     /// Creates a pinned array of the specified type wrapped in a <see cref="SecureArrayLifetime{T}"/> that securely zeroes the memory upon disposal.
@@ -228,8 +233,8 @@ public static class BufferFactory
     /// </code>
     /// </example>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="length"/> is negative.</exception>
-    public static SecureArrayLifetime<byte> CreatePinnedArray(int length)
-        => CreatePinnedArray<byte>(length);
+    public static SecureArrayLifetime<byte> CreatePinnedArray(int length) =>
+        CreatePinnedArray<byte>(length);
 
     /// <summary>
     /// Creates a new <see cref="Sequence{T}"/> buffer writer for building sequences of data incrementally.
@@ -270,14 +275,14 @@ public static class BufferFactory
     /// </code>
     /// </example>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="minimumSpanLength"/> is negative.</exception>
-    public static Sequence<T> CreatePooledBufferWriter<T>(bool isSensitive, int minimumSpanLength = 0)
+    public static Sequence<T> CreatePooledBufferWriter<T>(
+        bool isSensitive,
+        int minimumSpanLength = 0
+    )
         where T : struct
     {
         ArgumentOutOfRangeException.ThrowIfNegative(minimumSpanLength);
-        return new(ChoosePool<T>(isSensitive))
-        {
-            MinimumSpanLength = minimumSpanLength
-        };
+        return new(ChoosePool<T>(isSensitive)) { MinimumSpanLength = minimumSpanLength };
     }
 
     /// <summary>
@@ -313,8 +318,10 @@ public static class BufferFactory
     /// </code>
     /// </example>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="minimumSpanLength"/> is negative.</exception>
-    public static Sequence<byte> CreatePooledBufferWriter(bool isSensitive, int minimumSpanLength = 0)
-        => CreatePooledBufferWriter<byte>(isSensitive, minimumSpanLength);
+    public static Sequence<byte> CreatePooledBufferWriter(
+        bool isSensitive,
+        int minimumSpanLength = 0
+    ) => CreatePooledBufferWriter<byte>(isSensitive, minimumSpanLength);
 
     /// <summary>
     /// Creates a new <see cref="ArrayBufferWriter{T}"/> with the default initial capacity.
@@ -345,8 +352,7 @@ public static class BufferFactory
     /// </code>
     /// </example>
     public static ArrayBufferWriter<T> CreateArrayBufferWriter<T>()
-        where T : struct
-        => new();
+        where T : struct => new();
 
     /// <summary>
     /// Creates a new <see cref="ArrayBufferWriter{T}"/> with the specified initial capacity.
@@ -412,8 +418,7 @@ public static class BufferFactory
     /// ReadOnlySpan&lt;byte&gt; data = writer.WrittenSpan;
     /// </code>
     /// </example>
-    public static ArrayBufferWriter<byte> CreateArrayBufferWriter()
-        => new();
+    public static ArrayBufferWriter<byte> CreateArrayBufferWriter() => new();
 
     /// <summary>
     /// Creates a new <see cref="ArrayBufferWriter{T}"/> for bytes with the specified initial capacity.

@@ -523,7 +523,9 @@ public class SequenceExtensionsTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ConsumeAsContiguousSpan_MultipleSegments_CopiesDataToContiguousBuffer(bool isSensitive)
+    public void ConsumeAsContiguousSpan_MultipleSegments_CopiesDataToContiguousBuffer(
+        bool isSensitive
+    )
     {
         var sequence = new Sequence<byte>(SecureMemoryPool<byte>.Shared);
 

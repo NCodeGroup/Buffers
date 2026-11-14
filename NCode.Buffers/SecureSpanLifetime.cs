@@ -56,8 +56,7 @@ public readonly ref struct SecureSpanLifetime<T>(Span<T> span) : IDisposable
     /// This conversion allows <see cref="SecureSpanLifetime{T}"/> to be used directly in APIs
     /// that expect a <see cref="Span{T}"/> without explicit conversion.
     /// </remarks>
-    public static implicit operator Span<T>(SecureSpanLifetime<T> lifetime) =>
-        lifetime.Span;
+    public static implicit operator Span<T>(SecureSpanLifetime<T> lifetime) => lifetime.Span;
 
     /// <summary>
     /// Securely zeroes the memory of the underlying span using cryptographic memory clearing.

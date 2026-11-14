@@ -36,11 +36,14 @@ public class Gen2GcCallbackTests
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void RegisterWithCollectableTarget(Action onCallback)
     {
-        Gen2GcCallback.Register(_ =>
-        {
-            onCallback();
-            return true;
-        }, new object());
+        Gen2GcCallback.Register(
+            _ =>
+            {
+                onCallback();
+                return true;
+            },
+            new object()
+        );
     }
 
     #region Register Tests
@@ -64,11 +67,14 @@ public class Gen2GcCallbackTests
         var target = new object();
         object? received = null;
 
-        Gen2GcCallback.Register(state =>
-        {
-            received = state;
-            return false;
-        }, target);
+        Gen2GcCallback.Register(
+            state =>
+            {
+                received = state;
+                return false;
+            },
+            target
+        );
 
         CollectUntil(() => Volatile.Read(ref received) is not null);
 

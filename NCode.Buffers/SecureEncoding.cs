@@ -78,5 +78,6 @@ public static class SecureEncoding
     /// </para>
     /// </remarks>
     // ReSharper disable once InconsistentNaming
-    public static UTF8Encoding UTF8 { get; } = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+    public static UTF8Encoding UTF8 { get; } =
+        new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 }
