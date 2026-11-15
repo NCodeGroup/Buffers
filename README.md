@@ -200,7 +200,7 @@ var sequence = new ReadOnlySequence<byte>(first, 0, last, last.Memory.Length);
 
 #### SequenceExtensions and RefSpanLease&lt;T&gt;
 
-`GetSpanLease` returns a `RefSpanLease<T>`, a span paired with the owner to dispose. Treat the writer as consumed once you dispose the lease.
+`GetSpanLease` returns a `RefSpanLease<T>`, a span paired with the owner to dispose. Disposing the lease leaves the writer valid when its data is in one segment; when it spans several segments, it only releases the rented copy.
 
 <!-- snippet: GetSpanLease -->
 ```cs

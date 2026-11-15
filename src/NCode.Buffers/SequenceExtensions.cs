@@ -46,7 +46,7 @@ public static class SequenceExtensions
         /// <remarks>
         /// <para>
         /// <strong>Single-segment optimization:</strong> When the sequence consists of a single segment,
-        /// the span is returned directly with the sequence as the owner, meaning no additional memory allocation occurs.
+        /// the span is returned directly with no owner, meaning no additional memory allocation occurs and disposing the lease leaves the sequence untouched.
         /// The caller retains ownership of the original sequence, which must remain undisposed while using the span.
         /// </para>
         /// <para>
@@ -75,7 +75,7 @@ public static class SequenceExtensions
             var sequence = buffer.AsReadOnlySequence;
             if (sequence.IsSingleSegment)
             {
-                return new RefSpanLease<T>(buffer, sequence.First.Span);
+                return new RefSpanLease<T>(owner: null, sequence.First.Span);
             }
 
             Debug.Assert(buffer.Length <= int.MaxValue, "Sequence length exceeds int.MaxValue.");
