@@ -44,7 +44,7 @@ jobs:
             ${{ runner.os }}-nuget-
       - name: Check the decision index
         run: ./.template/Test-AdrIndex.ps1
-      # The gate checks the formatting with CSharpier, then runs the Definition of Done, which builds, tests and, for a library, packs and validates the package (ADR-1002, ADR-1001).
+      # The gate checks the formatting with CSharpier and that the READMEs' samples match the tests, then runs the Definition of Done, which builds, tests and, for a library, packs and validates the package (ADR-1002, ADR-1001).
       - name: Definition of Done
         if: hashFiles('**/*.csproj', '**/*.sln', '**/*.slnx') != ''
         run: ./build/gate.ps1
