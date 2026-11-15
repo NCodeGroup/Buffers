@@ -245,18 +245,21 @@ public class ReadmeSamplesTests
         byte[] bytes = SecureEncoding.UTF8.GetBytes("Hello, World!");
         string text = SecureEncoding.UTF8.GetString(bytes);
 
-        // Invalid UTF-8 throws instead of decoding to U+FFFD.
+        // Invalid UTF-8 throws instead of decoding to U+FFFD, so untrusted input can be rejected.
+        bool isValid;
         try
         {
             SecureEncoding.UTF8.GetString((byte[])[0xC3, 0x28]);
+            isValid = true;
         }
         catch (DecoderFallbackException)
         {
-            // reject the input
+            isValid = false;
         }
         // end-snippet
 
         Assert.Equal("Hello, World!", text);
+        Assert.False(isValid);
     }
 
     #endregion
