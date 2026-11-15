@@ -30,7 +30,7 @@ How `/ship-plan` lands a reviewed plan. `integrate`: `pull-request` pushes the p
 - release: tag+release
 - changelog: CHANGELOG.md
 - pre-release: tracked
-- draft: no
+- draft: yes
 - follow-ups: issues
 - follow-up-label: follow-up
 - gate: ./build/gate.ps1 -Fast
@@ -45,7 +45,7 @@ How `/ship-plan` lands a reviewed plan. `integrate`: `pull-request` pushes the p
 - A public API change is recorded with `./build/Update-PublicApi.ps1`; a published GitHub release starts `.github/workflows/publish.yml`, which pushes the packages to nuget.org through trusted publishing, with no stored API key (ADR-0135 in `docs/decisions/project-template/`). The Landing section sets `release: tag+release`, so `.github/workflows/tag-release.yml` tags and publishes each release as its pull request merges and starts `publish.yml` (ADR-0016 and ADR-0137).
 - This repository accepts the template's ADR-0006 exception for `.github/workflows/code-review-auto-merge.yml`: a Dependabot pull request whose one change is the NCode Review pin may be auto-merged.
 - Versions come from `version.json` through Nerdbank.GitVersioning (ADR-1000 in `docs/decisions/`), which overrides project-template ADR-0136's version from the release tag: `version` is the version the next release ships. A change that adds public API raises it to the next minor version, a breaking change to the next major, and a plan with a `Release:` line sets it to that version, because `publish.yml` publishes nothing when the tag and `version.json` disagree.
-- Every pack is validated against the package `PackageValidationBaselineVersion` names in `src/NCode.Buffers/NCode.Buffers.csproj` (ADR-1001), and `.github/workflows/raise-baseline.yml` opens the pull request that raises it after each publish (ADR-1007); `build/Update-Baseline.ps1 -Version <version>` does it by hand. `docs/api-compatibility.md` is the procedure for changing the public API.
+- Every pack is validated against the package `PackageValidationBaselineVersion` names in `src/NCode.Buffers/NCode.Buffers.csproj` (ADR-1001), and `.github/workflows/raise-baseline.yml`, which `publish.yml` calls after each publish, opens the draft pull request that raises it (ADR-1007, ADR-1008); `build/Update-Baseline.ps1 -Version <version>` does it by hand. `docs/api-compatibility.md` is the procedure for changing the public API.
 - CSharpier formats the code (ADR-1002): run `dotnet csharpier format .` before committing. Every C# file starts with the two lines `// Copyright © NCode Group` and `// SPDX-License-Identifier: Apache-2.0`.
 - The C# samples in `README.md` and `src/NCode.Buffers/README.md` are copied by MarkdownSnippets from `tests/NCode.Buffers.Tests/ReadmeSamplesTests.cs` and `tests/NCode.Buffers.Tests/ReadmeSamples/Signatures.cs` (ADR-1005): change a sample in its test, between `// begin-snippet: <name>` and `// end-snippet`, then run `dotnet mdsnippets`; never edit a README's `<!-- snippet: -->` block, which `./build/gate.ps1` checks against the tests. A `#region` name in a test needs a space, or MarkdownSnippets reads it as a snippet.
 - Shipping code takes buffers from `BufferFactory` and text encodings from `SecureEncoding`: `BannedSymbols.Encoding.txt` and `BannedSymbols.Buffers.txt` ban the rest outside test projects (ADR-1003).

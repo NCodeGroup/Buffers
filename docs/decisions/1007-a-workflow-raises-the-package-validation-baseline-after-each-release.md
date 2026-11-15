@@ -1,6 +1,6 @@
 # 1007. A workflow raises the package validation baseline after each release
 
-- **Status:** Accepted
+- **Status:** Accepted (amended by 1008)
 - **Date:** 2026-11-15
 - **Deciders:** NCode Group
 - **Amends:** ADR-1001, item 3 and its consequence "the baseline is one more line to raise after each release".

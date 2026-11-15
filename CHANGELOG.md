@@ -7,13 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.3] - 2026-11-15
+
 ### Added
 
-- After each release is published, `.github/workflows/raise-baseline.yml` opens the pull request that raises the package validation baseline, and `build/Update-Baseline.ps1` does it by hand ([ADR-1007](docs/decisions/1007-a-workflow-raises-the-package-validation-baseline-after-each-release.md)).
+- After each stable release is published, `publish.yml` calls `.github/workflows/raise-baseline.yml`, which opens the draft pull request that raises the package validation baseline, and `build/Update-Baseline.ps1` does it by hand ([ADR-1007](docs/decisions/1007-a-workflow-raises-the-package-validation-baseline-after-each-release.md), [ADR-1008](docs/decisions/1008-release-follow-ups-are-jobs-publish-calls.md)).
+- `GOVERNANCE.md`, `CODE_OF_CONDUCT.md`, `ROADMAP.md`, `docs/architecture.md` and `docs/assurance-case.md`, which state the project's roles, conduct, direction, design and security requirements, for the OpenSSF Best Practices silver level ([#60](https://github.com/NCodeGroup/Buffers/issues/60)).
 
 ### Changed
 
 - Package validation compares every package with the published 5.0.2 package instead of 5.0.0 ([ADR-1001](docs/decisions/1001-each-package-is-validated-against-the-last-released-package.md)).
+
+### Fixed
+
+- Each GitHub release carries its packages, a signed provenance file (`<tag>.intoto.jsonl`) and an SBOM: `publish.yml` calls `.github/workflows/release-provenance.yml` after the push, which never ran for a release `tag-release.yml` published, and a maintainer can backfill an earlier release while its Publish run's packages are kept ([#60](https://github.com/NCodeGroup/Buffers/issues/60), [ADR-1008](docs/decisions/1008-release-follow-ups-are-jobs-publish-calls.md)).
 
 ## [5.0.2] - 2026-11-15
 
@@ -94,7 +101,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.0.2...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.0.3...HEAD
+[5.0.3]: https://github.com/NCodeGroup/Buffers/compare/v5.0.2...v5.0.3
 [5.0.2]: https://github.com/NCodeGroup/Buffers/compare/v5.0.1...v5.0.2
 [5.0.1]: https://github.com/NCodeGroup/Buffers/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/NCodeGroup/Buffers/compare/v4.1.0...v5.0.0

@@ -1,6 +1,6 @@
 # Contributing to NCode.Buffers
 
-Issues and pull requests are welcome. [README.md](README.md) explains the project, and [AGENTS.md](AGENTS.md) holds the rules every change follows, for people and coding agents alike. Report a vulnerability privately instead, as [SECURITY.md](SECURITY.md) says.
+Issues and pull requests are welcome. [README.md](README.md) explains the project, and [AGENTS.md](AGENTS.md) holds the rules every change follows, for people and coding agents alike. Report a vulnerability privately instead, as [SECURITY.md](SECURITY.md) says. Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md); [GOVERNANCE.md](GOVERNANCE.md) says who decides what, and [ROADMAP.md](ROADMAP.md) where the project is going.
 
 ## Prerequisites
 
@@ -63,6 +63,6 @@ Most changes here are planned and executed with coding agents: a frontier model 
 
 ## Maintainers and Scope
 
-NCode Group maintains NCode.Buffers: they review pull requests, merge them and publish releases. A published GitHub release starts `.github/workflows/publish.yml`, whose packages reach nuget.org through trusted publishing after a maintainer approves the `nuget` environment. NCode.Buffers covers what [README.md](README.md) describes; a change outside that starts as an issue, where the maintainers say whether it fits.
+NCode Group maintains NCode.Buffers: they review pull requests, merge them and publish releases, with the roles [GOVERNANCE.md](GOVERNANCE.md) lists. A published GitHub release starts `.github/workflows/publish.yml`, whose packages reach nuget.org through trusted publishing after a maintainer approves the `nuget` environment. NCode.Buffers covers what [README.md](README.md) describes; a change outside that starts as an issue, where the maintainers say whether it fits.
 
 By contributing, you agree that your contribution is licensed under the project's license, [Apache-2.0](LICENSE.txt).

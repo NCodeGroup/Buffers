@@ -69,4 +69,5 @@ override in `AGENTS.md`.
 | [ADR-1004](1004-the-package-targets-only-supported-lts-dotnet-versions.md) | The package targets only supported LTS .NET versions | Accepted |
 | [ADR-1005](1005-readme-samples-are-compiled-tests-that-markdownsnippets-copies-into-the-readmes.md) | README samples are compiled tests that MarkdownSnippets copies into the READMEs | Accepted |
 | [ADR-1006](1006-the-secure-apis-constrain-their-element-type-to-unmanaged.md) | The secure APIs constrain their element type to unmanaged | Accepted |
-| [ADR-1007](1007-a-workflow-raises-the-package-validation-baseline-after-each-release.md) | A workflow raises the package validation baseline after each release | Accepted |
+| [ADR-1007](1007-a-workflow-raises-the-package-validation-baseline-after-each-release.md) | A workflow raises the package validation baseline after each release | Accepted (amended by 1008) |
+| [ADR-1008](1008-release-follow-ups-are-jobs-publish-calls.md) | Release follow-ups are jobs that publish.yml calls | Accepted |
