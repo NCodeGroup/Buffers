@@ -30,11 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Every C# file starts with the two-line SPDX header instead of the Apache-2.0 preamble, and the build enforces it ([ADR-1002](docs/decisions/1002-csharpier-formats-the-code-and-every-csharp-file-starts-with-an-spdx-header.md)).
 - The solution file is `NCode.Buffers.slnx`, and Source Link comes from the .NET SDK instead of the `Microsoft.SourceLink.GitHub` package.
 - The library's source is in `src/NCode.Buffers` and its tests are in `tests/NCode.Buffers.Tests`, as the project template lays out .NET projects; the package and its public API are unchanged ([#34](https://github.com/NCodeGroup/Buffers/issues/34)).
+- The next release is 5.0.0, and its assemblies carry `AssemblyVersion` 5.0.0.0 ([#35](https://github.com/NCodeGroup/Buffers/issues/35), [ADR-1000](docs/decisions/1000-package-versions-come-from-version-json-through-nerdbank-gitversioning.md)).
 
 ### Removed
 
 - The `Commit attribution` CI check and the `.githooks/commit-msg` hook: agent attribution is avoided, not enforced ([ADR-0018](docs/decisions/project-template/0018-agent-attribution-is-avoided-not-enforced.md)).
 - `.github/workflows/main.yml`: its build and test duplicated `ci.yml`, and its publish job and the `NUGET_APIKEY` secret it used are replaced by `publish.yml`; delete the secret from the repository settings ([#25](https://github.com/NCodeGroup/Buffers/issues/25)).
+- **Breaking:** The `net8.0` target framework, because .NET 8 left Microsoft support on 2026-11-10: the package targets `net10.0` only, so applications on .NET 8 stay on 4.x and move to .NET 10 to take 5.0 ([#35](https://github.com/NCodeGroup/Buffers/issues/35), [ADR-1004](docs/decisions/1004-the-package-targets-only-supported-lts-dotnet-versions.md)).
 
 ### Fixed
 

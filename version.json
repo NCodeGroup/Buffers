@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/main/src/NerdBank.GitVersioning/version.schema.json",
-  "version": "4.1.1",
-  "assemblyVersion": { "version": "4.1", "precision": "minor" },
+  "version": "5.0.0",
+  "assemblyVersion": { "precision": "major" },
   "publicReleaseRefSpec": ["^refs/tags/v\\d+\\.\\d+\\.\\d+"],
   "cloudBuild": { "setVersionVariables": false }
 }

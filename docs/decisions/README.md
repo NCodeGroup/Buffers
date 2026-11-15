@@ -66,3 +66,4 @@ override in `AGENTS.md`.
 | [ADR-1001](1001-each-package-is-validated-against-the-last-released-package.md) | Each package is validated against the last released package | Accepted |
 | [ADR-1002](1002-csharpier-formats-the-code-and-every-csharp-file-starts-with-an-spdx-header.md) | CSharpier formats the code, and every C# file starts with an SPDX header | Accepted |
 | [ADR-1003](1003-shipping-code-takes-buffers-and-encodings-through-bufferfactory-and-secureencoding.md) | Shipping code takes buffers and encodings through BufferFactory and SecureEncoding | Accepted |
+| [ADR-1004](1004-the-package-targets-only-supported-lts-dotnet-versions.md) | The package targets only supported LTS .NET versions | Accepted |
