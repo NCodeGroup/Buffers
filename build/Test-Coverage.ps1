@@ -16,7 +16,8 @@ The lowest accepted branch coverage, from 0.0 to 1.0. The default is 0.98.
 
 .PARAMETER ReportDirectory
 A folder to copy each Cobertura report into, as <ReportDirectory>/<run folder>/coverage.cobertura.xml, such as
-artifacts/coverage, which CI uploads to Codecov. By default, no report is kept.
+artifacts/coverage, which CI uploads to Codecov. Run folders an earlier run kept there are removed first. By default,
+no report is kept.
 
 .EXAMPLE
 ./build/Test-Coverage.ps1
@@ -35,6 +36,8 @@ $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
 $reportRoot = if ($ReportDirectory) { $PSCmdlet.GetUnresolvedProviderPathFromPSPath($ReportDirectory) }
+# Removes the run folders an earlier run kept, so the folder holds only this run's reports; nothing else in it is touched.
+if ($reportRoot -and (Test-Path -LiteralPath $reportRoot -PathType Container)) { Get-ChildItem -LiteralPath $reportRoot -Directory | Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName 'coverage.cobertura.xml') } | Remove-Item -Recurse -Force }
 $results = Join-Path ([IO.Path]::GetTempPath()) "ncode-buffers-coverage-$([guid]::NewGuid().ToString('N'))"
 $exitCode = 0
 
