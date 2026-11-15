@@ -286,7 +286,7 @@ catch (DecoderFallbackException)
 
 ### CryptographicOperations extensions
 
-`ZeroMemory<T>` and `FixedTimeEquals<T>` work on spans of any value type without reference fields; a `T` with references throws `ArgumentException`. These are C# 14 extension members on `CryptographicOperations`, which a project compiles with by default on any framework this package targets; a project that sets an older `LangVersion` calls them on `CryptographicOperationsExtensions` instead, as the sample's last line does.
+`ZeroMemory<T>` and `FixedTimeEquals<T>` work on spans of any unmanaged type, a value type without reference fields at any depth; a `T` with references doesn't compile. These are C# 14 extension members on `CryptographicOperations`, which a project compiles with by default on any framework this package targets; a project that sets an older `LangVersion` calls them on `CryptographicOperationsExtensions` instead, as the sample's last line does.
 
 <!-- snippet: CryptographicOperations -->
 ```cs
