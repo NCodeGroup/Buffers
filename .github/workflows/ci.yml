@@ -84,6 +84,7 @@ jobs:
   # Publishes the coverage report to Codecov, whose badge the READMEs show, from each push to the default branch. A job
   # of its own, so only it holds an OIDC token, which Codecov takes instead of a stored CODECOV_TOKEN; pull requests
   # never run it. Set up once: the Codecov GitHub App installed for the NCodeGroup organization.
+  # A failed upload doesn't fail the run: the tests and the coverage gate are its verdict.
   codecov:
     name: Publish coverage
     needs: build-and-test
@@ -107,4 +108,4 @@ jobs:
         with:
           directory: artifacts/coverage
           use_oidc: true
-          fail_ci_if_error: true
+          fail_ci_if_error: false
