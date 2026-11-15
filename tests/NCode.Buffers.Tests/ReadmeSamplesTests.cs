@@ -12,6 +12,12 @@ namespace NCode.Buffers.Tests;
 // `dotnet mdsnippets` copies each begin-snippet block into README.md and src/NCode.Buffers/README.md (ADR-1005).
 public class ReadmeSamplesTests
 {
+    private static void Process(ReadOnlySpan<byte> data) => Assert.Equal("payload"u8, data);
+
+    private static ulong[] ComputeMac(ReadOnlySpan<byte> data) => [(ulong)data.Length];
+
+    private static ulong[] GetExpectedMac() => [7];
+
     #region Quick Start Tests
 
     [Fact]
@@ -288,10 +294,4 @@ public class ReadmeSamplesTests
     }
 
     #endregion
-
-    private static void Process(ReadOnlySpan<byte> data) => Assert.Equal("payload"u8, data);
-
-    private static ulong[] ComputeMac(ReadOnlySpan<byte> data) => [(ulong)data.Length];
-
-    private static ulong[] GetExpectedMac() => [7];
 }
