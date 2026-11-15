@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SecureMemoryPool<T>` pools buffers of `PageSize` (4096) bytes for every `T`, as its documentation says. It pooled `PageSize` elements, so a `SecureMemoryPool<int>` pinned 16 KB per buffer, it measured `char` and `bool` by their marshaled size, and a request whose byte count overflowed `int` could get a pooled buffer smaller than it asked for.
 - The package carries its description and tags again: `NCode.Buffers/project.props`, which held them, was no longer imported once the `NCode.ProjectSettings.Scaffold` package was removed.
 - The README's samples for `FixedSpanBufferWriter<T>`, `FixedMemoryBufferWriter<T>`, `MemorySegment<T>` and `SecureEncoding` compile.
+- The README's "Choosing a type" tables fit GitHub's README column instead of cutting off their last column.
 
 ## [4.1.0] - 2026-01-21
 
