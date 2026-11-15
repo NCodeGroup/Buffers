@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using ReadmeSamples;
 
@@ -152,4 +153,142 @@ public class ReadmeSamplesTests
     }
 
     #endregion
+
+    #region Sequence Tests
+
+    [Fact]
+    public void MemorySegmentSample_Runs()
+    {
+        // begin-snippet: MemorySegment
+        var first = new MemorySegment<byte>((byte[])[1, 2, 3]);
+        var last = first.Append((byte[])[4, 5, 6]);
+        var sequence = new ReadOnlySequence<byte>(first, 0, last, last.Memory.Length);
+        // sequence holds 1, 2, 3, 4, 5, 6
+        // end-snippet
+
+        Assert.Equal([1, 2, 3, 4, 5, 6], sequence.ToArray());
+    }
+
+    [Fact]
+    public void GetSpanLeaseSample_Runs()
+    {
+        // begin-snippet: GetSpanLease
+        using var writer = BufferFactory.CreatePooledBufferWriter(isSensitive: true);
+        // ... write to writer ...
+
+        // No copy when the data is in one segment; otherwise it is copied into a rented buffer.
+        using (var lease = writer.GetSpanLease(isSensitive: true))
+        {
+            Process(lease.Span);
+        }
+        // end-snippet
+    }
+
+    [Fact]
+    public void ConsumeAsContiguousSpanSample_Runs()
+    {
+        // begin-snippet: ConsumeAsContiguousSpan
+        using var writer = BufferFactory.CreatePooledBufferWriter(isSensitive: true);
+        // ... write to writer ...
+
+        // owner now owns the data; don't use writer again.
+        using var owner = writer.ConsumeAsContiguousSpan(
+            isSensitive: true,
+            out ReadOnlySpan<byte> span
+        );
+        Process(span);
+        // end-snippet
+    }
+
+    [Fact]
+    public void EmptyMemorySample_Runs()
+    {
+        // begin-snippet: EmptyMemory
+        IMemoryOwner<byte> empty = EmptyMemory<byte>.Singleton;
+        // end-snippet
+
+        Assert.True(empty.Memory.IsEmpty);
+    }
+
+    #endregion
+
+    #region String Splitting Tests
+
+    [Fact]
+    public void StringSegmentsSample_Runs()
+    {
+        // begin-snippet: StringSegments
+        foreach (var segment in "one,two,three".SplitSegments(','))
+        {
+            Console.WriteLine(segment.Memory.ToString());
+        }
+
+        StringSegments segments = StringSegments.Split(
+            "aSEPbSEPc",
+            "sep",
+            StringComparison.OrdinalIgnoreCase
+        );
+        int count = segments.Count; // 3
+        // end-snippet
+
+        Assert.Equal(3, count);
+    }
+
+    #endregion
+
+    #region Secure Encoding Tests
+
+    [Fact]
+    public void SecureEncodingSample_Runs()
+    {
+        // begin-snippet: SecureEncoding
+        byte[] bytes = SecureEncoding.UTF8.GetBytes("Hello, World!");
+        string text = SecureEncoding.UTF8.GetString(bytes);
+
+        // Invalid UTF-8 throws instead of decoding to U+FFFD.
+        try
+        {
+            SecureEncoding.UTF8.GetString((byte[])[0xC3, 0x28]);
+        }
+        catch (DecoderFallbackException)
+        {
+            // reject the input
+        }
+        // end-snippet
+
+        Assert.Equal("Hello, World!", text);
+    }
+
+    #endregion
+
+    #region CryptographicOperations Extension Tests
+
+    [Fact]
+    public void CryptographicOperationsSample_Runs()
+    {
+        var data = "payload"u8;
+
+        // begin-snippet: CryptographicOperations
+        Span<int> sensitiveData = stackalloc int[4];
+        // ... use the sensitive data ...
+        CryptographicOperations.ZeroMemory(sensitiveData);
+
+        ReadOnlySpan<ulong> computed = ComputeMac(data);
+        ReadOnlySpan<ulong> expected = GetExpectedMac();
+        bool isValid = CryptographicOperations.FixedTimeEquals(computed, expected);
+
+        // The same methods, callable from any C# version:
+        CryptographicOperationsExtensions.ZeroMemory(sensitiveData);
+        // end-snippet
+
+        Assert.True(isValid);
+    }
+
+    #endregion
+
+    private static void Process(ReadOnlySpan<byte> data) => Assert.True(data.IsEmpty);
+
+    private static ulong[] ComputeMac(ReadOnlySpan<byte> data) => [(ulong)data.Length];
+
+    private static ulong[] GetExpectedMac() => [7];
 }
