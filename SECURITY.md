@@ -37,6 +37,7 @@ The packages are built in CI from a tagged commit of this repository, determinis
 
 - Each package's PDB maps every source file to its commit in this repository, and its symbol package (`.snupkg`) is on the nuget.org symbol server. With Source Link and the nuget.org symbol server turned on in your debugger, you step into the exact source a package was built from. NuGet Package Explorer shows whether a package's Source Link and deterministic build are valid.
 - nuget.org signs every package it accepts: `dotnet nuget verify --all <package>.nupkg` checks that signature.
+- [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/NCodeGroup/Buffers) scores this repository's supply-chain practices, such as pinned dependencies, token permissions and branch protection, on each push to `main` and every week: `.github/workflows/scorecard.yml` runs it and publishes the score.
 
 ## Scope
 
