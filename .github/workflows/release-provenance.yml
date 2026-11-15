@@ -2,11 +2,11 @@
 # the packages and a signed provenance file (<tag>.intoto.jsonl) to the GitHub release. OpenSSF Scorecard looks for such
 # a file among a release's assets, and a consumer needs one to learn which workflow built a package.
 #
-# publish.yml calls this workflow as its last job, after the push to nuget.org, so it runs in the same run and attests
-# the very packages that run built and published. It is not started by workflow_run: tag-release.yml starts publish.yml
-# with the workflow's GITHUB_TOKEN, and GitHub creates no workflow_run event for a run started that way, so a
-# workflow_run trigger never fired (ADR-1008, NCodeGroup/project-template#381). publish.yml's own jobs keep only the
-# permissions they need: the write permissions are granted to this job alone.
+# publish.yml calls this workflow as a job after the push to nuget.org, beside the baseline job, so it runs in the same
+# run and attests the very packages that run built and published. It is not started by workflow_run: tag-release.yml
+# starts publish.yml with the workflow's GITHUB_TOKEN, and GitHub creates no workflow_run event for a run started that
+# way, so a workflow_run trigger never fired (ADR-1008, NCodeGroup/project-template#381). publish.yml's own jobs keep
+# only the permissions they need: the write permissions are granted to this job alone.
 #
 # To backfill a release whose Publish packages run succeeded while its packages artifact is still kept (14 days): Actions
 # > Attach release provenance > Run workflow, with the release's tag and the run's id. The job checks that the id names a
