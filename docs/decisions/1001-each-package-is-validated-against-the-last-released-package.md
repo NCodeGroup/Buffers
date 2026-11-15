@@ -1,6 +1,7 @@
 # 1001. Each package is validated against the last released package
 
 - **Status:** Accepted
+- **Amended by:** [ADR-1007](1007-a-workflow-raises-the-package-validation-baseline-after-each-release.md), which automates item 3's raise.
 - **Date:** 2026-11-14
 - **Deciders:** NCode Group
 
