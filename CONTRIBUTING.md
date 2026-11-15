@@ -36,7 +36,7 @@ The gate checks the formatting with CSharpier and that the READMEs' C# samples m
 3. Work on a short-lived branch from the default branch.
 4. Keep `CHANGELOG.md` in the [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) format; the first change consumers can see creates it. While `AGENTS.md`'s Landing section says `pre-release: untracked` and no version tag of 1.0.0 or later exists, its `## [Unreleased]` section describes the product as it is, under `### Added` and `### Security` only: edit the entry a change adds, reshapes or removes, so it matches the code (ADR-0015 in `docs/decisions/project-template/`). Otherwise add an entry for each change consumers can see under `## [Unreleased]`, grouped under `### Added`, `### Changed`, `### Deprecated`, `### Removed`, `### Fixed` or `### Security`, and a release moves the entries into its version's section.
 5. Before you push, pass the gate: `./build/gate.ps1 -Fast`.
-6. Open a pull request into the default branch whose description ends with a `Closes #<issue>` line. The default branch takes changes only through pull requests: a maintainer merges yours once CI passes.
+6. Open a pull request into the default branch whose description ends with a `Closes #<issue>` line. The default branch takes changes only through pull requests: a maintainer merges yours once CI passes and NCode Review has posted its review ([the decision](docs/decisions/project-template/0019-nothing-requires-the-code-review-check-the-person-who-merges-waits-for-it.md)).
 
 ## Commit Attribution
 

@@ -12,6 +12,7 @@ offers. Every document in `docs/` has a line here.
   `decisions/` as its phases land.
 - [metrics.md](metrics.md): the metrics and traces catalog, every meter, instrument, attribute, activity source and
   span the project defines, which dashboards and alerts are built against.
+- [api-compatibility.md](api-compatibility.md): how the public API of the published packages evolves and is checked, and how the package validation baseline is kept.
 
 ## Rules
 
