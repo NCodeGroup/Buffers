@@ -31,9 +31,13 @@ depends on. The rules are project-template
 
 ## Releasing
 
-The release change runs `./build/Update-PublicApi.ps1 -Release` and sets `version.json` to the release version. Once the
-release is on nuget.org, `.github/workflows/raise-baseline.yml` opens a pull request that sets `PackageValidationBaselineVersion` in
-`src/NCode.Buffers/NCode.Buffers.csproj` to it ([ADR-1007](decisions/1007-a-workflow-raises-the-package-validation-baseline-after-each-release.md)); `./build/Update-Baseline.ps1 -Version <version>` does the same by hand.
+The release change runs `./build/Update-PublicApi.ps1 -Release` and sets `version.json` to the release version. After
+the push to nuget.org, `publish.yml` calls `.github/workflows/raise-baseline.yml`, which waits until nuget.org lists the
+release, then opens a draft pull request that sets `PackageValidationBaselineVersion` in
+`src/NCode.Buffers/NCode.Buffers.csproj` to it; mark it ready and merge it
+([ADR-1007](decisions/1007-a-workflow-raises-the-package-validation-baseline-after-each-release.md),
+[ADR-1008](decisions/1008-release-follow-ups-are-jobs-publish-calls.md)). `./build/Update-Baseline.ps1 -Version <version>`
+does the same by hand.
 
 An intended break in a new major version is recorded with
 `dotnet pack src/NCode.Buffers -p:ApiCompatGenerateSuppressionFile=true`, which writes
