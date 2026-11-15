@@ -56,7 +56,7 @@ See [Choosing a type](#choosing-a-type) for the other buffers.
 
 ## Choosing a type
 
-The `Rent` and `Create…` methods are on `BufferFactory`.
+Pick the row that matches your data and where the buffer lives. `Rent` and the `Create…` methods are on `BufferFactory`, `GetSecureLifetime` is an extension method on `Span<T>`, and the other rows are types.
 
 ### For secrets
 
