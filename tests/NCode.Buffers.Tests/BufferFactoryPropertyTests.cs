@@ -1,7 +1,6 @@
 // Copyright © NCode Group
 // SPDX-License-Identifier: Apache-2.0
 
-using FsCheck;
 using FsCheck.Xunit;
 
 namespace NCode.Buffers.Tests;
@@ -54,7 +53,8 @@ public class BufferFactoryPropertyTests
 
         foreach (var chunk in chunks)
         {
-            chunk.CopyTo(writer.GetSpan(chunk.Length));
+            var destination = writer.GetSpan(chunk.Length);
+            chunk.CopyTo(destination);
             writer.Advance(chunk.Length);
         }
 
@@ -70,13 +70,13 @@ public class BufferFactoryPropertyTests
     #region CreatePinnedArray Tests
 
     [Property(Replay = Seed)]
-    public bool CreatePinnedArray_ReturnsAZeroedArrayOfTheRequestedLength(byte length)
+    public bool CreatePinnedArray_GivenAnyLength_ReturnsAZeroedArrayOfThatLength(byte length)
     {
         using var lifetime = BufferFactory.CreatePinnedArray(length);
 
         return lifetime.Length == length
             && lifetime.PinnedArray.Length == length
-            && lifetime.PinnedArray.All(b => b == 0);
+            && lifetime.PinnedArray.All(element => element == 0);
     }
 
     #endregion

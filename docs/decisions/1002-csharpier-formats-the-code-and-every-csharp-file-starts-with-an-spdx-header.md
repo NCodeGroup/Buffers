@@ -6,18 +6,18 @@
 
 ## Context
 
-Project-template ADR-0117 picks no formatter and says a project that adopts one wraps `dod.ps1` in a gate script of its
+Project-template ADR-0148 puts a CSharpier check in `dod.ps1`'s Format stage, and ADR-0117 says a project's own checks wrap `dod.ps1` in a gate script of its
 own. Formatting by hand leaves layout to review. The NCode identity repository formats with CSharpier. The 15-line
 Apache preamble in a `#region` repeated a year that differed per file.
 
 ## Decision
 
-**CSharpier, pinned as a local tool, formats every C# and MSBuild file, `build/gate.ps1` fails on an unformatted file,
+**CSharpier, pinned as a local tool, formats every C# and MSBuild file, `build/dod.ps1`'s Format stage, which `build/gate.ps1` runs, fails on an unformatted file,
 and every C# file starts with `// Copyright © NCode Group` and `// SPDX-License-Identifier: Apache-2.0`.**
 
 1. `.config/dotnet-tools.json` pins the CSharpier version with `rollForward: false`.
 2. `.csharpierignore` excludes build output and `build/ProjectTemplate.props`.
-3. `build/gate.ps1` runs `dotnet csharpier check .` and then `build/dod.ps1`. `AGENTS.md`'s gate is
+3. `build/gate.ps1` runs the README samples check and then `build/dod.ps1`, whose Format stage runs `dotnet csharpier check .`. `AGENTS.md`'s gate is
    `./build/gate.ps1 -Fast`, and CI runs `./build/gate.ps1`.
 4. A CSharpier update lands with `dotnet csharpier format .` in the same pull request.
 5. `.editorconfig` raises IDE0073 to warning, and `NCode.Buffers.slnx.DotSettings` gives Rider the same header.

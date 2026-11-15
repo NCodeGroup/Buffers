@@ -20,27 +20,32 @@ public class StringSegmentsPropertyTests
     {
         var segments = StringSegments.Split(value.Get, separator);
 
-        var joined = string.Join(separator, segments.Select(segment => segment.Memory.ToString()));
+        var texts = segments.Select(segment => segment.Memory.ToString());
+        var joined = string.Join(separator, texts);
 
         return joined == value.Get;
     }
 
     [Property(Replay = Seed)]
-    public bool Split_Count_MatchesStringSplit(NonNull<string> value, char separator)
+    public bool Split_WhenCounting_CountMatchesStringSplit(NonNull<string> value, char separator)
     {
         var segments = StringSegments.Split(value.Get, separator);
 
-        return segments.Count == value.Get.Split(separator).Length
-            && segments.Count == segments.ToArray().Length;
+        var expected = value.Get.Split(separator);
+
+        return segments.Count == expected.Length && segments.Count == segments.ToArray().Length;
     }
 
     [Property(Replay = Seed)]
-    public bool Split_SegmentsAreSlicesOfTheOriginal(NonNull<string> value, char separator)
+    public bool Split_WhenSlicing_SegmentsHoldNoSeparatorAndCoverTheOriginal(
+        NonNull<string> value,
+        char separator
+    )
     {
         var segments = StringSegments.Split(value.Get, separator);
 
         var total = segments.Sum(segment => segment.Memory.Length);
-        var separators = Math.Max(segments.Count - 1, 0);
+        var separators = segments.Count - 1;
 
         return total + separators == value.Get.Length
             && segments.All(segment => !segment.Memory.Span.Contains(separator));
@@ -57,16 +62,11 @@ public class StringSegmentsPropertyTests
             return true;
         }
 
-        var segments = StringSegments.Split(
-            value.Get,
-            separator.Get.AsSpan(),
-            StringComparison.Ordinal
-        );
+        var separatorSpan = separator.Get.AsSpan();
+        var segments = StringSegments.Split(value.Get, separatorSpan, StringComparison.Ordinal);
 
-        var joined = string.Join(
-            separator.Get,
-            segments.Select(segment => segment.Memory.ToString())
-        );
+        var texts = segments.Select(segment => segment.Memory.ToString());
+        var joined = string.Join(separator.Get, texts);
 
         return joined == value.Get;
     }

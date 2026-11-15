@@ -16,9 +16,8 @@
   <a href="https://www.nuget.org/packages/NCode.Buffers#supportedframeworks-body-tab"><img alt="Target framework" src="https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fraw.githubusercontent.com%2FNCodeGroup%2FBuffers%2Fmain%2Fsrc%2FNCode.Buffers%2FNCode.Buffers.csproj&query=%2F%2FTargetFramework%20%7C%20%2F%2FTargetFrameworks&label=target&logo=dotnet&color=512BD4"></a>
   <a href="LICENSE.txt"><img alt="License" src="https://img.shields.io/github/license/NCodeGroup/Buffers"></a>
   <a href="https://scorecard.dev/viewer/?uri=github.com/NCodeGroup/Buffers"><img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/NCodeGroup/Buffers/badge"></a>
-  <!-- Project 16727 is registered; uncomment once the badge passes (docs/best-practices-badge.md):
   <a href="https://www.bestpractices.dev/projects/16727"><img alt="OpenSSF Best Practices" src="https://www.bestpractices.dev/projects/16727/badge"></a>
-  -->
+
 </p>
 
 ## Installation

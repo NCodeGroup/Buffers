@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - FsCheck property tests for `StringSegments`, the fixed buffer writers, `BufferFactory` and the cryptographic helpers, with a fixed seed so every run is deterministic ([NCodeGroup/project-template#373](https://github.com/NCodeGroup/project-template/issues/373)).
-- A draft of the OpenSSF Best Practices badge and the answers to its passing criteria, in `docs/best-practices-badge.md`, for a maintainer to register ([NCodeGroup/project-template#374](https://github.com/NCodeGroup/project-template/issues/374)).
+- The OpenSSF Best Practices passing badge, for project 16727, in the README, and `docs/best-practices-badge.md` ([NCodeGroup/project-template#374](https://github.com/NCodeGroup/project-template/issues/374)).
 - Each release is attested with build provenance and carries an SPDX SBOM, from `.github/workflows/release-provenance.yml`, and `SECURITY.md` says how to verify a package with `gh attestation verify`.
 
 ### Changed
