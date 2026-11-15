@@ -44,7 +44,7 @@ every assembly and package.**
 
 ## References
 
-- `version.json`, `Directory.Build.props`, `.github/workflows/publish.yml`
+- `version.json`, `build/ProjectTemplate.props`, `.github/workflows/publish.yml`
 - [ADR-0136](project-template/0136-packages-follow-semantic-versioning-and-the-assembly-version-moves-only-with-the-major.md):
   packages follow Semantic Versioning and the assembly version moves only with the major.
 - [ADR-0135](project-template/0135-packages-are-published-from-a-github-release-through-trusted-publishing.md):
