@@ -1,0 +1,14 @@
+# Codecov settings for the coverage report CI publishes from each push to main (.github/workflows/ci.yml).
+# A partly covered line counts as covered, as coverlet's line rate and build/Test-Coverage.ps1's gate count it, and
+# the statuses only inform: the coverage gate in CI is the verdict.
+coverage:
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true
+parsers:
+  cobertura:
+    partials_as_hits: true
