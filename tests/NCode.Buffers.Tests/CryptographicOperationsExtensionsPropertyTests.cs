@@ -1,7 +1,6 @@
 // Copyright © NCode Group
 // SPDX-License-Identifier: Apache-2.0
 
-using System.Security.Cryptography;
 using FsCheck;
 using FsCheck.Xunit;
 
@@ -14,16 +13,23 @@ public class CryptographicOperationsExtensionsPropertyTests
     #region FixedTimeEquals Tests
 
     [Property(Replay = Seed)]
-    public bool FixedTimeEquals_MatchesSequenceEqual(byte[] left, byte[] right)
+    public bool FixedTimeEquals_WithInts_MatchesSequenceEqual(int[] left, int[] right)
     {
-        return CryptographicOperations.FixedTimeEquals(left.AsSpan(), right.AsSpan())
+        return CryptographicOperationsExtensions.FixedTimeEquals<int>(left, right)
             == left.AsSpan().SequenceEqual(right);
     }
 
     [Property(Replay = Seed)]
-    public bool FixedTimeEquals_GivenACopy_ReturnsTrue(byte[] value)
+    public bool FixedTimeEquals_WithBytes_MatchesSequenceEqual(byte[] left, byte[] right)
     {
-        return CryptographicOperations.FixedTimeEquals(value.AsSpan(), value.ToArray().AsSpan());
+        return CryptographicOperationsExtensions.FixedTimeEquals<byte>(left, right)
+            == left.AsSpan().SequenceEqual(right);
+    }
+
+    [Property(Replay = Seed)]
+    public bool FixedTimeEquals_GivenACopy_ReturnsTrue(long[] value)
+    {
+        return CryptographicOperationsExtensions.FixedTimeEquals<long>(value, value.ToArray());
     }
 
     #endregion
@@ -31,13 +37,23 @@ public class CryptographicOperationsExtensionsPropertyTests
     #region ZeroMemory Tests
 
     [Property(Replay = Seed)]
-    public bool ZeroMemory_ZeroesEveryElementAndKeepsTheLength(byte[] value)
+    public bool ZeroMemory_WithInts_ZeroesEveryElementAndKeepsTheLength(int[] value)
     {
         var length = value.Length;
 
-        CryptographicOperations.ZeroMemory(value.AsSpan());
+        CryptographicOperationsExtensions.ZeroMemory<int>(value);
 
-        return value.Length == length && value.All(b => b == 0);
+        return value.Length == length && value.All(element => element == 0);
+    }
+
+    [Property(Replay = Seed)]
+    public bool ZeroMemory_WithBytes_ZeroesEveryElementAndKeepsTheLength(byte[] value)
+    {
+        var length = value.Length;
+
+        CryptographicOperationsExtensions.ZeroMemory<byte>(value);
+
+        return value.Length == length && value.All(element => element == 0);
     }
 
     #endregion
