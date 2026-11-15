@@ -29,29 +29,41 @@ The target frameworks are the ones the package's `.csproj` declares; they are li
 
 This example derives a key from a password, verifies an HMAC-SHA256 signature with it, and zeroes the derived key and the expected MAC when the method returns.
 
-```csharp
+<!-- snippet: QuickStart -->
+```cs
 using System.Security.Cryptography;
 using NCode.Buffers;
 
-static bool VerifySignature(
-    ReadOnlySpan<byte> password,
-    ReadOnlySpan<byte> salt,
-    ReadOnlySpan<byte> payload,
-    ReadOnlySpan<byte> signature)
+public static class Signatures
 {
-    // A pinned, pooled 32-byte key, zeroed when keyOwner is disposed.
-    using var keyOwner = BufferFactory.Rent(32, isSensitive: true, out Span<byte> key);
-    Rfc2898DeriveBytes.Pbkdf2(password, salt, key, iterations: 600_000, HashAlgorithmName.SHA256);
+    public static bool VerifySignature(
+        ReadOnlySpan<byte> password,
+        ReadOnlySpan<byte> salt,
+        ReadOnlySpan<byte> payload,
+        ReadOnlySpan<byte> signature
+    )
+    {
+        // A pinned, pooled 32-byte key, zeroed when keyOwner is disposed.
+        using var keyOwner = BufferFactory.Rent(32, isSensitive: true, out Span<byte> key);
+        Rfc2898DeriveBytes.Pbkdf2(
+            password,
+            salt,
+            key,
+            iterations: 600_000,
+            HashAlgorithmName.SHA256
+        );
 
-    // The expected MAC lives on the stack and is zeroed when expectedLifetime is disposed.
-    Span<byte> expected = stackalloc byte[HMACSHA256.HashSizeInBytes];
-    using var expectedLifetime = expected.GetSecureLifetime();
-    HMACSHA256.HashData(key, payload, expected);
+        // The expected MAC lives on the stack and is zeroed when expectedLifetime is disposed.
+        Span<byte> expected = stackalloc byte[HMACSHA256.HashSizeInBytes];
+        using var expectedLifetime = expected.GetSecureLifetime();
+        HMACSHA256.HashData(key, payload, expected);
 
-    // Constant time, so the comparison doesn't reveal where the MACs differ.
-    return CryptographicOperations.FixedTimeEquals(expected, signature);
+        // Constant time, so the comparison doesn't reveal where the MACs differ.
+        return CryptographicOperations.FixedTimeEquals(expected, signature);
+    }
 }
 ```
+<!-- endSnippet -->
 
 See [Choosing a type](#choosing-a-type) for the other buffers.
 
@@ -92,7 +104,8 @@ Nothing here is pinned or zeroed.
 
 The entry point. `isSensitive: true` takes buffers from `SecureMemoryPool<T>` (pinned, zeroed on dispose), while `isSensitive: false` takes them from `MemoryPool<T>.Shared` (neither). `Rent` hands back a span sliced to exactly the requested length.
 
-```csharp
+<!-- snippet: BufferFactory -->
+```cs
 // A pooled buffer that is pinned and zeroed on dispose, sliced to exactly 256 bytes.
 using var owner = BufferFactory.Rent(256, isSensitive: true, out Span<byte> buffer);
 
@@ -108,21 +121,25 @@ writer.Advance(7);
 // A growable writer for data that isn't secret.
 ArrayBufferWriter<byte> arrayWriter = BufferFactory.CreateArrayBufferWriter(1024);
 ```
+<!-- endSnippet -->
 
 #### SecureMemoryPool&lt;T&gt;
 
 A `MemoryPool<T>` whose buffers are pinned and zeroed with `CryptographicOperations.ZeroMemory` when returned. It drops its cached buffers during a Gen2 collection when memory load passes `HighPressureThreshold` (default 0.9).
 
-```csharp
+<!-- snippet: SecureMemoryPool -->
+```cs
 using IMemoryOwner<byte> owner = SecureMemoryPool<byte>.Shared.Rent(1024);
 Memory<byte> memory = owner.Memory; // at least 1024 bytes: slice it to the length you need
 ```
+<!-- endSnippet -->
 
 #### SecureArrayLifetime&lt;T&gt; and SecureSpanLifetime&lt;T&gt;
 
 `ref struct`s that zero their memory on `Dispose`. `SecureArrayLifetime<T>` allocates a pinned array, while `SecureSpanLifetime<T>` wraps memory you already have and doesn't pin it.
 
-```csharp
+<!-- snippet: SecureLifetime -->
+```cs
 // A pinned array, zeroed when lifetime is disposed.
 using var lifetime = SecureArrayLifetime<byte>.Create(256);
 Span<byte> buffer = lifetime;
@@ -131,6 +148,7 @@ Span<byte> buffer = lifetime;
 Span<byte> stackBuffer = stackalloc byte[128];
 using var secure = stackBuffer.GetSecureLifetime();
 ```
+<!-- endSnippet -->
 
 ### Buffer writers
 
@@ -138,7 +156,8 @@ using var secure = stackBuffer.GetSecureLifetime();
 
 A `ref struct` `IBufferWriter<T>` over a span you supply. `GetSpan` or `Advance` past its capacity throws `InvalidOperationException`.
 
-```csharp
+<!-- snippet: FixedSpanBufferWriter -->
+```cs
 Span<byte> buffer = stackalloc byte[256];
 var writer = new FixedSpanBufferWriter<byte>(buffer);
 
@@ -146,12 +165,14 @@ var writer = new FixedSpanBufferWriter<byte>(buffer);
 writer.Advance(4);
 ReadOnlySpan<byte> written = writer.WrittenSpan;
 ```
+<!-- endSnippet -->
 
 #### FixedMemoryBufferWriter&lt;T&gt;
 
 The same over `Memory<T>`, as a class you can keep in a field or use across `await`.
 
-```csharp
+<!-- snippet: FixedMemoryBufferWriter -->
+```cs
 var writer = new FixedMemoryBufferWriter<byte>(new byte[256]);
 using (var json = new Utf8JsonWriter(writer))
 {
@@ -159,6 +180,7 @@ using (var json = new Utf8JsonWriter(writer))
 }
 await stream.WriteAsync(writer.WrittenMemory);
 ```
+<!-- endSnippet -->
 
 ### Sequences
 
@@ -166,18 +188,21 @@ await stream.WriteAsync(writer.WrittenMemory);
 
 Chains memory blocks into a `ReadOnlySequence<T>`.
 
-```csharp
+<!-- snippet: MemorySegment -->
+```cs
 var first = new MemorySegment<byte>((byte[])[1, 2, 3]);
 var last = first.Append((byte[])[4, 5, 6]);
 var sequence = new ReadOnlySequence<byte>(first, 0, last, last.Memory.Length);
 // sequence holds 1, 2, 3, 4, 5, 6
 ```
+<!-- endSnippet -->
 
 #### SequenceExtensions and RefSpanLease&lt;T&gt;
 
 `GetSpanLease` returns a `RefSpanLease<T>`, a span paired with the owner to dispose. Treat the writer as consumed once you dispose the lease.
 
-```csharp
+<!-- snippet: GetSpanLease -->
+```cs
 using var writer = BufferFactory.CreatePooledBufferWriter(isSensitive: true);
 // ... write to writer ...
 
@@ -187,46 +212,60 @@ using (var lease = writer.GetSpanLease(isSensitive: true))
     Process(lease.Span);
 }
 ```
+<!-- endSnippet -->
 
 `ConsumeAsContiguousSpan` takes ownership of the data and returns its owner.
 
-```csharp
+<!-- snippet: ConsumeAsContiguousSpan -->
+```cs
 using var writer = BufferFactory.CreatePooledBufferWriter(isSensitive: true);
 // ... write to writer ...
 
 // owner now owns the data; don't use writer again.
-using var owner = writer.ConsumeAsContiguousSpan(isSensitive: true, out ReadOnlySpan<byte> span);
+using var owner = writer.ConsumeAsContiguousSpan(
+    isSensitive: true,
+    out ReadOnlySpan<byte> span
+);
 Process(span);
 ```
+<!-- endSnippet -->
 
 #### EmptyMemory&lt;T&gt;
 
 A shared, empty `IMemoryOwner<T>` whose `Dispose` does nothing.
 
-```csharp
+<!-- snippet: EmptyMemory -->
+```cs
 IMemoryOwner<byte> empty = EmptyMemory<byte>.Singleton;
 ```
+<!-- endSnippet -->
 
 ### String splitting
 
 `StringSegments.Split` and the `SplitSegments` extension split a `string` or `ReadOnlyMemory<char>` on a `char` or a string separator, optionally with a `StringComparison`, without copying substrings: each segment's `Memory` is a slice of the original, and the result is an `IReadOnlyCollection<ReadOnlySequenceSegment<char>>`. It isn't zero-allocation: it allocates one small segment object per piece.
 
-```csharp
+<!-- snippet: StringSegments -->
+```cs
 foreach (var segment in "one,two,three".SplitSegments(','))
 {
     Console.WriteLine(segment.Memory.ToString());
 }
 
 StringSegments segments = StringSegments.Split(
-    "aSEPbSEPc", "sep", StringComparison.OrdinalIgnoreCase);
+    "aSEPbSEPc",
+    "sep",
+    StringComparison.OrdinalIgnoreCase
+);
 int count = segments.Count; // 3
 ```
+<!-- endSnippet -->
 
 ### Secure encoding
 
 `SecureEncoding.UTF8` and `SecureEncoding.ASCII` throw `DecoderFallbackException` or `EncoderFallbackException` on invalid input instead of substituting U+FFFD or `?`. `SecureEncoding.UTF8` writes no byte order mark.
 
-```csharp
+<!-- snippet: SecureEncoding -->
+```cs
 byte[] bytes = SecureEncoding.UTF8.GetBytes("Hello, World!");
 string text = SecureEncoding.UTF8.GetString(bytes);
 
@@ -240,12 +279,14 @@ catch (DecoderFallbackException)
     // reject the input
 }
 ```
+<!-- endSnippet -->
 
 ### CryptographicOperations extensions
 
 `ZeroMemory<T>` and `FixedTimeEquals<T>` work on spans of any value type without reference fields; a `T` with references throws `ArgumentException`. These are C# 14 extension members on `CryptographicOperations`, which a project compiles with by default on any framework this package targets; a project that sets an older `LangVersion` calls them on `CryptographicOperationsExtensions` instead, as the sample's last line does.
 
-```csharp
+<!-- snippet: CryptographicOperations -->
+```cs
 Span<int> sensitiveData = stackalloc int[4];
 // ... use the sensitive data ...
 CryptographicOperations.ZeroMemory(sensitiveData);
@@ -257,6 +298,7 @@ bool isValid = CryptographicOperations.FixedTimeEquals(computed, expected);
 // The same methods, callable from any C# version:
 CryptographicOperationsExtensions.ZeroMemory(sensitiveData);
 ```
+<!-- endSnippet -->
 
 ## Security notes
 
