@@ -76,61 +76,50 @@ Stack memory never moves, so a `stackalloc` buffer needs no pinning.
 
 ## Features
 
-### Secure Memory Management
+### Secure memory
 
 #### BufferFactory
 
-A unified API for renting and creating secure memory buffers:
-
-- **Rent buffers** - Rent pooled buffers with optional secure zeroing on return
-- **Create pinned arrays** - Allocate GC-pinned arrays that are zeroed on disposal
-- **Create pooled buffer writers** - Build sequences incrementally with automatic secure disposal
-- **Create array buffer writers** - Simple, non-pooled buffer writers for general-purpose use
+The entry point. `isSensitive: true` takes buffers from `SecureMemoryPool<T>` (pinned, zeroed on dispose), while `isSensitive: false` takes them from `MemoryPool<T>.Shared` (neither). `Rent` hands back a span sliced to exactly the requested length.
 
 ```csharp
-// Rent a sensitive buffer (pinned + zeroed on dispose)
+// A pooled buffer that is pinned and zeroed on dispose, sliced to exactly 256 bytes.
 using var owner = BufferFactory.Rent(256, isSensitive: true, out Span<byte> buffer);
-// Use buffer for cryptographic operations
 
-// Create a pinned array
+// A pinned array, for an API that needs a byte[].
 using var lifetime = BufferFactory.CreatePinnedArray(128);
-Span<byte> pinnedBuffer = lifetime;
+byte[] array = lifetime;
 
-// Create a pooled buffer writer
-using var writer = BufferFactory.CreatePooledBufferWriter<byte>(isSensitive: true);
-var span = writer.GetSpan(100);
-// Write data, then call writer.Advance(bytesWritten)
+// A writer for a secret of unknown length, built from pinned, pooled segments.
+using var writer = BufferFactory.CreatePooledBufferWriter(isSensitive: true);
+"payload"u8.CopyTo(writer.GetSpan(7));
+writer.Advance(7);
 
-// Create a simple array buffer writer (non-sensitive data)
-var arrayWriter = BufferFactory.CreateArrayBufferWriter<byte>(1024);
+// A growable writer for data that isn't secret.
+ArrayBufferWriter<byte> arrayWriter = BufferFactory.CreateArrayBufferWriter(1024);
 ```
 
 #### SecureMemoryPool&lt;T&gt;
 
-A memory pool for sensitive data that:
-
-- **Pins buffers** - Prevents GC from moving memory (essential for crypto/interop)
-- **Securely zeroes** - Uses `CryptographicOperations.ZeroMemory` on return
-- **Auto-trims** - Releases cached memory under high memory pressure
+A `MemoryPool<T>` whose buffers are pinned and zeroed with `CryptographicOperations.ZeroMemory` when returned. It drops its cached buffers during a Gen2 collection when memory load passes `HighPressureThreshold` (default 0.9).
 
 ```csharp
-using var owner = SecureMemoryPool<byte>.Shared.Rent(1024);
-var buffer = owner.Memory.Span;
-// Memory is pinned and will be zeroed when owner is disposed
+using IMemoryOwner<byte> owner = SecureMemoryPool<byte>.Shared.Rent(1024);
+Memory<byte> memory = owner.Memory; // at least 1024 bytes: slice it to the length you need
 ```
 
-#### SecureArrayLifetime&lt;T&gt; / SecureSpanLifetime&lt;T&gt;
+#### SecureArrayLifetime&lt;T&gt; and SecureSpanLifetime&lt;T&gt;
 
-Ref structs for stack-only secure memory management:
+`ref struct`s that zero their memory on `Dispose`. `SecureArrayLifetime<T>` allocates a pinned array, while `SecureSpanLifetime<T>` wraps memory you already have and doesn't pin it.
 
 ```csharp
-// Pinned array with secure zeroing
+// A pinned array, zeroed when lifetime is disposed.
 using var lifetime = SecureArrayLifetime<byte>.Create(256);
 Span<byte> buffer = lifetime;
 
-// Wrap existing span for secure zeroing
+// Memory you already have, zeroed when secure is disposed.
 Span<byte> stackBuffer = stackalloc byte[128];
-using var secure = new SecureSpanLifetime<byte>(stackBuffer);
+using var secure = stackBuffer.GetSecureLifetime();
 ```
 
 ### Buffer Writers
