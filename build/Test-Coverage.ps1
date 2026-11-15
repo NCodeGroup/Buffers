@@ -5,7 +5,8 @@ Runs the tests with coverage, lists every line no test runs, and fails below the
 .DESCRIPTION
 Runs the NCode.Buffers.Tests project with the coverlet 'XPlat Code Coverage' collector, reads the Cobertura report,
 prints every source line that no test runs, and prints the line and branch coverage. The script exits with 1 when the
-line coverage or the branch coverage is below its minimum, and with 0 otherwise.
+line coverage or the branch coverage is below its minimum, and with 0 otherwise. With -ReportDirectory, it also keeps
+a copy of each report.
 
 .PARAMETER MinimumLineRate
 The lowest accepted line coverage, from 0.0 to 1.0. The default is 0.98.
@@ -13,18 +14,27 @@ The lowest accepted line coverage, from 0.0 to 1.0. The default is 0.98.
 .PARAMETER MinimumBranchRate
 The lowest accepted branch coverage, from 0.0 to 1.0. The default is 0.98.
 
+.PARAMETER ReportDirectory
+A folder to copy each Cobertura report into, as <ReportDirectory>/<run folder>/coverage.cobertura.xml, such as
+artifacts/coverage, which CI uploads to Codecov. By default, no report is kept.
+
 .EXAMPLE
 ./build/Test-Coverage.ps1
+
+.EXAMPLE
+./build/Test-Coverage.ps1 -ReportDirectory artifacts/coverage
 #>
 [CmdletBinding()]
 param(
     [ValidateRange(0.0, 1.0)][double]$MinimumLineRate = 0.98,
-    [ValidateRange(0.0, 1.0)][double]$MinimumBranchRate = 0.98
+    [ValidateRange(0.0, 1.0)][double]$MinimumBranchRate = 0.98,
+    [string]$ReportDirectory
 )
 
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
+$reportRoot = if ($ReportDirectory) { $PSCmdlet.GetUnresolvedProviderPathFromPSPath($ReportDirectory) }
 $results = Join-Path ([IO.Path]::GetTempPath()) "ncode-buffers-coverage-$([guid]::NewGuid().ToString('N'))"
 $exitCode = 0
 
@@ -36,6 +46,12 @@ try {
     if ($reports.Count -eq 0) { throw 'dotnet test wrote no coverage.cobertura.xml report.' }
 
     foreach ($report in $reports) {
+        if ($reportRoot) {
+            $kept = Join-Path $reportRoot $report.Directory.Name
+            New-Item -ItemType Directory -Force -Path $kept | Out-Null
+            Copy-Item -LiteralPath $report.FullName -Destination $kept
+        }
+
         [xml]$xml = Get-Content -LiteralPath $report.FullName -Raw
         $source = @($xml.coverage.sources.source)[0]
 
