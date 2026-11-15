@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Package validation compares every package with the published 5.0.2 package instead of 5.0.0 ([ADR-1001](docs/decisions/1001-each-package-is-validated-against-the-last-released-package.md)).
+
 ## [5.0.2] - 2026-11-15
 
 ### Added
