@@ -23,11 +23,11 @@ namespace NCode.Buffers;
 public static class BufferExtensions
 {
     /// <summary>
-    /// Extension methods for <see cref="Span{T}"/> where T is a value type.
+    /// Extension methods for <see cref="Span{T}"/> where T is an unmanaged value type.
     /// </summary>
     /// <typeparam name="T">The type of elements in the span.</typeparam>
     extension<T>(Span<T> span)
-        where T : struct
+        where T : unmanaged
     {
         /// <summary>
         /// Wraps this span in a <see cref="SecureSpanLifetime{T}"/> that securely zeroes the memory upon disposal.
@@ -62,7 +62,15 @@ public static class BufferExtensions
         {
             return new SecureSpanLifetime<T>(span);
         }
+    }
 
+    /// <summary>
+    /// Extension methods for <see cref="Span{T}"/> where T is a value type.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the span.</typeparam>
+    extension<T>(Span<T> span)
+        where T : struct
+    {
         /// <summary>
         /// Creates a <see cref="FixedSpanBufferWriter{T}"/> that writes to this span.
         /// </summary>
