@@ -26,6 +26,12 @@ on:
         description: The release tag, such as v1.2.3
         required: true
         type: string
+      # publish.yml passes none: the packages are the calling run's own.
+      run-id:
+        description: Empty, to attest the calling run's packages
+        required: false
+        type: string
+        default: ''
   workflow_dispatch:
     inputs:
       tag:
@@ -70,7 +76,6 @@ jobs:
           "version=$($Matches[1])" >> $env:GITHUB_OUTPUT
 
       # A backfill names the run to take the packages from; a call from publish.yml names none and uses its own run.
-      # Inside a call, inputs holds only what the caller passed, so run-id is empty there.
       - name: Check the run to backfill is a successful Publish packages run
         if: inputs.run-id != ''
         shell: pwsh
