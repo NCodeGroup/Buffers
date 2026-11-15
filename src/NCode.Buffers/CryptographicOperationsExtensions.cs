@@ -54,7 +54,7 @@ public static class CryptographicOperationsExtensions
         /// </example>
         [PublicAPI]
         public static void ZeroMemory<T>(Span<T> buffer)
-            where T : struct
+            where T : unmanaged
         {
             CryptographicOperations.ZeroMemory(MemoryMarshal.AsBytes(buffer));
         }
@@ -92,7 +92,7 @@ public static class CryptographicOperationsExtensions
         /// </example>
         [PublicAPI]
         public static bool FixedTimeEquals<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right)
-            where T : struct
+            where T : unmanaged
         {
             return CryptographicOperations.FixedTimeEquals(
                 MemoryMarshal.AsBytes(left),

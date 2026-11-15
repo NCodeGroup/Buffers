@@ -30,7 +30,7 @@ public static class SequenceExtensions
 {
     /// <typeparam name="T">The type of elements in the sequence. Must be an unmanaged value type.</typeparam>
     extension<T>(Sequence<T> buffer)
-        where T : struct
+        where T : unmanaged
     {
         /// <summary>
         /// Gets a <see cref="RefSpanLease{T}"/> that provides access to the underlying data as a contiguous <see cref="ReadOnlySpan{T}"/>.

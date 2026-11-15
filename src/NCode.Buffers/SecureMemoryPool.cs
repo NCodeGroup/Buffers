@@ -42,7 +42,7 @@ namespace NCode.Buffers;
 /// </example>
 [PublicAPI]
 public class SecureMemoryPool<T> : MemoryPool<T>
-    where T : struct
+    where T : unmanaged
 {
     /// <summary>
     /// The default high pressure threshold when the memory pool should trim cached memory.

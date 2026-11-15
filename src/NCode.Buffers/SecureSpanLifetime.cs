@@ -33,7 +33,7 @@ namespace NCode.Buffers;
 /// </example>
 [PublicAPI]
 public readonly ref struct SecureSpanLifetime<T>(Span<T> span) : IDisposable
-    where T : struct
+    where T : unmanaged
 {
     /// <summary>
     /// Gets the underlying span managed by this lifetime.

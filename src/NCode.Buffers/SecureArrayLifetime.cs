@@ -34,7 +34,7 @@ namespace NCode.Buffers;
 /// </example>
 [PublicAPI]
 public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable
-    where T : struct
+    where T : unmanaged
 {
     /// <summary>
     /// Creates a new <see cref="SecureArrayLifetime{T}"/> with the specified length.
