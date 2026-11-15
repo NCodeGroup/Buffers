@@ -69,14 +69,22 @@ public class BufferFactoryPropertyTests
 
     #region CreatePinnedArray Tests
 
+    // A new pinned array is uninitialized, as README's Security notes say, so only Dispose's zeroing is asserted: the
+    // array is filled with a non-zero byte first, so nothing but that zeroing can leave it all zeros.
     [Property(Replay = Seed)]
-    public bool CreatePinnedArray_GivenAnyLength_ReturnsAZeroedArrayOfThatLength(byte length)
+    public bool CreatePinnedArray_GivenAnyLength_ReturnsAnArrayOfThatLengthThatDisposeZeroes(
+        byte length
+    )
     {
-        using var lifetime = BufferFactory.CreatePinnedArray(length);
+        const byte Filler = 0xA5;
+        var lifetime = BufferFactory.CreatePinnedArray(length);
+        var array = lifetime.PinnedArray;
+        array.AsSpan().Fill(Filler);
+        var hasLength = lifetime.Length == length && array.Length == length;
 
-        return lifetime.Length == length
-            && lifetime.PinnedArray.Length == length
-            && lifetime.PinnedArray.All(element => element == 0);
+        lifetime.Dispose();
+
+        return hasLength && array.All(element => element == 0);
     }
 
     #endregion
