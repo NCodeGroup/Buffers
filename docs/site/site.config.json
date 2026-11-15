@@ -1,0 +1,22 @@
+{
+  "title": "NCode.Buffers",
+  "description": "Pinned, pooled .NET buffers that zero themselves on dispose, for keys and other secrets, plus fixed-size buffer writers and string splitting without substring copies.",
+  "product": "Buffers",
+  "mark": "ncode",
+  "version": "v5",
+  "repository": {
+    "url": "https://github.com/NCodeGroup/Buffers",
+    "branch": "main"
+  },
+  "site": {
+    "url": "https://ncodegroup.github.io/Buffers"
+  },
+  "sidebar": [
+    { "label": "Start", "items": [{ "slug": "index", "label": "Overview" }] }
+  ],
+  "social": [
+    { "label": "GitHub", "href": "https://github.com/NCodeGroup/Buffers" },
+    { "label": "NuGet", "href": "https://www.nuget.org/packages/NCode.Buffers/" }
+  ],
+  "samples": ["tests/**/*.cs"]
+}

@@ -1,0 +1,35 @@
+---
+title: NCode.Buffers
+description: Pinned, pooled .NET buffers that zero themselves on dispose, for keys and other secrets, plus fixed-size buffer writers and string splitting without substring copies.
+template: splash
+hero:
+  title: Secrets that clean up after themselves.
+  tagline: Pinned, pooled .NET buffers that zero themselves on dispose, for keys and other secrets, plus fixed-size buffer writers and string splitting without substring copies.
+  actions:
+    - text: View on GitHub
+      link: https://github.com/NCodeGroup/Buffers
+      icon: external
+      variant: primary
+---
+
+## Install
+
+```sh
+dotnet add package NCode.Buffers
+```
+
+## A key that is zeroed after use
+
+This example fills a key on the stack, computes an HMAC-SHA256 over a payload with it, and zeroes the key when the
+`using` block ends.
+
+```cs snippet=SiteZeroedAfterUse
+```
+
+The example is a test in the repository. It compiles and passes on every pull request, and this page includes it
+from there.
+
+## Source
+
+The code, the README and the changelog are in the
+[NCodeGroup/Buffers repository](https://github.com/NCodeGroup/Buffers).
