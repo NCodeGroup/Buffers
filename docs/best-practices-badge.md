@@ -7,11 +7,11 @@ until then ([project-template#374](https://github.com/NCodeGroup/project-templat
 
 ## The badge
 
-Replace `PROJECT_ID` with the number the site assigns, then uncomment the line in [README.md](../README.md) next to the
+The project is registered as 16727 and its answers are still being entered. Once the site shows the passing badge, uncomment the line in [README.md](../README.md) next to the
 Scorecard badge:
 
 ```markdown
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/PROJECT_ID/badge)](https://www.bestpractices.dev/projects/PROJECT_ID)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16727/badge)](https://www.bestpractices.dev/projects/16727)
 ```
 
 ## What a person does
@@ -20,7 +20,7 @@ Scorecard badge:
 2. Choose **Get Your Badge Now** and add `https://github.com/NCodeGroup/Buffers`. The form pre-fills what it can.
 3. Enter the answers below. Choose **Met** only for a criterion you agree is met; the ones marked *You decide* are
    commitments or settings only the maintainers can confirm.
-4. Save. The site assigns the project ID; put it in the badge markdown above and in the README.
+4. Save. The project ID is 16727, already in the badge markdown above and in the README.
 5. Edit this page to say the badge is registered, and keep the answers current as the project changes.
 
 ## Answers
