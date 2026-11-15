@@ -10,7 +10,7 @@ The secure APIs pin buffers and zero or compare them as bytes. `GC.AllocateUnini
 and `MemoryMarshal.AsBytes<T>` throw `ArgumentException` for a `T` that is or contains a reference. Under
 `where T : struct` such a `T` compiles, and the call fails at run time: on `SecureMemoryPool<T>.Rent`, on creating a
 `SecureArrayLifetime<T>`, on disposing a `SecureSpanLifetime<T>`, or on `ZeroMemory<T>` and `FixedTimeEquals<T>`, while
-their documentation says `T` must be an unmanaged value type. 5.0.0 is an unreleased major version
+their documentation says `T` must be an unmanaged value type. 5.0.0 is a major version
 ([ADR-1000](1000-package-versions-come-from-version-json-through-nerdbank-gitversioning.md)), where a break can ship.
 
 ## Decision
