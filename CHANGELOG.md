@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0] - 2026-11-14
+
 ### Added
 
 - Public API tracking with `PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt`, recording the surface released in 4.1.0.
@@ -28,13 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `AssemblyVersion` now moves only with the major version; `FileVersion` and `InformationalVersion` keep the exact version. Earlier releases set `AssemblyVersion` to the full version, such as `4.1.0.0`; the 4.x line keeps `4.1.0.0`, so an application built against 4.1.0 still loads later 4.x releases.
 - Internal analyzer clean-up (suppressions with justifications and a discarded `Gen2GcCallback` instance); behavior and public API are unchanged.
 - Project updated from project-template v0.41.0 to v0.86.1 (build, CI and contribution tooling) ([#26](https://github.com/NCodeGroup/Buffers/issues/26)).
-- A published GitHub release starts `publish.yml`, which pushes the packages to nuget.org; `AGENTS.md` keeps `release: none` until the plan for the next release sets `release: tag+release`, which has each release tagged and published as its pull request merges ([#25](https://github.com/NCodeGroup/Buffers/issues/25), [ADR-0016](docs/decisions/project-template/0016-releases-are-tagged-and-published-when-their-pull-request-merges.md)).
+- A published GitHub release starts `publish.yml`, which pushes the packages to nuget.org; `AGENTS.md` sets `release: tag+release`, which has each release tagged and published as its pull request merges ([#25](https://github.com/NCodeGroup/Buffers/issues/25), [ADR-0016](docs/decisions/project-template/0016-releases-are-tagged-and-published-when-their-pull-request-merges.md)).
 - `SECURITY.md`, `CONTRIBUTING.md`, `AGENTS.md` and the README describe the new release path ([#25](https://github.com/NCodeGroup/Buffers/issues/25)).
 - `BufferFactory` is no longer excluded from code coverage, and `SequenceExtensions` no longer carries exception handlers that no input can reach; behavior and public API are unchanged.
 - Every C# file starts with the two-line SPDX header instead of the Apache-2.0 preamble, and the build enforces it ([ADR-1002](docs/decisions/1002-csharpier-formats-the-code-and-every-csharp-file-starts-with-an-spdx-header.md)).
 - The solution file is `NCode.Buffers.slnx`, and Source Link comes from the .NET SDK instead of the `Microsoft.SourceLink.GitHub` package.
 - The library's source is in `src/NCode.Buffers` and its tests are in `tests/NCode.Buffers.Tests`, as the project template lays out .NET projects; the package and its public API are unchanged ([#34](https://github.com/NCodeGroup/Buffers/issues/34)).
-- The next release is 5.0.0, and its assemblies carry `AssemblyVersion` 5.0.0.0 ([#35](https://github.com/NCodeGroup/Buffers/issues/35), [ADR-1000](docs/decisions/1000-package-versions-come-from-version-json-through-nerdbank-gitversioning.md)).
+- This release is 5.0.0, and its assemblies carry `AssemblyVersion` 5.0.0.0 ([#35](https://github.com/NCodeGroup/Buffers/issues/35), [ADR-1000](docs/decisions/1000-package-versions-come-from-version-json-through-nerdbank-gitversioning.md)).
 - The README opens with installation, a quick start and a table for choosing a type, and adds security notes on what pinning and zeroing do and don't guarantee; the package description no longer calls string splitting zero-allocation, neither README nor the description names a .NET version (a badge reads the target framework from the project file), and the package icon is the current NCode mark.
 - **Breaking:** `SecureMemoryPool<T>`, `SecureArrayLifetime<T>`, `SecureSpanLifetime<T>`, `CryptographicOperations.ZeroMemory<T>` and `FixedTimeEquals<T>`, `BufferFactory.Rent<T>`, `CreatePinnedArray<T>` and `CreatePooledBufferWriter<T>`, `Span<T>.GetSecureLifetime()` and the `Sequence<T>` extensions require `T : unmanaged` instead of `T : struct`, so a `T` with reference fields fails to compile instead of throwing `ArgumentException` at run time; code that passes such a `T` with `isSensitive: false` uses `MemoryPool<T>.Shared` or `new Sequence<T>()` directly ([#45](https://github.com/NCodeGroup/Buffers/issues/45), [ADR-1006](docs/decisions/1006-the-secure-apis-constrain-their-element-type-to-unmanaged.md)).
 
@@ -66,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v4.1.0...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.0.0...HEAD
+[5.0.0]: https://github.com/NCodeGroup/Buffers/compare/v4.1.0...v5.0.0
 [4.1.0]: https://github.com/NCodeGroup/Buffers/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/NCodeGroup/Buffers/releases/tag/v4.0.0
