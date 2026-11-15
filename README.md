@@ -197,67 +197,54 @@ A shared, empty `IMemoryOwner<T>` whose `Dispose` does nothing.
 IMemoryOwner<byte> empty = EmptyMemory<byte>.Singleton;
 ```
 
-### String Splitting
+### String splitting
 
-#### StringSegments
-
-Zero-allocation string splitting returning `ReadOnlyMemory<char>` segments:
-
-- **Zero heap allocations** - Unlike `string.Split()`, no arrays allocated
-- **Character or string delimiters** - Flexible splitting options
-- **Case-sensitive or case-insensitive** - Full `StringComparison` support
-- **IReadOnlyCollection** - Full LINQ support
+`StringSegments.Split` and the `SplitSegments` extension split a `string` or `ReadOnlyMemory<char>` on a `char` or a string separator, optionally with a `StringComparison`, without copying substrings: each segment's `Memory` is a slice of the original, and the result is an `IReadOnlyCollection<ReadOnlySequenceSegment<char>>`. It isn't zero-allocation: it allocates one small segment object per piece.
 
 ```csharp
-// Split on character
-foreach (var segment in StringSegments.Split("one,two,three", ','))
+foreach (var segment in "one,two,three".SplitSegments(','))
 {
     Console.WriteLine(segment.Memory.ToString());
 }
 
-// Split on string with case-insensitive comparison
-var segments = StringSegments.Split("aSEPbSEPc", "sep", StringComparison.OrdinalIgnoreCase);
+StringSegments segments = StringSegments.Split("aSEPbSEPc", "sep", StringComparison.OrdinalIgnoreCase);
+int count = segments.Count; // 3
+```
 
-// Extension methods
-foreach (var segment in "a,b,c".SplitSegments(','))
+### Secure encoding
+
+`SecureEncoding.UTF8` and `SecureEncoding.ASCII` throw `DecoderFallbackException` or `EncoderFallbackException` on invalid input instead of substituting U+FFFD or `?`. `SecureEncoding.UTF8` writes no byte order mark.
+
+```csharp
+byte[] bytes = SecureEncoding.UTF8.GetBytes("Hello, World!");
+string text = SecureEncoding.UTF8.GetString(bytes);
+
+// Invalid UTF-8 throws instead of decoding to U+FFFD.
+try
 {
-    // Process each segment
+    SecureEncoding.UTF8.GetString((byte[])[0xC3, 0x28]);
+}
+catch (DecoderFallbackException)
+{
+    // reject the input
 }
 ```
 
-### Secure Encoding
+### CryptographicOperations extensions
 
-#### SecureEncoding
-
-Pre-configured encodings that throw on invalid bytes instead of using replacement characters:
+`ZeroMemory<T>` and `FixedTimeEquals<T>` work on spans of any value type without reference fields; a `T` with references throws `ArgumentException`. These are C# 14 extension members on `CryptographicOperations`, which a project compiles with by default on any framework this package targets; a project that sets an older `LangVersion` calls them on `CryptographicOperationsExtensions` instead, as the sample's last line does.
 
 ```csharp
-// Throws on invalid UTF-8 sequences (no silent replacement)
-byte[] bytes = SecureEncoding.UTF8.GetBytes(text);
-string text = SecureEncoding.UTF8.GetString(bytes);
-
-// Also available: SecureEncoding.ASCII
-```
-
-### Cryptographic Operations Extensions
-
-#### CryptographicOperationsExtensions
-
-Extension methods for `CryptographicOperations` that enable secure memory operations on generic value type spans:
-
-- **ZeroMemory&lt;T&gt;** - Securely zero any value type span (not just bytes)
-- **FixedTimeEquals&lt;T&gt;** - Constant-time comparison to prevent timing attacks
-
-```csharp
-// Securely zero a span of any value type
 Span<int> sensitiveData = stackalloc int[4];
 // ... use the sensitive data ...
 CryptographicOperations.ZeroMemory(sensitiveData);
 
-// Constant-time comparison for typed spans
-ReadOnlySpan<ulong> computedMac = ComputeMac(data);
-ReadOnlySpan<ulong> expectedMac = GetExpectedMac();
-bool isValid = CryptographicOperations.FixedTimeEquals(computedMac, expectedMac);
+ReadOnlySpan<ulong> computed = ComputeMac(data);
+ReadOnlySpan<ulong> expected = GetExpectedMac();
+bool isValid = CryptographicOperations.FixedTimeEquals(computed, expected);
+
+// The same methods, callable from any C# version:
+CryptographicOperationsExtensions.ZeroMemory(sensitiveData);
 ```
 
 ## References
