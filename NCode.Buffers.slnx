@@ -3,6 +3,7 @@
     <Project Path="src/NCode.Buffers/NCode.Buffers.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/NCode.Buffers.Site.Tests/NCode.Buffers.Site.Tests.csproj" />
     <Project Path="tests/NCode.Buffers.Tests/NCode.Buffers.Tests.csproj" />
   </Folder>
 </Solution>

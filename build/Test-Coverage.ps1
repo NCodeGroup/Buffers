@@ -6,7 +6,8 @@ Runs the tests with coverage, lists every line no test runs, and fails below the
 Runs the NCode.Buffers.Tests project with the coverlet 'XPlat Code Coverage' collector, reads the Cobertura report,
 prints every source line that no test runs, and prints the line and branch coverage. The script exits with 1 when the
 line coverage or the branch coverage is below its minimum, and with 0 otherwise. With -ReportDirectory, it also keeps
-a copy of each report.
+a copy of each report. It does not run the documentation site's samples in NCode.Buffers.Site.Tests: a line that only
+a sample runs counts as not covered (ADR-1010).
 
 .PARAMETER MinimumLineRate
 The lowest accepted line coverage, from 0.0 to 1.0. The default is 0.98.
