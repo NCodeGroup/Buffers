@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.1] - 2026-11-14
+
+### Changed
+
+- Package validation compares every package with the published 5.0.0 package instead of 4.1.0, and `CompatibilitySuppressions.xml`, which recorded the 5.0.0 breaking changes against 4.1.0, is gone, so later breaking changes fail the pack ([#38](https://github.com/NCodeGroup/Buffers/issues/38), [ADR-1001](docs/decisions/1001-each-package-is-validated-against-the-last-released-package.md)).
+
 ## [5.0.0] - 2026-11-14
 
 ### Added
@@ -68,7 +74,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.0.0...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.0.1...HEAD
+[5.0.1]: https://github.com/NCodeGroup/Buffers/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/NCodeGroup/Buffers/compare/v4.1.0...v5.0.0
 [4.1.0]: https://github.com/NCodeGroup/Buffers/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/NCodeGroup/Buffers/releases/tag/v4.0.0
