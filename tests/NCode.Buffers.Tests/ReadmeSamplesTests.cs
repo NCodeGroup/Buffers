@@ -174,7 +174,7 @@ public class ReadmeSamplesTests
     {
         // begin-snippet: GetSpanLease
         using var writer = BufferFactory.CreatePooledBufferWriter(isSensitive: true);
-        // ... write to writer ...
+        writer.Write("payload"u8);
 
         // No copy when the data is in one segment; otherwise it is copied into a rented buffer.
         using (var lease = writer.GetSpanLease(isSensitive: true))
@@ -189,7 +189,7 @@ public class ReadmeSamplesTests
     {
         // begin-snippet: ConsumeAsContiguousSpan
         using var writer = BufferFactory.CreatePooledBufferWriter(isSensitive: true);
-        // ... write to writer ...
+        writer.Write("payload"u8);
 
         // owner now owns the data; don't use writer again.
         using var owner = writer.ConsumeAsContiguousSpan(
@@ -289,7 +289,7 @@ public class ReadmeSamplesTests
 
     #endregion
 
-    private static void Process(ReadOnlySpan<byte> data) => Assert.True(data.IsEmpty);
+    private static void Process(ReadOnlySpan<byte> data) => Assert.Equal("payload"u8, data);
 
     private static ulong[] ComputeMac(ReadOnlySpan<byte> data) => [(ulong)data.Length];
 
