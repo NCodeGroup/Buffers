@@ -17,7 +17,6 @@
   <a href="LICENSE.txt"><img alt="License" src="https://img.shields.io/github/license/NCodeGroup/Buffers"></a>
   <a href="https://scorecard.dev/viewer/?uri=github.com/NCodeGroup/Buffers"><img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/NCodeGroup/Buffers/badge"></a>
   <a href="https://www.bestpractices.dev/projects/16727"><img alt="OpenSSF Best Practices" src="https://www.bestpractices.dev/projects/16727/badge"></a>
-
 </p>
 
 ## Installation
