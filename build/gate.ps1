@@ -1,9 +1,9 @@
 #requires -version 7
 <#
 .SYNOPSIS
-    The project's gate: the CSharpier formatting check and the README samples check, then the Definition of Done, build/dod.ps1 (ADR-1002, ADR-1005).
+    The project's gate: the README samples check, then the Definition of Done, build/dod.ps1, whose Format stage runs the CSharpier check (ADR-1002, ADR-1005).
 .DESCRIPTION
-    build/dod.ps1 is template-owned and has no formatter or README stage, so this script runs those checks before it, as
+    build/dod.ps1 is template-owned and has no README stage, so this script runs that check before it, as
     project-template ADR-0117 says. -Fast and -Filter are passed on to build/dod.ps1.
 #>
 [CmdletBinding()]
@@ -13,8 +13,6 @@ Push-Location (Split-Path -Parent $PSScriptRoot)
 try {
     dotnet tool restore
     if ($LASTEXITCODE) { exit $LASTEXITCODE }
-    dotnet csharpier check .
-    if ($LASTEXITCODE) { 'Formatting: FAILED. Run dotnet csharpier format . and commit the result.'; exit 1 }
     # The READMEs' C# samples are copied from the tests (ADR-1005); a sample changed in only one place fails here.
     $markdown = { git ls-files --cached --others --exclude-standard -- '*.md' | Where-Object { Test-Path -LiteralPath $_ } | ForEach-Object { "$((Get-FileHash -LiteralPath $_).Hash) $_" } }
     $before = & $markdown

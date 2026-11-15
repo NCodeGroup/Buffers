@@ -33,6 +33,8 @@ never brings a number the project already uses
 | [0016](0016-releases-are-tagged-and-published-when-their-pull-request-merges.md) | On GitHub, CI tags and publishes a release when its pull request merges, from the changelog or the pull request's `Release:` line; `/ship-plan` is the fallback |
 | [0017](0017-cloud-sessions-bootstrap-their-tools-through-ensure-scripts.md) | A Claude Code cloud session bootstraps its tools through `.claude/hooks/ensure-*.sh` scripts that `session-start.sh` runs; a project adds a tool by adding a script |
 | [0018](0018-agent-attribution-is-avoided-not-enforced.md) | Agents avoid adding attribution to commits and pull requests, and nothing enforces it: no hook, CI check or read-back fails, rewrites or reports work over it (supersedes 0002, amends 0005 and 0013) |
+| [0019](0019-nothing-requires-the-code-review-check-the-person-who-merges-waits-for-it.md) | No ruleset requires NCode Review's "Code review" check; the person who merges waits for the review before merging or turning on auto-merge |
+| [0020](0020-github-projects-are-scored-by-openssf-scorecard.md) | A GitHub project runs the OpenSSF Scorecard workflow; the record lists what the template controls and what needs a person |
 
 ## .NET
 
@@ -55,7 +57,7 @@ never brings a number the project already uses
 | [0114](0114-one-activity-source-named-like-its-meter.md) | A project traces only its own mechanisms, through one activity source named like its meter |
 | [0115](0115-a-host-logs-to-standard-output.md) | A host logs to standard output, as one JSON line per entry where a collector reads it |
 | [0116](0116-visibility-starts-at-the-narrowest-that-works.md) | Every type and member starts at the narrowest visibility that works; `public` needs a reason |
-| [0117](0117-one-definition-of-done-gates-every-change.md) | `build/dod.ps1` is the one Definition of Done that people, agents and CI run |
+| [0117](0117-one-definition-of-done-gates-every-change.md) | `build/dod.ps1` is the one Definition of Done that people, agents and CI run (amended by 0148) |
 | [0118](0118-the-null-forgiving-operator-is-banned-outside-tests.md) | The null-forgiving operator `!` fails the build outside test projects |
 | [0119](0119-production-refuses-development-only-settings.md) | Development conveniences are inert unless configured, and Production refuses them, listing every finding at once |
 | [0140](0140-replicas-converge-through-reconciliation.md) | Caches expire absolutely, change notices are hints, and derived state is reconciled under a lease |
@@ -65,6 +67,7 @@ never brings a number the project already uses
 | [0144](0144-correctness-guards-fail-closed-capacity-guards-fail-open.md) | A correctness guard fails closed with `503`; a capacity guard fails open behind a timeout and a breaker |
 | [0145](0145-outbound-calls-are-bounded-and-caller-supplied-urls-are-guarded.md) | Outbound calls are bounded; caller-supplied URLs go through a client that refuses private addresses |
 | [0146](0146-secrets-are-never-logged-compared-in-constant-time-and-shown-once.md) | Secrets never reach diagnostics, are compared in constant time, and are shown once and stored hashed |
+| [0148](0148-csharp-is-formatted-in-the-gate-and-files-carry-the-spdx-header.md) | CSharpier checks C# in the gate when the project's tool manifest names it, and a file without the SPDX header fails the build (amends 0117) |
 
 ## ASP.NET Core
 
@@ -92,4 +95,8 @@ never brings a number the project already uses
 | [0134](0134-evolving-optional-parameters-are-a-dto.md) | A growing set of optional criteria is an init-only DTO, not positional parameters |
 | [0135](0135-packages-are-published-from-a-github-release-through-trusted-publishing.md) | Packages are published from a GitHub release through nuget.org trusted publishing |
 | [0137](0137-the-release-workflow-starts-package-publishing.md) | A release the Tag and publish release workflow publishes starts `publish.yml` through `workflow_dispatch` (amends 0135) |
-| [0136](0136-packages-follow-semantic-versioning-and-the-assembly-version-moves-only-with-the-major.md) | Versions follow Semantic Versioning from the release tag; `AssemblyVersion` moves only with the major |
+| [0139](0139-releases-carry-build-provenance.md) | Releases carry build provenance: `release-provenance.yml` attests the packages and attaches them to the release (amends 0135) |
+| [0136](0136-packages-follow-semantic-versioning-and-the-assembly-version-moves-only-with-the-major.md) | Versions follow Semantic Versioning, from `version.json` (0138) or else the release tag; `AssemblyVersion` moves only with the major |
+| [0138](0138-package-versions-come-from-version-json-through-nerdbank-gitversioning.md) | Package versions come from `version.json` through Nerdbank.GitVersioning (amends 0136) |
+| [0147](0147-packages-are-validated-against-the-last-published-package.md) | Each pack is validated against the last published package, so a binary break fails before it ships (extends 0131) |
+| [0149](0149-stale-nuget-logistics-are-named-not-fixed.md) | Adoption and update name the stale NuGet logistics of an older library and fix none (extends 0147) |

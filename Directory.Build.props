@@ -3,11 +3,6 @@
   <!-- Shared settings from the project template; this file's own settings, after the import, override them. -->
   <Import Project="$(MSBuildThisFileDirectory)build/ProjectTemplate.props" />
 
-  <!-- Nerdbank.GitVersioning stamps every assembly and package from version.json, whose AssemblyVersion moves only with the major version (ADR-1000). -->
-  <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
-  </ItemGroup>
-
   <!-- Shipping code takes encodings from SecureEncoding and buffers from BufferFactory (ADR-1003); test projects compare against the standard ones. -->
   <ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.Encoding.txt" />
