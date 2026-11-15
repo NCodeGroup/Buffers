@@ -24,9 +24,9 @@ Then run `dotnet tool restore`, which installs the CSharpier version `.config/do
 | The full gate | `./build/gate.ps1` |
 | The local gate before a push | `./build/gate.ps1 -Fast` |
 | Only the tests a filter matches | `./build/gate.ps1 -Fast -Filter 'FullyQualifiedName~OrderStore'` |
-| Code coverage: lists every line no test runs, and fails below 98% line or branch coverage, as CI does | `./build/Test-Coverage.ps1` |
+| Code coverage: lists every line no test runs, and fails below 98% line or branch coverage, as CI does; `-ReportDirectory artifacts/coverage` also keeps the Cobertura report | `./build/Test-Coverage.ps1` |
 
-The gate checks the formatting with CSharpier, then runs the Definition of Done, `./build/dod.ps1`, which checks the decision index, builds in Release with warnings as errors, runs the tests, packs, validates the package against the last release and ends with `Definition of Done: PASSED`. CI runs `./build/gate.ps1` on every pull request.
+The gate checks the formatting with CSharpier, then runs the Definition of Done, `./build/dod.ps1`, which checks the decision index, builds in Release with warnings as errors, runs the tests, packs, validates the package against the last release and ends with `Definition of Done: PASSED`. CI runs `./build/gate.ps1` on every pull request. On each push to the default branch, CI also publishes the coverage report to [Codecov](https://codecov.io/gh/NCodeGroup/Buffers), whose badge the README shows.
 
 ## Make a Change
 
