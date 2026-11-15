@@ -407,9 +407,8 @@ public class SequenceExtensionsTests
         var lease = sequence.GetSpanLease(isSensitive: false);
         lease.Dispose();
 
-        byte[] expected = [value, value, value, value, value];
         Assert.Equal(length, sequence.Length);
-        Assert.Equal(expected, sequence.AsReadOnlySequence.FirstSpan.ToArray());
+        Assert.Equal((byte[])[value, value, value, value, value], sequence.AsReadOnlySequence.FirstSpan.ToArray());
     }
 
     [Fact]
