@@ -217,7 +217,6 @@ dotnet add package NCode.Buffers
 
 ## Target Frameworks
 
-- .NET 8.0
 - .NET 10.0
 
 ## Project
