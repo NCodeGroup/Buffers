@@ -1,19 +1,58 @@
-# NCode.Buffers
+<p align="center">
+  <img src="NCodeGroup.png" alt="NCode" width="96" height="96">
+</p>
 
-A high-performance .NET library providing secure memory management, zero-allocation buffer utilities, and efficient string splitting operations.
+<h1 align="center">NCode.Buffers</h1>
 
-[![NuGet](https://img.shields.io/nuget/v/NCode.Buffers.svg)](https://www.nuget.org/packages/NCode.Buffers/)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE.txt)
+<p align="center">
+  Pinned, pooled .NET buffers that zero themselves on dispose, for keys and other secrets, plus fixed-size buffer writers and string splitting without substring copies.
+</p>
 
-## Overview
+<p align="center">
+  <a href="https://www.nuget.org/packages/NCode.Buffers/"><img alt="NuGet version" src="https://img.shields.io/nuget/v/NCode.Buffers?logo=nuget"></a>
+  <a href="https://www.nuget.org/packages/NCode.Buffers/"><img alt="NuGet downloads" src="https://img.shields.io/nuget/dt/NCode.Buffers?logo=nuget"></a>
+  <a href="https://github.com/NCodeGroup/Buffers/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI" src="https://github.com/NCodeGroup/Buffers/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+  <a href="https://www.nuget.org/packages/NCode.Buffers#supportedframeworks-body-tab"><img alt="Target framework" src="https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fraw.githubusercontent.com%2FNCodeGroup%2FBuffers%2Fmain%2Fsrc%2FNCode.Buffers%2FNCode.Buffers.csproj&query=%2F%2FTargetFramework%20%7C%20%2F%2FTargetFrameworks&label=target&logo=dotnet&color=512BD4"></a>
+  <a href="LICENSE.txt"><img alt="License" src="https://img.shields.io/github/license/NCodeGroup/Buffers"></a>
+</p>
 
-NCode.Buffers provides utilities for:
+## Installation
 
-- **Secure Memory Management** - Pinned buffers that are securely zeroed when disposed, ideal for cryptographic operations
-- **Zero-Allocation Buffer Writers** - Fixed-size `IBufferWriter<T>` implementations for high-performance scenarios
-- **Memory Pooling** - Efficient buffer pooling with automatic memory pressure handling
-- **String Splitting** - Zero-allocation string splitting returning `ReadOnlyMemory<char>` segments
-- **Sequence Building** - Tools for building and working with `ReadOnlySequence<T>`
+```shell
+dotnet add package NCode.Buffers
+```
+
+The target frameworks are the ones the package's `.csproj` declares; they are listed on [nuget.org's Frameworks tab](https://www.nuget.org/packages/NCode.Buffers#supportedframeworks-body-tab) and shown by the badge above. [CHANGELOG.md](CHANGELOG.md) records when a framework is added or dropped and which release line to stay on. The package depends on Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers return.
+
+## Quick start
+
+This example derives a key from a password, verifies an HMAC-SHA256 signature with it, and zeroes the derived key and the expected MAC when the method returns.
+
+```csharp
+using System.Security.Cryptography;
+using NCode.Buffers;
+
+static bool VerifySignature(
+    ReadOnlySpan<byte> password,
+    ReadOnlySpan<byte> salt,
+    ReadOnlySpan<byte> payload,
+    ReadOnlySpan<byte> signature)
+{
+    // A pinned, pooled 32-byte key, zeroed when keyOwner is disposed.
+    using var keyOwner = BufferFactory.Rent(32, isSensitive: true, out Span<byte> key);
+    Rfc2898DeriveBytes.Pbkdf2(password, salt, key, iterations: 600_000, HashAlgorithmName.SHA256);
+
+    // The expected MAC lives on the stack and is zeroed when expectedLifetime is disposed.
+    Span<byte> expected = stackalloc byte[HMACSHA256.HashSizeInBytes];
+    using var expectedLifetime = expected.GetSecureLifetime();
+    HMACSHA256.HashData(key, payload, expected);
+
+    // Constant time, so the comparison doesn't reveal where the MACs differ.
+    return CryptographicOperations.FixedTimeEquals(expected, signature);
+}
+```
+
+See [Choosing a type](#choosing-a-type) for the other buffers.
 
 ## Features
 
@@ -208,16 +247,6 @@ bool isValid = CryptographicOperations.FixedTimeEquals(computedMac, expectedMac)
 ## References
 * [Pinned Object Heap (POH)](https://devblogs.microsoft.com/dotnet/internals-of-the-poh/)
 * [Character Encoding with Exception Fallback](https://learn.microsoft.com/en-us/dotnet/standard/base-types/character-encoding#exception-fallback)
-
-## Installation
-
-```bash
-dotnet add package NCode.Buffers
-```
-
-## Target Frameworks
-
-- .NET 10.0
 
 ## Project
 
