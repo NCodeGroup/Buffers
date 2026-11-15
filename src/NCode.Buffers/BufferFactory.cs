@@ -58,7 +58,7 @@ public static class BufferFactory
     /// otherwise, returns <see cref="MemoryPool{T}.Shared"/>.</param>
     /// <returns>The selected <see cref="MemoryPool{T}"/> instance.</returns>
     internal static MemoryPool<T> ChoosePool<T>(bool isSensitive)
-        where T : struct => isSensitive ? SecureMemoryPool<T>.Shared : MemoryPool<T>.Shared;
+        where T : unmanaged => isSensitive ? SecureMemoryPool<T>.Shared : MemoryPool<T>.Shared;
 
     /// <summary>
     /// Rents a buffer that is at least the requested length from the appropriate memory pool.
@@ -74,7 +74,7 @@ public static class BufferFactory
     /// </returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="minBufferSize"/> is negative.</exception>
     public static IMemoryOwner<T> Rent<T>(int minBufferSize, bool isSensitive, out Span<T> buffer)
-        where T : struct
+        where T : unmanaged
     {
         var pool = ChoosePool<T>(isSensitive);
         var lease = pool.Rent(minBufferSize);
@@ -129,7 +129,7 @@ public static class BufferFactory
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="minBufferSize"/> is negative.</exception>
     public static IMemoryOwner<T> Rent<T>(int minBufferSize, bool isSensitive, out Memory<T> buffer)
-        where T : struct
+        where T : unmanaged
     {
         var pool = ChoosePool<T>(isSensitive);
         var lease = pool.Rent(minBufferSize);
@@ -198,7 +198,7 @@ public static class BufferFactory
     /// </example>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="length"/> is negative.</exception>
     public static SecureArrayLifetime<T> CreatePinnedArray<T>(int length)
-        where T : struct
+        where T : unmanaged
     {
         ArgumentOutOfRangeException.ThrowIfNegative(length);
         return SecureArrayLifetime<T>.Create(length);
@@ -279,7 +279,7 @@ public static class BufferFactory
         bool isSensitive,
         int minimumSpanLength = 0
     )
-        where T : struct
+        where T : unmanaged
     {
         ArgumentOutOfRangeException.ThrowIfNegative(minimumSpanLength);
         return new(ChoosePool<T>(isSensitive)) { MinimumSpanLength = minimumSpanLength };
@@ -326,7 +326,7 @@ public static class BufferFactory
     /// <summary>
     /// Creates a new <see cref="ArrayBufferWriter{T}"/> with the default initial capacity.
     /// </summary>
-    /// <typeparam name="T">The type of elements in the buffer. Must be an unmanaged value type.</typeparam>
+    /// <typeparam name="T">The type of elements in the buffer. Must be a value type.</typeparam>
     /// <returns>
     /// A new <see cref="ArrayBufferWriter{T}"/> instance that implements <see cref="IBufferWriter{T}"/>.
     /// </returns>
@@ -357,7 +357,7 @@ public static class BufferFactory
     /// <summary>
     /// Creates a new <see cref="ArrayBufferWriter{T}"/> with the specified initial capacity.
     /// </summary>
-    /// <typeparam name="T">The type of elements in the buffer. Must be an unmanaged value type.</typeparam>
+    /// <typeparam name="T">The type of elements in the buffer. Must be a value type.</typeparam>
     /// <param name="initialCapacity">The initial capacity of the underlying buffer.</param>
     /// <returns>
     /// A new <see cref="ArrayBufferWriter{T}"/> instance that implements <see cref="IBufferWriter{T}"/>.
