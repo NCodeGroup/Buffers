@@ -393,6 +393,26 @@ public class SequenceExtensionsTests
     }
 
     [Fact]
+    public void GetSpanLease_SingleSegment_Dispose_DoesNotResetSequence()
+    {
+        const int length = 5;
+        const byte value = 0x12;
+
+        using var sequence = new Sequence<byte>();
+
+        var span = sequence.GetSpan(length);
+        span[..length].Fill(value);
+        sequence.Advance(length);
+
+        var lease = sequence.GetSpanLease(isSensitive: false);
+        lease.Dispose();
+
+        byte[] expected = [value, value, value, value, value];
+        Assert.Equal(length, sequence.Length);
+        Assert.Equal(expected, sequence.AsReadOnlySequence.FirstSpan.ToArray());
+    }
+
+    [Fact]
     public void GetSpanLease_LargeMultipleSegments_HandlesCorrectly()
     {
         using var sequence = new Sequence<byte>(SecureMemoryPool<byte>.Shared);
