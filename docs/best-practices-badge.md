@@ -1,8 +1,8 @@
 # OpenSSF Best Practices badge
 
 A draft for registering NCode.Buffers at [bestpractices.dev](https://www.bestpractices.dev): the badge markdown, and
-the answers to the passing level's criteria, with the evidence the repository gives for each. Nothing here is
-registered yet, and the badge is not earned until the site says so. Scorecard's CII-Best-Practices check scores 0
+the answers to the passing level's criteria, with the evidence the repository gives for each. The project is registered as
+16727, and the badge is not earned until the site says so. Scorecard's CII-Best-Practices check scores 0
 until then ([project-template#374](https://github.com/NCodeGroup/project-template/issues/374)).
 
 ## The badge
