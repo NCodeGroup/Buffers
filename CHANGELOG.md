@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CSharpier formats the code, and `./build/gate.ps1`, which CI and the local gate run, checks the formatting before the Definition of Done ([ADR-1002](docs/decisions/1002-csharpier-formats-the-code-and-every-csharp-file-starts-with-an-spdx-header.md)).
 - `BannedSymbols.Encoding.txt` and `BannedSymbols.Buffers.txt` keep shipping code on `SecureEncoding` and `BufferFactory` ([ADR-1003](docs/decisions/1003-shipping-code-takes-buffers-and-encodings-through-bufferfactory-and-secureencoding.md)).
 - A package README for nuget.org with installation, an example and links to the full documentation.
+- Coverage on Codecov: on each push to `main`, CI uploads the Cobertura report that `build/Test-Coverage.ps1 -ReportDirectory` keeps to [Codecov](https://codecov.io/gh/NCodeGroup/Buffers) through OIDC, without a stored token, and both READMEs show its coverage badge ([#40](https://github.com/NCodeGroup/Buffers/issues/40)).
 
 ### Changed
 
