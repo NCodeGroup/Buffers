@@ -56,23 +56,32 @@ See [Choosing a type](#choosing-a-type) for the other buffers.
 
 ## Choosing a type
 
-Pick the row that matches your data and where the buffer lives.
+The `Rent` and `Create…` methods are on `BufferFactory`.
 
-| Type | Use it when | Heap or stack | Pooled | Pinned | Zeroed on dispose |
-|---|---|---|---|---|---|
-| `BufferFactory.Rent(…, isSensitive: true, …)` | You need a temporary buffer for a key, password or other secret | Heap | Yes, up to 4096 bytes | Yes | Yes |
-| `SecureMemoryPool<T>.Shared` | An API takes a `MemoryPool<T>` and the data is secret | Heap | Yes, up to 4096 bytes | Yes | Yes |
-| `BufferFactory.CreatePinnedArray(…)` or `SecureArrayLifetime<T>` | An API needs a `T[]` that holds a secret, within one synchronous scope | Heap array, stack-only owner | No | Yes | Yes |
-| `SecureSpanLifetime<T>` or `span.GetSecureLifetime()` | You already have the memory, usually `stackalloc`, and want it zeroed when the scope ends | The memory you wrap | No | No | Yes |
-| `BufferFactory.CreatePooledBufferWriter(isSensitive: true)` | You write a secret whose length you don't know up front | Heap | Yes, segments up to 4096 bytes | Yes | Yes |
-| `BufferFactory.Rent(…, isSensitive: false, …)` or `CreatePooledBufferWriter(isSensitive: false)` | The data isn't secret and you want pooling | Heap | Yes | No | No |
-| `BufferFactory.CreateArrayBufferWriter<T>()` | The data isn't secret and you want a simple growable writer | Heap | No | No | No |
-| `FixedSpanBufferWriter<T>` | You write into a fixed-size span, such as `stackalloc`, in synchronous code | The span you pass | No | No | No |
-| `FixedMemoryBufferWriter<T>` | You write into fixed-size `Memory<T>` and keep the writer in a field or across `await` | The memory you pass | No | No | No |
+### For secrets
 
-"Up to 4096 bytes" is `SecureMemoryPool<T>.PageSize`, in bytes for every `T`; a larger request gets its own pinned array, which is still zeroed on dispose but not pooled.
+Pass `isSensitive: true`. Each of these zeroes its memory on dispose, and all but `GetSecureLifetime`, which wraps memory you already have, pin it so the GC never copies it.
 
-Stack memory never moves, so a `stackalloc` buffer needs no pinning.
+| API | Use it when | Pooled |
+|---|---|---|
+| `Rent` | You need a temporary buffer for a key, password or other secret | Yes¹ |
+| `CreatePooledBufferWriter` | You write a secret whose length you don't know up front | Yes¹ |
+| `SecureMemoryPool<T>` | An API takes a `MemoryPool<T>` | Yes¹ |
+| `CreatePinnedArray` | An API needs a `T[]`, within one synchronous scope | No |
+| `GetSecureLifetime` | You already have the memory, usually `stackalloc` | No |
+
+¹ Up to 4096 bytes, `SecureMemoryPool<T>.PageSize`. A larger buffer gets its own pinned array, still zeroed on dispose.
+
+### For other data
+
+Nothing here is pinned or zeroed.
+
+| API | Use it when | Pooled |
+|---|---|---|
+| `Rent`, `CreatePooledBufferWriter` | You want pooled buffers: pass `isSensitive: false` | Yes |
+| `CreateArrayBufferWriter` | You want a simple growable writer | No |
+| `FixedSpanBufferWriter<T>` | You write into a fixed-size span, such as `stackalloc`, in synchronous code | No |
+| `FixedMemoryBufferWriter<T>` | You write into fixed-size `Memory<T>` and keep the writer in a field or across `await` | No |
 
 ## Features
 
@@ -207,7 +216,8 @@ foreach (var segment in "one,two,three".SplitSegments(','))
     Console.WriteLine(segment.Memory.ToString());
 }
 
-StringSegments segments = StringSegments.Split("aSEPbSEPc", "sep", StringComparison.OrdinalIgnoreCase);
+StringSegments segments = StringSegments.Split(
+    "aSEPbSEPc", "sep", StringComparison.OrdinalIgnoreCase);
 int count = segments.Count; // 3
 ```
 
