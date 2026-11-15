@@ -279,18 +279,7 @@ CryptographicOperationsExtensions.ZeroMemory(sensitiveData);
 ## Project
 
 - [CONTRIBUTING.md](CONTRIBUTING.md): how to set up, build, test and propose a change.
-- [SECURITY.md](SECURITY.md): how to report a vulnerability privately.
-- [docs/decisions/](docs/decisions/README.md): the decisions behind the design, the project's and the template's.
-- [CHANGELOG.md](CHANGELOG.md): what changed in each release, in the Keep a Changelog format.
-- [LICENSE.txt](LICENSE.txt): the license.
-
-## License
-
-This project is licensed under the Apache License 2.0 - see the [LICENSE.txt](LICENSE.txt) file for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Release Notes
-See [CHANGELOG.md](CHANGELOG.md) for what changed in each release.
+- [SECURITY.md](SECURITY.md): report a vulnerability privately through the repository's Security tab, never in a public issue.
+- [docs/decisions/](docs/decisions/README.md): the decisions behind the design.
+- [CHANGELOG.md](CHANGELOG.md): what changed in each release.
+- [LICENSE.txt](LICENSE.txt): Apache License 2.0, copyright NCode Group.
