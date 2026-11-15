@@ -1,9 +1,10 @@
 # Written by Copier; never edit by hand. Change an answer with .template\Update-Project.ps1 -Data.
-_commit: v0.86.1
+_commit: v0.92.0
 _src_path: https://github.com/NCodeGroup/project-template.git
 author_name: NCode Group
 build_command: dotnet build
 code_review: true
+csharp_format: false
 git_host: github
 license: Apache-2.0
 nuget_package: true
