@@ -408,7 +408,10 @@ public class SequenceExtensionsTests
         lease.Dispose();
 
         Assert.Equal(length, sequence.Length);
-        Assert.Equal((byte[])[value, value, value, value, value], sequence.AsReadOnlySequence.FirstSpan.ToArray());
+        Assert.Equal(
+            (byte[])[value, value, value, value, value],
+            sequence.AsReadOnlySequence.FirstSpan.ToArray()
+        );
     }
 
     [Fact]
