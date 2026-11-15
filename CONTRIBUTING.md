@@ -22,12 +22,13 @@ Then run `dotnet tool restore`, which installs the CSharpier and MarkdownSnippet
 | Test | `dotnet test` |
 | Format | `dotnet csharpier format .` |
 | Copy the README samples from the tests | `dotnet mdsnippets` |
+| Serve the documentation site, with [NCodeGroup/docs](https://github.com/NCodeGroup/docs) cloned beside this repository | `npm --prefix ../docs run dev -- .` |
 | The full gate | `./build/gate.ps1` |
 | The local gate before a push | `./build/gate.ps1 -Fast` |
 | Only the tests a filter matches | `./build/gate.ps1 -Fast -Filter 'FullyQualifiedName~OrderStore'` |
 | Code coverage: lists every line no test runs, and fails below 98% line or branch coverage, as CI does; `-ReportDirectory artifacts/coverage` also keeps the Cobertura report | `./build/Test-Coverage.ps1` |
 
-The gate checks the formatting with CSharpier and that the READMEs' C# samples match the tests they are copied from, then runs the Definition of Done, `./build/dod.ps1`, which checks the decision index, builds in Release with warnings as errors, runs the tests, packs, validates the package against the last release and ends with `Definition of Done: PASSED`. CI runs `./build/gate.ps1` on every pull request. On each push to the default branch, CI also publishes the coverage report to [Codecov](https://codecov.io/gh/NCodeGroup/Buffers), whose badge the README shows.
+The gate checks that every sample key is defined once and that the READMEs' C# samples match the tests they are copied from, then runs the Definition of Done, `./build/dod.ps1`, which checks the formatting with CSharpier and the decision index, builds in Release with warnings as errors, runs the tests, packs, validates the package against the last release and ends with `Definition of Done: PASSED`. CI runs `./build/gate.ps1` on every pull request. On each push to the default branch, CI also publishes the coverage report to [Codecov](https://codecov.io/gh/NCodeGroup/Buffers), whose badge the README shows.
 
 ## Make a Change
 
@@ -52,6 +53,31 @@ Commits record the people who wrote them, so avoid AI agent attribution: don't a
 - Every pack is validated against the last published package; [docs/api-compatibility.md](docs/api-compatibility.md) says how to change the public API.
 - Every C# file starts with `// Copyright © NCode Group` and `// SPDX-License-Identifier: Apache-2.0`, and shipping code takes buffers and encodings only through `BufferFactory` and `SecureEncoding` (ADR-1002, ADR-1003).
 - The C# samples in `README.md` and `src/NCode.Buffers/README.md` are tests in `tests/NCode.Buffers.Tests/ReadmeSamplesTests.cs` and `tests/NCode.Buffers.Tests/ReadmeSamples/Signatures.cs`, which `dotnet mdsnippets` copies into the READMEs ([ADR-1005](docs/decisions/1005-readme-samples-are-compiled-tests-that-markdownsnippets-copies-into-the-readmes.md)): change a sample in its test, between `// begin-snippet: <name>` and `// end-snippet`, then run `dotnet mdsnippets`.
+
+## Documentation Site
+
+The site's content is in `docs/site/`. The shared toolchain in [NCodeGroup/docs](https://github.com/NCodeGroup/docs) builds it, and this repository holds no `package.json`, no lockfile and no Node.js code ([ADR-1009](docs/decisions/1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md)). The toolchain's `CONTRACT.md` is the reference for pages, links, components and images. The site is not published: [#56](https://github.com/NCodeGroup/Buffers/issues/56) tracks the workflow that builds and deploys it.
+
+To write a page:
+
+1. Add an `.mdx` file under `docs/site/`, never `.md`, with a `title` in its frontmatter. Its path is its URL: `docs/site/guides/verify-a-mac.mdx` is `/guides/verify-a-mac/`.
+2. List it in the `sidebar` of `docs/site/site.config.json`, which names only pages that exist.
+3. Write a link to another page from the site's root, with a trailing slash and without `/Buffers`: `[verify a MAC](/guides/verify-a-mac/)`.
+4. Never type C# that must compile into a page. Include a sample by its key, with an empty code block:
+
+   ````md
+   ```cs snippet=SiteZeroedAfterUse
+   ```
+   ````
+
+To write a sample ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)):
+
+1. Add a fact to the page's class in `tests/NCode.Buffers.Site.Tests`, a test project that cannot see the library's internal members, so a sample is code a user of the package can write. The class is named for the page's file, in a folder named for the page's folder: `docs/site/guides/verify-a-mac.mdx` has `Guides/VerifyAMacSamples.cs`, class `VerifyAMacSamples` in namespace `SiteSamples.Guides`. `IndexSamples.cs` shows the form.
+2. Put the sample between `// begin-snippet: <Key>` and `// end-snippet`, name the fact `<Key>Sample_Runs`, and assert after the region what the sample's comments claim.
+3. Start the key with `Site`, in PascalCase: `SiteZeroedAfterUse`. A key is defined once in the repository, and only a site sample's key starts with `Site`; the gate checks both. A page may also include a README sample by its key, and a change to that sample changes the READMEs too.
+4. Run `dotnet csharpier format .`, then `./build/gate.ps1 -Fast`.
+
+To see the result, clone NCodeGroup/docs beside this repository and set it up as its README says. From this repository's root, `npm --prefix ../docs run dev -- .` then serves the site at `http://localhost:4321/Buffers/`, and `npm --prefix ../docs run site -- build . --out <folder>` builds it into a folder outside this repository and stops on a sample key no test defines. Neither writes into this repository. The gate does not build the site.
 
 ## Conventions
 
