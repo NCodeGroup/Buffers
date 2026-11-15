@@ -5,7 +5,7 @@
     <PackageTags>crypto secure buffer pin zero poh encoding</PackageTags>
     <!-- Every pack is checked for compatibility with the last package on nuget.org (ADR-1001); the first change after a release raises it. -->
     <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>5.0.0</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>5.0.2</PackageValidationBaselineVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" />
