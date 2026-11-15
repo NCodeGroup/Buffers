@@ -12,7 +12,7 @@ Issues and pull requests are welcome. [README.md](README.md) explains the projec
 
 Once in each clone, run `git config core.hooksPath .githooks`. It turns on `.githooks/pre-push`, which refuses a push to the default branch when the Landing section of `AGENTS.md` says `protect: hook`. When the clone already runs another tool's hooks, such as pre-commit, leave its hooks path alone.
 
-Then run `dotnet tool restore`, which installs the CSharpier version `.config/dotnet-tools.json` pins.
+Then run `dotnet tool restore`, which installs the CSharpier and MarkdownSnippets versions `.config/dotnet-tools.json` pins.
 
 ## Build and Test
 
@@ -21,12 +21,13 @@ Then run `dotnet tool restore`, which installs the CSharpier version `.config/do
 | Build | `dotnet build` |
 | Test | `dotnet test` |
 | Format | `dotnet csharpier format .` |
+| Copy the README samples from the tests | `dotnet mdsnippets` |
 | The full gate | `./build/gate.ps1` |
 | The local gate before a push | `./build/gate.ps1 -Fast` |
 | Only the tests a filter matches | `./build/gate.ps1 -Fast -Filter 'FullyQualifiedName~OrderStore'` |
 | Code coverage: lists every line no test runs, and fails below 98% line or branch coverage, as CI does; `-ReportDirectory artifacts/coverage` also keeps the Cobertura report | `./build/Test-Coverage.ps1` |
 
-The gate checks the formatting with CSharpier, then runs the Definition of Done, `./build/dod.ps1`, which checks the decision index, builds in Release with warnings as errors, runs the tests, packs, validates the package against the last release and ends with `Definition of Done: PASSED`. CI runs `./build/gate.ps1` on every pull request. On each push to the default branch, CI also publishes the coverage report to [Codecov](https://codecov.io/gh/NCodeGroup/Buffers), whose badge the README shows.
+The gate checks the formatting with CSharpier and that the READMEs' C# samples match the tests they are copied from, then runs the Definition of Done, `./build/dod.ps1`, which checks the decision index, builds in Release with warnings as errors, runs the tests, packs, validates the package against the last release and ends with `Definition of Done: PASSED`. CI runs `./build/gate.ps1` on every pull request. On each push to the default branch, CI also publishes the coverage report to [Codecov](https://codecov.io/gh/NCodeGroup/Buffers), whose badge the README shows.
 
 ## Make a Change
 
@@ -50,6 +51,7 @@ Commits record the people who wrote them, so avoid AI agent attribution: don't a
 - Versions come from `version.json` through Nerdbank.GitVersioning ([ADR-1000](docs/decisions/1000-package-versions-come-from-version-json-through-nerdbank-gitversioning.md)): a release tag must name the version it holds.
 - Every pack is validated against the last published package; [docs/api-compatibility.md](docs/api-compatibility.md) says how to change the public API.
 - Every C# file starts with `// Copyright © NCode Group` and `// SPDX-License-Identifier: Apache-2.0`, and shipping code takes buffers and encodings only through `BufferFactory` and `SecureEncoding` (ADR-1002, ADR-1003).
+- The C# samples in `README.md` and `src/NCode.Buffers/README.md` are tests in `tests/NCode.Buffers.Tests/ReadmeSamplesTests.cs` and `tests/NCode.Buffers.Tests/ReadmeSamples/Signatures.cs`, which `dotnet mdsnippets` copies into the READMEs ([ADR-1005](docs/decisions/1005-readme-samples-are-compiled-tests-that-markdownsnippets-copies-into-the-readmes.md)): change a sample in its test, between `// begin-snippet: <name>` and `// end-snippet`, then run `dotnet mdsnippets`.
 
 ## Conventions
 

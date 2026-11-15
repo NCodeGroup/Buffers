@@ -16,29 +16,41 @@ The target frameworks are the ones the package's `.csproj` declares; they are li
 
 This example derives a key from a password, verifies an HMAC-SHA256 signature with it, and zeroes the derived key and the expected MAC when the method returns.
 
-```csharp
+<!-- snippet: QuickStart -->
+```cs
 using System.Security.Cryptography;
 using NCode.Buffers;
 
-static bool VerifySignature(
-    ReadOnlySpan<byte> password,
-    ReadOnlySpan<byte> salt,
-    ReadOnlySpan<byte> payload,
-    ReadOnlySpan<byte> signature)
+public static class Signatures
 {
-    // A pinned, pooled 32-byte key, zeroed when keyOwner is disposed.
-    using var keyOwner = BufferFactory.Rent(32, isSensitive: true, out Span<byte> key);
-    Rfc2898DeriveBytes.Pbkdf2(password, salt, key, iterations: 600_000, HashAlgorithmName.SHA256);
+    public static bool VerifySignature(
+        ReadOnlySpan<byte> password,
+        ReadOnlySpan<byte> salt,
+        ReadOnlySpan<byte> payload,
+        ReadOnlySpan<byte> signature
+    )
+    {
+        // A pinned, pooled 32-byte key, zeroed when keyOwner is disposed.
+        using var keyOwner = BufferFactory.Rent(32, isSensitive: true, out Span<byte> key);
+        Rfc2898DeriveBytes.Pbkdf2(
+            password,
+            salt,
+            key,
+            iterations: 600_000,
+            HashAlgorithmName.SHA256
+        );
 
-    // The expected MAC lives on the stack and is zeroed when expectedLifetime is disposed.
-    Span<byte> expected = stackalloc byte[HMACSHA256.HashSizeInBytes];
-    using var expectedLifetime = expected.GetSecureLifetime();
-    HMACSHA256.HashData(key, payload, expected);
+        // The expected MAC lives on the stack and is zeroed when expectedLifetime is disposed.
+        Span<byte> expected = stackalloc byte[HMACSHA256.HashSizeInBytes];
+        using var expectedLifetime = expected.GetSecureLifetime();
+        HMACSHA256.HashData(key, payload, expected);
 
-    // Constant time, so the comparison doesn't reveal where the MACs differ.
-    return CryptographicOperations.FixedTimeEquals(expected, signature);
+        // Constant time, so the comparison doesn't reveal where the MACs differ.
+        return CryptographicOperations.FixedTimeEquals(expected, signature);
+    }
 }
 ```
+<!-- endSnippet -->
 
 ## Learn more
 

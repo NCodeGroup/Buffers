@@ -67,3 +67,4 @@ override in `AGENTS.md`.
 | [ADR-1002](1002-csharpier-formats-the-code-and-every-csharp-file-starts-with-an-spdx-header.md) | CSharpier formats the code, and every C# file starts with an SPDX header | Accepted |
 | [ADR-1003](1003-shipping-code-takes-buffers-and-encodings-through-bufferfactory-and-secureencoding.md) | Shipping code takes buffers and encodings through BufferFactory and SecureEncoding | Accepted |
 | [ADR-1004](1004-the-package-targets-only-supported-lts-dotnet-versions.md) | The package targets only supported LTS .NET versions | Accepted |
+| [ADR-1005](1005-readme-samples-are-compiled-tests-that-markdownsnippets-copies-into-the-readmes.md) | README samples are compiled tests that MarkdownSnippets copies into the READMEs | Accepted |
