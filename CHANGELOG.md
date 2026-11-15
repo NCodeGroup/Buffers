@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.2] - 2026-11-15
+
+### Added
+
+- FsCheck property tests for `StringSegments`, the fixed buffer writers, `BufferFactory` and the cryptographic helpers, with a fixed seed so every run is deterministic ([NCodeGroup/project-template#373](https://github.com/NCodeGroup/project-template/issues/373)).
+- A draft of the OpenSSF Best Practices badge and the answers to its passing criteria, in `docs/best-practices-badge.md`, for a maintainer to register ([NCodeGroup/project-template#374](https://github.com/NCodeGroup/project-template/issues/374)).
+- Each release is attested with build provenance and carries an SPDX SBOM, from `.github/workflows/release-provenance.yml`, and `SECURITY.md` says how to verify a package with `gh attestation verify`.
+
+### Changed
+
+- The project follows project-template v0.92.0: Nerdbank.GitVersioning is referenced once, by `build/ProjectTemplate.props`, and the test project no longer repeats the template's settings.
+
 ## [5.0.1] - 2026-11-14
 
 ### Changed
@@ -74,7 +86,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.0.1...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.0.2...HEAD
+[5.0.2]: https://github.com/NCodeGroup/Buffers/compare/v5.0.1...v5.0.2
 [5.0.1]: https://github.com/NCodeGroup/Buffers/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/NCodeGroup/Buffers/compare/v4.1.0...v5.0.0
 [4.1.0]: https://github.com/NCodeGroup/Buffers/compare/v4.0.0...v4.1.0
