@@ -122,72 +122,79 @@ Span<byte> stackBuffer = stackalloc byte[128];
 using var secure = stackBuffer.GetSecureLifetime();
 ```
 
-### Buffer Writers
+### Buffer writers
 
-#### FixedSpanBufferWriter&lt;T&gt; (ref struct)
+#### FixedSpanBufferWriter&lt;T&gt;
 
-A stack-only `IBufferWriter<T>` for fixed-size buffers:
+A `ref struct` `IBufferWriter<T>` over a span you supply. `GetSpan` or `Advance` past its capacity throws `InvalidOperationException`.
 
 ```csharp
 Span<byte> buffer = stackalloc byte[256];
 var writer = new FixedSpanBufferWriter<byte>(buffer);
 
-writer.Write([1, 2, 3, 4]);
-var written = writer.WrittenSpan; // Access written data
+"abcd"u8.CopyTo(writer.GetSpan(4));
+writer.Advance(4);
+ReadOnlySpan<byte> written = writer.WrittenSpan;
 ```
 
-#### FixedMemoryBufferWriter&lt;T&gt; (class)
+#### FixedMemoryBufferWriter&lt;T&gt;
 
-A heap-storable `IBufferWriter<T>` for fixed-size buffers, usable with async methods:
+The same over `Memory<T>`, as a class you can keep in a field or use across `await`.
 
 ```csharp
-var buffer = new byte[256];
-var writer = new FixedMemoryBufferWriter<byte>(buffer);
-
-await JsonSerializer.SerializeAsync(stream, obj, writer);
-var written = writer.WrittenMemory;
+var writer = new FixedMemoryBufferWriter<byte>(new byte[256]);
+using (var json = new Utf8JsonWriter(writer))
+{
+    JsonSerializer.Serialize(json, new { Id = 42, Name = "example" });
+}
+await stream.WriteAsync(writer.WrittenMemory);
 ```
 
-### Sequence Utilities
+### Sequences
 
 #### MemorySegment&lt;T&gt;
 
-Build `ReadOnlySequence<T>` from multiple discontiguous memory blocks:
+Chains memory blocks into a `ReadOnlySequence<T>`.
 
 ```csharp
-var first = new MemorySegment<byte>([1, 2, 3]);
-var last = first.Append([4, 5, 6]);
+var first = new MemorySegment<byte>((byte[])[1, 2, 3]);
+var last = first.Append((byte[])[4, 5, 6]);
 var sequence = new ReadOnlySequence<byte>(first, 0, last, last.Memory.Length);
-// sequence contains: [1, 2, 3, 4, 5, 6]
+// sequence holds 1, 2, 3, 4, 5, 6
 ```
 
-#### SequenceExtensions
+#### SequenceExtensions and RefSpanLease&lt;T&gt;
 
-Convert `Sequence<T>` to contiguous spans efficiently:
+`GetSpanLease` returns a `RefSpanLease<T>`, a span paired with the owner to dispose. Treat the writer as consumed once you dispose the lease.
 
 ```csharp
-using var writer = BufferFactory.CreatePooledBufferWriter<byte>(isSensitive: true);
-// Write data to writer...
+using var writer = BufferFactory.CreatePooledBufferWriter(isSensitive: true);
+// ... write to writer ...
 
-// Get a contiguous span (zero-copy for single-segment)
-using var lease = writer.GetSpanLease(isSensitive: true);
-ProcessData(lease.Span);
-
-// Or consume and transfer ownership
-using var owner = writer.ConsumeAsContiguousSpan(isSensitive: true, out var span);
-ProcessData(span);
+// No copy when the data is in one segment; otherwise it is copied into a rented buffer.
+using (var lease = writer.GetSpanLease(isSensitive: true))
+{
+    Process(lease.Span);
+}
 ```
 
-#### RefSpanLease&lt;T&gt;
+`ConsumeAsContiguousSpan` takes ownership of the data and returns its owner.
 
-Pairs a `ReadOnlySpan<T>` with its lifetime owner for safe resource management.
+```csharp
+using var writer = BufferFactory.CreatePooledBufferWriter(isSensitive: true);
+// ... write to writer ...
+
+// owner now owns the data; don't use writer again.
+using var owner = writer.ConsumeAsContiguousSpan(isSensitive: true, out ReadOnlySpan<byte> span);
+Process(span);
+```
 
 #### EmptyMemory&lt;T&gt;
 
-A singleton `IMemoryOwner<T>` for when an empty buffer is needed:
+A shared, empty `IMemoryOwner<T>` whose `Dispose` does nothing.
 
 ```csharp
-IMemoryOwner<byte> buffer = EmptyMemory<byte>.Singleton;
+IMemoryOwner<byte> empty = EmptyMemory<byte>.Singleton;
 ```
 
 ### String Splitting
