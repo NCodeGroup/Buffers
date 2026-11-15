@@ -9,7 +9,7 @@ using JetBrains.Annotations;
 namespace NCode.Buffers;
 
 /// <summary>
-/// Provides the ability to split a string into substrings based on a delimiter without any additional heap allocations.
+/// Provides the ability to split a string into substrings based on a delimiter without copying the substrings.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -18,7 +18,9 @@ namespace NCode.Buffers;
 /// between delimiters.
 /// </para>
 /// <para>
-/// The struct is designed for high-performance scenarios where minimizing heap allocations is critical.
+/// Splitting doesn't copy the substrings: each segment's <see cref="ReadOnlySequenceSegment{T}.Memory"/> is a slice of the original value.
+/// It isn't allocation-free, though: each split allocates one segment object per substring, and <see cref="GetEnumerator"/> allocates an enumerator object.
+/// When <see cref="IsEmpty"/> is <see langword="false"/>, walk the segments without an enumerator by starting at <see cref="First"/> and following <see cref="ReadOnlySequenceSegment{T}.Next"/> until it is <see langword="null"/>.
 /// Use the static <see cref="Split(string, char)"/> or <see cref="Split(ReadOnlyMemory{char}, ReadOnlySpan{char}, StringComparison)"/>
 /// methods to create instances.
 /// </para>
@@ -121,7 +123,7 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     }
 
     /// <summary>
-    /// Splits a string into substrings based on a single character delimiter without any additional heap allocations.
+    /// Splits a string into substrings based on a single character delimiter without copying the substrings.
     /// </summary>
     /// <param name="value">The string to split into substrings.</param>
     /// <param name="separator">A character that delimits the substrings in the original string.</param>
@@ -130,13 +132,14 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// <remarks>
     /// This method uses ordinal comparison for the separator character.
     /// Empty segments are included in the result when consecutive separators are encountered.
+    /// The substrings aren't copied, but the split allocates one segment object per substring.
     /// </remarks>
     public static StringSegments Split(string value, char separator) =>
         Split(value.AsMemory(), separator);
 
     /// <summary>
     /// Splits a <see cref="ReadOnlyMemory{T}">ReadOnlyMemory&lt;char&gt;</see> into substrings based on a single character delimiter
-    /// without any additional heap allocations.
+    /// without copying the substrings.
     /// </summary>
     /// <param name="value">The <see cref="ReadOnlyMemory{T}">ReadOnlyMemory&lt;char&gt;</see> to split into substrings.</param>
     /// <param name="separator">A character that delimits the substrings in the memory.</param>
@@ -145,6 +148,7 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// <remarks>
     /// This method uses ordinal comparison for the separator character.
     /// Empty segments are included in the result when consecutive separators are encountered.
+    /// The substrings aren't copied, but the split allocates one segment object per substring.
     /// </remarks>
     public static StringSegments Split(ReadOnlyMemory<char> value, char separator)
     {
@@ -177,7 +181,7 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     }
 
     /// <summary>
-    /// Splits a string into substrings based on a string delimiter without any additional heap allocations.
+    /// Splits a string into substrings based on a string delimiter without copying the substrings.
     /// </summary>
     /// <param name="value">The string to split into substrings.</param>
     /// <param name="separator">The string that delimits the substrings in the original string.</param>
@@ -186,12 +190,13 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// <remarks>
     /// This method uses <see cref="StringComparison.Ordinal"/> comparison for the separator string.
     /// Empty segments are included in the result when consecutive separators are encountered.
+    /// The substrings aren't copied, but the split allocates one segment object per substring.
     /// </remarks>
     public static StringSegments Split(string value, ReadOnlySpan<char> separator) =>
         Split(value.AsMemory(), separator, StringComparison.Ordinal);
 
     /// <summary>
-    /// Splits a string into substrings based on a string delimiter without any additional heap allocations,
+    /// Splits a string into substrings based on a string delimiter without copying the substrings,
     /// using the specified comparison rules.
     /// </summary>
     /// <param name="value">The string to split into substrings.</param>
@@ -202,6 +207,7 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// <remarks>
     /// Use this overload when you need case-insensitive or culture-aware separator matching.
     /// Empty segments are included in the result when consecutive separators are encountered.
+    /// The substrings aren't copied, but the split allocates one segment object per substring.
     /// </remarks>
     public static StringSegments Split(
         string value,
@@ -211,7 +217,7 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
 
     /// <summary>
     /// Splits a <see cref="ReadOnlyMemory{T}">ReadOnlyMemory&lt;char&gt;</see> into substrings based on a string delimiter
-    /// without any additional heap allocations.
+    /// without copying the substrings.
     /// </summary>
     /// <param name="value">The <see cref="ReadOnlyMemory{T}">ReadOnlyMemory&lt;char&gt;</see> to split into substrings.</param>
     /// <param name="separator">The string that delimits the substrings in the memory.</param>
@@ -220,13 +226,14 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// <remarks>
     /// This method uses <see cref="StringComparison.Ordinal"/> comparison for the separator string.
     /// Empty segments are included in the result when consecutive separators are encountered.
+    /// The substrings aren't copied, but the split allocates one segment object per substring.
     /// </remarks>
     public static StringSegments Split(ReadOnlyMemory<char> value, ReadOnlySpan<char> separator) =>
         Split(value, separator, StringComparison.Ordinal);
 
     /// <summary>
     /// Splits a <see cref="ReadOnlyMemory{T}">ReadOnlyMemory&lt;char&gt;</see> into substrings based on a string delimiter
-    /// without any additional heap allocations, using the specified comparison rules.
+    /// without copying the substrings, using the specified comparison rules.
     /// </summary>
     /// <param name="value">The <see cref="ReadOnlyMemory{T}">ReadOnlyMemory&lt;char&gt;</see> to split into substrings.</param>
     /// <param name="separator">The string that delimits the substrings in the memory.</param>
@@ -236,6 +243,7 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// <remarks>
     /// Use this overload when you need case-insensitive or culture-aware separator matching.
     /// Empty segments are included in the result when consecutive separators are encountered.
+    /// The substrings aren't copied, but the split allocates one segment object per substring.
     /// </remarks>
     public static StringSegments Split(
         ReadOnlyMemory<char> value,
