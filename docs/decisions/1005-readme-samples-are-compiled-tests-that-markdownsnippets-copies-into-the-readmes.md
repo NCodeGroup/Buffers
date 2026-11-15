@@ -19,7 +19,9 @@ fails when a README differs from its test.**
    `// begin-snippet:` and `// end-snippet`, asserting what the sample's comments claim, and in
    `tests/NCode.Buffers.Tests/ReadmeSamples/Signatures.cs`, the quick start with its `using` lines, in namespace
    `ReadmeSamples`. Both files depart from the test convention of mirroring one production type and nesting sample
-   types, because they test the READMEs.
+   types, because they test the READMEs. Each sample's fact is named `<Sample>Sample_Runs` and asserts what that one
+   sample claims, and the facts are grouped in regions named for the README's sections, instead of the
+   `Method_State_Expected` names and `{MethodName} Tests` regions of the test conventions.
 2. MarkdownSnippets.Tool, pinned in `.config/dotnet-tools.json` with `rollForward: false`, copies the samples with the
    `InPlaceOverwrite` convention and `OmitSnippetLinks` from `mdsnippets.json`.
 3. `build/gate.ps1` runs `dotnet mdsnippets` and fails when it changes a Markdown file.
