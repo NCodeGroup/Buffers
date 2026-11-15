@@ -3,7 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Description>Pinned, pooled .NET buffers that zero themselves on dispose, for keys and other secrets, plus fixed-size buffer writers and string splitting without substring copies.</Description>
     <PackageTags>crypto secure buffer pin zero poh encoding</PackageTags>
-    <!-- Every pack is checked for compatibility with the last package on nuget.org (ADR-1001); the first change after a release raises it. -->
+    <!-- Every pack is checked for compatibility with the last package on nuget.org (ADR-1001); raise-baseline.yml raises it after each release (ADR-1007). -->
     <EnablePackageValidation>true</EnablePackageValidation>
     <PackageValidationBaselineVersion>5.0.0</PackageValidationBaselineVersion>
   </PropertyGroup>

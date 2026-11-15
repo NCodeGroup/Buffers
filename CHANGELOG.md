@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- After each release is published, `.github/workflows/raise-baseline.yml` opens the pull request that raises the package validation baseline, and `build/Update-Baseline.ps1` does it by hand ([ADR-1007](docs/decisions/1007-a-workflow-raises-the-package-validation-baseline-after-each-release.md)).
+
 ## [5.0.2] - 2026-11-15
 
 ### Added
