@@ -10,14 +10,20 @@
     The released version, such as 5.0.2. A leading v is ignored.
 .PARAMETER TimeoutMinutes
     How long to wait for nuget.org to list the version.
+.PARAMETER Root
+    The repository root; build/Test-UpdateBaseline.ps1 points it at a copy.
+.PARAMETER SkipNugetCheck
+    Doesn't wait for nuget.org; for build/Test-UpdateBaseline.ps1 only.
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$Version,
-    [int]$TimeoutMinutes = 30
+    [int]$TimeoutMinutes = 30,
+    [string]$Root = (Split-Path -Parent $PSScriptRoot),
+    [switch]$SkipNugetCheck
 )
 $ErrorActionPreference = 'Stop'
-$root = Split-Path -Parent $PSScriptRoot
+$root = $Root
 $version = $Version.TrimStart('v')
 if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "'$Version' isn't a stable version such as 5.0.2." }
 
@@ -30,11 +36,17 @@ if ([version]$current.Groups[1].Value -ge [version]$version) { return }
 
 $index = 'https://api.nuget.org/v3-flatcontainer/ncode.buffers/index.json'
 $deadline = [DateTime]::UtcNow.AddMinutes($TimeoutMinutes)
-while ($true) {
-    $answer = Invoke-RestMethod -Uri $index -SkipHttpErrorCheck -StatusCodeVariable status
-    if ($status -eq 200 -and $answer.versions -contains $version) { break }
+$delay = 15
+while (-not $SkipNugetCheck) {
+    # A failed or slow request counts as "not listed yet", so one network error doesn't end the wait.
+    try {
+        $answer = Invoke-RestMethod -Uri $index -TimeoutSec 30 -SkipHttpErrorCheck -StatusCodeVariable status
+        if ($status -eq 200 -and $answer.versions -contains $version) { break }
+    }
+    catch { Write-Warning "nuget.org request failed: $($_.Exception.Message)" }
     if ([DateTime]::UtcNow -ge $deadline) { throw "nuget.org doesn't list NCode.Buffers $version after $TimeoutMinutes minutes." }
-    Start-Sleep -Seconds 30
+    Start-Sleep -Seconds ($delay + (Get-Random -Maximum 5))
+    $delay = [Math]::Min($delay * 2, 120)
 }
 
 $utf8 = [Text.UTF8Encoding]::new($false)

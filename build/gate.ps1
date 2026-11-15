@@ -19,6 +19,9 @@ try {
     dotnet mdsnippets
     if ($LASTEXITCODE) { 'README samples: FAILED. dotnet mdsnippets could not merge the samples.'; exit 1 }
     if (Compare-Object @(& $markdown) @($before)) { 'README samples: FAILED. dotnet mdsnippets updated a README from the tests; commit the result.'; exit 1 }
+    # The baseline script edits files in an automated pull request, so its branches are tested offline (ADR-1007).
+    ./build/Test-UpdateBaseline.ps1
+    if ($LASTEXITCODE) { exit $LASTEXITCODE }
     $dod = @{}
     if ($Fast) { $dod.Fast = $true }
     if ($Filter) { $dod.Filter = $Filter }

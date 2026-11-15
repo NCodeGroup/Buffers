@@ -22,6 +22,7 @@ and a person merges it.**
 3. The workflow pushes `baseline-<version>`, opens the pull request and starts `ci.yml` on that branch, because a pull
    request opened with the workflow's token starts no workflow.
 4. A release plan lists no baseline follow-up.
+5. The pull request opens ready for review, not as a draft: it holds one line a person merges after CI passes, and a draft would add a step to every release.
 
 ## Options considered
 
@@ -39,5 +40,5 @@ and a person merges it.**
 
 ## References
 
-- `.github/workflows/raise-baseline.yml`, `build/Update-Baseline.ps1`
+- `.github/workflows/raise-baseline.yml`, `build/Update-Baseline.ps1`, `build/Test-UpdateBaseline.ps1`
 - [ADR-1001](1001-each-package-is-validated-against-the-last-released-package.md)
