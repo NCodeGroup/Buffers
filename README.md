@@ -247,9 +247,34 @@ bool isValid = CryptographicOperations.FixedTimeEquals(computed, expected);
 CryptographicOperationsExtensions.ZeroMemory(sensitiveData);
 ```
 
-## References
-* [Pinned Object Heap (POH)](https://devblogs.microsoft.com/dotnet/internals-of-the-poh/)
-* [Character Encoding with Exception Fallback](https://learn.microsoft.com/en-us/dotnet/standard/base-types/character-encoding#exception-fallback)
+## Security notes
+
+### Pinning
+
+- Does: sensitive buffers come from `GC.AllocateUninitializedArray<T>(length, pinned: true)` on the Pinned Object Heap, so the GC never moves them and leaves no stale copy at an old address, and native code can rely on the address.
+- Does not: lock the memory into RAM. The OS can still write it to a page file, swap or hibernation file.
+- Does not: hide the memory from a debugger, a crash dump, or another process that can read this one's memory.
+- `SecureSpanLifetime<T>` doesn't pin.
+
+### Zeroing
+
+- Does: `Dispose` zeroes the whole underlying buffer with `CryptographicOperations.ZeroMemory`, which the JIT doesn't remove. That includes the part beyond the slice `Rent` returned.
+- Does: zero a pooled buffer before another caller can rent it.
+- Does not: run without `Dispose`. There is no finalizer, so always use `using`.
+- Does not: clear copies, such as a `string`, a `ToArray()` result, or a buffer rented with `isSensitive: false`.
+- A newly allocated buffer is not zeroed when rented, so write before you read.
+- Using a span after its owner is disposed reads memory another caller may have rented.
+
+### Comparing and encoding
+
+- `FixedTimeEquals` takes the same time for any contents of equal length, but returns `false` at once when the lengths differ, so it doesn't hide the length.
+- A `string` decoded with `SecureEncoding` can't be zeroed. Decode a secret into a sensitive buffer with `GetChars(ReadOnlySpan<byte>, Span<char>)` instead.
+
+### References
+
+- [Pinned Object Heap (POH)](https://devblogs.microsoft.com/dotnet/internals-of-the-poh/)
+- [Character Encoding with Exception Fallback](https://learn.microsoft.com/en-us/dotnet/standard/base-types/character-encoding#exception-fallback)
+- [CryptographicOperations.ZeroMemory](https://learn.microsoft.com/dotnet/api/system.security.cryptography.cryptographicoperations.zeromemory)
 
 ## Project
 
