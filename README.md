@@ -337,6 +337,8 @@ CryptographicOperationsExtensions.ZeroMemory(sensitiveData);
 
 - [CONTRIBUTING.md](CONTRIBUTING.md): how to set up, build, test and propose a change.
 - [SECURITY.md](SECURITY.md): report a vulnerability privately through the repository's Security tab, never in a public issue.
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), [GOVERNANCE.md](GOVERNANCE.md) and [ROADMAP.md](ROADMAP.md): how we work together, who decides, and where the project is going.
+- [docs/architecture.md](docs/architecture.md) and [docs/assurance-case.md](docs/assurance-case.md): how the library is built, and why it meets its security requirements.
 - [docs/decisions/](docs/decisions/README.md): the decisions behind the design.
 - [CHANGELOG.md](CHANGELOG.md): what changed in each release.
 - [LICENSE.txt](LICENSE.txt): Apache License 2.0, copyright NCode Group.
