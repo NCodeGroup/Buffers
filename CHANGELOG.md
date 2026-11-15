@@ -52,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The README's samples for `FixedSpanBufferWriter<T>`, `FixedMemoryBufferWriter<T>`, `MemorySegment<T>` and `SecureEncoding` compile.
 - The README's "Choosing a type" tables fit GitHub's README column instead of cutting off their last column.
 - The XML documentation of `StringSegments` and the `SplitSegments` extensions no longer calls splitting allocation-free: it says each split allocates one segment object per substring and `foreach` allocates an enumerator, and shows how to walk the segments without one; the `SplitSegments` example prints each segment's text instead of its type name ([#44](https://github.com/NCodeGroup/Buffers/issues/44)).
+- `SequenceExtensions.GetSpanLease` no longer disposes the sequence it reads when the data is in one segment: disposing the lease left a `Sequence<T>` or pooled buffer writer reset to length 0, as its documentation says it does not ([#43](https://github.com/NCodeGroup/Buffers/issues/43)).
 
 ## [4.1.0] - 2026-01-21
 
