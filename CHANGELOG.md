@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `BannedSymbols.Encoding.txt` and `BannedSymbols.Buffers.txt` keep shipping code on `SecureEncoding` and `BufferFactory` ([ADR-1003](docs/decisions/1003-shipping-code-takes-buffers-and-encodings-through-bufferfactory-and-secureencoding.md)).
 - A package README for nuget.org with installation, an example and links to the full documentation.
 - Coverage on Codecov: on each push to `main`, CI uploads the Cobertura report that `build/Test-Coverage.ps1 -ReportDirectory` keeps to [Codecov](https://codecov.io/gh/NCodeGroup/Buffers) through OIDC, without a stored token, and both READMEs show its coverage badge ([#40](https://github.com/NCodeGroup/Buffers/issues/40)).
+- The C# samples in both READMEs are tests in `tests/NCode.Buffers.Tests`, where each one compiles and runs, and [MarkdownSnippets](https://github.com/SimonCropp/MarkdownSnippets) copies them into the READMEs; `./build/gate.ps1`, which CI runs, fails when a README's sample differs from its test, and the quick start is a complete `Signatures` class with its `using` directives ([#42](https://github.com/NCodeGroup/Buffers/issues/42), [ADR-1005](docs/decisions/1005-readme-samples-are-compiled-tests-that-markdownsnippets-copies-into-the-readmes.md)).
 
 ### Changed
 
