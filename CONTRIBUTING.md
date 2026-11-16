@@ -77,6 +77,8 @@ To write a sample ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-test
 3. Start the key with `Site`, in PascalCase: `SiteZeroedAfterUse`. A key is defined once in the repository, and only a site sample's key starts with `Site`; the gate checks both. A page may also include a README sample by its key, and a change to that sample changes the READMEs too.
 4. Run `dotnet csharpier format .`, then `./build/gate.ps1 -Fast`.
 
+The site's own components are in `docs/site/_components/`, each with its usage in a comment at its top, and the data they draw from is in `docs/site/_components/data/`: `evidence.json` lists the claims of [Guarantees and their tests](docs/site/evidence/guarantees.mdx) and every test, sample and source line a page cites, linked at a pinned commit so the line a link opens never moves. `build/Test-SiteEvidence.ps1`, which the gate runs, fails when a test or a sample it names is gone, when a pinned line no longer holds what it names, and when a pin a page marks on a sample, a quoted text in the block's info string, does not match exactly one line of it.
+
 To see the result, clone NCodeGroup/docs beside this repository and set it up as its README says. From this repository's root, `npm --prefix ../docs run dev -- .` then serves the site at `http://localhost:4321/Buffers/`, and `npm --prefix ../docs run site -- build . --out <folder>` builds it into a folder outside this repository and stops on a sample key no test defines. Neither writes into this repository. The gate does not build the site; the documentation site workflow does, on every pull request.
 
 ## Conventions

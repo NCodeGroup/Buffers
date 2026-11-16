@@ -12,7 +12,8 @@
     "url": "https://ncodegroup.github.io/Buffers"
   },
   "sidebar": [
-    { "label": "Start", "items": [{ "slug": "index", "label": "Overview" }] }
+    { "label": "Start", "items": [{ "slug": "index", "label": "Overview" }] },
+    { "label": "Evidence", "items": ["evidence/guarantees"] }
   ],
   "social": [
     { "label": "GitHub", "href": "https://github.com/NCodeGroup/Buffers" },
