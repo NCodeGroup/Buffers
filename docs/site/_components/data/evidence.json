@@ -178,6 +178,18 @@
     "BufferFactoryTests.Rent_WhenSizeIsZeroAndSensitive_ReturnsEmptyMemorySingleton": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
       "line": 115
+    },
+    "SecureMemoryTests.Dispose_CalledTwice_ReturnsMemoryToPoolOnce": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryTests.cs",
+      "line": 59
+    },
+    "RefSpanLeaseTests.Dispose_MultipleCalls_DisposesOwnerEachTime": {
+      "file": "tests/NCode.Buffers.Tests/RefSpanLeaseTests.cs",
+      "line": 218
+    },
+    "ReadmeSamplesTests.ConsumeAsContiguousSpanSample_Runs": {
+      "file": "tests/NCode.Buffers.Tests/ReadmeSamplesTests.cs",
+      "line": 194
     }
   },
   "samples": {
@@ -222,6 +234,21 @@
     },
     "SiteHowSecretsLeakUsual": {
       "file": "tests/NCode.Buffers.Site.Tests/Concepts/HowSecretsLeakSamples.cs"
+    },
+    "SiteOwnershipTightScope": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/OwnershipSamples.cs"
+    },
+    "SiteOwnershipUsingOrder": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/OwnershipSamples.cs"
+    },
+    "SiteOwnershipReturnLifetime": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/OwnershipSamples.cs"
+    },
+    "SiteOwnershipSecondDispose": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/OwnershipSamples.cs"
+    },
+    "SiteOwnershipUseAfterDispose": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/OwnershipSamples.cs"
     }
   },
   "sources": {
@@ -496,6 +523,38 @@
         31
       ],
       "match": "Locking memory into RAM"
+    },
+    "RefSpanLease.Dispose": {
+      "file": "src/NCode.Buffers/RefSpanLease.cs",
+      "lines": [
+        71,
+        74
+      ],
+      "match": "public void Dispose()"
+    },
+    "BufferFactory.Rent.DisposeOnFailure": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        81,
+        90
+      ],
+      "match": "try"
+    },
+    "SequenceExtensions.GetSpanLease.Rent": {
+      "file": "src/NCode.Buffers/SequenceExtensions.cs",
+      "lines": [
+        82,
+        86
+      ],
+      "match": "var owner = BufferFactory.Rent("
+    },
+    "SequenceExtensions.ConsumeAsContiguousSpan.Dispose": {
+      "file": "src/NCode.Buffers/SequenceExtensions.cs",
+      "lines": [
+        159,
+        162
+      ],
+      "match": "finally"
     }
   },
   "external": {
@@ -575,6 +634,12 @@
       "url": "https://learn.microsoft.com/dotnet/api/system.security.cryptography.cryptographicoperations.zeromemory",
       "read": "2026-11-16",
       "quote": "This method exists to future-proof against potential optimizations in the .NET runtime that could eliminate memory writes that aren't followed by memory reads."
+    },
+    "MemoryOwnershipRule7": {
+      "title": "Memory<T> and Span<T> usage guidelines",
+      "url": "https://learn.microsoft.com/dotnet/standard/memory-and-spans/memory-t-usage-guidelines",
+      "read": "2026-11-16",
+      "quote": "If you have an IMemoryOwner<T> reference, you must at some point dispose of it or transfer its ownership (but not both)"
     }
   },
   "claims": [
