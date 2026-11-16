@@ -68,6 +68,8 @@ if (props.claim) {
     outline-offset: var(--focus-gap);
   }
   .proof__ref {
+    /* A flex item does not shrink below its content without this, so a long test name would widen the page. */
+    min-width: 0;
     overflow: hidden;
     font-family: var(--font-mono);
     font-stretch: var(--width-code);

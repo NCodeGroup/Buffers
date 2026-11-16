@@ -21,6 +21,8 @@ const { tone = 'usual' } = Astro.props;
 <style>
   .pin-notes :global(ol) {
     display: grid;
+    /* minmax(0, …): an item never widens past the column, whatever unbreakable text it holds. */
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-3);
     margin: var(--space-4) 0 0;
     padding: 0;
