@@ -214,6 +214,10 @@
     "SequenceExtensionsTests.ConsumeAsContiguousSpan_MultipleSegments_DisposesOriginalSequence": {
       "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
       "line": 629
+    },
+    "SecureMemoryPoolTests.Rent_CharPool_ReturnsOnePageOfBytes": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 306
     }
   },
   "samples": {
@@ -354,6 +358,18 @@
     },
     "SiteSegmentsArePinned": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
+    },
+    "SiteReadSecretUsualJson": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ReadASecretWithoutAStringSamples.cs"
+    },
+    "SiteReadSecretJson": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ReadASecretWithoutAStringSamples.cs"
+    },
+    "SiteReadSecretBase64": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ReadASecretWithoutAStringSamples.cs"
+    },
+    "SiteReadSecretChars": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ReadASecretWithoutAStringSamples.cs"
     }
   },
   "sources": {
@@ -700,6 +716,14 @@
         50
       ],
       "match": "<strong>Single-segment optimization:</strong>"
+    },
+    "Readme.DecodeIntoABuffer": {
+      "file": "README.md",
+      "lines": [
+        328,
+        328
+      ],
+      "match": "A `string` decoded with `SecureEncoding` can't be zeroed."
     }
   },
   "external": {

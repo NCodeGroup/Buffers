@@ -223,5 +223,93 @@
         }
       }
     ]
+  },
+  "string-or-buffer": {
+    "title": "A string or a buffer",
+    "summary": "A client secret in a request body, deserialized into a `string`, and copied into a buffer from `Rent` with `isSensitive: true`. Each cell is a part of the secret.",
+    "key": ["9F", "31", "C6", "0E", "58", "B2", "7A", "D4"],
+    "tracks": [
+      { "id": "string", "label": "Deserialized to a `string`", "code": "Deserialize<TokenRequest>(body)" },
+      { "id": "buffer", "label": "Copied into a buffer", "code": "reader.CopyString(buffer)" }
+    ],
+    "regions": {
+      "string": [
+        { "id": "body", "label": "Request body" },
+        { "id": "heap", "label": "Heap" }
+      ],
+      "buffer": [
+        { "id": "body", "label": "Request body" },
+        { "id": "heap", "label": "Heap" },
+        { "id": "pinned", "label": "Pinned heap" }
+      ]
+    },
+    "frames": [
+      {
+        "title": "The request arrives",
+        "tracks": {
+          "string": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooo.... ........ ........" },
+            "count": 1,
+            "caption": "The body holds the secret, as UTF-8 bytes among the rest of the JSON."
+          },
+          "buffer": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooo.... ........", "pinned": "........" },
+            "count": 1,
+            "caption": "The same body. It is your code's input, and it holds the secret too."
+          }
+        }
+      },
+      {
+        "title": "Read the value",
+        "tracks": {
+          "string": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooossss oo...... ........" },
+            "count": 2,
+            "caption": "Deserializing makes a `string` of the secret, which the request object keeps reachable.",
+            "refs": ["L5"]
+          },
+          "buffer": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooo.... ........", "pinned": "ssss????" },
+            "count": 2,
+            "scope": "pinned",
+            "caption": "`CopyString` writes the secret's bytes into a buffer on the pinned heap. No string is made."
+          }
+        }
+      },
+      {
+        "title": "Use it",
+        "tracks": {
+          "string": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooossss oossss.. ........" },
+            "count": 3,
+            "caption": "`Encoding.UTF8.GetBytes` copies it again, into an ordinary array.",
+            "refs": ["L2"]
+          },
+          "buffer": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooo.... ........", "pinned": "ssss????" },
+            "count": 2,
+            "scope": "pinned",
+            "caption": "The hash is computed from the buffer, where the secret already is. Nothing is copied."
+          }
+        }
+      },
+      {
+        "title": "You are done with it",
+        "tracks": {
+          "string": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooossss oossss.. ........" },
+            "count": 3,
+            "caption": "Nothing can overwrite the string, and nothing clears the array.",
+            "refs": ["L5", "L2"]
+          },
+          "buffer": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooo.... ........", "pinned": "00000000" },
+            "count": 1,
+            "caption": "`Dispose` overwrites the buffer with zeros. The body still holds the secret until its own owner clears it.",
+            "refs": ["R1"]
+          }
+        }
+      }
+    ]
   }
 }
