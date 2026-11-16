@@ -11,8 +11,8 @@ namespace SiteSamples.Start;
 // its key (ADR-1010). SiteWatchAKeyDisappear writes to the console, so this class runs in a collection that no other
 // test runs beside, and its output is compared with the fixture the page shows,
 // docs/site/_components/data/quick-start.watch.txt. SiteQuickStartCall calls the README's own Signatures class, which
-// this project compiles from tests/NCode.Buffers.Tests/ReadmeSamples/Signatures.cs, and its key and MAC are compared
-// with the bytes the page's stills draw, docs/site/_components/data/quick-start.stills.txt.
+// this project compiles from tests/NCode.Buffers.Tests/ReadmeSamples/Signatures.cs, and the page's stills,
+// docs/site/_components/data/quick-start.stills.txt, must draw its MAC and the key that makes it.
 [Collection(ConsoleTests.Name)]
 public class QuickStartSamples
 {
@@ -107,20 +107,14 @@ public class QuickStartSamples
         Assert.False(tampered);
 
         // The stills draw this call: the key it derives, and the expected MAC, which is the signature before the
-        // sample changed one bit of it.
+        // sample changed one bit of it. The call never hands out its key, so the drawn key is checked by the MAC it
+        // makes of the payload: only the call's own key makes the call's MAC.
         signature[0] ^= 1;
-        Span<byte> derivedKey = stackalloc byte[32];
-        Rfc2898DeriveBytes.Pbkdf2(
-            password,
-            salt,
-            derivedKey,
-            600_000,
-            HashAlgorithmName.SHA256
-        );
         byte[] stillsKey = ReadStill("key");
         byte[] stillsMac = ReadStill("expected");
-        SecretAssert.Equal(stillsKey, derivedKey);
+        byte[] stillsKeyMac = HMACSHA256.HashData(stillsKey, payload);
         SecretAssert.Equal(stillsMac, signature);
+        SecretAssert.Equal(stillsKeyMac, signature);
     }
 
     // A line of quick-start.stills.txt, "<label>: <hex digits>", as bytes.
