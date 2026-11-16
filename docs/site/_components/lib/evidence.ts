@@ -9,7 +9,7 @@ import leaks from '@site/components/data/leaks.json';
 
 export { evidence, leaks };
 
-export type Kind = 'asserted' | 'construction' | 'observed' | 'illustration' | 'process';
+export type Kind = 'asserted' | 'construction' | 'documented' | 'observed' | 'illustration' | 'process';
 
 export interface Ref {
   kind?: Kind;
@@ -75,15 +75,18 @@ export function sampleLink(key: string): Link {
 }
 
 export function sourceLink(id: string): Link {
-  const source = (evidence.sources as Record<string, { file: string; lines?: number[]; anchor?: string; branch?: string }>)[id];
+  const source = (
+    evidence.sources as Record<string, { file: string; lines?: number[]; anchor?: string; branch?: string; kind?: Kind; label?: string }>
+  )[id];
   if (!source) fail(`no source "${id}" in docs/site/_components/data/evidence.json`);
   const file = source.file.split('/').pop() ?? source.file;
   const [from, to] = source.lines ?? [];
   const lines = from === undefined ? '' : from === to ? `:${from}` : `:${from}–${to}`;
   const fragment = from === undefined ? (source.anchor ? `#${source.anchor}` : '') : from === to ? `#L${from}` : `#L${from}-L${to}`;
   return {
-    kind: 'construction',
-    label: `${file}${lines}`,
+    // A line of the library is By construction; a build or workflow file is A process; a design record is Documented.
+    kind: source.kind ?? 'construction',
+    label: source.label ?? `${file}${lines}`,
     context: 'Source',
     // A file that is not on the default branch at the pinned commit yet, such as a decision record of the site, names
     // its branch instead.
@@ -94,10 +97,11 @@ export function sourceLink(id: string): Link {
 }
 
 export function externalLink(id: string): Link {
-  const page = (evidence.external as Record<string, { title: string; url: string; read: string; quote?: string }>)[id];
+  const page = (evidence.external as Record<string, { title: string; url: string; read: string; quote?: string; kind?: Kind }>)[id];
   if (!page) fail(`no external page "${id}" in docs/site/_components/data/evidence.json`);
   return {
-    kind: 'construction',
+    // By construction when the library delegates to what the page documents; Documented when it states .NET's behavior.
+    kind: page.kind ?? 'construction',
     label: page.title,
     context: 'Microsoft Learn',
     href: page.url,

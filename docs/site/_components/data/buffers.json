@@ -83,7 +83,7 @@
       "watchFor": "It adds a segment as it grows. To read it as one span, use `GetSpanLease` or `ConsumeAsContiguousSpan` with the same `isSensitive`.",
       "dispose": "The `Sequence<T>` it returns, with `using`.",
       "guide": "/guides/secret-of-unknown-length/",
-      "behavior": { "pinned": true, "zeroedOnDispose": true, "pooled": true, "takesIsSensitive": true, "acrossAwait": true, "source": "Segments from `SecureMemoryPool<T>.Shared`; a larger segment is a pinned array of its own", "holds": "`Sequence<T>` from Nerdbank.Streams", "length": "What you have written", "contents": "Only what you write is read back", "afterDispose": "Every segment zeroed, and back in its pool" },
+      "behavior": { "pinned": true, "zeroedOnDispose": true, "pooled": true, "takesIsSensitive": true, "acrossAwait": true, "source": "Segments from `SecureMemoryPool<T>.Shared`; a larger segment is a pinned array of its own", "holds": "`Sequence<T>` from Nerdbank.Streams", "length": "What you have written", "contents": "Only what you write is read back", "afterDispose": "Every segment zeroed; pooled ones go back to the pool" },
       "evidence": ["BufferFactoryTests.CreatePooledBufferWriter_WhenSensitive_RentsWholePagesFromSecurePool"]
     },
     {

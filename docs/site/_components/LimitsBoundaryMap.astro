@@ -36,7 +36,7 @@ const code = (text: string) => text.replace(/`([^`]+)`/g, '<code>$1</code>');
             <li class:list={['place', place.lit && 'place--lit']}>
               <span class="place__name">{place.name}</span>
               <span class="place__note" set:html={code(place.note)} />
-              <span class="place__entries" aria-label={`Limits ${place.entries.join(' and ')}`}>
+              <span class="place__entries" role="img" aria-label={`Limits ${place.entries.join(' and ')}`}>
                 {place.entries.map((n) => <span class="entry">{n}</span>)}
               </span>
             </li>
@@ -51,7 +51,7 @@ const code = (text: string) => text.replace(/`([^`]+)`/g, '<code>$1</code>');
         {outside.map((place) => (
           <li class="place place--outside">
             <span class="place__name">{place.name}</span>
-            <span class="place__entries" aria-label={`Limit ${place.entries.join(' and ')}`}>
+            <span class="place__entries" role="img" aria-label={`Limit ${place.entries.join(' and ')}`}>
               {place.entries.map((n) => <span class="entry">{n}</span>)}
             </span>
           </li>

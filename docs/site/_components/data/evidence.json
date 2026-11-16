@@ -47,10 +47,6 @@
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
       "line": 506
     },
-    "SecureMemoryPoolTests.RentDisposeRent_ReusesBuffer": {
-      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 488
-    },
     "SecureMemoryPoolTests.Rent_SizeLessThanPage_ReturnsPageSizeBuffer": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
       "line": 186
@@ -264,6 +260,9 @@
     "SiteVerifyMacTextSecret": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/VerifyAMacSamples.cs"
     },
+    "SiteVerifySignature": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/VerifyAMacSamples.cs"
+    },
     "SiteByteArrayUsual": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/ByteArrayApisSamples.cs"
     },
@@ -334,6 +333,9 @@
       "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
     },
     "SitePitfallCompareBytesNotValues": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallPaddingBytesCount": {
       "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
     },
     "SitePitfallDefaultValues": {
@@ -512,7 +514,8 @@
         10,
         10
       ],
-      "match": "private const string Seed = \"20261115,12345\";"
+      "match": "private const string Seed = \"20261115,12345\";",
+      "kind": "process"
     },
     "CoverageMinimums": {
       "file": "build/Test-Coverage.ps1",
@@ -520,7 +523,8 @@
         30,
         31
       ],
-      "match": "$MinimumLineRate = 0.98"
+      "match": "$MinimumLineRate = 0.98",
+      "kind": "process"
     },
     "WarningsAsErrors": {
       "file": "build/ProjectTemplate.props",
@@ -528,13 +532,16 @@
         8,
         9
       ],
-      "match": "<TreatWarningsAsErrors>true</TreatWarningsAsErrors>"
+      "match": "<TreatWarningsAsErrors>true</TreatWarningsAsErrors>",
+      "kind": "process"
     },
     "BannedBuffers": {
-      "file": "BannedSymbols.Buffers.txt"
+      "file": "BannedSymbols.Buffers.txt",
+      "kind": "process"
     },
     "BannedEncoding": {
-      "file": "BannedSymbols.Encoding.txt"
+      "file": "BannedSymbols.Encoding.txt",
+      "kind": "process"
     },
     "CiPullRequest": {
       "file": ".github/workflows/ci.yml",
@@ -542,21 +549,26 @@
         3,
         7
       ],
-      "match": "on:"
+      "match": "on:",
+      "kind": "process"
     },
     "PublishWorkflow": {
-      "file": ".github/workflows/publish.yml"
+      "file": ".github/workflows/publish.yml",
+      "kind": "process"
     },
     "ProvenanceWorkflow": {
-      "file": ".github/workflows/release-provenance.yml"
+      "file": ".github/workflows/release-provenance.yml",
+      "kind": "process"
     },
     "VerifyAPackage": {
       "file": "SECURITY.md",
-      "anchor": "verify-a-package"
+      "anchor": "verify-a-package",
+      "kind": "process"
     },
     "ArchitectureDesignRules": {
       "file": "docs/architecture.md",
-      "anchor": "design-rules"
+      "anchor": "design-rules",
+      "kind": "documented"
     },
     "CiGateAndCoverage": {
       "file": ".github/workflows/ci.yml",
@@ -564,11 +576,14 @@
         48,
         54
       ],
-      "match": "- name: Definition of Done"
+      "match": "- name: Definition of Done",
+      "kind": "process"
     },
     "SiteSamplesDecision": {
       "file": "docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md",
-      "branch": "main"
+      "branch": "main",
+      "kind": "process",
+      "label": "ADR-1010"
     },
     "BufferExtensions.GetSecureLifetime": {
       "file": "src/NCode.Buffers/BufferExtensions.cs",
@@ -584,7 +599,8 @@
         11,
         12
       ],
-      "match": "<PackageReference Include=\"JetBrains.Annotations\" />"
+      "match": "<PackageReference Include=\"JetBrains.Annotations\" />",
+      "kind": "process"
     },
     "SecureMemoryPool.Rent": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
@@ -648,7 +664,8 @@
         3,
         5
       ],
-      "match": "NCode.Buffers is one assembly"
+      "match": "NCode.Buffers is one assembly",
+      "kind": "documented"
     },
     "Architecture.NoFinalizers": {
       "file": "docs/architecture.md",
@@ -656,7 +673,8 @@
         42,
         43
       ],
-      "match": "Ownership is explicit"
+      "match": "Ownership is explicit",
+      "kind": "documented"
     },
     "Roadmap.NotPlanned": {
       "file": "ROADMAP.md",
@@ -664,7 +682,8 @@
         30,
         31
       ],
-      "match": "Locking memory into RAM"
+      "match": "Locking memory into RAM",
+      "kind": "documented"
     },
     "RefSpanLease.Dispose": {
       "file": "src/NCode.Buffers/RefSpanLease.cs",
@@ -728,7 +747,8 @@
         328,
         328
       ],
-      "match": "A `string` decoded with `SecureEncoding` can't be zeroed."
+      "match": "A `string` decoded with `SecureEncoding` can't be zeroed.",
+      "kind": "documented"
     },
     "BufferFactory.RentMemory": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
@@ -776,102 +796,119 @@
       "title": "CryptographicOperations.FixedTimeEquals",
       "url": "https://learn.microsoft.com/dotnet/api/system.security.cryptography.cryptographicoperations.fixedtimeequals",
       "read": "2026-11-16",
-      "quote": "Determines the equality of two byte sequences in an amount of time that depends on the length of the sequences, but not their values."
+      "quote": "Determines the equality of two byte sequences in an amount of time that depends on the length of the sequences, but not their values.",
+      "kind": "construction"
     },
     "ZeroMemoryDocs": {
       "title": "CryptographicOperations.ZeroMemory",
       "url": "https://learn.microsoft.com/dotnet/api/system.security.cryptography.cryptographicoperations.zeromemory",
-      "read": "2026-11-15"
+      "read": "2026-11-15",
+      "kind": "construction"
     },
     "AllocateUninitializedArrayDocs": {
       "title": "GC.AllocateUninitializedArray",
       "url": "https://learn.microsoft.com/dotnet/api/system.gc.allocateuninitializedarray",
       "read": "2026-11-16",
-      "quote": "The uninitialized array can contain invalid valuetype instances or sensitive information created by other parts of the application."
+      "quote": "The uninitialized array can contain invalid valuetype instances or sensitive information created by other parts of the application.",
+      "kind": "construction"
     },
     "GcFundamentals": {
       "title": "Fundamentals of garbage collection",
       "url": "https://learn.microsoft.com/dotnet/standard/garbage-collection/fundamentals",
       "read": "2026-11-16",
-      "quote": "Memory is compacted only if a collection discovers a significant number of unreachable objects."
+      "quote": "Memory is compacted only if a collection discovers a significant number of unreachable objects.",
+      "kind": "documented"
     },
     "ArrayPoolReturnDocs": {
       "title": "ArrayPool<T>.Return",
       "url": "https://learn.microsoft.com/dotnet/api/system.buffers.arraypool-1.return",
       "read": "2026-11-16",
-      "quote": "If clearArray is set to false or if the pool will release the buffer, the array's contents are left unchanged."
+      "quote": "If clearArray is set to false or if the pool will release the buffer, the array's contents are left unchanged.",
+      "kind": "documented"
     },
     "SecureStringDocs": {
       "title": "SecureString",
       "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
       "read": "2026-11-16",
-      "quote": "Your application cannot delete the data from computer memory."
+      "quote": "Your application cannot delete the data from computer memory.",
+      "kind": "documented"
     },
     "UsingStatementDocs": {
       "title": "The using statement",
       "url": "https://learn.microsoft.com/dotnet/csharp/language-reference/statements/using",
       "read": "2026-11-16",
-      "quote": "The using statement ensures that a disposable instance is disposed even if an exception occurs within the block of the using statement."
+      "quote": "The using statement ensures that a disposable instance is disposed even if an exception occurs within the block of the using statement.",
+      "kind": "documented"
     },
     "SecureStringCopies": {
       "title": "SecureString: how secure is SecureString?",
       "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
       "read": "2026-11-16",
-      "quote": "Because its memory is not pinned, the garbage collector will make additional copies of String values when moving and compacting memory."
+      "quote": "Because its memory is not pinned, the garbage collector will make additional copies of String values when moving and compacting memory.",
+      "kind": "documented"
     },
     "StackallocDocs": {
       "title": "stackalloc expression",
       "url": "https://learn.microsoft.com/dotnet/csharp/language-reference/operators/stackalloc",
       "read": "2026-11-16",
-      "quote": "A stack-allocated memory block isn't subject to garbage collection and doesn't need to be pinned by a fixed statement."
+      "quote": "A stack-allocated memory block isn't subject to garbage collection and doesn't need to be pinned by a fixed statement.",
+      "kind": "documented"
     },
     "SecureStringNotForNewCode": {
       "title": "SecureString",
       "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
       "read": "2026-11-16",
-      "quote": "We recommend that you don't use the SecureString class for new development on .NET (Core) or when you migrate from .NET Framework."
+      "quote": "We recommend that you don't use the SecureString class for new development on .NET (Core) or when you migrate from .NET Framework.",
+      "kind": "documented"
     },
     "SecureStringOpaqueHandle": {
       "title": "SecureString: how secure is SecureString?",
       "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
       "read": "2026-11-16",
-      "quote": "Instead of using SecureString to protect passwords, the recommended alternative is to use an opaque handle to credentials that are stored outside of the process."
+      "quote": "Instead of using SecureString to protect passwords, the recommended alternative is to use an opaque handle to credentials that are stored outside of the process.",
+      "kind": "documented"
     },
     "SecureStringNoEncryption": {
       "title": "SecureString: how secure is SecureString?",
       "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
       "read": "2026-11-16",
-      "quote": "Because of this platform dependency, SecureString does not encrypt the internal storage on non-Windows platform."
+      "quote": "Because of this platform dependency, SecureString does not encrypt the internal storage on non-Windows platform.",
+      "kind": "documented"
     },
     "ZeroMemoryRemarks": {
       "title": "CryptographicOperations.ZeroMemory",
       "url": "https://learn.microsoft.com/dotnet/api/system.security.cryptography.cryptographicoperations.zeromemory",
       "read": "2026-11-16",
-      "quote": "This method exists to future-proof against potential optimizations in the .NET runtime that could eliminate memory writes that aren't followed by memory reads."
+      "quote": "This method exists to future-proof against potential optimizations in the .NET runtime that could eliminate memory writes that aren't followed by memory reads.",
+      "kind": "construction"
     },
     "MemoryOwnershipRule7": {
       "title": "Memory<T> and Span<T> usage guidelines",
       "url": "https://learn.microsoft.com/dotnet/standard/memory-and-spans/memory-t-usage-guidelines",
       "read": "2026-11-16",
-      "quote": "If you have an IMemoryOwner<T> reference, you must at some point dispose of it or transfer its ownership (but not both)"
+      "quote": "If you have an IMemoryOwner<T> reference, you must at some point dispose of it or transfer its ownership (but not both)",
+      "kind": "documented"
     },
     "UsingDeclarationDocs": {
       "title": "The using statement: using declarations",
       "url": "https://learn.microsoft.com/dotnet/csharp/language-reference/statements/using",
       "read": "2026-11-16",
-      "quote": "When declared in a `using` declaration, a local variable is disposed at the end of the scope in which it's declared."
+      "quote": "When declared in a `using` declaration, a local variable is disposed at the end of the scope in which it's declared.",
+      "kind": "documented"
     },
     "SpanStackOnlyDocs": {
       "title": "Memory<T> and Span<T> usage guidelines",
       "url": "https://learn.microsoft.com/dotnet/standard/memory-and-spans/memory-t-usage-guidelines",
       "read": "2026-11-16",
-      "quote": "Because these types can only be stored on the stack, they're unsuitable for scenarios such as asynchronous method calls."
+      "quote": "Because these types can only be stored on the stack, they're unsuitable for scenarios such as asynchronous method calls.",
+      "kind": "documented"
     },
     "MemoryOwnerHolderDocs": {
       "title": "Memory<T> usage, rule 8",
       "url": "https://learn.microsoft.com/dotnet/standard/memory-and-spans/memory-t-usage-guidelines",
       "read": "2026-11-16",
-      "quote": "If your constructor accepts IMemoryOwner<T> as a parameter, its type should implement IDisposable, and your Dispose method should call Dispose on the IMemoryOwner<T> object."
+      "quote": "If your constructor accepts IMemoryOwner<T> as a parameter, its type should implement IDisposable, and your Dispose method should call Dispose on the IMemoryOwner<T> object.",
+      "kind": "documented"
     }
   },
   "claims": [
@@ -907,8 +944,7 @@
       "claim": "A pooled buffer rented with `isSensitive: true` is overwritten with zeros before the pool can hand it to another caller.",
       "kind": "asserted",
       "tests": [
-        "SecureMemoryPoolTests.RentedMemory_IsZeroedOnReturn",
-        "SecureMemoryPoolTests.RentDisposeRent_ReusesBuffer"
+        "SecureMemoryPoolTests.RentedMemory_IsZeroedOnReturn"
       ],
       "sources": [
         "SecureMemory.Dispose",
@@ -1040,6 +1076,11 @@
       "meaning": "The library delegates to .NET or to the compiler, which documents the behavior.",
       "shows": "The source line, and Microsoft's page with the date it was read."
     },
+    "documented": {
+      "label": "Documented",
+      "meaning": "A document states it: Microsoft's documentation of .NET, or the project's own design records.",
+      "shows": "The page, with the date it was read, or the file in the repository."
+    },
     "observed": {
       "label": "Observed",
       "meaning": "Something the runtime did in one recorded run, and may not do in yours.",
@@ -1052,8 +1093,8 @@
     },
     "process": {
       "label": "A process",
-      "meaning": "How the package is built and published, with the artifacts you can check.",
-      "shows": "The workflow files, and the commands that verify a package."
+      "meaning": "How the project builds, tests and publishes the package.",
+      "shows": "The workflow, build or configuration file that does it, and the commands that verify a package."
     }
   }
 }

@@ -25,7 +25,7 @@ const units = Array.from({ length: expected.length }, (_, i) => i);
   <div class="tm__screen">
     <p class="tm__expected">
       <span class="tm__label">Expected MAC, first four bytes</span>
-      <span class="tm__cells" aria-label={expected.join(' ')}>
+      <span class="tm__cells" role="img" aria-label={expected.join(' ')}>
         {expected.map((byte) => <span class="cell cell--secret">{byte}</span>)}
       </span>
     </p>
@@ -42,18 +42,18 @@ const units = Array.from({ length: expected.length }, (_, i) => i);
         {guesses.map((guess) => (
           <tr>
             <th scope="row" class="tm__guess">
-              <span class="tm__cells" aria-label={`${guess.cells.map((c) => c.text).join(' ')}: ${guess.right} of 4 bytes right`}>
+              <span class="tm__cells" role="img" aria-label={`${guess.cells.map((c) => c.text).join(' ')}: ${guess.right} of 4 bytes right`}>
                 {guess.cells.map((cell) => <span class:list={['cell', `cell--${cell.state}`]}>{cell.text}</span>)}
               </span>
             </th>
             <td>
-              <span class="tm__bar tm__bar--early" aria-label={`${guess.early} of 4 byte comparisons`}>
+              <span class="tm__bar tm__bar--early" role="img" aria-label={`${guess.early} of 4 byte comparisons`}>
                 {units.map((i) => <span class:list={['tm__unit', i < guess.early && 'tm__unit--on']} />)}
                 <span class="tm__count" aria-hidden="true">{guess.early}</span>
               </span>
             </td>
             <td>
-              <span class="tm__bar tm__bar--fixed" aria-label={`${guess.fixed} of 4 byte comparisons`}>
+              <span class="tm__bar tm__bar--fixed" role="img" aria-label={`${guess.fixed} of 4 byte comparisons`}>
                 {units.map((i) => <span class:list={['tm__unit', i < guess.fixed && 'tm__unit--on']} />)}
                 <span class="tm__count" aria-hidden="true">{guess.fixed}</span>
               </span>
@@ -118,7 +118,7 @@ const units = Array.from({ length: expected.length }, (_, i) => i);
     font-feature-settings: 'zero' 1;
   }
   .cell--secret { background: color-mix(in srgb, var(--color-screen-hot) 16%, var(--color-screen-raised)); color: var(--color-screen-hot); }
-  .cell--right { background: color-mix(in srgb, var(--color-screen-lit) 18%, var(--color-screen-raised)); color: var(--color-screen-lit); }
+  .cell--right { background: color-mix(in srgb, var(--color-screen-lit) 18%, var(--color-screen)); box-shadow: inset 0 0 0 1px var(--color-screen-lit); color: var(--color-on-screen); }
   .cell--first { box-shadow: inset 0 0 0 1.5px var(--color-screen-hot); color: var(--color-on-screen-secondary); }
   .cell--unread { box-shadow: inset 0 0 0 1px var(--color-screen-border); color: var(--color-on-screen-muted); }
 

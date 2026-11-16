@@ -32,8 +32,11 @@ const lines = fixture
 if (lines.length !== 2) throw new Error('[quick start] quick-start.watch.txt must hold two lines');
 
 type Cell = 'key' | 'mac' | 'zero' | 'unknown' | 'free';
-const key = ['4B', 'A7', '1C', 'E9', '30', 'D5', '82', '6F'];
-const mac = ['9E', '03', '5B', 'C1', '77', '2A', 'F0', '48'];
+// Each cell stands for four bytes and shows the first of them. The key is the fixture's, which is also the key the
+// README's test derives (the same password and salt); the MAC is HMAC-SHA256 of "payload" under that key, the
+// signature that test checks.
+const key = lines[0].bytes.filter((_, i) => i % 4 === 0);
+const mac = ['18', '34', 'C7', '3B', 'F4', '07', '64', '5E'];
 const row = (kind: Cell, count = 8) =>
   Array.from({ length: count }, (_, i) => ({
     kind,
@@ -92,8 +95,9 @@ const stills = [
       ))}
     </div>
     <figcaption class="qs__caption">
-      The 32 bytes of <code>key</code>, as the program prints them. The brace marks the lifetime: the key exists inside
-      it, and nowhere after it.
+      The 32 bytes of <code>key</code>, as the program prints them. The brace marks the lifetime: <code>key</code>
+      holds the key inside it, and zeros after it. The printed line is a string, a copy that <code>Dispose</code> does
+      not reach.
     </figcaption>
   </figure>
 ) : (
@@ -147,7 +151,8 @@ const stills = [
     </ol>
     <p class="qs__note">
       <KindMark kind="illustration" />
-      <span>A drawing of the mechanism, not a trace of a real process. Each cell stands for four bytes.</span>
+      <span>A drawing of the mechanism, not a trace of a real process. Each cell stands for four bytes and shows the
+      first of them, for the password, salt and payload of the README's test.</span>
     </p>
   </figure>
 )}

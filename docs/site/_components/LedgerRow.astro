@@ -5,7 +5,7 @@
 // Usage: <LedgerRow id="zeroed-on-dispose" claim="R1" />
 import { Readout } from '@ncode/docs/components';
 import KindMark from '@site/components/KindMark.astro';
-import { claim as findClaim, inline, resolve, testLink, type Kind } from '@site/components/lib/evidence';
+import { claim as findClaim, inline, resolve, sampleLink, testLink, type Kind } from '@site/components/lib/evidence';
 
 interface Props {
   id: string;
@@ -16,7 +16,8 @@ const row = findClaim(claim);
 if (row.anchor !== id) {
   throw new Error(`[site evidence] <LedgerRow claim="${claim}"> needs id="${row.anchor}", not id="${id}"`);
 }
-const tests = (row.tests ?? []).map(testLink);
+// The library's tests, then the site samples that assert the claim, grouped under "Site sample".
+const tests = [...(row.tests ?? []).map(testLink), ...((row as { samples?: string[] }).samples ?? []).map(sampleLink)];
 const mechanism = [...(row.sources ?? []).map((source) => resolve({ source })), ...(row.external ?? []).map((external) => resolve({ external }))];
 const titleId = `${id}-title`;
 

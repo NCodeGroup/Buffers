@@ -25,11 +25,11 @@
       "mechanism": "Allocation on the pinned object heap",
       "evidence": [
         {
-          "kind": "construction",
+          "kind": "documented",
           "external": "GcFundamentals"
         },
         {
-          "kind": "construction",
+          "kind": "documented",
           "external": "SecureStringCopies"
         },
         {
@@ -61,13 +61,13 @@
       "id": "L3",
       "anchor": "pools-pass-your-bytes-on",
       "title": "Pools pass your bytes on",
-      "body": "`ArrayPool<T>.Return` leaves the array as it is unless you pass `clearArray: true`, and the next `Rent` can hand that array to another caller, who reads what you left in it. `MemoryPool<T>.Shared`, and `BufferFactory.Rent` with `isSensitive: false`, rent from the same kind of pool.",
+      "body": "`ArrayPool<T>.Return` leaves the array as it is unless you pass `clearArray: true`, and the next `Rent` can hand that array to another caller, who reads what you left in it. `BufferFactory.Rent` with `isSensitive: false` hands the request to .NET's `MemoryPool<T>.Shared`, so nothing in the library clears that buffer.",
       "verdict": "prevents",
       "verdictText": "With `isSensitive: true`: `Dispose` overwrites the buffer with zeros before the pool can rent it out again.",
       "mechanism": "The pinned pool, `SecureMemoryPool<T>`",
       "evidence": [
         {
-          "kind": "construction",
+          "kind": "documented",
           "external": "ArrayPoolReturnDocs"
         },
         {
@@ -77,6 +77,14 @@
         {
           "kind": "asserted",
           "test": "SecureMemoryPoolTests.RentedMemory_IsZeroedOnReturn"
+        },
+        {
+          "kind": "asserted",
+          "test": "BufferFactoryTests.ChoosePool_WhenNotSensitive_ReturnsSharedPool"
+        },
+        {
+          "kind": "construction",
+          "source": "BufferFactory.ChoosePool"
         }
       ]
     },
@@ -105,7 +113,7 @@
       "mechanism": "None",
       "evidence": [
         {
-          "kind": "construction",
+          "kind": "documented",
           "external": "SecureStringDocs"
         }
       ]
@@ -124,7 +132,7 @@
           "sample": "SiteExceptionSkipsClear"
         },
         {
-          "kind": "construction",
+          "kind": "documented",
           "external": "UsingStatementDocs"
         }
       ]

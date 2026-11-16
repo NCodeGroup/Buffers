@@ -25,7 +25,9 @@ const { tone = 'usual' } = Astro.props;
   .pinned :global(.ec-line:has(mark)) { counter-increment: pin; }
   /* Every line gets a gutter, so the code stays aligned; a marked line keeps its light, and its pin sits in the
      gutter, where it shows at any width, before the code scrolls. */
-  .pinned :global(.ec-line .code) { padding-inline-start: 2.375rem; }
+  /* A wrapped block (`wrap`) sets --ecIndent on each line and hangs its indentation with a negative text-indent, so
+     the gutter adds to it rather than replacing it. */
+  .pinned :global(.ec-line .code) { padding-inline-start: calc(var(--ecIndent, 0ch) + 2.375rem); }
   .pinned :global(.ec-line:has(mark)) { position: relative; }
   .pinned :global(.ec-line:has(mark) .code::after) {
     content: counter(pin);
@@ -55,7 +57,7 @@ const { tone = 'usual' } = Astro.props;
     color: var(--color-screen);
   }
   .pinned--usual :global(mark) {
-    background: color-mix(in srgb, var(--color-screen-hot) 18%, transparent);
+    background: color-mix(in srgb, var(--color-screen-hot) 12%, transparent);
     box-shadow: inset 0 -1px 0 var(--color-screen-hot);
   }
   .pinned--fix :global(mark) {

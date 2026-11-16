@@ -81,7 +81,7 @@ function refLink(ref: string) {
 const id = Astro.props.id ?? name;
 ---
 
-<figure class="strip not-content" id={id} data-strip={stepper ? '' : undefined} aria-labelledby={`${id}-title`}>
+<figure class="strip not-content" id={id} data-strip={stepper ? '' : undefined} data-total={script.frames.length} aria-labelledby={`${id}-title`}>
   <div class="strip__head">
     <p class="strip__title" id={`${id}-title`}>{script.title}</p>
     <p class="strip__summary" set:html={inline(script.summary)} />
@@ -112,7 +112,7 @@ const id = Astro.props.id ?? name;
 
   <ol class="strip__frames">
     {steps.map((frame) => (
-      <li class="strip__frame" id={`${id}-${frame.step}`} data-title={frame.title}>
+      <li class="strip__frame" id={`${id}-${frame.step}`} data-title={frame.title} data-step={frame.step}>
         <p class="strip__step">
           <span class="strip__number">{frame.step}</span>
           <span>{frame.title}</span>
@@ -196,8 +196,10 @@ const id = Astro.props.id ?? name;
       current = Math.min(frames.length - 1, Math.max(0, index));
       frames.forEach((frame, i) => frame.classList.toggle('is-current', i === current));
       range.value = String(current + 1);
-      range.setAttribute('aria-valuetext', `Step ${current + 1} of ${frames.length}: ${frames[current].dataset.title}`);
-      status.textContent = `Step ${current + 1} of ${frames.length}: ${frames[current].dataset.title}`;
+      // The script's own step number, so a strip that shows some of its frames counts as the frame's badge does.
+      const label = `Step ${frames[current].dataset.step} of ${strip.dataset.total}: ${frames[current].dataset.title}`;
+      range.setAttribute('aria-valuetext', label);
+      status.textContent = label;
       back.disabled = current === 0;
       next.disabled = current === frames.length - 1;
       if (remember) history.replaceState(null, '', `#${frames[current].id}`);
