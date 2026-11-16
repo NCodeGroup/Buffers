@@ -1,0 +1,35 @@
+---
+// The mark's brace, drawn at the small size of the brand's brace rule (a 2px stroke, 10px wide) and stretched to the
+// height of what it holds: its hooks and its cusp keep their size, its stems take the height. It is an SVG drawing
+// in the current color, never a glyph. Draw it only around a scope: here, the bytes of a secret while it is in use.
+// Usage: <Brace side="left" /> beside the cells it holds, in a flex row that stretches its children.
+interface Props {
+  side?: 'left' | 'right';
+}
+const { side = 'left' } = Astro.props;
+---
+
+<span class:list={['brace', `brace--${side}`]} aria-hidden="true">
+  <svg class="brace__hook" viewBox="0 0 10 5"><path d="M10 2H8A3 3 0 0 0 5 5H3A5 5 0 0 1 8 0H10Z"></path></svg>
+  <span class="brace__stem"></span>
+  <svg class="brace__cusp" viewBox="0 -3.5 5 7"><path d="M5 -3.5A5 5 0 0 1 3.571 0A5 5 0 0 1 5 3.5H3A3 3 0 0 0 0 0.5V-0.5A3 3 0 0 0 3 -3.5Z"></path></svg>
+  <span class="brace__stem"></span>
+  <svg class="brace__hook" viewBox="0 -5 10 5"><path d="M10 -2H8A3 3 0 0 1 5 -5H3A5 5 0 0 0 8 0H10Z"></path></svg>
+</span>
+
+<style>
+  .brace {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: none;
+    width: 10px;
+    min-height: 17px;
+    color: currentColor;
+  }
+  .brace--right { transform: scaleX(-1); }
+  svg { display: block; fill: currentColor; overflow: visible; }
+  .brace__hook { width: 10px; height: 5px; }
+  .brace__cusp { width: 5px; height: 7px; }
+  .brace__stem { flex: 1 1 0; width: 2px; min-height: 0; margin-inline-start: 3px; background: currentColor; }
+</style>

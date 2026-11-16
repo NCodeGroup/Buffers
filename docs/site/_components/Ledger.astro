@@ -1,0 +1,21 @@
+---
+// The ledger of /evidence/guarantees/: a frame around its rows. Each row is a <LedgerRow>, written in the page with
+// its anchor, so the link check sees every anchor a page links to.
+// Usage:
+//   <Ledger>
+//     <LedgerRow id="zeroed-on-dispose" claim="R1" />
+//   </Ledger>
+---
+
+<div class="ledger not-content">
+  <slot />
+</div>
+
+<style>
+  .ledger {
+    display: grid;
+    gap: var(--space-4);
+    margin-block: var(--space-6);
+    counter-reset: ledger;
+  }
+</style>

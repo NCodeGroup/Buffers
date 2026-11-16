@@ -1,0 +1,123 @@
+{
+  "$comment": "Scripts of the memory strip, drawn by MemoryStrip.astro. A region's cells are a string, eight cells to a line: '.' free, 'o' other data, 's' the secret (shown as a byte of `key`), 'x' a stale copy of the secret (hatched), '0' zeroed, '?' not written yet. `count` is the number of places the key can be read. `scope` names the region the brace holds while the secret is in use. `refs` cite a leak card (L1 to L9) or a ledger row (R1 to R8). Captions take `code` and [links](/x/).",
+  "life-of-a-key": {
+    "title": "The life of a key",
+    "summary": "The same 32-byte key, drawn as eight cells, held in an ordinary array and in a buffer from `Rent` with `isSensitive: true`, step by step.",
+    "key": ["4B", "A7", "1C", "E9", "30", "D5", "82", "6F"],
+    "tracks": [
+      { "id": "ordinary", "label": "An ordinary array", "code": "byte[] key = new byte[32]" },
+      { "id": "sensitive", "label": "A buffer from `Rent`", "code": "Rent(32, isSensitive: true, out Span<byte> key)" }
+    ],
+    "regions": {
+      "ordinary": [{ "id": "heap", "label": "Heap" }],
+      "sensitive": [
+        { "id": "heap", "label": "Heap" },
+        { "id": "pinned", "label": "Pinned heap" }
+      ]
+    },
+    "frames": [
+      {
+        "title": "Get the memory",
+        "tracks": {
+          "ordinary": {
+            "cells": { "heap": "oooo0000 0000oooo ........ ........" },
+            "count": 0,
+            "caption": "`new byte[32]` places an array between other objects on the heap. It starts as zeros."
+          },
+          "sensitive": {
+            "cells": { "heap": "oo..oooo ..oo....", "pinned": "???????? ????????" },
+            "count": 0,
+            "caption": "`Rent` hands back a buffer on the pinned heap. What it holds is not known yet: write before you read.",
+            "refs": ["L2"]
+          }
+        }
+      },
+      {
+        "title": "Write the key",
+        "tracks": {
+          "ordinary": {
+            "cells": { "heap": "oooossss ssssoooo ........ ........" },
+            "count": 1,
+            "caption": "The key is written into the array."
+          },
+          "sensitive": {
+            "cells": { "heap": "oo..oooo ..oo....", "pinned": "ssssssss ????????" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "The key is written into the start of the buffer. The rest of the buffer is still unwritten."
+          }
+        }
+      },
+      {
+        "title": "A collection compacts the heap",
+        "tracks": {
+          "ordinary": {
+            "cells": { "heap": "ooooxxxx xxxxoooo ssssssss ........" },
+            "count": 2,
+            "caption": "The collector copies the array to a new address. The old cells keep the key until something is written over them.",
+            "refs": ["L1"]
+          },
+          "sensitive": {
+            "cells": { "heap": "oooooooo ........", "pinned": "ssssssss ????????" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "Other objects move. The pinned buffer does not, so the key is still in one place.",
+            "refs": ["R3"]
+          }
+        }
+      },
+      {
+        "title": "Your code copies it",
+        "tracks": {
+          "ordinary": {
+            "cells": { "heap": "ooooxxxx xxxxoooo ssssssss ssssssss" },
+            "count": 3,
+            "caption": "`ToArray()`, or a `string` of the key, makes one more place that holds it.",
+            "refs": ["L9"]
+          },
+          "sensitive": {
+            "cells": { "heap": "oooooooo ........", "pinned": "ssssssss ????????" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "The same copy here would be ordinary memory again: the library cannot reach it. This code makes none.",
+            "refs": ["L9"]
+          }
+        }
+      },
+      {
+        "title": "You are done with it",
+        "tracks": {
+          "ordinary": {
+            "cells": { "heap": "ooooxxxx xxxxoooo ssssssss ssssssss" },
+            "count": 3,
+            "caption": "The method returns. Nothing clears the array, its old cells or the copy.",
+            "refs": ["L2"]
+          },
+          "sensitive": {
+            "cells": { "heap": "oooooooo ........", "pinned": "00000000 00000000" },
+            "count": 0,
+            "caption": "`Dispose` overwrites the whole buffer with zeros, the part after the key included, on every way out of the `using` block.",
+            "refs": ["R1", "L6"]
+          }
+        }
+      },
+      {
+        "title": "The memory is used again",
+        "tracks": {
+          "ordinary": {
+            "cells": { "heap": "ooooxxxx xxxxoooo xxxxxxxx xxxxxxxx" },
+            "count": 3,
+            "caption": "Until other data is written over them, a crash dump or a page file can hold all three.",
+            "refs": ["L2"]
+          },
+          "sensitive": {
+            "cells": { "heap": "oooooooo ........", "pinned": "00000000 00000000" },
+            "count": 0,
+            "caption": "The pool can rent the buffer to the next caller, who gets zeros, not your key.",
+            "refs": ["R2"]
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+---
+// The kinds of statement, as a legend: each kind's mark, what it means, and how its evidence appears.
+// Rendered from evidence.json's `kinds`, so the legend and the marks cannot disagree.
+// Usage: <EvidenceKinds />
+import KindMark from '@site/components/KindMark.astro';
+import { evidence, type Kind } from '@site/components/lib/evidence';
+
+const kinds = Object.entries(evidence.kinds) as [Kind, { label: string; meaning: string; shows: string }][];
+---
+
+<dl class="kinds not-content">
+  {kinds.map(([kind, { meaning, shows }]) => (
+    <div class="kinds__row">
+      <dt><KindMark kind={kind} /></dt>
+      <dd>
+        <span class="kinds__meaning">{meaning}</span> <span class="kinds__shows">{shows}</span>
+      </dd>
+    </div>
+  ))}
+</dl>
+
+<style>
+  .kinds {
+    display: grid;
+    margin: var(--space-5) 0 0;
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    overflow: hidden;
+  }
+  .kinds__row {
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 1fr);
+    gap: var(--space-4);
+    align-items: baseline;
+    padding: var(--space-4) var(--space-5);
+  }
+  .kinds__row + .kinds__row { border-top: var(--border-hair) solid var(--color-border); }
+  dd { margin: 0; font-size: var(--text-md); line-height: var(--leading-normal); }
+  .kinds__meaning { color: var(--color-text); }
+  .kinds__shows { color: var(--color-text-secondary); }
+  @media (max-width: 40rem) {
+    .kinds__row { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); padding-inline: var(--space-4); }
+  }
+</style>

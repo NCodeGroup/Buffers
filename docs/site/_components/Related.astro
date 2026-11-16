@@ -1,0 +1,52 @@
+---
+// The end of a page: at most four links, one per kind of page. Write a Markdown list inside it, each
+// item starting with the kind in bold, so the links stay in the page where the link check reads them:
+//   <Related>
+//   - **Learn** [Quick start](/start/quick-start/)
+//   - **Look up** [Ways to get it wrong](/reference/pitfalls/)
+//   </Related>
+---
+
+<nav class="related" aria-label="Where to go next">
+  <slot />
+</nav>
+
+<style>
+  .related { margin-top: var(--space-8); }
+  .related :global(ul) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .related :global(li) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: var(--space-4) var(--space-5) var(--space-5);
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    box-shadow: var(--elevation-flush);
+    line-height: var(--leading-snug);
+  }
+  .related :global(li > strong:first-child) {
+    font-size: var(--text-2xs);
+    font-stretch: var(--width-label);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .related :global(li a) {
+    color: var(--color-text);
+    font-weight: var(--weight-semibold);
+    text-decoration: none;
+  }
+  .related :global(li a::after) { content: ' \2192'; color: var(--color-text-muted); }
+  .related :global(li a:hover) { color: var(--color-primary-text); }
+  .related :global(li > p) { display: contents; }
+</style>

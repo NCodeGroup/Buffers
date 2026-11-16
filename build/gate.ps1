@@ -1,7 +1,7 @@
 #requires -version 7
 <#
 .SYNOPSIS
-    The project's gate: the sample key check and the README samples check, then the Definition of Done, build/dod.ps1, whose Format stage runs the CSharpier check (ADR-1002, ADR-1005, ADR-1010).
+    The project's gate: the sample key check, the README samples check and the site evidence check, then the Definition of Done, build/dod.ps1, whose Format stage runs the CSharpier check (ADR-1002, ADR-1005, ADR-1010).
 .DESCRIPTION
     build/dod.ps1 is template-owned and has no stage for the samples, so this script runs those checks before it, as
     project-template ADR-0117 says. -Fast and -Filter are passed on to build/dod.ps1.
@@ -37,6 +37,10 @@ try {
     $pages = @($changed -like '*.mdx')
     if ($pages) { "Site pages: FAILED. dotnet mdsnippets rewrote $($pages -join ', '); restore it, and keep *.mdx in ExcludeMarkdownFiles of mdsnippets.json."; exit 1 }
     if ($changed) { 'README samples: FAILED. dotnet mdsnippets updated a README from the tests; commit the result.'; exit 1 }
+    # The site's claims link tests and source lines at a pinned commit, and its pages pin sample lines by their text;
+    # each must still name what it names (ADR-1010).
+    ./build/Test-SiteEvidence.ps1
+    if ($LASTEXITCODE) { exit $LASTEXITCODE }
     # The baseline script edits files in an automated pull request, so its branches are tested offline (ADR-1007).
     ./build/Test-UpdateBaseline.ps1
     if ($LASTEXITCODE) { exit $LASTEXITCODE }

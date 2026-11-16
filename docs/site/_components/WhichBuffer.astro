@@ -1,0 +1,281 @@
+---
+// The picker of "Which buffer?": at most four questions, each with two to four answers, then one outcome,
+// from docs/site/_components/data/buffers.json. The outcome points at its <BufferCard> on the same page.
+//
+// With JavaScript, one question shows at a time; the answers so far show as a trail the reader can change, and the
+// path is kept in the URL fragment (#which=0.1.0), so a reviewer can paste an answer into a pull request. Without
+// JavaScript, every question shows as a radio group, and each answer says where it leads.
+// Usage: <WhichBuffer />, above the page's <BufferCard> elements.
+import buffers from '@site/components/data/buffers.json';
+import { inline } from '@site/components/lib/evidence';
+
+type Answer = { text: string; next?: string; outcome?: string };
+const questions = buffers.questions as { id: string; text: string; answers: Answer[] }[];
+const outcomes = new Map(buffers.outcomes.map((o) => [o.id, o]));
+const number = new Map(questions.map((q, i) => [q.id, i + 1]));
+for (const q of questions) {
+  for (const a of q.answers) {
+    if (a.next && !number.has(a.next)) throw new Error(`[which buffer] "${q.id}" leads to no question "${a.next}"`);
+    if (a.outcome && !outcomes.has(a.outcome)) throw new Error(`[which buffer] "${q.id}" leads to no outcome "${a.outcome}"`);
+  }
+}
+const plain = (text: string) => text.replace(/`/g, '');
+---
+
+<form class="picker not-content" data-picker aria-labelledby="which-buffer-picker-title" onsubmit="return false">
+  <p class="picker__title" id="which-buffer-picker-title">Answer, and the card for your buffer is marked below.</p>
+  <ol class="picker__trail" hidden aria-label="Your answers"></ol>
+  {questions.map((q) => (
+    <fieldset class="picker__question" data-question={q.id}>
+      <legend>
+        <span class="picker__number">{number.get(q.id)}</span>
+        <span set:html={inline(q.text)} />
+      </legend>
+      <div class="picker__answers">
+        {q.answers.map((a, i) => {
+          const target = a.outcome ? outcomes.get(a.outcome) : undefined;
+          return (
+            <label class="picker__answer">
+              <input type="radio" name={`which-${q.id}`} value={String(i)} data-next={a.next} data-outcome={a.outcome} />
+              <span class="picker__text" set:html={inline(a.text)} />
+              <span class="picker__leads">
+                {target ? (
+                  <a href={`#${target.anchor}`} data-static>
+                    Use <span set:html={inline(target.name)} />
+                  </a>
+                ) : (
+                  <>Then question {number.get(a.next ?? '')}</>
+                )}
+              </span>
+            </label>
+          );
+        })}
+      </div>
+    </fieldset>
+  ))}
+  <div class="picker__result" hidden aria-live="polite">
+    <p class="picker__result-label">Use</p>
+    {buffers.outcomes.map((o) => (
+      <div class="picker__outcome" data-result={o.id} hidden>
+        <p class="picker__outcome-name" tabindex="-1" set:html={inline(o.name)} />
+        <p class="picker__outcome-use" set:html={inline(o.use)} />
+        <a class="picker__jump" href={`#${o.anchor}`}>The card, with the call and what to watch for</a>
+      </div>
+    ))}
+    <button type="button" class="picker__key" data-restart>Start again</button>
+  </div>
+</form>
+
+<script>
+  // One question at a time, a trail of answers, and the path in the URL fragment (#which=0.1.0).
+  for (const picker of document.querySelectorAll<HTMLFormElement>('[data-picker]')) {
+    const questions = [...picker.querySelectorAll<HTMLFieldSetElement>('[data-question]')];
+    const trail = picker.querySelector<HTMLOListElement>('.picker__trail');
+    const result = picker.querySelector<HTMLElement>('.picker__result');
+    if (!trail || !result || questions.length === 0) continue;
+    const byId = new Map(questions.map((q) => [q.dataset.question, q]));
+    picker.classList.add('is-live');
+    picker.querySelectorAll<HTMLElement>('[data-static]').forEach((link) => link.setAttribute('tabindex', '-1'));
+
+    let path: number[] = [];
+    const render = (wanted: number[], remember: boolean) => {
+      let question: HTMLFieldSetElement | undefined = questions[0];
+      let outcome: string | undefined;
+      const steps: { question: HTMLFieldSetElement; answer: HTMLInputElement }[] = [];
+      for (const index of wanted) {
+        if (!question) break;
+        const answer = question.querySelectorAll<HTMLInputElement>('input[type="radio"]')[index];
+        if (!answer) break;
+        steps.push({ question, answer });
+        outcome = answer.dataset.outcome;
+        question = answer.dataset.next ? byId.get(answer.dataset.next) : undefined;
+        if (outcome) break;
+      }
+      path = steps.map((s) => Number(s.answer.value));
+      questions.forEach((q) => {
+        q.hidden = q !== question || Boolean(outcome);
+        if (q.hidden) q.querySelectorAll<HTMLInputElement>('input').forEach((input) => (input.checked = false));
+      });
+      trail.replaceChildren(
+        ...steps.map(({ question: q, answer }, i) => {
+          const item = document.createElement('li');
+          const change = document.createElement('button');
+          change.type = 'button';
+          change.className = 'picker__crumb';
+          const legend = q.querySelector('legend span:last-child')?.textContent ?? '';
+          const chosen = answer.closest('label')?.querySelector('.picker__text')?.textContent ?? '';
+          change.textContent = chosen;
+          change.setAttribute('aria-label', `${legend} ${chosen}. Change this answer`);
+          change.addEventListener('click', () => render(path.slice(0, i), true));
+          item.append(change);
+          return item;
+        }),
+      );
+      trail.hidden = steps.length === 0;
+      result.hidden = !outcome;
+      result.querySelectorAll<HTMLElement>('[data-result]').forEach((r) => (r.hidden = r.dataset.result !== outcome));
+      document.querySelectorAll('article[data-outcome].is-chosen').forEach((card) => card.classList.remove('is-chosen'));
+      if (outcome) document.querySelector(`article[data-outcome="${outcome}"]`)?.classList.add('is-chosen');
+      if (!remember) return;
+      history.replaceState(null, '', path.length ? `#which=${path.join('.')}` : location.pathname + location.search);
+      const focus = outcome ? result.querySelector<HTMLElement>('[data-result]:not([hidden]) .picker__outcome-name') : question?.querySelector('input');
+      focus?.focus();
+    };
+
+    render(/^#which=([\d.]+)$/.exec(location.hash)?.[1].split('.').map(Number) ?? [], false);
+    picker.addEventListener('change', (event) => {
+      const input = event.target as HTMLInputElement;
+      if (input.type === 'radio') render([...path, Number(input.value)], true);
+    });
+    picker.querySelector('[data-restart]')?.addEventListener('click', () => render([], true));
+  }
+</script>
+
+<style>
+  .picker {
+    display: grid;
+    gap: var(--space-5);
+    margin: var(--space-6) 0;
+    padding: var(--space-5);
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-module);
+    background: var(--color-surface);
+    box-shadow: var(--elevation-flush);
+    color: var(--color-text);
+  }
+  .picker p { margin: 0; }
+  .picker__title { color: var(--color-text-secondary); font-size: var(--text-md); }
+  .picker :global(code) { font-family: var(--font-mono); font-stretch: var(--width-code); font-size: 0.9em; }
+
+  .picker__trail { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+  .picker__trail[hidden] { display: none; }
+  .picker__trail :global(li) { display: flex; align-items: center; gap: var(--space-2); margin: 0; }
+  .picker__trail :global(li + li)::before { content: '\203A'; color: var(--color-text-muted); }
+  .picker__trail :global(.picker__crumb) {
+    max-width: 18rem;
+    overflow: hidden;
+    padding: var(--space-1) var(--space-3);
+    border: var(--border-hair) solid var(--color-border-strong);
+    border-radius: var(--radius-plate);
+    background: var(--color-control);
+    color: var(--color-text-secondary);
+    font: inherit;
+    font-size: var(--text-sm);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .picker__trail :global(.picker__crumb:hover) { background: var(--color-control-hover); color: var(--color-text); }
+
+  .picker__question { margin: 0; padding: 0; border: 0; min-width: 0; }
+  .picker__question[hidden] { display: none; }
+  legend {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    padding: 0;
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-snug);
+  }
+  .picker__number {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--radius-plate);
+    background: var(--color-surface-sunken);
+    box-shadow: inset 0 0 0 1px var(--color-border);
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+    font-size: var(--text-xs);
+  }
+  .picker__answers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr)); gap: var(--space-3); }
+
+  /* An answer is a large key: raised on its lip, pressed down when chosen. */
+  .picker__answer {
+    position: relative;
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+    min-height: 3.5rem;
+    padding: var(--space-4) var(--space-5) var(--space-4) 2.75rem;
+    border: var(--border-hair) solid var(--color-border-strong);
+    border-radius: var(--radius-control);
+    background: var(--color-control);
+    box-shadow: inset 0 1px 0 var(--color-glint), 0 var(--travel) 0 var(--color-lip);
+    font-size: var(--text-md);
+    line-height: var(--leading-snug);
+    cursor: pointer;
+    transition: transform var(--dur-press) var(--ease-out), box-shadow var(--dur-press) var(--ease-out);
+  }
+  .picker__answer:hover { background: var(--color-control-hover); }
+  .picker__answer:has(input:checked) {
+    transform: translateY(var(--travel));
+    background: var(--color-control-pressed);
+    box-shadow: inset 0 var(--travel) 0 var(--color-shade);
+  }
+  .picker__answer input {
+    position: absolute;
+    inset-inline-start: var(--space-5);
+    inset-block-start: 1.125rem;
+    margin: 0;
+    accent-color: var(--color-primary);
+  }
+  .picker__answer:has(input:focus-visible) { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-gap); }
+  .picker__text { font-weight: var(--weight-medium); }
+  .picker__answer > span { min-width: 0; overflow-wrap: anywhere; }
+  .picker__leads { color: var(--color-text-secondary); font-size: var(--text-sm); }
+  .picker__leads a { color: var(--color-primary-text); text-underline-offset: 0.2em; }
+  .is-live .picker__leads { display: none; }
+
+  .picker__result {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    border-radius: var(--radius-panel);
+    background: var(--color-screen);
+    color: var(--color-on-screen);
+  }
+  .picker__result[hidden],
+  .picker__outcome[hidden] { display: none; }
+  .picker__result-label {
+    font-size: var(--text-2xs);
+    font-stretch: var(--width-label);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-on-screen-muted);
+  }
+  .picker__outcome { display: grid; gap: var(--space-2); }
+  .picker__outcome-name { font-size: var(--text-xl); font-weight: var(--weight-semibold); color: var(--color-on-screen); overflow-wrap: anywhere; }
+  .picker__outcome-name:focus { outline: none; }
+  .picker__outcome-use { color: var(--color-on-screen-secondary); }
+  .picker__jump { color: var(--color-screen-lit); font-weight: var(--weight-semibold); text-underline-offset: 0.2em; }
+  .picker__jump::after { content: ' \2193'; }
+  .picker__key {
+    justify-self: start;
+    min-height: var(--control-sm);
+    padding: 0 var(--space-4);
+    border: var(--border-hair) solid var(--color-screen-border);
+    border-radius: var(--radius-control);
+    background: var(--color-screen-raised);
+    color: var(--color-on-screen);
+    font: inherit;
+    font-size: var(--text-sm);
+    cursor: pointer;
+  }
+  .picker__key:focus-visible,
+  .picker__trail :global(.picker__crumb:focus-visible),
+  .picker__jump:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-gap); }
+  @media (max-width: 40rem) {
+    .picker { padding: var(--space-4); border-radius: var(--radius-panel); }
+    .picker__answer { min-height: 2.75rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .picker__answer { transition: none; }
+  }
+</style>

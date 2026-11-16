@@ -1,0 +1,232 @@
+---
+// One requirement of the ledger: its number and name, the claim, how it is known, the tests and the source lines
+// behind it, and what that evidence does not show, all from docs/site/_components/data/evidence.json. `id` is the
+// row's anchor and must be the claim's `anchor` there, written as a literal so the link check sees it.
+// Usage: <LedgerRow id="zeroed-on-dispose" claim="R1" />
+import { Readout } from '@ncode/docs/components';
+import KindMark from '@site/components/KindMark.astro';
+import { claim as findClaim, inline, resolve, testLink, type Kind } from '@site/components/lib/evidence';
+
+interface Props {
+  id: string;
+  claim: string;
+}
+const { id, claim } = Astro.props;
+const row = findClaim(claim);
+if (row.anchor !== id) {
+  throw new Error(`[site evidence] <LedgerRow claim="${claim}"> needs id="${row.anchor}", not id="${id}"`);
+}
+const tests = (row.tests ?? []).map(testLink);
+const mechanism = [...(row.sources ?? []).map((source) => resolve({ source })), ...(row.external ?? []).map((external) => resolve({ external }))];
+const titleId = `${id}-title`;
+
+// The tests, grouped by their class, so a class's name is read once.
+const groups = new Map<string, typeof tests>();
+for (const test of tests) groups.set(test.context ?? '', [...(groups.get(test.context ?? '') ?? []), test]);
+// A long method name may break after an underscore (a <wbr>, which copies as nothing), never inside a word.
+const parts = (name: string) => name.split('_');
+---
+
+<article class="row" id={id} aria-labelledby={titleId}>
+  <header class="row__head">
+    <Readout>{row.id}</Readout>
+    <h3 class="row__title" id={titleId}>{row.title}</h3>
+    <KindMark kind={row.kind as Kind} note={row.kindNote} />
+    <a class="row__anchor" href={`#${id}`} aria-label={`Link to ${row.id}, ${row.title}`}>#</a>
+  </header>
+  <p class="row__claim" set:html={inline(row.claim)} />
+  <dl class="row__facts">
+    {tests.length > 0 && (
+      <div class="row__fact">
+        <dt>Proved by</dt>
+        <dd>
+          <ul class="row__groups">
+            {[...groups].map(([type, members]) => (
+              <li>
+                <span class="row__context">{type}</span>
+                <ul class="row__links">
+                  {members.map((test) => (
+                    <li>
+                      <a href={test.href} rel="noopener" aria-label={`${type}.${test.label}`}>
+                        <span class="row__value">{parts(test.label).map((part, i) => (<>{i > 0 && <>_<wbr /></>}{part}</>))}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </dd>
+      </div>
+    )}
+    <div class="row__fact">
+      <dt>{row.kind === 'process' ? 'The process' : 'Mechanism'}</dt>
+      <dd>
+        <ul class="row__links">
+          {mechanism.map((link) => (
+            <li>
+              <a href={link.href} rel="noopener">
+                {link.code ? (
+                  <span class="row__value">{link.label}</span>
+                ) : (
+                  <span class="row__page">{link.label}</span>
+                )}
+              </a>
+              {link.quote && (
+                <span class="row__quote">
+                  “{link.quote}” <span class="row__read">Read {link.read}.</span>
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </dd>
+    </div>
+    <div class="row__fact row__fact--limit">
+      <dt>Does not show</dt>
+      <dd set:html={inline(row.doesNotShow)} />
+    </div>
+  </dl>
+</article>
+
+<style>
+  .row {
+    scroll-margin-top: calc(var(--sl-nav-height) + var(--space-5));
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    box-shadow: var(--elevation-flush);
+    overflow: hidden;
+  }
+  .row:target {
+    border-color: var(--color-primary-text);
+    box-shadow: 0 0 0 1px var(--color-primary-text), var(--elevation-flush);
+  }
+  .row__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-4);
+    padding: var(--space-4) var(--space-5) 0;
+  }
+  .row__title {
+    flex: 1 1 12rem;
+    margin: 0;
+    color: var(--color-text);
+    font-size: var(--text-xl);
+    font-stretch: var(--width-display);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-heading);
+    line-height: var(--leading-snug);
+  }
+  .row__anchor {
+    order: 9;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-decoration: none;
+  }
+  .row__anchor:hover { color: var(--color-primary-text); }
+  .row__claim {
+    margin: var(--space-3) 0 0;
+    padding: 0 var(--space-5);
+    max-width: 44rem;
+    color: var(--color-text);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    text-wrap: pretty;
+  }
+  .row__facts {
+    display: grid;
+    margin: var(--space-4) 0 0;
+    border-top: var(--border-hair) solid var(--color-border);
+  }
+  .row__fact {
+    display: grid;
+    grid-template-columns: 8.5rem minmax(0, 1fr);
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-5);
+  }
+  .row__fact + .row__fact { border-top: var(--border-hair) solid var(--color-border); }
+  .row__fact--limit { background: var(--color-surface-sunken); }
+  dt {
+    padding-top: 0.1875rem;
+    font-size: var(--text-2xs);
+    font-stretch: var(--width-label);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  dd {
+    margin: 0;
+    color: var(--color-text);
+    font-size: var(--text-md);
+    line-height: var(--leading-normal);
+  }
+  .row__groups {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .row__groups .row__links {
+    margin-top: 0.125rem;
+    padding-inline-start: var(--space-4);
+    border-inline-start: var(--border-hair) solid var(--color-border);
+  }
+  .row__links {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .row__links a {
+    color: var(--color-primary-text);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  .row__links a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+  .row__context,
+  .row__value {
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+    font-size: var(--text-sm);
+  }
+  .row__context { color: var(--color-text-secondary); overflow-wrap: anywhere; }
+  .row__value { font-weight: var(--weight-medium); }
+  .row__page { font-weight: var(--weight-medium); }
+  .row__quote {
+    display: block;
+    margin-top: 0.125rem;
+    color: var(--color-text-secondary);
+    font-size: var(--text-md);
+  }
+  .row__read { color: var(--color-text-muted); white-space: nowrap; }
+  .row :global(code) {
+    padding: 0.08em 0.32em;
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-plate);
+    background: var(--color-surface-sunken);
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+    font-size: 0.86em;
+  }
+  .row__fact--limit :global(code) { background: var(--color-surface); }
+  :focus-visible {
+    outline: var(--focus-width) solid var(--color-focus);
+    outline-offset: var(--focus-gap);
+  }
+  @media (max-width: 40rem) {
+    .row__head { padding-inline: var(--space-4); }
+    .row__claim { padding-inline: var(--space-4); }
+    .row__fact {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-2);
+      padding-inline: var(--space-4);
+    }
+  }
+</style>
