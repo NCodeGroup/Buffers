@@ -1,0 +1,79 @@
+---
+// The kind of a statement, as an engraved tag with its own glyph: Asserted, By construction, Documented, Observed,
+// Illustration, or A process. The glyph's shape differs by kind, so the kind never rests on color alone.
+// Usage: <KindMark kind="asserted" />, or <KindMark kind="construction" note="The results are asserted" />.
+import { kindLabel, type Kind } from '@site/components/lib/evidence';
+
+interface Props {
+  kind: Kind;
+  /** A short qualifier after the label, such as "through the generation the collector reports". */
+  note?: string;
+  /** `tag` (default) is a plate; `bare` is the glyph and the word, for use inside a link. */
+  variant?: 'tag' | 'bare';
+}
+const { kind, note, variant = 'tag' } = Astro.props;
+---
+
+<span class:list={['kind', `kind--${kind}`, `kind--${variant}`, 'not-content']}>
+  <svg class="kind__glyph" viewBox="0 0 12 12" aria-hidden="true">
+    {kind === 'asserted' && <path d="M2.5 6.2 5 8.6 9.6 3.6" />}
+    {kind === 'construction' && <path d="M2 10h8M3 10V5h6v5M4.5 5V2.5h3V5" />}
+    {kind === 'documented' && <path d="M3 1.5h4l2 2v7H3Z M4.75 5.5h2.5M4.75 7.5h2.5" />}
+    {kind === 'observed' && <><path d="M1.5 6s1.8-3.2 4.5-3.2S10.5 6 10.5 6 8.7 9.2 6 9.2 1.5 6 1.5 6Z" /><circle cx="6" cy="6" r="1.2" /></>}
+    {kind === 'illustration' && <path d="M2 10 2.4 8 8 2.4 9.6 4 4 9.6Z" />}
+    {kind === 'process' && <><circle cx="2.6" cy="6" r="1.4" /><circle cx="9.4" cy="6" r="1.4" /><path d="M4 6h4" /></>}
+  </svg>
+  <span class="kind__label">{kindLabel(kind)}</span>
+  {note && <span class="kind__note">{note}</span>}
+</span>
+
+<style>
+  .kind {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-family: var(--font-sans);
+    line-height: 1.2;
+    vertical-align: middle;
+  }
+  .kind--tag {
+    padding: 0.1875rem 0.5rem 0.1875rem 0.375rem;
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-plate);
+    background: var(--color-surface-sunken);
+  }
+  .kind__glyph {
+    flex: none;
+    width: 0.75rem;
+    height: 0.75rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .kind--asserted .kind__glyph { color: var(--color-success-mark); }
+  .kind--construction .kind__glyph { color: var(--color-info-mark); }
+  .kind--observed .kind__glyph { color: var(--color-warning-mark); }
+  .kind--documented .kind__glyph { color: var(--color-info-mark); }
+  .kind--illustration .kind__glyph,
+  .kind--process .kind__glyph { color: var(--color-text-muted); }
+  .kind__label {
+    font-size: var(--text-2xs);
+    font-stretch: var(--width-label);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
+  .kind__note {
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+  }
+  .kind__note::before {
+    content: '\00b7';
+    margin-inline-end: 0.375rem;
+    color: var(--color-text-muted);
+  }
+</style>

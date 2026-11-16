@@ -1,0 +1,145 @@
+---
+// The landing page's hero, after the brand's hero mockup: the eyebrow above the headline, the lead and the line on
+// what the library does not do at the same size, and beside them the drawing of a key being overwritten with zeros.
+//
+// Starlight renders the hero from the page's frontmatter (`hero.title`, `hero.tagline`, `hero.image.html`), so the
+// markup lives there, and this component holds only its styles. Render it once, at the top of docs/site/index.mdx;
+// it outputs nothing visible. The classes it styles:
+//   .landing-eyebrow   in hero.title, above the headline
+//   .landing-limit     the second paragraph of hero.tagline
+//   .landing-monitor   hero.image.html: lamps, a screen of 32 cells between braces, a caption
+//     .lm-cell--zero, .lm-cell--cursor, .lm-cell--key   a zeroed cell, the cell zeroed last, a cell that still holds the key
+//   .landing-badges    a <div> around the page's badges, which it sets in one row that wraps
+// The drawing is static: nothing moves on its own. The brace marks the lifetime of the secret, as the
+// brand's brace rule allows.
+---
+
+<span class="landing-hero" hidden></span>
+
+<style is:global>
+  .hero .landing-eyebrow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+    margin-bottom: var(--space-5);
+    color: var(--color-text-secondary);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-stretch: var(--width-label);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+  .hero .landing-eyebrow > span + span::before {
+    content: '·';
+    margin-inline-end: var(--space-3);
+    color: var(--color-text-muted);
+  }
+  .hero .tagline p + p { margin-top: var(--space-4); }
+  .hero .tagline .landing-limit { color: var(--color-text); }
+
+  /* Below 50rem the drawing follows the copy, at the copy's width; above, it stands in the hero's second column. */
+  .hero > .hero-html {
+    order: 2;
+    width: 100%;
+    max-width: 26rem;
+    margin-inline: 0;
+  }
+  @media (min-width: 50rem) {
+    .hero > .hero-html { width: 100%; max-width: 26rem; justify-self: end; }
+  }
+
+  .landing-monitor {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    width: 100%;
+    margin: 0;
+    padding: var(--space-4);
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface-raised);
+    box-shadow: var(--elevation-raised);
+  }
+  .landing-monitor__lamps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-5);
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    font-stretch: var(--width-label);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+  .landing-monitor__lamps .ncode-readout { margin-inline-start: auto; text-transform: none; letter-spacing: normal; }
+  .landing-monitor__screen {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-radius: var(--radius-module);
+    background: var(--color-screen);
+    color: var(--color-on-screen-secondary);
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+  }
+  .landing-monitor__head {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    color: var(--color-on-screen-muted);
+    font-size: var(--text-xs);
+  }
+  .landing-monitor__memory { display: flex; align-items: stretch; gap: var(--space-2); }
+  .landing-monitor__offsets {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 3px;
+    color: var(--color-on-screen-muted);
+    font-size: var(--text-xs);
+  }
+  .landing-monitor__offsets > span { display: flex; align-items: center; }
+  .landing-monitor__brace { display: flex; color: var(--color-screen-lit); }
+  .landing-monitor__brace--right { transform: scaleX(-1); }
+  .landing-monitor__brace .brace { display: inline-flex; flex-direction: column; align-items: flex-start; width: 10px; }
+  .landing-monitor__brace svg { display: block; fill: currentColor; overflow: visible; }
+  .landing-monitor__brace .brace__hook { width: 10px; height: 5px; }
+  .landing-monitor__brace .brace__cusp { width: 5px; height: 7px; }
+  .landing-monitor__brace .brace__stem { flex: 1 1 0; width: 2px; margin-inline-start: 3px; background: currentColor; }
+  .landing-monitor__cells {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 3px;
+  }
+  .lm-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1.15;
+    border-radius: var(--radius-cell);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+  }
+  .lm-cell--zero { box-shadow: inset 0 0 0 1px var(--color-screen-border); color: var(--color-on-screen-muted); }
+  .lm-cell--cursor { box-shadow: inset 0 0 0 2px var(--color-screen-lit); color: var(--color-screen-lit); }
+  .lm-cell--key {
+    background: color-mix(in srgb, var(--color-screen-hot) 16%, var(--color-screen-raised));
+    color: var(--color-screen-hot);
+  }
+  .landing-monitor figcaption {
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+  }
+  .landing-monitor figcaption code { font-size: 0.95em; }
+  .landing-badges > p { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3); margin: 0; }
+  .landing-badges a { display: inline-flex; }
+  .landing-badges img { display: block; height: 1.25rem; width: auto; }
+  @media (max-width: 24rem) {
+    .lm-cell { font-size: var(--text-xs); }
+  }
+</style>

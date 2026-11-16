@@ -1,0 +1,198 @@
+{
+  "$comment": "The nine leak cards (L1 to L9): how a secret stays readable in a .NET process. Each card is stored once, here, and rendered by LeakCard.astro under a pin, on /concepts/how-secrets-leak/ and in a memory strip's captions. A title has at most six words and a body at most 80. Evidence names a key of evidence.json's tests, samples, sources or external. Text fields take `code` and [links](/x/).",
+  "verdicts": {
+    "prevents": {
+      "label": "Prevents",
+      "state": "success"
+    },
+    "reduces": {
+      "label": "Reduces",
+      "state": "warning"
+    },
+    "none": {
+      "label": "Does not help",
+      "state": "off"
+    }
+  },
+  "leaks": [
+    {
+      "id": "L1",
+      "anchor": "the-collector-moves-arrays",
+      "title": "The collector moves arrays",
+      "body": "A collection can compact the heap: it copies the objects still in use to new addresses, an array that holds a key among them. Microsoft's page on `SecureString` says that, because a string's memory is not pinned, the collector \"will make additional copies\" of it when it moves and compacts memory. Which objects move, and when, is the collector's decision.",
+      "verdict": "prevents",
+      "verdictText": "For the buffers it allocates: they are pinned, and the collector does not move them. Stack memory does not move either. It does not help with heap memory you already had.",
+      "mechanism": "Allocation on the pinned object heap",
+      "evidence": [
+        {
+          "kind": "documented",
+          "external": "GcFundamentals"
+        },
+        {
+          "kind": "documented",
+          "external": "SecureStringCopies"
+        },
+        {
+          "kind": "asserted",
+          "test": "BufferFactoryTests.CreatePinnedArray_AllocatesOnPinnedObjectHeap"
+        }
+      ]
+    },
+    {
+      "id": "L2",
+      "anchor": "freed-is-not-erased",
+      "title": "Freed is not erased",
+      "body": "When nothing references an array any more, the collector takes its memory back without overwriting it, and nothing clears an array when your method returns. A crash dump or a page file can hold those bytes until the memory is used again, and an allocation that skips zeroing, as `GC.AllocateUninitializedArray` does, can be handed them as they are.",
+      "verdict": "reduces",
+      "verdictText": "`Dispose` overwrites the buffer with zeros before the memory is let go. It does nothing for a buffer you never dispose, and a new buffer is not cleared for you: write before you read.",
+      "mechanism": "`Dispose` zeroes",
+      "evidence": [
+        {
+          "kind": "construction",
+          "external": "AllocateUninitializedArrayDocs"
+        },
+        {
+          "kind": "asserted",
+          "sample": "SiteNoFinalizer"
+        }
+      ]
+    },
+    {
+      "id": "L3",
+      "anchor": "pools-pass-your-bytes-on",
+      "title": "Pools pass your bytes on",
+      "body": "`ArrayPool<T>.Return` leaves the array as it is unless you pass `clearArray: true`, and the next `Rent` can hand that array to another caller, who reads what you left in it. `BufferFactory.Rent` with `isSensitive: false` hands the request to .NET's `MemoryPool<T>.Shared`, so nothing in the library clears that buffer.",
+      "verdict": "prevents",
+      "verdictText": "With `isSensitive: true`: `Dispose` overwrites the buffer with zeros before the pool can rent it out again.",
+      "mechanism": "The pinned pool, `SecureMemoryPool<T>`",
+      "evidence": [
+        {
+          "kind": "documented",
+          "external": "ArrayPoolReturnDocs"
+        },
+        {
+          "kind": "asserted",
+          "sample": "SiteArrayPoolKeepsBytes"
+        },
+        {
+          "kind": "asserted",
+          "test": "SecureMemoryPoolTests.RentedMemory_IsZeroedOnReturn"
+        },
+        {
+          "kind": "asserted",
+          "test": "BufferFactoryTests.ChoosePool_WhenNotSensitive_ReturnsSharedPool"
+        },
+        {
+          "kind": "construction",
+          "source": "BufferFactory.ChoosePool"
+        }
+      ]
+    },
+    {
+      "id": "L4",
+      "anchor": "growing-makes-copies",
+      "title": "Growing makes copies",
+      "body": "A buffer that grows, such as `ArrayBufferWriter<T>`, `MemoryStream` or `List<T>`, allocates a larger array and copies what it holds into it. The smaller array is dropped with the first part of your secret still in it, and nothing clears it.",
+      "verdict": "prevents",
+      "verdictText": "The pooled buffer writer adds a segment instead of copying: nothing already written is moved or dropped.",
+      "mechanism": "The segmented writer, `CreatePooledBufferWriter`",
+      "evidence": [
+        {
+          "kind": "asserted",
+          "sample": "SiteGrowthLeavesCopies"
+        }
+      ]
+    },
+    {
+      "id": "L5",
+      "anchor": "strings-cannot-be-erased",
+      "title": "Strings cannot be erased",
+      "body": "A `string` cannot be changed after it is made, so your code cannot overwrite it, and the collector frees it when it chooses. Every `GetString`, `ToBase64String`, interpolation or deserialized property makes one more.",
+      "verdict": "none",
+      "verdictText": "Nothing reaches a string that already exists. The guides read and decode a secret into a buffer, so that no string of it is made.",
+      "mechanism": "None",
+      "evidence": [
+        {
+          "kind": "documented",
+          "external": "SecureStringDocs"
+        }
+      ]
+    },
+    {
+      "id": "L6",
+      "anchor": "an-exception-skips-your-cleanup",
+      "title": "An exception skips your cleanup",
+      "body": "A `Clear` or `ZeroMemory` call written after the work runs only when the work finishes. An exception or an early `return` leaves the method before that line, and the secret stays where it was.",
+      "verdict": "prevents",
+      "verdictText": "When you write `using`: the owner is disposed on every way out of the block, an exception included. That is C#'s rule, and the library's owners are `IDisposable` so that you can use it.",
+      "mechanism": "Owners are `IDisposable`",
+      "evidence": [
+        {
+          "kind": "asserted",
+          "sample": "SiteExceptionSkipsClear"
+        },
+        {
+          "kind": "documented",
+          "external": "UsingStatementDocs"
+        }
+      ]
+    },
+    {
+      "id": "L7",
+      "anchor": "an-early-exit-tells-time",
+      "title": "An early exit tells time",
+      "body": "A comparison that stops at the first difference, such as `==`, `SequenceEqual` or a loop of your own, returns sooner the earlier two values differ. Someone who can send many guesses and time the answers can learn an expected MAC one byte at a time.",
+      "verdict": "prevents",
+      "verdictText": "For values of the same length: `FixedTimeEquals` calls .NET's fixed-time comparison. The length still shows.",
+      "mechanism": "`FixedTimeEquals`",
+      "evidence": [
+        {
+          "kind": "construction",
+          "source": "FixedTimeEquals"
+        },
+        {
+          "kind": "construction",
+          "external": "FixedTimeEqualsDocs"
+        },
+        {
+          "kind": "asserted",
+          "test": "CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentElement_ReturnsFalse"
+        }
+      ]
+    },
+    {
+      "id": "L8",
+      "anchor": "a-lenient-decoder-invents-characters",
+      "title": "A lenient decoder invents characters",
+      "body": "`Encoding.UTF8` and `Encoding.ASCII` replace bytes they cannot decode with a substitute character. Two different inputs can then decode to the same string, so the bytes you checked are not the text you used.",
+      "verdict": "prevents",
+      "verdictText": "`SecureEncoding` throws on invalid input instead of substituting.",
+      "mechanism": "`SecureEncoding`",
+      "evidence": [
+        {
+          "kind": "asserted",
+          "sample": "SiteLenientDecodingCollision"
+        },
+        {
+          "kind": "asserted",
+          "test": "SecureEncodingTests.StandardUTF8_DoesNotThrowOnInvalidByte"
+        }
+      ]
+    },
+    {
+      "id": "L9",
+      "anchor": "copies-are-on-their-own",
+      "title": "Copies are on their own",
+      "body": "`ToArray()`, `Convert.ToBase64String`, a `string`, an array an API keeps: each copy of a secret is new memory. Disposing the original writes zeros to the original only.",
+      "verdict": "none",
+      "verdictText": "Nothing reaches a copy. The guides show how to do the work without making one.",
+      "mechanism": "None",
+      "evidence": [
+        {
+          "kind": "asserted",
+          "sample": "SiteCopiesAreNotCleared"
+        }
+      ]
+    }
+  ]
+}

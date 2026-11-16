@@ -1,0 +1,68 @@
+---
+// "Find your situation" on the landing page: each group is a sentence stem, completed by the guides that
+// answer it. Write a Markdown list inside it: one item per group, the stem in bold, then a nested list of links.
+// The links stay in Markdown, where the link check reads them.
+// Usage:
+//   <LandingSituations>
+//   - **I have a secret, and I need to…**
+//     - [derive a key from a password](/guides/derive-a-key-from-a-password/)
+//   </LandingSituations>
+---
+
+<div class="landing-situations">
+  <slot />
+</div>
+
+<style>
+  .landing-situations > :global(ul) {
+    display: grid;
+    gap: var(--space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .landing-situations > :global(ul > li) {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+    padding: var(--space-5);
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+  }
+  .landing-situations > :global(ul > li > strong),
+  .landing-situations > :global(ul > li > p > strong) {
+    color: var(--color-text);
+    font-size: var(--text-lg);
+    font-stretch: var(--width-display);
+    font-weight: var(--weight-semibold);
+  }
+  .landing-situations :global(ul ul) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .landing-situations :global(ul ul li) { margin: 0; max-width: 100%; }
+  .landing-situations :global(ul ul a) {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    min-height: var(--control-md);
+    padding: var(--space-2) var(--space-4);
+    border: var(--border-hair) solid var(--color-border-strong);
+    border-radius: var(--radius-control);
+    background: var(--color-control);
+    box-shadow: inset 0 1px 0 var(--color-glint), 0 var(--travel) 0 var(--color-lip);
+    color: var(--color-text);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .landing-situations :global(ul ul a:hover) { background: var(--color-control-hover); }
+  .landing-situations :global(ul ul a:focus-visible) {
+    outline: var(--focus-width) solid var(--color-focus);
+    outline-offset: var(--focus-gap);
+  }
+</style>

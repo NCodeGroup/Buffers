@@ -1,0 +1,140 @@
+---
+// One outcome of "Which buffer?": the buffer, its call, three badges (pinned, zeroed on dispose,
+// pooled), what to watch for, what you dispose, and links to its guide and its tests, from
+// docs/site/_components/data/buffers.json. Put the compiled call inside it as a sample include. `id` is the card's
+// anchor there, written as a literal so the link check sees it.
+// Usage:
+//   <BufferCard id="rent-a-span" outcome="rent-span">
+//   ```cs snippet=SiteAnswerRentSpan
+//   ```
+//   </BufferCard>
+import { Status } from '@ncodegroup/docs/components';
+import buffers from '@site/components/data/buffers.json';
+import { inline, sitePath, testLink } from '@site/components/lib/evidence';
+
+interface Props {
+  id: string;
+  outcome: string;
+}
+const { id, outcome } = Astro.props;
+type Outcome = (typeof buffers.outcomes)[number] & { guide?: string };
+const card = buffers.outcomes.find((o) => o.id === outcome) as Outcome | undefined;
+if (!card) throw new Error(`[which buffer] no outcome "${outcome}" in docs/site/_components/data/buffers.json`);
+if (card.anchor !== id) throw new Error(`[which buffer] <BufferCard outcome="${outcome}"> needs id="${card.anchor}"`);
+const b = card.behavior;
+const badges = [
+  { label: 'Pinned', on: b.pinned },
+  { label: 'Zeroed on dispose', on: b.zeroedOnDispose },
+  { label: 'Pooled', on: b.pooled },
+];
+const tests = card.evidence.map(testLink);
+---
+
+<article class:list={['buffer', card.secret ? 'buffer--secret' : 'buffer--plain']} id={id} data-outcome={card.id} aria-labelledby={`${id}-title`}>
+  <header class="buffer__head">
+    <span class="buffer__group">{card.secret ? 'For secrets' : 'For other data'}</span>
+    <h3 class="buffer__title" id={`${id}-title`} set:html={inline(card.name)} />
+    <p class="buffer__use" set:html={inline(card.use)} />
+  </header>
+  <ul class="buffer__badges" aria-label="Behavior">
+    {badges.map((badge) => (
+      <li>
+        <Status state={badge.on ? 'success' : 'off'}>
+          {badge.label}: {badge.on ? 'yes' : 'no'}
+        </Status>
+      </li>
+    ))}
+  </ul>
+  <div class="buffer__code">
+    <slot />
+  </div>
+  <dl class="buffer__facts">
+    <div>
+      <dt>Watch for</dt>
+      <dd set:html={inline(card.watchFor)} />
+    </div>
+    <div>
+      <dt>What you dispose</dt>
+      <dd set:html={inline(card.dispose)} />
+    </div>
+  </dl>
+  <p class="buffer__links">
+    {card.guide && <a class="buffer__guide" href={sitePath(card.guide)}>The guide</a>}
+    {tests.map((test) => (
+      <a class="buffer__test" href={test.href} rel="noopener">{test.label}</a>
+    ))}
+  </p>
+</article>
+
+<style>
+  .buffer {
+    scroll-margin-top: calc(var(--sl-nav-height) + var(--space-5));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    margin-block: var(--space-5);
+    padding: var(--space-5);
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    box-shadow: var(--elevation-flush);
+  }
+  .buffer:target,
+  .buffer.is-chosen {
+    border-color: var(--color-primary-text);
+    box-shadow: 0 0 0 1px var(--color-primary-text);
+  }
+  .buffer__head { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+  .buffer__group {
+    font-size: var(--text-2xs);
+    font-stretch: var(--width-label);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .buffer__title {
+    margin: 0;
+    color: var(--color-text);
+    font-size: var(--text-xl);
+    font-stretch: var(--width-display);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-snug);
+    overflow-wrap: anywhere;
+  }
+  .buffer__title :global(code) { font-family: var(--font-mono); font-stretch: var(--width-code); font-size: 0.82em; overflow-wrap: anywhere; }
+  .buffer__use { margin: 0; color: var(--color-text-secondary); }
+  .buffer__badges { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); margin: 0; padding: 0; list-style: none; font-size: var(--text-md); }
+  .buffer__badges li { margin: 0; }
+  .buffer__code :global(.expressive-code) { margin: 0; }
+  .buffer__facts { display: grid; gap: var(--space-3); margin: 0; }
+  .buffer__facts > div { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: var(--space-4); }
+  .buffer__facts dt {
+    padding-top: 0.1875rem;
+    font-size: var(--text-2xs);
+    font-stretch: var(--width-label);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .buffer__facts dd { margin: 0; font-size: var(--text-md); line-height: var(--leading-normal); }
+  .buffer :global(code) { font-family: var(--font-mono); font-stretch: var(--width-code); }
+  .buffer__facts :global(code),
+  .buffer__use :global(code) {
+    padding: 0.06em 0.3em;
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-plate);
+    background: var(--color-surface-sunken);
+    font-size: 0.88em;
+  }
+  .buffer__links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); margin: 0; font-size: var(--text-sm); }
+  .buffer__links a { color: var(--color-primary-text); text-underline-offset: 0.2em; overflow-wrap: anywhere; }
+  .buffer__guide { font-weight: var(--weight-semibold); }
+  .buffer__guide::after { content: ' \2192'; }
+  .buffer__test { font-family: var(--font-mono); font-stretch: var(--width-code); }
+  @media (max-width: 40rem) {
+    .buffer { padding: var(--space-4); }
+    .buffer__facts > div { grid-template-columns: minmax(0, 1fr); gap: var(--space-1); }
+  }
+</style>

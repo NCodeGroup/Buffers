@@ -67,7 +67,9 @@ override in `AGENTS.md`.
 | [ADR-1002](1002-csharpier-formats-the-code-and-every-csharp-file-starts-with-an-spdx-header.md) | CSharpier formats the code, and every C# file starts with an SPDX header | Accepted |
 | [ADR-1003](1003-shipping-code-takes-buffers-and-encodings-through-bufferfactory-and-secureencoding.md) | Shipping code takes buffers and encodings through BufferFactory and SecureEncoding | Accepted |
 | [ADR-1004](1004-the-package-targets-only-supported-lts-dotnet-versions.md) | The package targets only supported LTS .NET versions | Accepted |
-| [ADR-1005](1005-readme-samples-are-compiled-tests-that-markdownsnippets-copies-into-the-readmes.md) | README samples are compiled tests that MarkdownSnippets copies into the READMEs | Accepted |
+| [ADR-1005](1005-readme-samples-are-compiled-tests-that-markdownsnippets-copies-into-the-readmes.md) | README samples are compiled tests that MarkdownSnippets copies into the READMEs | Accepted (amended by 1010) |
 | [ADR-1006](1006-the-secure-apis-constrain-their-element-type-to-unmanaged.md) | The secure APIs constrain their element type to unmanaged | Accepted |
 | [ADR-1007](1007-a-workflow-raises-the-package-validation-baseline-after-each-release.md) | A workflow raises the package validation baseline after each release | Accepted (amended by 1008) |
 | [ADR-1008](1008-release-follow-ups-are-jobs-publish-calls.md) | Release follow-ups are jobs that publish.yml calls | Accepted |
+| [ADR-1009](1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md) | The documentation site is narrative guides, built by a shared toolchain outside this repository | Accepted |
+| [ADR-1010](1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md) | Site samples are compiled tests in a project of their own, included by key when the site is built (amends 1005) | Accepted |

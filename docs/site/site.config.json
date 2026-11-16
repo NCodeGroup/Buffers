@@ -1,0 +1,48 @@
+{
+  "title": "NCode.Buffers",
+  "description": "Pinned, pooled .NET buffers that zero themselves on dispose, for keys and other secrets, plus fixed-size buffer writers and string splitting without substring copies.",
+  "product": "Buffers",
+  "mark": "ncode",
+  "repository": {
+    "url": "https://github.com/NCodeGroup/Buffers",
+    "branch": "main"
+  },
+  "site": {
+    "url": "https://ncodegroup.github.io/Buffers"
+  },
+  "sidebar": [
+    {
+      "label": "Start",
+      "items": [
+        { "slug": "index", "label": "Overview" },
+        "start/quick-start",
+        "start/which-buffer",
+        "start/limits"
+      ]
+    },
+    {
+      "label": "Guides",
+      "items": [
+        {
+          "label": "Secrets",
+          "items": [
+            "guides/derive-a-key-from-a-password",
+            "guides/verify-a-mac",
+            "guides/byte-array-apis",
+            "guides/secret-of-unknown-length",
+            "guides/read-a-secret-without-a-string",
+            "guides/secrets-across-await"
+          ]
+        }
+      ]
+    },
+    { "label": "Concepts", "items": ["concepts/how-secrets-leak", "concepts/ownership"] },
+    { "label": "Evidence", "items": ["evidence/guarantees"] },
+    { "label": "Reference", "items": ["reference/pitfalls"] }
+  ],
+  "social": [
+    { "label": "GitHub", "href": "https://github.com/NCodeGroup/Buffers" },
+    { "label": "NuGet", "href": "https://www.nuget.org/packages/NCode.Buffers/" }
+  ],
+  "samples": ["tests/**/*.cs"]
+}

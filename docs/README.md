@@ -10,6 +10,13 @@ offers. Every document in `docs/` has a line here.
 - [designs/](designs/_template.md): design documents for work bigger than one plan, started from
   [designs/_template.md](designs/_template.md). Each keeps its status current, and its decisions become records in
   `decisions/` as its phases land.
+- [site/](site/index.mdx): the content of the documentation site, its pages as `.mdx` files and its settings in
+  `site.config.json`. The shared toolchain in [NCodeGroup/docs](https://github.com/NCodeGroup/docs) builds it
+  ([ADR-1009](decisions/1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md)),
+  and the samples its pages show are tests in `tests/NCode.Buffers.Site.Tests`
+  ([ADR-1010](decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)).
+  `.github/workflows/docs.yml` builds the site on every pull request and publishes nothing:
+  [#56](https://github.com/NCodeGroup/Buffers/issues/56) tracks publishing it.
 - [metrics.md](metrics.md): the metrics and traces catalog, every meter, instrument, attribute, activity source and
   span the project defines, which dashboards and alerts are built against.
 - [api-compatibility.md](api-compatibility.md): how the public API of the published packages evolves and is checked, and how the package validation baseline is kept.

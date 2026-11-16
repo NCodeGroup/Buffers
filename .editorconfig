@@ -88,3 +88,7 @@ dotnet_diagnostic.IDE0073.severity = warning
 # Project and solution files take the 2-space indent of the other MSBuild files.
 [*.{csproj,slnx}]
 indent_size = 2
+
+# The documentation site's pages and components (docs/site) take the 2-space indent of the other web files.
+[*.{mdx,astro}]
+indent_size = 2

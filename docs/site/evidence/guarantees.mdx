@@ -1,0 +1,125 @@
+---
+title: Guarantees and their tests
+description: Each requirement the library accepts, the test that fails when it stops being true, and what that evidence does not show.
+---
+
+import EvidenceKinds from '@site/components/EvidenceKinds.astro';
+import KindLabel from '@site/components/KindLabel.astro';
+import Ledger from '@site/components/Ledger.astro';
+import LedgerRow from '@site/components/LedgerRow.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+
+<KindLabel kind="reference" />
+
+This page lists what NCode.Buffers claims about its own behavior, one row per requirement. Each row names the tests
+that fail when the claim stops being true, the lines of source that make it true, and what the evidence does not
+show. A link to one of the library's tests or to a line of its source opens it at commit
+[`9af5015`](https://github.com/NCodeGroup/Buffers/tree/9af5015e0a1e23e92bad243c83314b6caab3d30a), so the line it
+names stays put.
+
+## How to read this page
+
+A sentence about behavior on this site is one of these kinds, and carries its mark.
+
+<EvidenceKinds />
+
+## The ledger
+
+Seven requirements, R1 to R7, and one rule the compiler enforces. Every test named here runs in CI on every pull
+request, and the build stops when one fails. <Proof source="CiGateAndCoverage" />
+
+<Ledger>
+  <LedgerRow id="zeroed-on-dispose" claim="R1" />
+  <LedgerRow id="zeroed-before-reuse" claim="R2" />
+  <LedgerRow id="not-moved" claim="R3" />
+  <LedgerRow id="fixed-time" claim="R4" />
+  <LedgerRow id="strict-encoding" claim="R5" />
+  <LedgerRow id="never-past-the-end" claim="R6" />
+  <LedgerRow id="a-package-you-can-check" claim="R7" />
+  <LedgerRow id="unmanaged-only" claim="R8" />
+</Ledger>
+
+## Weaknesses it counters
+
+The project maps each weakness in MITRE's Common Weakness Enumeration to the rows that address it.
+
+| Weakness | Name | Rows |
+| --- | --- | --- |
+| [CWE-226](https://cwe.mitre.org/data/definitions/226.html) | Sensitive information in a resource not removed before reuse | [R1](#zeroed-on-dispose), [R2](#zeroed-before-reuse), [R3](#not-moved) |
+| [CWE-244](https://cwe.mitre.org/data/definitions/244.html) | Improper clearing of heap memory before release | [R1](#zeroed-on-dispose), [R2](#zeroed-before-reuse), [R3](#not-moved) |
+| [CWE-208](https://cwe.mitre.org/data/definitions/208.html) | Observable timing discrepancy | [R4](#fixed-time) |
+| [CWE-176](https://cwe.mitre.org/data/definitions/176.html) | Improper handling of Unicode encoding | [R5](#strict-encoding) |
+| [CWE-172](https://cwe.mitre.org/data/definitions/172.html) | Encoding error | [R5](#strict-encoding) |
+| [CWE-787](https://cwe.mitre.org/data/definitions/787.html) | Out-of-bounds write | [R6](#never-past-the-end) |
+| [CWE-120](https://cwe.mitre.org/data/definitions/120.html) | Buffer copy without checking the size of the input | [R6](#never-past-the-end) |
+| [CWE-494](https://cwe.mitre.org/data/definitions/494.html) | Download of code without an integrity check | [R7](#a-package-you-can-check) |
+| [CWE-829](https://cwe.mitre.org/data/definitions/829.html) | Inclusion of functionality from an untrusted control sphere | [R7](#a-package-you-can-check) |
+
+## How it is tested
+
+- **Unit tests**, in `tests/NCode.Buffers.Tests`, each named for the behavior it checks. The ledger links them.
+- **Property tests**, written with FsCheck. They replay one fixed seed, `20261115,12345`, so every run checks the
+  same generated cases: they widen what is checked, and they do not search anew on each run.
+  <Proof source="PropertySeed" />
+- **A coverage gate.** `./build/Test-Coverage.ps1` fails below 98% line or branch coverage, and CI runs it. Coverage
+  says that a line ran, not that a test checked what the line did. <Proof source="CoverageMinimums" />
+- **Warnings are errors**, with the .NET analyzers at their recommended level. <Proof source="WarningsAsErrors" />
+- **Two ban lists.** The library's own code cannot call a lenient text encoding or rent from a pool without saying
+  whether the buffer holds a secret: an analyzer rejects both. <Proof source="BannedEncoding" />
+  <Proof source="BannedBuffers" />
+- **The samples are tests.** Every C# sample on this site that compiles is a test: the site's own in
+  `tests/NCode.Buffers.Site.Tests`, which sees only the public API, so they compile only as your code would, and the
+  README's in `tests/NCode.Buffers.Tests`. Code shown as not compiling is marked so, with the compiler's error.
+  <Proof source="SiteSamplesDecision" />
+
+### What a test can see
+
+A test cannot watch the collector decide not to move an array. It can ask which generation the collector reports for
+it. An array on the pinned object heap reports the oldest generation from the moment it is allocated, and the tests
+behind [R3](#not-moved) assert that.
+
+```cs snippet=SiteGuaranteesPinnedGeneration title="How a test sees that an array is pinned"
+```
+
+A test of zeroing keeps a view of the memory, disposes the owner, and reads the view. The tests behind
+[R1](#zeroed-on-dispose) do this for a rented buffer and for both lifetimes.
+
+```cs snippet=SiteGuaranteesZeroedThroughAView title="How a test sees that memory was zeroed"
+```
+
+Both are tests in the repository, and this page includes them from there.
+<Proof sample="SiteGuaranteesPinnedGeneration" /> <Proof sample="SiteGuaranteesZeroedThroughAView" />
+
+## What tests cannot prove
+
+- **Timing.** No test measures how long a comparison takes. [R4](#fixed-time) rests on the one call the library makes
+  to .NET's fixed-time comparison, and on .NET's documented contract for it.
+- **What the collector does in your process.** The tests assert where an array is allocated. They do not assert what
+  a collection moved, because the collector decides that.
+- **Your code.** A test of the library cannot see whether your code disposes what it rents, or copies what it holds.
+  [Ownership](/concepts/ownership/) says who zeroes what, and [Ways to get it wrong](/reference/pitfalls/) lists the
+  mistakes the library lets you make.
+
+## Run it yourself
+
+With the .NET SDK that the repository's `global.json` names:
+
+```sh
+git clone https://github.com/NCodeGroup/Buffers.git
+cd Buffers
+dotnet test
+```
+
+Then, in PowerShell 7, the coverage gate, which lists every line no test runs:
+
+```powershell
+./build/Test-Coverage.ps1
+```
+
+<Related>
+- **Learn** [Quick start](/start/quick-start/)
+- **Do** [Verify a MAC without leaking timing](/guides/verify-a-mac/)
+- **Understand** [What it protects, and what it does not](/start/limits/)
+- **Look up** [Ways to get it wrong](/reference/pitfalls/)
+</Related>

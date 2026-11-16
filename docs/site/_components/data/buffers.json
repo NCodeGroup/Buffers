@@ -1,0 +1,176 @@
+{
+  "$comment": "The buffers of NCode.Buffers, for the picker on /start/which-buffer/ (WhichBuffer.astro, BufferCard.astro) and the matrix on /reference/buffer-behavior/: one data file, so the two cannot disagree. `snippet` is the key of the compiled call the page shows in the card; `evidence` names tests in evidence.json. `anchor` is the card's anchor on /start/which-buffer/. Booleans in `behavior`: true, false, or null where the question does not apply. Text fields take `code` and [links](/x/).",
+  "questions": [
+    {
+      "id": "secret",
+      "text": "Is the data a secret, or derived from one?",
+      "answers": [
+        { "text": "Yes: a key, a password, a token, a MAC", "next": "memory" },
+        { "text": "No: ordinary bytes or text", "next": "other" }
+      ]
+    },
+    {
+      "id": "memory",
+      "text": "Where does the memory come from?",
+      "answers": [
+        { "text": "I already have it: an array an API handed me, or a small fixed-size secret in one synchronous method that fits `stackalloc`", "outcome": "secure-lifetime" },
+        { "text": "I need new memory for it", "next": "length" }
+      ]
+    },
+    {
+      "id": "length",
+      "text": "Do you know its length before you start writing it?",
+      "answers": [
+        { "text": "Yes", "next": "needs" },
+        { "text": "No: it grows as I write, such as serialized JSON", "outcome": "pooled-writer" }
+      ]
+    },
+    {
+      "id": "needs",
+      "text": "What does the code that uses it need?",
+      "answers": [
+        { "text": "A span, in synchronous code", "outcome": "rent-span" },
+        { "text": "To cross an `await`, or to live in a field", "outcome": "rent-memory" },
+        { "text": "A `T[]`, within one synchronous scope", "outcome": "pinned-array" },
+        { "text": "A `MemoryPool<T>`", "outcome": "secure-pool" }
+      ]
+    },
+    {
+      "id": "other",
+      "text": "What do you need for it?",
+      "answers": [
+        { "text": "A fixed-size buffer, written in synchronous code", "outcome": "fixed-span-writer" },
+        { "text": "A fixed-size buffer kept in a field or across an `await`", "outcome": "fixed-memory-writer" },
+        { "text": "Pooled buffers, to save allocations", "outcome": "plain-pooled" },
+        { "text": "A writer that grows", "outcome": "array-writer" }
+      ]
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "rent-span",
+      "anchor": "rent-a-span",
+      "name": "`BufferFactory.Rent` with `out Span<T>`",
+      "secret": true,
+      "snippet": "SiteAnswerRentSpan",
+      "use": "A temporary buffer for a key, a password or another secret, in synchronous code.",
+      "watchFor": "The span is the length you asked for. `owner.Memory` is the whole buffer, 4096 bytes for a smaller request.",
+      "dispose": "The `IMemoryOwner<T>` that `Rent` returns, with `using`.",
+      "guide": "/guides/derive-a-key-from-a-password/",
+      "behavior": { "pinned": true, "zeroedOnDispose": true, "pooled": true, "takesIsSensitive": true, "acrossAwait": false, "source": "`SecureMemoryPool<T>.Shared` up to 4096 bytes; a pinned array of its own above that", "holds": "`IMemoryOwner<T>`", "length": "Exactly what you asked for", "contents": "Not cleared: write before you read", "afterDispose": "Zeroed, and back in the pool" },
+      "evidence": ["BufferFactoryPropertyTests.Rent_WithSpan_ReturnsABufferOfTheExactRequestedLength", "BufferFactoryTests.ChoosePool_WhenSensitive_ReturnsSecureSharedPool"]
+    },
+    {
+      "id": "rent-memory",
+      "anchor": "rent-across-await",
+      "name": "`BufferFactory.Rent` with `out Memory<T>`",
+      "secret": true,
+      "snippet": "SiteAnswerRentMemory",
+      "use": "A secret that must cross an `await` or live in a field.",
+      "watchFor": "Do the span work in a synchronous helper. Never keep the `Memory<T>` after its owner is disposed.",
+      "dispose": "The `IMemoryOwner<T>` that `Rent` returns, when the last `await` that uses it is done.",
+      "guide": "/guides/secrets-across-await/",
+      "behavior": { "pinned": true, "zeroedOnDispose": true, "pooled": true, "takesIsSensitive": true, "acrossAwait": true, "source": "The same pool and owner as the `Span<T>` overload", "holds": "`IMemoryOwner<T>`", "length": "Exactly what you asked for", "contents": "Not cleared: write before you read", "afterDispose": "Zeroed, and back in the pool" },
+      "evidence": ["BufferFactoryPropertyTests.Rent_WithMemory_ReturnsABufferOfTheExactRequestedLength"]
+    },
+    {
+      "id": "pooled-writer",
+      "anchor": "a-pooled-writer",
+      "name": "`BufferFactory.CreatePooledBufferWriter(isSensitive: true)`",
+      "secret": true,
+      "snippet": "SiteAnswerPooledWriter",
+      "use": "A secret whose length you do not know until you have written it.",
+      "watchFor": "It adds a segment as it grows. To read it as one span, use `GetSpanLease` or `ConsumeAsContiguousSpan` with the same `isSensitive`.",
+      "dispose": "The `Sequence<T>` it returns, with `using`.",
+      "guide": "/guides/secret-of-unknown-length/",
+      "behavior": { "pinned": true, "zeroedOnDispose": true, "pooled": true, "takesIsSensitive": true, "acrossAwait": true, "source": "Segments from `SecureMemoryPool<T>.Shared`; a larger segment is a pinned array of its own", "holds": "`Sequence<T>` from Nerdbank.Streams", "length": "What you have written", "contents": "Only what you write is read back", "afterDispose": "Every segment zeroed; pooled ones go back to the pool" },
+      "evidence": ["BufferFactoryTests.CreatePooledBufferWriter_WhenSensitive_RentsWholePagesFromSecurePool"]
+    },
+    {
+      "id": "secure-pool",
+      "anchor": "a-memory-pool",
+      "name": "`SecureMemoryPool<T>`",
+      "secret": true,
+      "snippet": "SiteAnswerSecurePool",
+      "use": "An API that takes a `MemoryPool<T>`, such as a pipe.",
+      "watchFor": "`Rent` returns a whole buffer: 4096 bytes for any smaller request. Create the pool your application uses, and dispose it when the application stops.",
+      "dispose": "Each `IMemoryOwner<T>` it rents, and the pool when you are done with it.",
+      "behavior": { "pinned": true, "zeroedOnDispose": true, "pooled": true, "takesIsSensitive": false, "acrossAwait": true, "source": "Buffers of 4096 bytes, cached for reuse; a larger request gets a pinned array of its own", "holds": "`IMemoryOwner<T>`", "length": "The whole buffer", "contents": "Not cleared: write before you read", "afterDispose": "Zeroed, and back in the pool" },
+      "evidence": ["SecureMemoryPoolTests.CanBeUsedAsMemoryPool", "SecureMemoryPoolTests.Rent_SizeLessThanPage_ReturnsPageSizeBuffer"]
+    },
+    {
+      "id": "pinned-array",
+      "anchor": "a-pinned-array",
+      "name": "`BufferFactory.CreatePinnedArray`",
+      "secret": true,
+      "snippet": "SiteAnswerPinnedArray",
+      "use": "An API that takes or fills a `T[]`, within one synchronous scope.",
+      "watchFor": "The array outlives the lifetime: never return it, store it or hand it to a logger. Every call allocates.",
+      "dispose": "The `SecureArrayLifetime<T>` it returns, with `using`.",
+      "guide": "/guides/byte-array-apis/",
+      "behavior": { "pinned": true, "zeroedOnDispose": true, "pooled": false, "takesIsSensitive": false, "acrossAwait": false, "source": "A new pinned array of exactly that length", "holds": "`SecureArrayLifetime<T>`, a ref struct", "length": "Exactly what you asked for", "contents": "Not cleared: write before you read", "afterDispose": "Zeroed. The array is still there, and still writable" },
+      "evidence": ["BufferFactoryTests.CreatePinnedArray_Byte_ReturnsArrayOfRequestedLength", "BufferFactoryTests.CreatePinnedArray_AllocatesOnPinnedObjectHeap"]
+    },
+    {
+      "id": "secure-lifetime",
+      "anchor": "a-lifetime-for-memory-you-have",
+      "name": "`GetSecureLifetime()` on a span",
+      "secret": true,
+      "snippet": "SiteAnswerSecureLifetime",
+      "use": "Memory you already have: `stackalloc` for a small secret, or an array an API returned.",
+      "watchFor": "It zeroes; it does not pin. Stack memory does not move, but an array you had may have moved before you wrapped it.",
+      "dispose": "The `SecureSpanLifetime<T>` it returns, with `using`.",
+      "guide": "/guides/verify-a-mac/",
+      "behavior": { "pinned": false, "zeroedOnDispose": true, "pooled": false, "takesIsSensitive": false, "acrossAwait": false, "source": "Your own memory", "holds": "`SecureSpanLifetime<T>`, a ref struct", "length": "The span's", "contents": "Whatever you put there", "afterDispose": "Zeroed" },
+      "evidence": ["SecureSpanLifetimeTests.Dispose_ZerosMemory_ByteSpan"]
+    },
+    {
+      "id": "plain-pooled",
+      "anchor": "pooled-buffers-for-other-data",
+      "name": "`Rent` or `CreatePooledBufferWriter` with `isSensitive: false`",
+      "secret": false,
+      "snippet": "SiteAnswerPlainPooled",
+      "use": "Pooled buffers for data that is not secret.",
+      "watchFor": "Nothing is pinned or zeroed: the next renter can read what you wrote. Never put a secret here.",
+      "dispose": "The owner or the `Sequence<T>`, with `using`, so the buffer goes back to the pool.",
+      "behavior": { "pinned": false, "zeroedOnDispose": false, "pooled": true, "takesIsSensitive": true, "acrossAwait": null, "source": "`MemoryPool<T>.Shared`", "holds": "`IMemoryOwner<T>` or `Sequence<T>`", "length": "Exactly what you asked for, or what you have written", "contents": "What an earlier renter left", "afterDispose": "Back in the pool, as it is" },
+      "evidence": ["BufferFactoryTests.ChoosePool_WhenNotSensitive_ReturnsSharedPool", "BufferFactoryTests.CreatePooledBufferWriter_WhenNotSensitive_RentsFromSharedPool"]
+    },
+    {
+      "id": "array-writer",
+      "anchor": "a-growable-writer",
+      "name": "`BufferFactory.CreateArrayBufferWriter`",
+      "secret": false,
+      "snippet": "SiteAnswerArrayWriter",
+      "use": "A writer that grows, for output that is never secret.",
+      "watchFor": "Each time it grows it copies into a larger array and drops the old one. Never write a secret into it.",
+      "dispose": "Nothing: `ArrayBufferWriter<T>` is not disposable.",
+      "behavior": { "pinned": false, "zeroedOnDispose": false, "pooled": false, "takesIsSensitive": false, "acrossAwait": true, "source": "Ordinary arrays", "holds": "`ArrayBufferWriter<T>`", "length": "What you have written", "contents": "Only what you write is read back", "afterDispose": null },
+      "evidence": ["BufferFactoryTests.CreateArrayBufferWriter_Byte_ReturnsEmptyWriter"]
+    },
+    {
+      "id": "fixed-span-writer",
+      "anchor": "a-fixed-span-writer",
+      "name": "`FixedSpanBufferWriter<T>`",
+      "secret": false,
+      "snippet": "SiteAnswerFixedSpanWriter",
+      "use": "Writing into a fixed-size span, such as `stackalloc`, in synchronous code.",
+      "watchFor": "It cannot grow: asking for more space than is free throws. Pass it by `ref`: a copy is a second writer.",
+      "dispose": "Nothing: it writes into memory you own.",
+      "behavior": { "pinned": false, "zeroedOnDispose": false, "pooled": false, "takesIsSensitive": false, "acrossAwait": false, "source": "Your own span", "holds": "`FixedSpanBufferWriter<T>`, a ref struct", "length": "The span's", "contents": "Whatever you put there", "afterDispose": null },
+      "evidence": ["FixedSpanBufferWriterTests.GetSpan_SizeHintExceedsFreeCapacity_ThrowsInvalidOperationException"]
+    },
+    {
+      "id": "fixed-memory-writer",
+      "anchor": "a-fixed-memory-writer",
+      "name": "`FixedMemoryBufferWriter<T>`",
+      "secret": false,
+      "snippet": "SiteAnswerFixedMemoryWriter",
+      "use": "Writing into fixed-size `Memory<T>`, with the writer kept in a field or across an `await`.",
+      "watchFor": "It cannot grow: asking for more space than is free throws.",
+      "dispose": "Nothing: it writes into memory you own.",
+      "behavior": { "pinned": false, "zeroedOnDispose": false, "pooled": false, "takesIsSensitive": false, "acrossAwait": true, "source": "Your own memory", "holds": "`FixedMemoryBufferWriter<T>`", "length": "The memory's", "contents": "Whatever you put there", "afterDispose": null },
+      "evidence": ["FixedMemoryBufferWriterTests.CanBeUsedInAsyncMethods_UnlikeSpanVersion", "FixedMemoryBufferWriterTests.GetMemory_SizeHintExceedsFreeCapacity_ThrowsInvalidOperationException"]
+    }
+  ]
+}

@@ -1,0 +1,1107 @@
+{
+  "$comment": "The site's evidence: the tests, source lines and outside pages a claim names, and the claims the ledger on /evidence/guarantees/ lists. A test or source is linked at `commit`, a commit of the default branch, so its line never moves; build/Test-SiteEvidence.ps1, which the gate runs, checks every entry against that commit and the working tree. Text fields take `code` and [links](/x/).",
+  "repository": "https://github.com/NCodeGroup/Buffers",
+  "commit": "9af5015e0a1e23e92bad243c83314b6caab3d30a",
+  "tests": {
+    "SecureMemoryTests.Dispose_ZeroesMemory": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryTests.cs",
+      "line": 36
+    },
+    "SecureMemoryTests.Constructor_AllocatesOnPinnedObjectHeap": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryTests.cs",
+      "line": 21
+    },
+    "SecureArrayLifetimeTests.Dispose_ZerosMemory_ByteArray": {
+      "file": "tests/NCode.Buffers.Tests/SecureArrayLifetimeTests.cs",
+      "line": 240
+    },
+    "SecureArrayLifetimeTests.Dispose_ZerosMemory_CustomStruct": {
+      "file": "tests/NCode.Buffers.Tests/SecureArrayLifetimeTests.cs",
+      "line": 308
+    },
+    "SecureArrayLifetimeTests.UsingStatement_ZerosMemoryOnExit": {
+      "file": "tests/NCode.Buffers.Tests/SecureArrayLifetimeTests.cs",
+      "line": 369
+    },
+    "SecureSpanLifetimeTests.Dispose_ZerosMemory_ByteSpan": {
+      "file": "tests/NCode.Buffers.Tests/SecureSpanLifetimeTests.cs",
+      "line": 120
+    },
+    "SecureSpanLifetimeTests.Dispose_ZerosAllBytes_LargeBuffer": {
+      "file": "tests/NCode.Buffers.Tests/SecureSpanLifetimeTests.cs",
+      "line": 213
+    },
+    "BufferFactoryPropertyTests.CreatePinnedArray_GivenAnyLength_ReturnsAnArrayOfThatLengthThatDisposeZeroes": {
+      "file": "tests/NCode.Buffers.Tests/BufferFactoryPropertyTests.cs",
+      "line": 75
+    },
+    "BufferFactoryPropertyTests.Rent_WithSpan_ReturnsABufferOfTheExactRequestedLength": {
+      "file": "tests/NCode.Buffers.Tests/BufferFactoryPropertyTests.cs",
+      "line": 29
+    },
+    "BufferFactoryPropertyTests.Rent_WithMemory_ReturnsABufferOfTheExactRequestedLength": {
+      "file": "tests/NCode.Buffers.Tests/BufferFactoryPropertyTests.cs",
+      "line": 15
+    },
+    "SecureMemoryPoolTests.RentedMemory_IsZeroedOnReturn": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 506
+    },
+    "SecureMemoryPoolTests.Rent_SizeLessThanPage_ReturnsPageSizeBuffer": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 186
+    },
+    "SecureMemoryPoolTests.Rent_SizeMoreThanPage_ReturnsExactSizeBuffer": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 208
+    },
+    "SecureMemoryPoolTests.CanBeUsedAsMemoryPool": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 471
+    },
+    "BufferFactoryTests.CreatePinnedArray_AllocatesOnPinnedObjectHeap": {
+      "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
+      "line": 175
+    },
+    "BufferFactoryTests.CreatePinnedArray_Byte_ReturnsArrayOfRequestedLength": {
+      "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
+      "line": 166
+    },
+    "SecureArrayLifetimeTests.ImplicitConversionToArray_ReturnsPinnedArray": {
+      "file": "tests/NCode.Buffers.Tests/SecureArrayLifetimeTests.cs",
+      "line": 180
+    },
+    "BufferExtensionsTests.GetSecureLifetime_ZerosMemoryOnDispose": {
+      "file": "tests/NCode.Buffers.Tests/BufferExtensionsTests.cs",
+      "line": 433
+    },
+    "BufferFactoryTests.ChoosePool_WhenSensitive_ReturnsSecureSharedPool": {
+      "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
+      "line": 13
+    },
+    "BufferFactoryTests.ChoosePool_WhenNotSensitive_ReturnsSharedPool": {
+      "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
+      "line": 21
+    },
+    "BufferFactoryTests.CreatePooledBufferWriter_WhenSensitive_RentsWholePagesFromSecurePool": {
+      "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
+      "line": 199
+    },
+    "BufferFactoryTests.CreatePooledBufferWriter_WhenNotSensitive_RentsFromSharedPool": {
+      "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
+      "line": 208
+    },
+    "BufferFactoryTests.CreateArrayBufferWriter_Byte_ReturnsEmptyWriter": {
+      "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
+      "line": 280
+    },
+    "CryptographicOperationsExtensionsTests.FixedTimeEquals_SameContents_ReturnsTrue": {
+      "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
+      "line": 58
+    },
+    "CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentElement_ReturnsFalse": {
+      "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
+      "line": 69
+    },
+    "CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferenceOnlyInHighByte_ReturnsFalse": {
+      "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
+      "line": 81
+    },
+    "CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentLengths_ReturnsFalse": {
+      "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
+      "line": 92
+    },
+    "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_WithBytes_MatchesSequenceEqual": {
+      "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsPropertyTests.cs",
+      "line": 25
+    },
+    "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_WithInts_MatchesSequenceEqual": {
+      "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsPropertyTests.cs",
+      "line": 15
+    },
+    "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_GivenACopy_ReturnsTrue": {
+      "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsPropertyTests.cs",
+      "line": 35
+    },
+    "SecureEncodingTests.UTF8_DecodeInvalidStartByte_ThrowsDecoderFallbackException": {
+      "file": "tests/NCode.Buffers.Tests/SecureEncodingTests.cs",
+      "line": 377
+    },
+    "SecureEncodingTests.UTF8_DecodeOverlongEncoding_ThrowsDecoderFallbackException": {
+      "file": "tests/NCode.Buffers.Tests/SecureEncodingTests.cs",
+      "line": 408
+    },
+    "SecureEncodingTests.UTF8_EncodeUnpairedHighSurrogate_ThrowsEncoderFallbackException": {
+      "file": "tests/NCode.Buffers.Tests/SecureEncodingTests.cs",
+      "line": 299
+    },
+    "SecureEncodingTests.ASCII_DecodeInvalidByte_ThrowsDecoderFallbackException": {
+      "file": "tests/NCode.Buffers.Tests/SecureEncodingTests.cs",
+      "line": 168
+    },
+    "SecureEncodingTests.ASCII_EncodeNonAsciiCharacter_ThrowsEncoderFallbackException": {
+      "file": "tests/NCode.Buffers.Tests/SecureEncodingTests.cs",
+      "line": 96
+    },
+    "SecureEncodingTests.StandardUTF8_DoesNotThrowOnInvalidByte": {
+      "file": "tests/NCode.Buffers.Tests/SecureEncodingTests.cs",
+      "line": 462
+    },
+    "SecureEncodingTests.StandardASCII_DoesNotThrowOnInvalidByte": {
+      "file": "tests/NCode.Buffers.Tests/SecureEncodingTests.cs",
+      "line": 452
+    },
+    "FixedSpanBufferWriterTests.GetSpan_SizeHintExceedsFreeCapacity_ThrowsInvalidOperationException": {
+      "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterTests.cs",
+      "line": 431
+    },
+    "FixedSpanBufferWriterTests.GetSpan_WhenBufferFull_WithZeroSizeHint_ReturnsEmptySpan": {
+      "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterTests.cs",
+      "line": 465
+    },
+    "FixedMemoryBufferWriterTests.GetMemory_SizeHintExceedsFreeCapacity_ThrowsInvalidOperationException": {
+      "file": "tests/NCode.Buffers.Tests/FixedMemoryBufferWriterTests.cs",
+      "line": 528
+    },
+    "FixedMemoryBufferWriterTests.GetSpan_SizeHintExceedsFreeCapacity_ThrowsInvalidOperationException": {
+      "file": "tests/NCode.Buffers.Tests/FixedMemoryBufferWriterTests.cs",
+      "line": 433
+    },
+    "FixedMemoryBufferWriterTests.CanBeUsedInAsyncMethods_UnlikeSpanVersion": {
+      "file": "tests/NCode.Buffers.Tests/FixedMemoryBufferWriterTests.cs",
+      "line": 804
+    },
+    "FixedSpanBufferWriterPropertyTests.GetSpan_GivenAnySizeHint_ReturnsEnoughSpanOrThrowsADocumentedException": {
+      "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterPropertyTests.cs",
+      "line": 75
+    },
+    "FixedMemoryBufferWriterPropertyTests.GetMemory_GivenAnySizeHint_ReturnsEnoughMemoryOrThrowsADocumentedException": {
+      "file": "tests/NCode.Buffers.Tests/FixedMemoryBufferWriterPropertyTests.cs",
+      "line": 76
+    },
+    "BufferFactoryTests.Rent_WhenSizeIsZeroAndSensitive_ReturnsEmptyMemorySingleton": {
+      "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
+      "line": 115
+    },
+    "SecureMemoryTests.Dispose_CalledTwice_ReturnsMemoryToPoolOnce": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryTests.cs",
+      "line": 59
+    },
+    "RefSpanLeaseTests.Dispose_MultipleCalls_DisposesOwnerEachTime": {
+      "file": "tests/NCode.Buffers.Tests/RefSpanLeaseTests.cs",
+      "line": 218
+    },
+    "ReadmeSamplesTests.ConsumeAsContiguousSpanSample_Runs": {
+      "file": "tests/NCode.Buffers.Tests/ReadmeSamplesTests.cs",
+      "line": 194
+    },
+    "ReadmeSamplesTests.QuickStart_ValidSignature_ReturnsTrue": {
+      "file": "tests/NCode.Buffers.Tests/ReadmeSamplesTests.cs",
+      "line": 24
+    },
+    "SequenceExtensionsTests.GetSpanLease_SingleSegment_Dispose_DoesNotResetSequence": {
+      "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
+      "line": 396
+    },
+    "SequenceExtensionsTests.GetSpanLease_MultipleSegments_CopiesDataToContiguousBuffer": {
+      "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
+      "line": 61
+    },
+    "SequenceExtensionsTests.ConsumeAsContiguousSpan_SingleSegment_ReturnsSequenceAsOwner": {
+      "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
+      "line": 589
+    },
+    "SequenceExtensionsTests.ConsumeAsContiguousSpan_MultipleSegments_DisposesOriginalSequence": {
+      "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
+      "line": 629
+    },
+    "SecureMemoryPoolTests.Rent_CharPool_ReturnsOnePageOfBytes": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 306
+    }
+  },
+  "samples": {
+    "SiteGuaranteesPinnedGeneration": {
+      "file": "tests/NCode.Buffers.Site.Tests/Evidence/GuaranteesSamples.cs"
+    },
+    "SiteGuaranteesZeroedThroughAView": {
+      "file": "tests/NCode.Buffers.Site.Tests/Evidence/GuaranteesSamples.cs"
+    },
+    "SiteArrayPoolKeepsBytes": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/HowSecretsLeakSamples.cs"
+    },
+    "SiteExceptionSkipsClear": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/HowSecretsLeakSamples.cs"
+    },
+    "SiteNoFinalizer": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/HowSecretsLeakSamples.cs"
+    },
+    "SiteLenientDecodingCollision": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/HowSecretsLeakSamples.cs"
+    },
+    "SiteGrowthLeavesCopies": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
+    },
+    "SitePasswordKeyUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/DeriveAKeyFromAPasswordSamples.cs"
+    },
+    "SitePasswordKeyDecrypt": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/DeriveAKeyFromAPasswordSamples.cs"
+    },
+    "SitePasswordKeyVerify": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/DeriveAKeyFromAPasswordSamples.cs"
+    },
+    "SiteVerifyMacUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/VerifyAMacSamples.cs"
+    },
+    "SiteVerifyMacWebhook": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/VerifyAMacSamples.cs"
+    },
+    "SiteVerifyMacTextSecret": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/VerifyAMacSamples.cs"
+    },
+    "SiteVerifySignature": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/VerifyAMacSamples.cs"
+    },
+    "SiteByteArrayUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ByteArrayApisSamples.cs"
+    },
+    "SiteByteArrayTakes": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ByteArrayApisSamples.cs"
+    },
+    "SiteByteArrayReturns": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ByteArrayApisSamples.cs"
+    },
+    "SiteByteArrayReturnTrap": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ByteArrayApisSamples.cs"
+    },
+    "SiteKeySetterCopies": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ByteArrayApisSamples.cs"
+    },
+    "SiteCopiesAreNotCleared": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/LimitsSamples.cs"
+    },
+    "SiteWatchAKeyDisappear": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/QuickStartSamples.cs"
+    },
+    "SiteRentLengths": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/QuickStartSamples.cs"
+    },
+    "SiteQuickStartCall": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/QuickStartSamples.cs"
+    },
+    "SiteAnswerSecurePool": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/WhichBufferSamples.cs"
+    },
+    "SiteAnswerRentMemory": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/WhichBufferSamples.cs"
+    },
+    "SiteHowSecretsLeakUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/HowSecretsLeakSamples.cs"
+    },
+    "SiteOwnershipTightScope": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/OwnershipSamples.cs"
+    },
+    "SiteOwnershipUsingOrder": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/OwnershipSamples.cs"
+    },
+    "SiteOwnershipReturnLifetime": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/OwnershipSamples.cs"
+    },
+    "SiteOwnershipSecondDispose": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/OwnershipSamples.cs"
+    },
+    "SiteOwnershipUseAfterDispose": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/OwnershipSamples.cs"
+    },
+    "SitePitfallCopyOfALifetime": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallLifetimeAsObject": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallSliceLifetime": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallWriterByValue": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallAdvanceBySpanLength": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallResetAfterClear": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallCompareBytesNotValues": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallPaddingBytesCount": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallDefaultValues": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SiteUnknownLengthUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
+    },
+    "SiteUnknownLengthWriter": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
+    },
+    "SiteContiguousIncremental": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
+    },
+    "SiteUnknownLengthLease": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
+    },
+    "SiteLeaseOrConsume": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
+    },
+    "SiteSegmentsArePinned": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
+    },
+    "SiteReadSecretUsualJson": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ReadASecretWithoutAStringSamples.cs"
+    },
+    "SiteReadSecretJson": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ReadASecretWithoutAStringSamples.cs"
+    },
+    "SiteReadSecretBase64": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ReadASecretWithoutAStringSamples.cs"
+    },
+    "SiteReadSecretChars": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ReadASecretWithoutAStringSamples.cs"
+    },
+    "SiteAcrossAwaitUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretsAcrossAwaitSamples.cs"
+    },
+    "SiteAcrossAwaitMemory": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretsAcrossAwaitSamples.cs"
+    },
+    "SiteSigningKey": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretsAcrossAwaitSamples.cs"
+    },
+    "SiteSigningKeyUse": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretsAcrossAwaitSamples.cs"
+    },
+    "SiteBlockBetweenAwaits": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretsAcrossAwaitSamples.cs"
+    }
+  },
+  "sources": {
+    "SecureMemory.Allocate": {
+      "file": "src/NCode.Buffers/SecureMemory.cs",
+      "lines": [
+        24,
+        25
+      ],
+      "match": "GC.AllocateUninitializedArray<T>(bufferSize, pinned: true)"
+    },
+    "SecureMemory.Dispose": {
+      "file": "src/NCode.Buffers/SecureMemory.cs",
+      "lines": [
+        29,
+        37
+      ],
+      "match": "public void Dispose()"
+    },
+    "SecureMemoryPool.Return": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        181,
+        187
+      ],
+      "match": "internal virtual void Return(SecureMemory<T> memory)"
+    },
+    "SecureArrayLifetime.Allocate": {
+      "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
+      "lines": [
+        62,
+        62
+      ],
+      "match": "GC.AllocateUninitializedArray<T>(length, pinned: true)"
+    },
+    "SecureArrayLifetime.Dispose": {
+      "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
+      "lines": [
+        108,
+        111
+      ],
+      "match": "public void Dispose()"
+    },
+    "SecureArrayLifetime.Unmanaged": {
+      "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
+      "lines": [
+        36,
+        37
+      ],
+      "match": "public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable"
+    },
+    "SecureSpanLifetime.Dispose": {
+      "file": "src/NCode.Buffers/SecureSpanLifetime.cs",
+      "lines": [
+        73,
+        76
+      ],
+      "match": "public void Dispose()"
+    },
+    "SecureArrayLifetime.ToArray": {
+      "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
+      "lines": [
+        81,
+        81
+      ],
+      "match": "public static implicit operator T[](SecureArrayLifetime<T> lifetime)"
+    },
+    "BufferFactory.ChoosePool": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        60,
+        61
+      ],
+      "match": "internal static MemoryPool<T> ChoosePool<T>(bool isSensitive)"
+    },
+    "ZeroMemory": {
+      "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
+      "lines": [
+        56,
+        60
+      ],
+      "match": "public static void ZeroMemory<T>(Span<T> buffer)"
+    },
+    "FixedTimeEquals": {
+      "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
+      "lines": [
+        94,
+        101
+      ],
+      "match": "public static bool FixedTimeEquals<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right)"
+    },
+    "SecureEncoding.ASCII": {
+      "file": "src/NCode.Buffers/SecureEncoding.cs",
+      "lines": [
+        42,
+        47
+      ],
+      "match": "private static ASCIIEncoding CreateSecureAsciiEncoding()"
+    },
+    "SecureEncoding.UTF8": {
+      "file": "src/NCode.Buffers/SecureEncoding.cs",
+      "lines": [
+        81,
+        82
+      ],
+      "match": "public static UTF8Encoding UTF8 { get; } ="
+    },
+    "FixedSpanBufferWriter.GetSpan": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        172,
+        195
+      ],
+      "match": "public Span<T> GetSpan(int sizeHint = 0)"
+    },
+    "FixedMemoryBufferWriter.GetMemory": {
+      "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
+      "lines": [
+        200,
+        223
+      ],
+      "match": "public Memory<T> GetMemory(int sizeHint = 0)"
+    },
+    "PropertySeed": {
+      "file": "tests/NCode.Buffers.Tests/BufferFactoryPropertyTests.cs",
+      "lines": [
+        10,
+        10
+      ],
+      "match": "private const string Seed = \"20261115,12345\";",
+      "kind": "process"
+    },
+    "CoverageMinimums": {
+      "file": "build/Test-Coverage.ps1",
+      "lines": [
+        30,
+        31
+      ],
+      "match": "$MinimumLineRate = 0.98",
+      "kind": "process"
+    },
+    "WarningsAsErrors": {
+      "file": "build/ProjectTemplate.props",
+      "lines": [
+        8,
+        9
+      ],
+      "match": "<TreatWarningsAsErrors>true</TreatWarningsAsErrors>",
+      "kind": "process"
+    },
+    "BannedBuffers": {
+      "file": "BannedSymbols.Buffers.txt",
+      "kind": "process"
+    },
+    "BannedEncoding": {
+      "file": "BannedSymbols.Encoding.txt",
+      "kind": "process"
+    },
+    "CiPullRequest": {
+      "file": ".github/workflows/ci.yml",
+      "lines": [
+        3,
+        7
+      ],
+      "match": "on:",
+      "kind": "process"
+    },
+    "PublishWorkflow": {
+      "file": ".github/workflows/publish.yml",
+      "kind": "process"
+    },
+    "ProvenanceWorkflow": {
+      "file": ".github/workflows/release-provenance.yml",
+      "kind": "process"
+    },
+    "VerifyAPackage": {
+      "file": "SECURITY.md",
+      "anchor": "verify-a-package",
+      "kind": "process"
+    },
+    "ArchitectureDesignRules": {
+      "file": "docs/architecture.md",
+      "anchor": "design-rules",
+      "kind": "documented"
+    },
+    "CiGateAndCoverage": {
+      "file": ".github/workflows/ci.yml",
+      "lines": [
+        48,
+        54
+      ],
+      "match": "- name: Definition of Done",
+      "kind": "process"
+    },
+    "SiteSamplesDecision": {
+      "file": "docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md",
+      "branch": "main",
+      "kind": "process",
+      "label": "ADR-1010"
+    },
+    "BufferExtensions.GetSecureLifetime": {
+      "file": "src/NCode.Buffers/BufferExtensions.cs",
+      "lines": [
+        61,
+        64
+      ],
+      "match": "public SecureSpanLifetime<T> GetSecureLifetime()"
+    },
+    "PackageDependencies": {
+      "file": "src/NCode.Buffers/NCode.Buffers.csproj",
+      "lines": [
+        11,
+        12
+      ],
+      "match": "<PackageReference Include=\"JetBrains.Annotations\" />",
+      "kind": "process"
+    },
+    "SecureMemoryPool.Rent": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        161,
+        170
+      ],
+      "match": "var byteCount = minBufferSize == -1 ? PageSize"
+    },
+    "PublicApi.IsSensitive": {
+      "file": "src/NCode.Buffers/PublicAPI.Shipped.txt",
+      "lines": [
+        96,
+        103
+      ],
+      "match": "static NCode.Buffers.BufferFactory.CreatePinnedArray(int length)"
+    },
+    "PublicApi.SequenceIsSensitive": {
+      "file": "src/NCode.Buffers/PublicAPI.Shipped.txt",
+      "lines": [
+        116,
+        117
+      ],
+      "match": "static NCode.Buffers.SequenceExtensions.ConsumeAsContiguousSpan<T>"
+    },
+    "RefSpanLease.Type": {
+      "file": "src/NCode.Buffers/RefSpanLease.cs",
+      "lines": [
+        42,
+        42
+      ],
+      "match": "public readonly ref struct RefSpanLease<T>"
+    },
+    "EmptyMemory.Type": {
+      "file": "src/NCode.Buffers/EmptyMemory.cs",
+      "lines": [
+        33,
+        33
+      ],
+      "match": "public sealed class EmptyMemory<T> : IMemoryOwner<T>"
+    },
+    "MemorySegment.Type": {
+      "file": "src/NCode.Buffers/MemorySegment.cs",
+      "lines": [
+        27,
+        27
+      ],
+      "match": "public class MemorySegment<T> : ReadOnlySequenceSegment<T>"
+    },
+    "StringSegments.Type": {
+      "file": "src/NCode.Buffers/StringSegments.cs",
+      "lines": [
+        43,
+        43
+      ],
+      "match": "public readonly struct StringSegments"
+    },
+    "Architecture.Scope": {
+      "file": "docs/architecture.md",
+      "lines": [
+        3,
+        5
+      ],
+      "match": "NCode.Buffers is one assembly",
+      "kind": "documented"
+    },
+    "Architecture.NoFinalizers": {
+      "file": "docs/architecture.md",
+      "lines": [
+        42,
+        43
+      ],
+      "match": "Ownership is explicit",
+      "kind": "documented"
+    },
+    "Roadmap.NotPlanned": {
+      "file": "ROADMAP.md",
+      "lines": [
+        30,
+        31
+      ],
+      "match": "Locking memory into RAM",
+      "kind": "documented"
+    },
+    "RefSpanLease.Dispose": {
+      "file": "src/NCode.Buffers/RefSpanLease.cs",
+      "lines": [
+        71,
+        74
+      ],
+      "match": "public void Dispose()"
+    },
+    "BufferFactory.Rent.DisposeOnFailure": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        81,
+        90
+      ],
+      "match": "try"
+    },
+    "SequenceExtensions.GetSpanLease.Rent": {
+      "file": "src/NCode.Buffers/SequenceExtensions.cs",
+      "lines": [
+        82,
+        86
+      ],
+      "match": "var owner = BufferFactory.Rent("
+    },
+    "SequenceExtensions.ConsumeAsContiguousSpan.Dispose": {
+      "file": "src/NCode.Buffers/SequenceExtensions.cs",
+      "lines": [
+        159,
+        162
+      ],
+      "match": "finally"
+    },
+    "FixedSpanBufferWriter.Reset": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        107,
+        112
+      ],
+      "match": "public void Reset()"
+    },
+    "BufferFactory.CreatePooledBufferWriter": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        278,
+        286
+      ],
+      "match": "public static Sequence<T> CreatePooledBufferWriter<T>("
+    },
+    "SequenceExtensions.GetSpanLease.Remarks": {
+      "file": "src/NCode.Buffers/SequenceExtensions.cs",
+      "lines": [
+        48,
+        50
+      ],
+      "match": "<strong>Single-segment optimization:</strong>"
+    },
+    "Readme.DecodeIntoABuffer": {
+      "file": "README.md",
+      "lines": [
+        328,
+        328
+      ],
+      "match": "A `string` decoded with `SecureEncoding` can't be zeroed.",
+      "kind": "documented"
+    },
+    "BufferFactory.RentMemory": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        126,
+        146
+      ],
+      "match": "/// <remarks>"
+    },
+    "SecureArrayLifetime.Declaration": {
+      "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
+      "lines": [
+        36,
+        36
+      ],
+      "match": "public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable"
+    },
+    "SecureSpanLifetime.Declaration": {
+      "file": "src/NCode.Buffers/SecureSpanLifetime.cs",
+      "lines": [
+        35,
+        35
+      ],
+      "match": "public readonly ref struct SecureSpanLifetime<T>(Span<T> span) : IDisposable"
+    },
+    "RefSpanLease.Declaration": {
+      "file": "src/NCode.Buffers/RefSpanLease.cs",
+      "lines": [
+        42,
+        42
+      ],
+      "match": "public readonly ref struct RefSpanLease<T>(IDisposable? owner, ReadOnlySpan<T> span) : IDisposable"
+    },
+    "FixedSpanBufferWriter.Declaration": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        46,
+        46
+      ],
+      "match": "public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>"
+    }
+  },
+  "external": {
+    "FixedTimeEqualsDocs": {
+      "title": "CryptographicOperations.FixedTimeEquals",
+      "url": "https://learn.microsoft.com/dotnet/api/system.security.cryptography.cryptographicoperations.fixedtimeequals",
+      "read": "2026-11-16",
+      "quote": "Determines the equality of two byte sequences in an amount of time that depends on the length of the sequences, but not their values.",
+      "kind": "construction"
+    },
+    "ZeroMemoryDocs": {
+      "title": "CryptographicOperations.ZeroMemory",
+      "url": "https://learn.microsoft.com/dotnet/api/system.security.cryptography.cryptographicoperations.zeromemory",
+      "read": "2026-11-15",
+      "kind": "construction"
+    },
+    "AllocateUninitializedArrayDocs": {
+      "title": "GC.AllocateUninitializedArray",
+      "url": "https://learn.microsoft.com/dotnet/api/system.gc.allocateuninitializedarray",
+      "read": "2026-11-16",
+      "quote": "The uninitialized array can contain invalid valuetype instances or sensitive information created by other parts of the application.",
+      "kind": "construction"
+    },
+    "GcFundamentals": {
+      "title": "Fundamentals of garbage collection",
+      "url": "https://learn.microsoft.com/dotnet/standard/garbage-collection/fundamentals",
+      "read": "2026-11-16",
+      "quote": "Memory is compacted only if a collection discovers a significant number of unreachable objects.",
+      "kind": "documented"
+    },
+    "ArrayPoolReturnDocs": {
+      "title": "ArrayPool<T>.Return",
+      "url": "https://learn.microsoft.com/dotnet/api/system.buffers.arraypool-1.return",
+      "read": "2026-11-16",
+      "quote": "If clearArray is set to false or if the pool will release the buffer, the array's contents are left unchanged.",
+      "kind": "documented"
+    },
+    "SecureStringDocs": {
+      "title": "SecureString",
+      "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
+      "read": "2026-11-16",
+      "quote": "Your application cannot delete the data from computer memory.",
+      "kind": "documented"
+    },
+    "UsingStatementDocs": {
+      "title": "The using statement",
+      "url": "https://learn.microsoft.com/dotnet/csharp/language-reference/statements/using",
+      "read": "2026-11-16",
+      "quote": "The using statement ensures that a disposable instance is disposed even if an exception occurs within the block of the using statement.",
+      "kind": "documented"
+    },
+    "SecureStringCopies": {
+      "title": "SecureString: how secure is SecureString?",
+      "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
+      "read": "2026-11-16",
+      "quote": "Because its memory is not pinned, the garbage collector will make additional copies of String values when moving and compacting memory.",
+      "kind": "documented"
+    },
+    "StackallocDocs": {
+      "title": "stackalloc expression",
+      "url": "https://learn.microsoft.com/dotnet/csharp/language-reference/operators/stackalloc",
+      "read": "2026-11-16",
+      "quote": "A stack-allocated memory block isn't subject to garbage collection and doesn't need to be pinned by a fixed statement.",
+      "kind": "documented"
+    },
+    "SecureStringNotForNewCode": {
+      "title": "SecureString",
+      "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
+      "read": "2026-11-16",
+      "quote": "We recommend that you don't use the SecureString class for new development on .NET (Core) or when you migrate from .NET Framework.",
+      "kind": "documented"
+    },
+    "SecureStringOpaqueHandle": {
+      "title": "SecureString: how secure is SecureString?",
+      "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
+      "read": "2026-11-16",
+      "quote": "Instead of using SecureString to protect passwords, the recommended alternative is to use an opaque handle to credentials that are stored outside of the process.",
+      "kind": "documented"
+    },
+    "SecureStringNoEncryption": {
+      "title": "SecureString: how secure is SecureString?",
+      "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
+      "read": "2026-11-16",
+      "quote": "Because of this platform dependency, SecureString does not encrypt the internal storage on non-Windows platform.",
+      "kind": "documented"
+    },
+    "ZeroMemoryRemarks": {
+      "title": "CryptographicOperations.ZeroMemory",
+      "url": "https://learn.microsoft.com/dotnet/api/system.security.cryptography.cryptographicoperations.zeromemory",
+      "read": "2026-11-16",
+      "quote": "This method exists to future-proof against potential optimizations in the .NET runtime that could eliminate memory writes that aren't followed by memory reads.",
+      "kind": "construction"
+    },
+    "MemoryOwnershipRule7": {
+      "title": "Memory<T> and Span<T> usage guidelines",
+      "url": "https://learn.microsoft.com/dotnet/standard/memory-and-spans/memory-t-usage-guidelines",
+      "read": "2026-11-16",
+      "quote": "If you have an IMemoryOwner<T> reference, you must at some point dispose of it or transfer its ownership (but not both)",
+      "kind": "documented"
+    },
+    "UsingDeclarationDocs": {
+      "title": "The using statement: using declarations",
+      "url": "https://learn.microsoft.com/dotnet/csharp/language-reference/statements/using",
+      "read": "2026-11-16",
+      "quote": "When declared in a `using` declaration, a local variable is disposed at the end of the scope in which it's declared.",
+      "kind": "documented"
+    },
+    "SpanStackOnlyDocs": {
+      "title": "Memory<T> and Span<T> usage guidelines",
+      "url": "https://learn.microsoft.com/dotnet/standard/memory-and-spans/memory-t-usage-guidelines",
+      "read": "2026-11-16",
+      "quote": "Because these types can only be stored on the stack, they're unsuitable for scenarios such as asynchronous method calls.",
+      "kind": "documented"
+    },
+    "MemoryOwnerHolderDocs": {
+      "title": "Memory<T> usage, rule 8",
+      "url": "https://learn.microsoft.com/dotnet/standard/memory-and-spans/memory-t-usage-guidelines",
+      "read": "2026-11-16",
+      "quote": "If your constructor accepts IMemoryOwner<T> as a parameter, its type should implement IDisposable, and your Dispose method should call Dispose on the IMemoryOwner<T> object.",
+      "kind": "documented"
+    },
+    "EcdsaVerifyDataDocs": {
+      "title": "ECDsa.VerifyData",
+      "url": "https://learn.microsoft.com/dotnet/api/system.security.cryptography.ecdsa.verifydata",
+      "read": "2026-11-16",
+      "quote": "true if the signature is valid; otherwise, false.",
+      "kind": "documented"
+    }
+  },
+  "claims": [
+    {
+      "id": "R1",
+      "anchor": "zeroed-on-dispose",
+      "title": "Zeroed on dispose",
+      "claim": "A buffer rented with `isSensitive: true`, a `SecureArrayLifetime<T>` and a `SecureSpanLifetime<T>` are overwritten with zeros when they are disposed. A rented buffer is zeroed whole, including the part beyond the length you asked for.",
+      "kind": "asserted",
+      "tests": [
+        "SecureMemoryTests.Dispose_ZeroesMemory",
+        "SecureArrayLifetimeTests.Dispose_ZerosMemory_ByteArray",
+        "SecureArrayLifetimeTests.Dispose_ZerosMemory_CustomStruct",
+        "SecureSpanLifetimeTests.Dispose_ZerosMemory_ByteSpan",
+        "SecureSpanLifetimeTests.Dispose_ZerosAllBytes_LargeBuffer",
+        "BufferFactoryPropertyTests.CreatePinnedArray_GivenAnyLength_ReturnsAnArrayOfThatLengthThatDisposeZeroes"
+      ],
+      "sources": [
+        "SecureMemory.Dispose",
+        "SecureArrayLifetime.Dispose",
+        "SecureSpanLifetime.Dispose",
+        "ZeroMemory"
+      ],
+      "external": [
+        "ZeroMemoryDocs"
+      ],
+      "doesNotShow": "That your code called `Dispose`: nothing is zeroed without it, and no finalizer does it later. Copies your code made, such as a `string`, a `ToArray()` result or a buffer rented with `isSensitive: false`."
+    },
+    {
+      "id": "R2",
+      "anchor": "zeroed-before-reuse",
+      "title": "Zeroed before the next renter",
+      "claim": "A pooled buffer rented with `isSensitive: true` is overwritten with zeros before the pool can hand it to another caller.",
+      "kind": "asserted",
+      "tests": [
+        "SecureMemoryPoolTests.RentedMemory_IsZeroedOnReturn"
+      ],
+      "sources": [
+        "SecureMemory.Dispose",
+        "SecureMemoryPool.Return"
+      ],
+      "doesNotShow": "Buffers rented with `isSensitive: false`: they come from `MemoryPool<T>.Shared`, which passes them on as they are. A buffer the pool allocates new: it is not cleared before you get it, so write before you read."
+    },
+    {
+      "id": "R3",
+      "anchor": "not-moved",
+      "title": "Not moved by the collector",
+      "claim": "The memory of a sensitive rented buffer and of a `SecureArrayLifetime<T>` is allocated pinned, on the pinned object heap. The collector does not move it, so no copy of a secret is left at an earlier address.",
+      "kind": "asserted",
+      "kindNote": "Through the generation the collector reports",
+      "tests": [
+        "SecureMemoryTests.Constructor_AllocatesOnPinnedObjectHeap",
+        "BufferFactoryTests.CreatePinnedArray_AllocatesOnPinnedObjectHeap"
+      ],
+      "sources": [
+        "SecureMemory.Allocate",
+        "SecureArrayLifetime.Allocate"
+      ],
+      "external": [
+        "AllocateUninitializedArrayDocs"
+      ],
+      "doesNotShow": "That an ordinary array would have moved: when the collector compacts is its decision, and no test asserts it. That the memory stays out of a page file or a crash dump. `GetSecureLifetime()` pins nothing: it zeroes memory you already have, wherever that is."
+    },
+    {
+      "id": "R4",
+      "anchor": "fixed-time",
+      "title": "Fixed-time comparison",
+      "claim": "`FixedTimeEquals` compares two spans of the same length in time that does not depend on their contents.",
+      "kind": "construction",
+      "kindNote": "The results are asserted",
+      "tests": [
+        "CryptographicOperationsExtensionsTests.FixedTimeEquals_SameContents_ReturnsTrue",
+        "CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentElement_ReturnsFalse",
+        "CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferenceOnlyInHighByte_ReturnsFalse",
+        "CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentLengths_ReturnsFalse",
+        "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_WithBytes_MatchesSequenceEqual",
+        "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_WithInts_MatchesSequenceEqual",
+        "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_GivenACopy_ReturnsTrue"
+      ],
+      "sources": [
+        "FixedTimeEquals"
+      ],
+      "external": [
+        "FixedTimeEqualsDocs"
+      ],
+      "doesNotShow": "Timing: no test measures it, because a measurement on one machine says nothing about another. The length: spans of different lengths return `false` at once."
+    },
+    {
+      "id": "R5",
+      "anchor": "strict-encoding",
+      "title": "Invalid text is rejected",
+      "claim": "`SecureEncoding.UTF8` and `SecureEncoding.ASCII` throw on invalid input instead of substituting a character: `DecoderFallbackException` when decoding, `EncoderFallbackException` when encoding.",
+      "kind": "asserted",
+      "kindNote": "The standard encodings are the controls",
+      "tests": [
+        "SecureEncodingTests.UTF8_DecodeInvalidStartByte_ThrowsDecoderFallbackException",
+        "SecureEncodingTests.UTF8_DecodeOverlongEncoding_ThrowsDecoderFallbackException",
+        "SecureEncodingTests.UTF8_EncodeUnpairedHighSurrogate_ThrowsEncoderFallbackException",
+        "SecureEncodingTests.ASCII_DecodeInvalidByte_ThrowsDecoderFallbackException",
+        "SecureEncodingTests.ASCII_EncodeNonAsciiCharacter_ThrowsEncoderFallbackException",
+        "SecureEncodingTests.StandardUTF8_DoesNotThrowOnInvalidByte",
+        "SecureEncodingTests.StandardASCII_DoesNotThrowOnInvalidByte"
+      ],
+      "sources": [
+        "SecureEncoding.UTF8",
+        "SecureEncoding.ASCII"
+      ],
+      "doesNotShow": "Encodings other than UTF-8 and ASCII. Normalization, case folding and characters that look alike: two valid strings that read the same are still different strings."
+    },
+    {
+      "id": "R6",
+      "anchor": "never-past-the-end",
+      "title": "Never past the end",
+      "claim": "A `FixedSpanBufferWriter<T>` or a `FixedMemoryBufferWriter<T>` never writes past the memory it was given. Asking it for more space than is free throws `InvalidOperationException`.",
+      "kind": "asserted",
+      "tests": [
+        "FixedSpanBufferWriterTests.GetSpan_SizeHintExceedsFreeCapacity_ThrowsInvalidOperationException",
+        "FixedSpanBufferWriterTests.GetSpan_WhenBufferFull_WithZeroSizeHint_ReturnsEmptySpan",
+        "FixedMemoryBufferWriterTests.GetMemory_SizeHintExceedsFreeCapacity_ThrowsInvalidOperationException",
+        "FixedMemoryBufferWriterTests.GetSpan_SizeHintExceedsFreeCapacity_ThrowsInvalidOperationException",
+        "FixedSpanBufferWriterPropertyTests.GetSpan_GivenAnySizeHint_ReturnsEnoughSpanOrThrowsADocumentedException",
+        "FixedMemoryBufferWriterPropertyTests.GetMemory_GivenAnySizeHint_ReturnsEnoughMemoryOrThrowsADocumentedException"
+      ],
+      "sources": [
+        "FixedSpanBufferWriter.GetSpan",
+        "FixedMemoryBufferWriter.GetMemory"
+      ],
+      "doesNotShow": "Writes your code makes outside the writer: through a span it kept from an earlier `GetSpan`, or into the buffer it handed to the writer."
+    },
+    {
+      "id": "R7",
+      "anchor": "a-package-you-can-check",
+      "title": "A package you can check",
+      "claim": "A package is built in CI from a tagged commit of this repository and pushed to nuget.org through trusted publishing after a maintainer approves. `SECURITY.md` lists the checks you can run on a package you downloaded.",
+      "kind": "process",
+      "sources": [
+        "VerifyAPackage",
+        "PublishWorkflow",
+        "ProvenanceWorkflow"
+      ],
+      "doesNotShow": "What the code does: the process shows where a package came from, and the rows above show what its code does. Which earlier releases carry a provenance attestation: the release's page on GitHub lists its files."
+    },
+    {
+      "id": "R8",
+      "anchor": "unmanaged-only",
+      "title": "No references in a buffer",
+      "claim": "The types that hold a secret take only unmanaged element types. A `T` that is or contains a reference, such as `CreatePinnedArray<string>`, does not compile, so a buffer never holds a reference that zeroing it would not reach.",
+      "kind": "construction",
+      "kindNote": "The compiler checks it: CS8377",
+      "sources": [
+        "SecureArrayLifetime.Unmanaged",
+        "ArchitectureDesignRules"
+      ],
+      "doesNotShow": "A secret your code keeps outside the buffer, such as a `string` beside it."
+    }
+  ],
+  "kinds": {
+    "asserted": {
+      "label": "Asserted",
+      "meaning": "A test in the repository fails when this stops being true.",
+      "shows": "The test's name, linked to its source at the commit this site cites."
+    },
+    "construction": {
+      "label": "By construction",
+      "meaning": "The library delegates to .NET or to the compiler, which documents the behavior.",
+      "shows": "The source line, and Microsoft's page with the date it was read."
+    },
+    "documented": {
+      "label": "Documented",
+      "meaning": "A document states it: Microsoft's documentation of .NET, or the project's own design records.",
+      "shows": "The page, with the date it was read, or the file in the repository."
+    },
+    "observed": {
+      "label": "Observed",
+      "meaning": "Something the runtime did in one recorded run, and may not do in yours.",
+      "shows": "A dated record of the commit, the operating system and the command."
+    },
+    "illustration": {
+      "label": "Illustration",
+      "meaning": "A drawing of a mechanism.",
+      "shows": "The words: a drawing of the mechanism, not a trace of a real process."
+    },
+    "process": {
+      "label": "A process",
+      "meaning": "How the project builds, tests and publishes the package.",
+      "shows": "The workflow, build or configuration file that does it, and the commands that verify a package."
+    }
+  }
+}

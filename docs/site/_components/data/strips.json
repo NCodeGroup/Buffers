@@ -1,0 +1,315 @@
+{
+  "$comment": "Scripts of the memory strip, drawn by MemoryStrip.astro. A region's cells are a string, eight cells to a line: '.' free, 'o' other data, 's' the secret (shown as a byte of `key`), 'x' a stale copy of the secret (hatched), '0' zeroed, '?' not written yet. `count` is the number of places the key can be read. `scope` names the region the brace holds while the secret is in use. `refs` cite a leak card (L1 to L9) or a ledger row (R1 to R8). Captions take `code` and [links](/x/).",
+  "life-of-a-key": {
+    "title": "The life of a key",
+    "summary": "The same 32-byte key, drawn as eight cells, held in an ordinary array and in a buffer from `Rent` with `isSensitive: true`, step by step.",
+    "key": ["4B", "A7", "1C", "E9", "30", "D5", "82", "6F"],
+    "tracks": [
+      { "id": "ordinary", "label": "An ordinary array", "code": "byte[] key = new byte[32]" },
+      { "id": "sensitive", "label": "A buffer from `Rent`", "code": "Rent(32, isSensitive: true, out Span<byte> key)" }
+    ],
+    "regions": {
+      "ordinary": [{ "id": "heap", "label": "Heap" }],
+      "sensitive": [
+        { "id": "heap", "label": "Heap" },
+        { "id": "pinned", "label": "Pinned heap" }
+      ]
+    },
+    "frames": [
+      {
+        "title": "Get the memory",
+        "tracks": {
+          "ordinary": {
+            "cells": { "heap": "oooo0000 0000oooo ........ ........" },
+            "count": 0,
+            "caption": "`new byte[32]` places an array between other objects on the heap. It starts as zeros."
+          },
+          "sensitive": {
+            "cells": { "heap": "oo..oooo ..oo....", "pinned": "???????? ????????" },
+            "count": 0,
+            "caption": "`Rent` hands back a buffer on the pinned heap. What it holds is not known yet: write before you read.",
+            "refs": ["L2"]
+          }
+        }
+      },
+      {
+        "title": "Write the key",
+        "tracks": {
+          "ordinary": {
+            "cells": { "heap": "oooossss ssssoooo ........ ........" },
+            "count": 1,
+            "caption": "The key is written into the array."
+          },
+          "sensitive": {
+            "cells": { "heap": "oo..oooo ..oo....", "pinned": "ssssssss ????????" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "The key is written into the start of the buffer. The rest of the buffer is still unwritten."
+          }
+        }
+      },
+      {
+        "title": "A collection compacts the heap",
+        "tracks": {
+          "ordinary": {
+            "cells": { "heap": "ooooxxxx xxxxoooo ssssssss ........" },
+            "count": 2,
+            "caption": "The collector copies the array to a new address. The old cells keep the key until something is written over them.",
+            "refs": ["L1"]
+          },
+          "sensitive": {
+            "cells": { "heap": "oooooooo ........", "pinned": "ssssssss ????????" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "Other objects move. The pinned buffer does not, so the key is still in one place.",
+            "refs": ["R3"]
+          }
+        }
+      },
+      {
+        "title": "Your code copies it",
+        "tracks": {
+          "ordinary": {
+            "cells": { "heap": "ooooxxxx xxxxoooo ssssssss ssssssss" },
+            "count": 3,
+            "caption": "`ToArray()`, or a `string` of the key, makes one more place that holds it.",
+            "refs": ["L9"]
+          },
+          "sensitive": {
+            "cells": { "heap": "oooooooo ........", "pinned": "ssssssss ????????" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "The same copy here would be ordinary memory again: the library cannot reach it. This code makes none.",
+            "refs": ["L9"]
+          }
+        }
+      },
+      {
+        "title": "You are done with it",
+        "tracks": {
+          "ordinary": {
+            "cells": { "heap": "ooooxxxx xxxxoooo ssssssss ssssssss" },
+            "count": 3,
+            "caption": "The method returns. Nothing clears the array, its old cells or the copy.",
+            "refs": ["L2"]
+          },
+          "sensitive": {
+            "cells": { "heap": "oooooooo ........", "pinned": "00000000 00000000" },
+            "count": 0,
+            "caption": "`Dispose` overwrites the whole buffer with zeros, the part after the key included, on every way out of the `using` block.",
+            "refs": ["R1", "L6"]
+          }
+        }
+      },
+      {
+        "title": "The memory is used again",
+        "tracks": {
+          "ordinary": {
+            "cells": { "heap": "ooooxxxx xxxxoooo xxxxxxxx xxxxxxxx" },
+            "count": 3,
+            "caption": "Until other data is written over them, a crash dump or a page file can hold all three.",
+            "refs": ["L2"]
+          },
+          "sensitive": {
+            "cells": { "heap": "oooooooo ........", "pinned": "00000000 00000000" },
+            "count": 0,
+            "caption": "The pool can rent the buffer to the next caller, who gets zeros, not your key.",
+            "refs": ["R2"]
+          }
+        }
+      }
+    ]
+  },
+  "grow-or-append": {
+    "title": "Grow or append",
+    "summary": "A key document, a secret as a whole, written into a writer that grows by copying into a larger array, and into one that adds pinned segments. Each cell is a part of the document.",
+    "key": ["E1", "5C", "90", "3B", "A4", "7D", "02", "C8"],
+    "tracks": [
+      { "id": "growing", "label": "A writer that grows", "code": "new ArrayBufferWriter<byte>()" },
+      { "id": "segments", "label": "A writer that adds segments", "code": "CreatePooledBufferWriter(isSensitive: true)" }
+    ],
+    "regions": {
+      "growing": [{ "id": "heap", "label": "Heap" }],
+      "segments": [
+        { "id": "heap", "label": "Heap" },
+        { "id": "pinned", "label": "Pinned heap" }
+      ]
+    },
+    "frames": [
+      {
+        "title": "Write the first part",
+        "tracks": {
+          "growing": {
+            "cells": { "heap": "oossssoo ........ ........ ........ ........ ........" },
+            "count": 1,
+            "caption": "The writer starts with a small array, and the first part of the document fills it."
+          },
+          "segments": {
+            "cells": { "heap": "oooooooo ....oooo", "pinned": "ssss???? ........ ........ ........" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "The writer rents a page on the pinned heap and writes the first part into it."
+          }
+        }
+      },
+      {
+        "title": "It runs out of room",
+        "tracks": {
+          "growing": {
+            "cells": { "heap": "ooxxxxoo ssssssss ........ ........ ........ ........" },
+            "count": 2,
+            "caption": "With no room left, it allocates an array twice the size, copies what it has, and drops the old array with the first part still in it.",
+            "refs": ["L4"]
+          },
+          "segments": {
+            "cells": { "heap": "oooooooo ....oooo", "pinned": "ssssssss ........ ........ ........" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "The page still has room, so the writer keeps writing into it. Nothing moves."
+          }
+        }
+      },
+      {
+        "title": "It runs out of room again",
+        "tracks": {
+          "growing": {
+            "cells": { "heap": "ooxxxxoo xxxxxxxx ssssssss ssssssss ........ ........" },
+            "count": 3,
+            "caption": "Each time it grows, one more copy of what was written so far is left behind.",
+            "refs": ["L4"]
+          },
+          "segments": {
+            "cells": { "heap": "oooooooo ....oooo", "pinned": "ssssssss ssssssss ........ ........" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "The page is full, so the writer adds a second segment. Nothing already written is copied or dropped.",
+            "refs": ["L4"]
+          }
+        }
+      },
+      {
+        "title": "Read it as one span",
+        "tracks": {
+          "growing": {
+            "cells": { "heap": "ooxxxxoo xxxxxxxx ssssssss ssssssss ssssssss ssssssss" },
+            "count": 4,
+            "caption": "`ToArray()` copies the whole document into one more array.",
+            "refs": ["L9"]
+          },
+          "segments": {
+            "cells": { "heap": "oooooooo ....oooo", "pinned": "00000000 00000000 ssssssss ssssssss" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "With two segments, `ConsumeAsContiguousSpan` copies the document into one sensitive buffer and disposes the writer, which zeroes its segments. With one segment it copies nothing.",
+            "refs": ["R1"]
+          }
+        }
+      },
+      {
+        "title": "You are done with it",
+        "tracks": {
+          "growing": {
+            "cells": { "heap": "ooxxxxoo xxxxxxxx ssssssss ssssssss ssssssss ssssssss" },
+            "count": 4,
+            "caption": "The method returns. Nothing clears any of the four.",
+            "refs": ["L2"]
+          },
+          "segments": {
+            "cells": { "heap": "oooooooo ....oooo", "pinned": "00000000 00000000 00000000 00000000" },
+            "count": 0,
+            "caption": "Disposing the owner overwrites the copy with zeros.",
+            "refs": ["R1"]
+          }
+        }
+      }
+    ]
+  },
+  "string-or-buffer": {
+    "title": "A string or a buffer",
+    "summary": "A client secret in a request body, deserialized into a `string`, and copied into a buffer from `Rent` with `isSensitive: true`. Each cell is a part of the secret.",
+    "key": ["9F", "31", "C6", "0E", "58", "B2", "7A", "D4"],
+    "tracks": [
+      { "id": "string", "label": "Deserialized to a `string`", "code": "Deserialize<TokenRequest>(body)" },
+      { "id": "buffer", "label": "Copied into a buffer", "code": "reader.CopyString(buffer)" }
+    ],
+    "regions": {
+      "string": [
+        { "id": "body", "label": "Request body" },
+        { "id": "heap", "label": "Heap" }
+      ],
+      "buffer": [
+        { "id": "body", "label": "Request body" },
+        { "id": "heap", "label": "Heap" },
+        { "id": "pinned", "label": "Pinned heap" }
+      ]
+    },
+    "frames": [
+      {
+        "title": "The request arrives",
+        "tracks": {
+          "string": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooo.... ........ ........" },
+            "count": 1,
+            "caption": "The body holds the secret, as UTF-8 bytes among the rest of the JSON."
+          },
+          "buffer": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooo.... ........", "pinned": "........" },
+            "count": 1,
+            "caption": "The same body. It is your code's input, and it holds the secret too."
+          }
+        }
+      },
+      {
+        "title": "Read the value",
+        "tracks": {
+          "string": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooossss oo...... ........" },
+            "count": 2,
+            "caption": "Deserializing makes a `string` of the secret, which the request object keeps reachable.",
+            "refs": ["L5"]
+          },
+          "buffer": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooo.... ........", "pinned": "ssss????" },
+            "count": 2,
+            "scope": "pinned",
+            "caption": "`CopyString` writes the secret's bytes into a buffer on the pinned heap. No string is made."
+          }
+        }
+      },
+      {
+        "title": "Use it",
+        "tracks": {
+          "string": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooossss oossss.. ........" },
+            "count": 3,
+            "caption": "`Encoding.UTF8.GetBytes` copies it again, into an ordinary array.",
+            "refs": ["L2"]
+          },
+          "buffer": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooo.... ........", "pinned": "ssss????" },
+            "count": 2,
+            "scope": "pinned",
+            "caption": "The hash is computed from the buffer, where the secret already is. Nothing is copied."
+          }
+        }
+      },
+      {
+        "title": "You are done with it",
+        "tracks": {
+          "string": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooossss oossss.. ........" },
+            "count": 3,
+            "caption": "Nothing can overwrite the string, and nothing clears the array.",
+            "refs": ["L5", "L2"]
+          },
+          "buffer": {
+            "cells": { "body": "oooooooo ssssoooo", "heap": "oooo.... ........", "pinned": "00000000" },
+            "count": 1,
+            "caption": "`Dispose` overwrites the buffer with zeros. The body still holds the secret until its own owner clears it.",
+            "refs": ["R1"]
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,205 @@
+---
+// A leak card: one way a secret stays readable in a .NET process, what NCode.Buffers does about it, and
+// the evidence, from docs/site/_components/data/leaks.json. A card's text lives there once.
+//   variant="full"     the card at full length, on /concepts/how-secrets-leak/. It needs `id`, the card's anchor in
+//                      leaks.json, written as a literal so the link check sees it.
+//   variant="compact"  (default) a line that opens in place, under a pin of a guide's code or in a list.
+// Usage: <LeakCard leak="L3" />  ·  <LeakCard leak="L3" variant="full" id="pools-pass-your-bytes-on" />
+import { Readout, Status } from '@ncodegroup/docs/components';
+import KindMark from '@site/components/KindMark.astro';
+import { inline, leak as findLeak, leakHref, leaks, resolve, type Kind, type Ref } from '@site/components/lib/evidence';
+
+interface Props {
+  leak: string;
+  variant?: 'full' | 'compact';
+  id?: string;
+}
+const { leak: leakId, variant = 'compact', id } = Astro.props;
+const card = findLeak(leakId);
+if (variant === 'full' && id !== card.anchor) {
+  throw new Error(`[site evidence] <LeakCard leak="${leakId}" variant="full"> needs id="${card.anchor}"`);
+}
+if (variant === 'compact' && id) {
+  throw new Error(`[site evidence] <LeakCard leak="${leakId}"> takes an id only with variant="full"`);
+}
+const verdict = (leaks.verdicts as Record<string, { label: string; state: 'success' | 'warning' | 'off' }>)[card.verdict];
+const evidence = (card.evidence as Ref[]).map(resolve);
+const titleId = `${id}-title`;
+---
+
+{variant === 'full' ? (
+  <article class="leak leak--full not-content" id={id} aria-labelledby={titleId}>
+    <header class="leak__head">
+      <Readout>{card.id}</Readout>
+      <h3 class="leak__title" id={titleId}>{card.title}</h3>
+    </header>
+    <p class="leak__body" set:html={inline(card.body)} />
+    <div class="leak__verdict">
+      <span class="leak__by">NCode.Buffers</span>
+      <Status state={verdict.state}>{verdict.label}</Status>
+      <p set:html={inline(card.verdictText)} />
+    </div>
+    <ul class="leak__evidence" aria-label="Evidence">
+      {evidence.map((link) => (
+        <li>
+          <KindMark kind={link.kind as Kind} variant="bare" />
+          <a href={link.href} rel="noopener" class:list={[link.code && 'leak__code']}>{link.label}</a>
+          {link.read && <span class="leak__read">read {link.read}</span>}
+        </li>
+      ))}
+    </ul>
+  </article>
+) : (
+  <details class="leak leak--compact not-content">
+    <summary>
+      <span class="leak__id">{card.id}</span>
+      <span class="leak__title">{card.title}</span>
+      <Status state={verdict.state}>{verdict.label}</Status>
+    </summary>
+    <div class="leak__open">
+      <p class="leak__body" set:html={inline(card.body)} />
+      <p class="leak__verdict-text"><strong>NCode.Buffers.</strong> <span set:html={inline(card.verdictText)} /></p>
+      <ul class="leak__evidence" aria-label="Evidence">
+        {evidence.map((link) => (
+          <li>
+            <KindMark kind={link.kind as Kind} variant="bare" />
+            <a href={link.href} rel="noopener" class:list={[link.code && 'leak__code']}>{link.label}</a>
+          </li>
+        ))}
+      </ul>
+      <a class="leak__more" href={leakHref(card.id)}>All nine ways a secret leaks</a>
+    </div>
+  </details>
+)}
+
+<style>
+  .leak {
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: var(--text-md);
+    line-height: var(--leading-normal);
+  }
+  .leak :global(code) {
+    padding: 0.06em 0.3em;
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-plate);
+    background: var(--color-surface-sunken);
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+    font-size: 0.88em;
+  }
+  .leak p { margin: 0; }
+  a { color: var(--color-primary-text); text-underline-offset: 0.2em; }
+  a:focus-visible,
+  summary:focus-visible {
+    outline: var(--focus-width) solid var(--color-focus);
+    outline-offset: var(--focus-gap);
+  }
+
+  /* Full */
+  .leak--full {
+    scroll-margin-top: calc(var(--sl-nav-height) + var(--space-5));
+    display: grid;
+    gap: var(--space-4);
+    margin-block: var(--space-5);
+    padding: var(--space-5);
+    box-shadow: var(--elevation-flush);
+  }
+  .leak--full:target { border-color: var(--color-primary-text); box-shadow: 0 0 0 1px var(--color-primary-text); }
+  .leak__head { display: flex; align-items: center; gap: var(--space-4); }
+  .leak--full .leak__title {
+    margin: 0;
+    font-size: var(--text-xl);
+    font-stretch: var(--width-display);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-heading);
+    line-height: var(--leading-snug);
+  }
+  .leak--full .leak__body { font-size: var(--text-base); max-width: 42rem; }
+  .leak__verdict {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--space-2) var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-sunken);
+  }
+  .leak__by,
+  .leak__id {
+    font-size: var(--text-2xs);
+    font-stretch: var(--width-label);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .leak__evidence {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+  }
+  .leak__evidence li { display: inline-flex; align-items: center; gap: var(--space-3); min-width: 0; }
+  .leak__evidence a { overflow-wrap: anywhere; }
+  .leak__code { font-family: var(--font-mono); font-stretch: var(--width-code); font-weight: var(--weight-medium); }
+  .leak__read { color: var(--color-text-muted); font-size: var(--text-xs); }
+
+  /* Compact: a line that opens in place */
+  .leak--compact { margin-block: var(--space-3); }
+  summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    min-height: var(--control-md);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-panel);
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: '';
+    order: 9;
+    margin-inline-start: auto;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-right: 1.5px solid var(--color-text-muted);
+    border-bottom: 1.5px solid var(--color-text-muted);
+    transform: rotate(45deg);
+    transition: transform var(--dur-quick) var(--ease-out);
+  }
+  details[open] > summary::after { transform: rotate(225deg); }
+  summary:hover { background: var(--color-control-hover); }
+  .leak__id {
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-plate);
+    background: var(--color-screen);
+    color: var(--color-on-screen);
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+    letter-spacing: 0;
+  }
+  .leak--compact .leak__title { font-weight: var(--weight-semibold); }
+  .leak__open {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-4) var(--space-4);
+    border-top: var(--border-hair) solid var(--color-border);
+    padding-top: var(--space-4);
+  }
+  .leak__more { font-size: var(--text-sm); }
+  @media (max-width: 40rem) {
+    .leak__verdict { grid-template-columns: auto minmax(0, 1fr); }
+    .leak__verdict p { grid-column: 1 / -1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    summary::after { transition: none; }
+  }
+</style>

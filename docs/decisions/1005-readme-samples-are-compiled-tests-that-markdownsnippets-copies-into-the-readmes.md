@@ -1,6 +1,6 @@
 # 1005. README samples are compiled tests that MarkdownSnippets copies into the READMEs
 
-- **Status:** Accepted
+- **Status:** Accepted (amended by 1010)
 - **Date:** 2026-11-14
 - **Deciders:** NCode Group
 

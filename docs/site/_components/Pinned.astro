@@ -1,0 +1,67 @@
+---
+// Numbered pins on a code sample. Wrap a sample include whose info string marks the pinned lines by the
+// text each must match, in quotes; every line that holds a marked text gets the next pin number, top to bottom.
+// The page's own list under the code, wrapped in <PinNotes>, then says what each number left behind or changed.
+// build/Test-SiteEvidence.ps1 fails when a marked text matches no line of the sample, or more than one.
+//   tone="usual"  the usual code: a pin marks what is left behind (default)
+//   tone="fix"    the same job with NCode.Buffers: the same number marks what replaced it
+// Usage:
+//   <Pinned tone="usual">
+//   ```cs snippet=SiteVerifyMacUsual "HashData(" "ToHexString(" "=="
+//   ```
+//   </Pinned>
+interface Props {
+  tone?: 'usual' | 'fix';
+}
+const { tone = 'usual' } = Astro.props;
+---
+
+<div class:list={['pinned', `pinned--${tone}`]}>
+  <slot />
+</div>
+
+<style>
+  .pinned { counter-reset: pin; }
+  .pinned :global(.ec-line:has(mark)) { counter-increment: pin; }
+  /* Every line gets a gutter, so the code stays aligned; a marked line keeps its light, and its pin sits in the
+     gutter, where it shows at any width, before the code scrolls. */
+  /* A wrapped block (`wrap`) sets --ecIndent on each line and hangs its indentation with a negative text-indent, so
+     the gutter adds to it rather than replacing it. */
+  .pinned :global(.ec-line .code) { padding-inline-start: calc(var(--ecIndent, 0ch) + 2.375rem); }
+  .pinned :global(.ec-line:has(mark)) { position: relative; }
+  .pinned :global(.ec-line:has(mark) .code::after) {
+    content: counter(pin);
+    position: absolute;
+    inset-inline-start: 0.5rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.25rem;
+    border-radius: var(--radius-round);
+    font-family: var(--font-sans);
+    font-size: var(--text-2xs);
+    font-stretch: var(--width-text);
+    font-weight: var(--weight-bold);
+    line-height: 1;
+    user-select: none;
+  }
+  .pinned--usual :global(.ec-line:has(mark) .code::after) {
+    background: var(--color-screen-hot);
+    color: var(--color-screen);
+  }
+  .pinned--fix :global(.ec-line:has(mark) .code::after) {
+    background: var(--color-screen-lit);
+    color: var(--color-screen);
+  }
+  .pinned--usual :global(mark) {
+    background: color-mix(in srgb, var(--color-screen-hot) 12%, transparent);
+    box-shadow: inset 0 -1px 0 var(--color-screen-hot);
+  }
+  .pinned--fix :global(mark) {
+    background: color-mix(in srgb, var(--color-screen-lit) 18%, transparent);
+    box-shadow: inset 0 -1px 0 var(--color-screen-lit);
+  }
+</style>

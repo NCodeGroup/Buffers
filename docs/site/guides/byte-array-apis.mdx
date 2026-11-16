@@ -1,0 +1,132 @@
+---
+title: Work with an API that takes or returns byte[]
+description: When an API insists on an array, keep that array from becoming one more copy of the secret that nothing clears.
+---
+
+import KindLabel from '@site/components/KindLabel.astro';
+import LeakCard from '@site/components/LeakCard.astro';
+import Pinned from '@site/components/Pinned.astro';
+import PinNotes from '@site/components/PinNotes.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+
+<KindLabel kind="how-to" />
+
+This is your situation when an API takes a secret only as a `byte[]`, as `ECParameters.D` does, or hands you one, as
+`ECDiffieHellman.DeriveRawSecretAgreement` does. The example imports an EC private key, then seals a message with a
+key derived from an ECDH shared secret.
+
+You'll use `BufferFactory.CreatePinnedArray` · `GetSecureLifetime()` · `BufferFactory.Rent` · `HKDF.DeriveKey`
+
+## The usual code
+
+Each secret gets an array: the one the API wants, the one it returns, and the one the next call returns.
+
+<Pinned tone="usual">
+```cs snippet=SiteByteArrayUsual title="Keys.cs" "privateKey.ToArray()" "DeriveRawSecretAgreement(" "HKDF.DeriveKey("
+```
+</Pinned>
+
+**Leaves behind**
+
+<PinNotes tone="usual">
+
+1. The private key, in an ordinary array. The collector can move it and leave a copy at the old address, and nothing
+   clears either. <LeakCard leak="L1" /> <LeakCard leak="L2" />
+2. The shared secret, in an array the API allocated, which nothing clears. <LeakCard leak="L2" />
+3. The message key, in a third array that nothing clears. <LeakCard leak="L2" />
+
+</PinNotes>
+
+## With NCode.Buffers
+
+The same two jobs. Where the API takes an array, give it a pinned one that is zeroed at the end of the scope. Where
+it returns one, wrap it on the next line. Where a span overload exists, use it.
+
+<Pinned tone="fix">
+```cs snippet=SiteByteArrayTakes title="If the API takes the array" "CreatePinnedArray("
+```
+
+```cs snippet=SiteByteArrayReturns title="If the API returns the array" "shared.GetSecureLifetime()" "HKDF.DeriveKey("
+```
+</Pinned>
+
+**What changed**
+
+<PinNotes tone="fix">
+
+1. `CreatePinnedArray` allocates a new pinned array of exactly the length you ask for, and `byte[] d = lifetime;` is
+   that array, not a copy. <Proof test="SecureArrayLifetimeTests.ImplicitConversionToArray_ReturnsPinnedArray" /> The
+   collector does not move it, and `Dispose` overwrites it with zeros at the end of the scope. <Proof claim="R3" />
+   <Proof claim="R1" />
+2. The array the API returned is wrapped on the next line, and `sharedLifetime` overwrites it with zeros at the end of
+   the scope, whichever way the method ends. <Proof test="BufferExtensionsTests.GetSecureLifetime_ZerosMemoryOnDispose" />
+3. The span overload of `HKDF.DeriveKey` writes the message key into a rented sensitive buffer, so the key never has
+   an array of its own. <Proof claim="R1" />
+
+</PinNotes>
+
+Both versions import the same key and seal a message the other side opens: their tests check it.
+<Proof sample="SiteByteArrayTakes" /> <Proof sample="SiteByteArrayReturns" />
+
+## Pitfalls
+
+[Ways to get it wrong](/reference/pitfalls/) has more, each with its evidence.
+
+- **`return key;` from inside the scope.** *You write* `return key;` inside the `using` block, in a method that
+  returns `byte[]`. *What happens:* it compiles, because the lifetime converts to its array, and `Dispose` runs after
+  the `return`. The caller gets 32 zeros, and zeros work as a key, so nothing fails.
+
+  ```cs snippet=SiteByteArrayReturnTrap title="Compiles, and returns zeros"
+  ```
+
+  <Proof sample="SiteByteArrayReturnTrap" /> *Write instead:* do the work inside the scope, or hand the lifetime
+  itself to the caller to dispose, as [Ownership](/concepts/ownership/#handing-it-over) describes.
+  [Returning the array from inside the scope](/reference/pitfalls/#returning-the-array-from-inside-the-scope)
+- **Passing a lifetime where an `object` is expected.** *You write* a lifetime as an argument to a logger or to
+  `string.Format`. *What happens:* `SecureArrayLifetime<T>` converts to `T[]`, and an array to `object`, so the call
+  compiles and receives the key's own array. <Proof source="SecureArrayLifetime.ToArray" /> *Write instead:* keep a
+  lifetime, and its array, out of anything that logs or formats.
+  [Passing a lifetime as an object](/reference/pitfalls/#passing-a-lifetime-as-an-object)
+- **Forgetting the copy the API keeps.** *You write* `aes.Key = key;` and dispose the lifetime. *What happens:* the
+  setter copies the array, and zeroing your array leaves that copy in the `Aes` object.
+
+  ```cs snippet=SiteKeySetterCopies title="The setter copies"
+  ```
+
+  <Proof sample="SiteKeySetterCopies" /> *Write instead:* dispose the algorithm object in the same scope as the key
+  it took. [An API object that keeps the key](/reference/pitfalls/#an-api-object-that-keeps-the-key)
+- **Calling `CreatePinnedArray` on a hot path.** *You write* it in code that runs for every request. *What happens:*
+  every call allocates a new pinned array; nothing is pooled. <Proof source="SecureArrayLifetime.Allocate" /> *Write
+  instead:* for a buffer you need again and again, rent one: [Which buffer?](/start/which-buffer/)
+- **Treating a returned array as if it had been pinned.** *You write* `GetSecureLifetime()` over an array an API
+  returned. *What happens:* it pins nothing. It zeroes the array where it is now, and a copy the collector left at an
+  earlier address is out of its reach. <Proof source="BufferExtensions.GetSecureLifetime" /> <LeakCard leak="L1" />
+  *Write instead:* the API's span overload, where it has one.
+  [Expecting GetSecureLifetime to pin](/reference/pitfalls/#expecting-getsecurelifetime-to-pin)
+
+## What this does not fix
+
+:::caution[Outside these methods]
+- **Copies the API makes,** such as the key an `ECDsa` imports or the one `Aes.Key` keeps.
+- **The earlier life of an array you did not allocate,** before the API returned it.
+- **The `ECDsa` you return.** It holds the private key until its caller disposes it. A key that lives for the life of
+  the application is the subject of [Keep a secret across an await, or in a
+  field](/guides/secrets-across-await/).
+:::
+
+## Checklist
+
+- A `byte[]` that holds a secret comes from `CreatePinnedArray`, in a `using`.
+- An array an API returned is wrapped with `GetSecureLifetime()` on the next line.
+- The span overload is used wherever one exists.
+- No lifetime or key array reaches a logger, a field or a lambda.
+- No method returns the array from inside its `using` scope.
+- Algorithm objects that took a key are disposed.
+
+<Related>
+- **Learn** [Quick start](/start/quick-start/)
+- **Do** [Derive a key from a password](/guides/derive-a-key-from-a-password/)
+- **Understand** [Ownership: who zeroes what, and when](/concepts/ownership/)
+- **Look up** [Ways to get it wrong](/reference/pitfalls/)
+</Related>

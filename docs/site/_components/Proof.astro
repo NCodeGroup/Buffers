@@ -1,0 +1,82 @@
+---
+// Proof on a claim: a small mark after a sentence that states a behavior, saying how it is known and
+// linking to the evidence. Name exactly one of:
+//   claim="R1"     a row of the ledger on /evidence/guarantees/; the mark shows the row's kind and number
+//   test="Class.Method", sample="SiteKey", source="Id", external="Id"   one piece of evidence from evidence.json
+// `kind` overrides the kind the evidence implies, such as kind="asserted" on a source.
+// Usage: Dispose overwrites the buffer with zeros. <Proof claim="R1" />
+import KindMark from '@site/components/KindMark.astro';
+import { claim as findClaim, claimHref, resolve, type Kind } from '@site/components/lib/evidence';
+
+interface Props {
+  claim?: string;
+  test?: string;
+  sample?: string;
+  source?: string;
+  external?: string;
+  kind?: Kind;
+}
+const props = Astro.props;
+let kind: Kind;
+let href: string;
+let text: string;
+let spoken: string;
+let external = false;
+if (props.claim) {
+  const row = findClaim(props.claim);
+  kind = props.kind ?? (row.kind as Kind);
+  href = claimHref(props.claim);
+  text = row.id;
+  spoken = `${row.id}, ${row.title}: the evidence on the guarantees page`;
+} else {
+  const link = resolve(props);
+  kind = link.kind;
+  href = link.href;
+  text = link.label;
+  spoken = `${link.what} ${link.context ? `${link.context} ` : ''}${link.label}`;
+  external = true;
+}
+---
+
+<a class="proof not-content" href={href} aria-label={spoken} {...(external ? { rel: 'noopener' } : {})}>
+  <KindMark kind={kind} variant="bare" /><span class:list={['proof__ref', !props.claim && 'proof__ref--code']}>{text}</span>
+</a>
+
+<style>
+  .proof {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    max-width: 100%;
+    margin-inline-start: 0.25rem;
+    padding: 0.0625rem 0.4375rem 0.0625rem 0.3125rem;
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-plate);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    vertical-align: 0.0625em;
+    line-height: 1.3;
+    transition: border-color var(--dur-quick) var(--ease-out), background-color var(--dur-quick) var(--ease-out);
+  }
+  .proof:hover {
+    border-color: var(--color-border-strong);
+    background: var(--color-control-hover);
+  }
+  .proof:focus-visible {
+    outline: var(--focus-width) solid var(--color-focus);
+    outline-offset: var(--focus-gap);
+  }
+  .proof__ref {
+    /* A flex item does not shrink below its content without this, so a long test name would widen the page. */
+    min-width: 0;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    color: var(--color-primary-text);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+</style>

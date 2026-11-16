@@ -1,0 +1,38 @@
+---
+// Column widths for the Markdown table it wraps, from 50rem up, so a table whose first column holds long code does not
+// squeeze its other columns into a word per line. Below 50rem the table keeps the content column's own layout.
+// `widths` lists one CSS width per column, in order; code in a cell may then wrap at its spaces.
+// Usage:
+//   <TableColumns widths="30% 30% 16% 24%">
+//
+//   | A | B | C | D |
+//   | --- | --- | --- | --- |
+//
+//   </TableColumns>
+interface Props {
+  widths: string;
+}
+const widths = Astro.props.widths.trim().split(/\s+/);
+if (widths.length < 2) throw new Error(`[site] <TableColumns widths="${Astro.props.widths}">: give one width per column`);
+const style = Object.fromEntries(widths.map((width, i) => [`--column-${i + 1}`, width]));
+---
+
+<div class="table-columns" style={style}>
+  <slot />
+</div>
+
+<style>
+  @media (min-width: 50rem) {
+    .table-columns :global(table) {
+      display: table;
+      width: 100%;
+      table-layout: fixed;
+    }
+    .table-columns :global(th:nth-child(1)) { width: var(--column-1); }
+    .table-columns :global(th:nth-child(2)) { width: var(--column-2); }
+    .table-columns :global(th:nth-child(3)) { width: var(--column-3, auto); }
+    .table-columns :global(th:nth-child(4)) { width: var(--column-4, auto); }
+    .table-columns :global(th:nth-child(5)) { width: var(--column-5, auto); }
+    .table-columns :global(td code) { white-space: normal; overflow-wrap: anywhere; }
+  }
+</style>

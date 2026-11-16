@@ -1,0 +1,43 @@
+---
+// "The same method, twice" on the landing page: the usual code and the fix, each on a panel of its own,
+// side by side from 80rem, one above the other below that. Give both code blocks `wrap`, so a line of either sample
+// wraps instead of being cut. Write each side as a <div> holding Markdown: a label, the <Pinned> sample and its
+// <PinNotes>.
+// Usage:
+//   <LandingPair>
+//   <div>
+//   **The usual code**
+//   ...
+//   </div>
+//   <div>
+//   ...
+//   </div>
+//   </LandingPair>
+---
+
+<div class="landing-pair">
+  <slot />
+</div>
+
+<style>
+  .landing-pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+  }
+  .landing-pair > :global(div) {
+    min-width: 0;
+    margin: 0; /* The content column's spacing between siblings would push the second panel down. */
+    padding: var(--space-5);
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+  }
+  .landing-pair > :global(div > :first-child) { margin-top: 0; }
+  @media (min-width: 80rem) {
+    .landing-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
+  }
+  @media (max-width: 50rem) {
+    .landing-pair > :global(div) { padding: var(--space-3); }
+  }
+</style>

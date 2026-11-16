@@ -1,0 +1,158 @@
+---
+title: "Ownership: who zeroes what, and when"
+description: Who is responsible for zeroing a buffer, when it happens, and what you can still touch afterwards.
+---
+
+import KindLabel from '@site/components/KindLabel.astro';
+import LeakCard from '@site/components/LeakCard.astro';
+import OwnershipTimeline from '@site/components/OwnershipTimeline.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+import TableColumns from '@site/components/TableColumns.astro';
+
+<KindLabel kind="explanation" />
+
+## In short
+
+- **The rule.** Every buffer holding a secret has one owner, an `IDisposable`, and the memory is zeroed in its
+  `Dispose` and nowhere else.
+- **What you do.** Dispose the owner with `using`, in the tightest scope around the work, or hand it to the code
+  that disposes it.
+- **The limit.** Nothing zeroes an owner you never dispose, or stops a kept view from being read after `Dispose`.
+
+## The problem
+
+Zeroing runs when, and only when, someone calls `Dispose`. A span is a view of memory something else owns, and
+keeps pointing there after the owner is done.
+
+Microsoft's `Memory<T>` guidelines draw the same line, one owner per buffer: "If you have an
+IMemoryOwner&lt;T&gt; reference, you must at some point dispose of it or transfer its ownership (but not both)".
+<Proof external="MemoryOwnershipRule7" /> NCode.Buffers follows it, and overwrites the secret on `Dispose`.
+<Proof source="ArchitectureDesignRules" />
+
+## Five owners
+
+What you hold decides what `Dispose` does, what a second call does and what a kept view reads.
+
+<TableColumns widths="30% 31% 16% 23%">
+
+| You hold | `Dispose` | A second `Dispose` | A view kept afterwards |
+| --- | --- | --- | --- |
+| The owner from `Rent` with `isSensitive: true`, or from a `SecureMemoryPool<T>` | Zeroes the whole buffer, beyond your slice too, then returns it to its pool, if it came from one | Does nothing | Reaches memory the pool can give to another caller |
+| A `SecureArrayLifetime<T>` from `CreatePinnedArray` | Zeroes the array. Frees and returns nothing | Zeroes it again | Is the same array, holding zeros |
+| A `SecureSpanLifetime<T>` from `GetSecureLifetime()` | Zeroes exactly its span. Releases nothing | Zeroes whatever is there by then | Is the same memory, its supplier's |
+| The `Sequence<T>` from `CreatePooledBufferWriter` | Disposes every segment: zeroed when sensitive, and pooled ones returned | Runs again without error | Reaches memory the pool can give to another caller |
+| A `RefSpanLease<T>` from `GetSpanLease` | Disposes its owner, if it has one | Disposes the owner again | Depends on the owner |
+
+</TableColumns>
+
+The evidence, row by row:
+
+1. **A rented buffer.** <Proof claim="R1" /> <Proof test="SecureMemoryTests.Dispose_CalledTwice_ReturnsMemoryToPoolOnce" />
+   <Proof sample="SiteOwnershipUseAfterDispose" />
+2. **`SecureArrayLifetime<T>`.** <Proof source="SecureArrayLifetime.Dispose" /> <Proof sample="SiteOwnershipSecondDispose" />
+   <Proof sample="SiteGuaranteesZeroedThroughAView" />
+3. **`SecureSpanLifetime<T>`.** <Proof source="SecureSpanLifetime.Dispose" /> <Proof sample="SiteOwnershipSecondDispose" />
+4. **`Sequence<T>`.** <Proof test="BufferFactoryTests.CreatePooledBufferWriter_WhenSensitive_RentsWholePagesFromSecurePool" />
+   <Proof test="ReadmeSamplesTests.ConsumeAsContiguousSpanSample_Runs" />
+5. **`RefSpanLease<T>`.** <Proof source="RefSpanLease.Dispose" /> <Proof test="RefSpanLeaseTests.Dispose_MultipleCalls_DisposesOwnerEachTime" />
+
+The five, at four moments:
+
+<OwnershipTimeline />
+
+## When it happens
+
+`using var` disposes at the end of the enclosing block, not at the last use: in a long method, the secret lasts
+until the method ends. A `using` statement with its own block ends it with the work:
+
+```cs snippet=SiteOwnershipTightScope title="Scope the owner to the work"
+```
+
+<Proof sample="SiteOwnershipTightScope" /> The block disposes on every way out, exceptions and early returns
+included. <Proof external="UsingStatementDocs" /> A `Dispose()` call written after the work does not.
+<LeakCard leak="L6" /> `BufferFactory.Rent` does the same inside: if it fails after taking a buffer, it disposes
+the buffer before it throws.
+<Proof source="BufferFactory.Rent.DisposeOnFailure" />
+
+## Order
+
+When a lifetime wraps memory something else owns, dispose the lifetime first: zero, then give back. `using`
+declarations are disposed in reverse, so declare the owner first and the lifetime second. With a pooled array,
+zero inside the `try` and return it in the `finally`:
+
+```cs snippet=SiteOwnershipUsingOrder title="Zero, then give the memory back"
+```
+
+The sample's own pool hands the next caller the same array, its first 32 bytes zero.
+<Proof sample="SiteOwnershipUsingOrder" /> The other way round, the bytes go back holding your secret.
+
+## Handing it over
+
+To give a buffer to a caller, return its owner, the `IMemoryOwner<T>` or the `SecureArrayLifetime<T>`, for it to
+dispose. An array or span returned from inside the disposing scope reaches the caller zeroed.
+
+```cs snippet=SiteOwnershipReturnLifetime title="The caller owns what this returns"
+```
+
+The caller holds the key until its `using` ends. <Proof sample="SiteOwnershipReturnLifetime" />
+[Returning the array from inside the scope](/reference/pitfalls/#returning-the-array-from-inside-the-scope) shows
+the other way, which compiles.
+
+A lifetime is a struct holding one reference, so a copy is a second owner of the same array: disposing either
+zeroes it for both. Pass the span to code that only uses the memory.
+[Copying a lifetime](/reference/pitfalls/#copying-a-lifetime) has the test.
+
+## Sensitivity travels with the data
+
+`isSensitive` is decided again wherever the data moves into new memory:
+
+- **The writer.** `CreatePooledBufferWriter(isSensitive: true)` rents every segment from the pinned pool, fixed when
+  you create it. <Proof test="BufferFactoryTests.CreatePooledBufferWriter_WhenSensitive_RentsWholePagesFromSecurePool" />
+- **The lease and the consumed span.** Over several segments, `GetSpanLease` and `ConsumeAsContiguousSpan` copy the
+  data into a buffer rented with the `isSensitive` you pass, not the writer's.
+  <Proof source="SequenceExtensions.GetSpanLease.Rent" /> With `false`, the copy comes from the shared pool, neither
+  pinned nor zeroed. <Proof test="BufferFactoryTests.ChoosePool_WhenNotSensitive_ReturnsSharedPool" /> Pass the
+  writer's value.
+- **The copy you make.** `ToArray()` returns ordinary memory. <LeakCard leak="L9" />
+
+`ConsumeAsContiguousSpan` also takes ownership: over several segments it disposes the writer and returns the copy's
+owner. <Proof source="SequenceExtensions.ConsumeAsContiguousSpan.Dispose" /> Dispose that owner, not the writer.
+
+## What it does not do
+
+**There is no finalizer.** An owner never disposed is collected with its data in it. Here the owner is dropped, two
+collections and the finalizers run, and the buffer still holds the key:
+
+```cs snippet=SiteNoFinalizer title="Dropped without Dispose"
+```
+
+<Proof sample="SiteNoFinalizer" />
+
+**There is no guard against use after `Dispose`.** A kept view still points at the memory, and nothing throws. For a
+pooled buffer, it may be another caller's by then:
+
+```cs snippet=SiteOwnershipUseAfterDispose title="A view kept after Dispose"
+```
+
+The sample's own pool gives the second `Rent` the same buffer. <Proof sample="SiteOwnershipUseAfterDispose" /> A
+`SecureArrayLifetime<T>`'s array is nobody else's, and reads zeros. Either way, drop every view when you dispose.
+
+## Why it is built this way
+
+The design rule: whatever rents memory returns an `IDisposable` owner, and the memory is zeroed and
+returned only through `Dispose`. <Proof source="ArchitectureDesignRules" /> Three facts follow:
+
+- **No finalizer.** The rule has no exception: no `Dispose`, no zeroing.
+- **No disposed flag on the lifetimes.** Each holds one reference or one span, nothing else: cheap to copy, a copy is
+  a second owner, and a second `Dispose` zeroes again. <Proof source="SecureArrayLifetime.Unmanaged" />
+- **Ref structs where they can be.** The compiler keeps a lifetime out of fields, lambdas and `await`
+  ([the errors](/reference/pitfalls/#it-did-not-compile)). Memory that crosses an `await` or lives in a field is owned
+  by an `IMemoryOwner<T>`, a class.
+
+<Related>
+- **Learn** [Quick start](/start/quick-start/)
+- **Do** [Keep a secret across an await, or in a field](/guides/secrets-across-await/)
+- **Understand** [How secrets leak in managed code](/concepts/how-secrets-leak/)
+- **Look up** [Ways to get it wrong](/reference/pitfalls/)
+</Related>

@@ -1,0 +1,320 @@
+---
+// The quick start's two pictures of memory, drawn in the memory strip's cells, for /start/quick-start/.
+//   view="watch"   what "Watch a key disappear" prints, from the fixture its test compares the output with,
+//                  docs/site/_components/data/quick-start.watch.txt, then its 32 bytes drawn as cells, twice: while
+//                  the lifetime holds them, and after it is disposed. The bytes are the program's, not a drawing.
+//   view="stills"  three still frames of `VerifySignature`: the key in a pinned buffer, the expected MAC on the
+//                  stack, and both zeroed when the method returns. Two secrets with bytes of their own, which the
+//                  memory strip, drawn for one key, does not show. A drawing of the mechanism, with the bytes of the
+//                  quick start's call, from docs/site/_components/data/quick-start.stills.txt, which the call's test
+//                  checks: the MAC is the one the call computes, and the key makes that MAC of the payload.
+// Without JavaScript and in print, both render whole: they have no script.
+// Usage: <QuickStartMemory view="watch" />  ·  <QuickStartMemory view="stills" />
+import { Readout } from '@ncodegroup/docs/components';
+import Brace from '@site/components/Brace.astro';
+import KindMark from '@site/components/KindMark.astro';
+import Proof from '@site/components/Proof.astro';
+import stillsFixture from '@site/components/data/quick-start.stills.txt?raw';
+import watchFixture from '@site/components/data/quick-start.watch.txt?raw';
+import { inline } from '@site/components/lib/evidence';
+
+interface Props {
+  view: 'watch' | 'stills';
+}
+const { view } = Astro.props;
+
+// Each fixture holds two lines, "<label>: <64 hex digits>".
+function readFixture(name: string, text: string) {
+  const read = text
+    .trimEnd()
+    .split('\n')
+    .map((line) => {
+      const match = /^(.+?):\s+([0-9A-F]{64})$/.exec(line);
+      if (!match) throw new Error(`[quick start] ${name}: "${line}" is not "<label>: <64 hex digits>"`);
+      return { text: line, label: match[1], bytes: match[2].match(/../g) ?? [] };
+    });
+  if (read.length !== 2) throw new Error(`[quick start] ${name} must hold two lines`);
+  return read;
+}
+const lines = readFixture('quick-start.watch.txt', watchFixture);
+const [keyLine, macLine] = readFixture('quick-start.stills.txt', stillsFixture);
+if (keyLine.label !== 'key' || macLine.label !== 'expected') {
+  throw new Error('[quick start] quick-start.stills.txt must hold "key:", then "expected:"');
+}
+
+type Cell = 'key' | 'mac' | 'zero' | 'unknown' | 'free';
+// Each cell stands for four bytes and shows the first of them: the key the call derives, and the expected MAC,
+// HMAC-SHA256 of "payload" under that key.
+const key = keyLine.bytes.filter((_, i) => i % 4 === 0);
+const mac = macLine.bytes.filter((_, i) => i % 4 === 0);
+const row = (kind: Cell, count = 8) =>
+  Array.from({ length: count }, (_, i) => ({
+    kind,
+    text: kind === 'key' ? key[i % 8] : kind === 'mac' ? mac[i % 8] : kind === 'zero' ? '00' : kind === 'unknown' ? '??' : '',
+  }));
+const stills = [
+  {
+    title: 'The key is derived',
+    pinned: [...row('key'), ...row('unknown')],
+    stack: row('free'),
+    stackNote: ', not allocated yet',
+    scope: ['pinned'],
+    count: 1,
+    caption: '`Pbkdf2` writes the key into the first 32 bytes of a rented buffer on the pinned heap. The rest of the buffer is not written.',
+    claim: 'R3',
+  },
+  {
+    title: 'The expected MAC is computed',
+    pinned: [...row('key'), ...row('unknown')],
+    stack: row('mac'),
+    scope: ['pinned', 'stack'],
+    count: 2,
+    caption: '`HashData` writes the expected MAC into `expected`, on the stack. `FixedTimeEquals` compares it with the signature.',
+    claim: 'R4',
+  },
+  {
+    title: 'The method returns',
+    pinned: row('zero', 16),
+    stack: row('zero'),
+    scope: [],
+    count: 0,
+    caption: '`expectedLifetime` zeroes the MAC, then `keyOwner` zeroes the whole buffer, in that order, on every way out of the method.',
+    claim: 'R1',
+  },
+];
+---
+
+{view === 'watch' ? (
+  <figure class="qs not-content" aria-labelledby="quick-start-watch-title">
+    <p class="qs__title" id="quick-start-watch-title">What it prints</p>
+    <pre class="qs__output" aria-label="The program's output">{lines.map((line) => <span>{line.text}{'\n'}</span>)}</pre>
+    <div class="qs__screen">
+      {lines.map((line, index) => (
+        <div class="qs__region">
+          <p class="qs__label">{line.label}{index === 0 ? ': inside the using block' : ': after it'}</p>
+          <div class:list={['qs__body', index === 0 && 'qs__body--scope']}>
+            {index === 0 && <Brace side="left" />}
+            <div class="qs__cells qs__cells--wide" role="img" aria-label={`The 32 bytes of key: ${index === 0 ? 'the derived key' : 'all zeros'}`}>
+              {line.bytes.map((byte) => (
+                <span class:list={['cell', byte === '00' && index > 0 ? 'cell--zero' : 'cell--secret']}>{byte}</span>
+              ))}
+            </div>
+            {index === 0 && <Brace side="right" />}
+          </div>
+        </div>
+      ))}
+    </div>
+    <figcaption class="qs__caption">
+      The 32 bytes of <code>key</code>, as the program prints them. The brace marks the lifetime: <code>key</code>
+      holds the key inside it, and zeros after it. The printed line is a string, a copy that <code>Dispose</code> does
+      not reach.
+    </figcaption>
+  </figure>
+) : (
+  <figure class="qs not-content" aria-labelledby="quick-start-stills-title">
+    <p class="qs__title" id="quick-start-stills-title">Where the two secrets of <code>VerifySignature</code> live</p>
+    <ul class="qs__legend" aria-label="What the cells mean">
+      <li><span class="cell cell--secret" aria-hidden="true">{key[0]}</span>The key</li>
+      <li><span class="cell cell--mac" aria-hidden="true">{mac[0]}</span>The expected MAC</li>
+      <li><span class="cell cell--zero" aria-hidden="true">00</span>Zeros</li>
+      <li><span class="cell cell--unknown" aria-hidden="true">??</span>Not written</li>
+    </ul>
+    <ol class="qs__frames">
+      {stills.map((frame, index) => (
+        <li class="qs__frame">
+          <p class="qs__step"><span class="qs__number">{index + 1}</span><span>{frame.title}</span></p>
+          <div class="qs__screen">
+            <div class="qs__region">
+              <p class="qs__label">Pinned heap: the first 64 of the 4096 bytes of <code>keyOwner</code></p>
+              <div class:list={['qs__body', frame.scope.includes('pinned') && 'qs__body--scope']}>
+                {frame.scope.includes('pinned') && <Brace side="left" />}
+                <div class="qs__cells" aria-hidden="true">
+                  {frame.pinned.map((cell) => (
+                    <span class:list={['cell', `cell--${cell.kind === 'key' ? 'secret' : cell.kind}`]}>{cell.text}</span>
+                  ))}
+                </div>
+                {frame.scope.includes('pinned') && <Brace side="right" />}
+              </div>
+            </div>
+            <div class="qs__region">
+              <p class="qs__label">Stack: <code>expected</code>{frame.stackNote}</p>
+              <div class:list={['qs__body', frame.scope.includes('stack') && 'qs__body--scope']}>
+                {frame.scope.includes('stack') && <Brace side="left" />}
+                <div class="qs__cells" aria-hidden="true">
+                  {frame.stack.map((cell) => (
+                    <span class:list={['cell', `cell--${cell.kind}`]}>{cell.text}</span>
+                  ))}
+                </div>
+                {frame.scope.includes('stack') && <Brace side="right" />}
+              </div>
+            </div>
+            <p class="qs__count">
+              <span>Places a secret can be read</span>
+              <Readout>{frame.count}</Readout>
+            </p>
+          </div>
+          <p class="qs__frame-caption">
+            <span set:html={inline(frame.caption)} /> <Proof claim={frame.claim} />
+          </p>
+        </li>
+      ))}
+    </ol>
+    <p class="qs__note">
+      <KindMark kind="illustration" />
+      <span>A drawing of the mechanism, not a trace of a real process. Each cell stands for four bytes and shows the
+      first of them, for the password, salt and payload of the README's test.</span>
+    </p>
+  </figure>
+)}
+
+<style>
+  .qs {
+    display: grid;
+    gap: var(--space-4);
+    margin-block: var(--space-6);
+    padding: var(--space-5);
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    box-shadow: var(--elevation-flush);
+    color: var(--color-text);
+  }
+  .qs p { margin: 0; }
+  .qs code { font-family: var(--font-mono); font-stretch: var(--width-code); font-size: 0.9em; }
+  .qs__title {
+    font-size: var(--text-lg);
+    font-stretch: var(--width-display);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-snug);
+  }
+  .qs__output {
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    overflow-x: auto;
+    border-radius: var(--radius-control);
+    background: var(--color-screen);
+    color: var(--color-on-screen);
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    font-feature-settings: 'zero' 1;
+  }
+  .qs__screen {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius-panel);
+    background: var(--color-screen);
+    color: var(--color-on-screen);
+  }
+  .qs__region { display: grid; gap: var(--space-2); }
+  .qs__label {
+    font-size: var(--text-2xs);
+    font-stretch: var(--width-label);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-on-screen-muted);
+  }
+  .qs__label code { text-transform: none; letter-spacing: normal; color: var(--color-on-screen-secondary); }
+  .qs__body { display: flex; align-items: stretch; gap: var(--space-2); color: var(--color-screen-lit); }
+  .qs__body:not(.qs__body--scope) { padding-inline: calc(10px + var(--space-2)); }
+  .qs__cells { flex: 1 1 auto; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 3px; }
+  .qs__cells--wide { grid-template-columns: repeat(16, minmax(0, 1fr)); }
+
+  .cell {
+    display: grid;
+    place-items: center;
+    height: 1.625rem;
+    border-radius: var(--radius-cell);
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    line-height: 1;
+    font-feature-settings: 'zero' 1;
+  }
+  .cell--free { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-screen-border) 60%, transparent); }
+  .cell--secret { background: color-mix(in srgb, var(--color-screen-hot) 16%, var(--color-screen-raised)); color: var(--color-screen-hot); }
+  .cell--mac {
+    background: color-mix(in srgb, var(--color-screen-hot) 16%, var(--color-screen-raised));
+    box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--color-screen-hot) 70%, transparent);
+    color: var(--color-screen-hot);
+  }
+  .cell--zero { box-shadow: inset 0 0 0 1px var(--color-screen-border); color: var(--color-on-screen-muted); }
+  .cell--unknown { box-shadow: inset 0 0 0 1px var(--color-screen-border); color: var(--color-on-screen-secondary); }
+
+  .qs__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    margin: 0;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-control);
+    background: var(--color-screen);
+    list-style: none;
+    color: var(--color-on-screen-secondary);
+    font-size: var(--text-xs);
+  }
+  .qs__legend li { display: inline-flex; align-items: center; gap: var(--space-2); margin: 0; }
+  .qs__legend .cell { width: 1.5rem; height: 1.25rem; font-size: 0.625rem; }
+
+  .qs__frames {
+    display: grid;
+    gap: var(--space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .qs__frame {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-areas: 'step step' 'screen caption';
+    align-items: start;
+    gap: var(--space-3) var(--space-5);
+    margin: 0;
+  }
+  .qs__frame > .qs__step { grid-area: step; }
+  .qs__frame > .qs__screen { grid-area: screen; }
+  .qs__frame > .qs__frame-caption { grid-area: caption; }
+  .qs__step { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-base); font-weight: var(--weight-semibold); }
+  .qs__number {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--radius-plate);
+    background: var(--color-surface-sunken);
+    box-shadow: inset 0 0 0 1px var(--color-border);
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+    font-size: var(--text-xs);
+  }
+  .qs__count {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    color: var(--color-on-screen-secondary);
+    font-size: var(--text-sm);
+  }
+  .qs__frame-caption,
+  .qs__caption { font-size: var(--text-md); line-height: var(--leading-normal); text-wrap: pretty; }
+  .qs__frame-caption :global(code),
+  .qs__caption code {
+    padding: 0.06em 0.3em;
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-plate);
+    background: var(--color-surface-sunken);
+    font-size: 0.88em;
+  }
+  .qs__note { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); color: var(--color-text-secondary); font-size: var(--text-sm); }
+
+  @media (max-width: 40rem) {
+    .qs { padding: var(--space-4); }
+    .qs__cells--wide { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+    .qs__frame { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'step' 'screen' 'caption'; }
+  }
+</style>
