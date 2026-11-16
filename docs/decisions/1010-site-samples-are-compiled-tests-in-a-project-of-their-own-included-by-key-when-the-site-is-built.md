@@ -35,10 +35,10 @@ the site's build includes it in the page by its key. The READMEs keep MarkdownSn
    a test project is named for the project it tests, because it tests the site's pages.
 2. A page's samples are one class named for the page's file, in a folder named for the page's folder:
    `docs/site/guides/verify-a-mac.mdx` has `Guides/VerifyAMacSamples.cs`, class `VerifyAMacSamples` in namespace
-   `SiteSamples.Guides`, and `docs/site/index.mdx` has `IndexSamples.cs`. Each sample is one fact named
-   `<Key>Sample_Runs`, with the sample between `// begin-snippet: <Key>` and `// end-snippet`, asserting what the
-   sample's comments claim. These names replace the test conventions' `Method_State_Expected` and mirrored types, as
-   ADR-1005's do.
+   `SiteSamples.Guides`, and samples of `docs/site/index.mdx` would be in `IndexSamples.cs`. Each sample is one fact
+   named `<Key>Sample_Runs`, with the sample between `// begin-snippet: <Key>` and `// end-snippet`, asserting what the
+   sample's comments claim; it compares a key, a MAC or another secret with the project's `SecretAssert.Equal`, in
+   fixed time. These names replace the test conventions' `Method_State_Expected` and mirrored types, as ADR-1005's do.
 3. A key is PascalCase letters and digits, and is defined once in the repository; keys that differ only in letter
    case count as one key. The key of a site sample starts with `Site`, and no other key does. A page may also include
    a README sample by its key; the missing prefix shows that a change to that sample changes the READMEs.

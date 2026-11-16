@@ -41,7 +41,7 @@ public class SecretsAcrossAwaitSamples
 
         Assert.True(await VerifyAsync(new MemoryStream(Key), Message, mac));
         Assert.False(await VerifyAsync(new MemoryStream(Key), "{}"u8.ToArray(), mac));
-        Assert.Equal(mac, new Signer(Key).Sign(Message));
+        SecretAssert.Equal(mac, new Signer(Key).Sign(Message));
     }
 
     [Fact]
@@ -155,7 +155,7 @@ public class SecretsAcrossAwaitSamples
         int written = signingKey.Sign(Message, mac);
 
         Assert.Equal(HMACSHA256.HashSizeInBytes, written);
-        Assert.Equal(HMACSHA256.HashData(Key, Message), mac);
+        SecretAssert.Equal(HMACSHA256.HashData(Key, Message), mac);
         await Assert.ThrowsAsync<EndOfStreamException>(() =>
             SigningKey.ReadAsync(new MemoryStream(Key, 0, 16), Key.Length)
         );
@@ -179,7 +179,7 @@ public class SecretsAcrossAwaitSamples
         signingKey.Dispose();
         // end-snippet
 
-        Assert.Equal(HMACSHA256.HashData(Key, Message), mac);
+        SecretAssert.Equal(HMACSHA256.HashData(Key, Message), mac);
         Assert.Throws<ObjectDisposedException>(() => signingKey.Sign(Message, mac));
         signingKey.Dispose();
     }
@@ -225,6 +225,6 @@ public class SecretsAcrossAwaitSamples
             [],
             context
         );
-        Assert.Equal(HMACSHA256.HashData(messageKey, Message), output.ToArray());
+        SecretAssert.Equal(HMACSHA256.HashData(messageKey, Message), output.ToArray());
     }
 }

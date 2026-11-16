@@ -137,7 +137,7 @@ public class ReadASecretWithoutAStringSamples
         ReadOnlySpan<byte> secret = buffer[..length];
         // end-snippet
 
-        Assert.True(secret.SequenceEqual(key));
+        SecretAssert.Equal(key, secret);
 
         // The other decoders the page names write into the same rented buffer, and report what they wrote.
         buffer.Clear();
@@ -148,7 +148,7 @@ public class ReadASecretWithoutAStringSamples
                 out length
             )
         );
-        Assert.True(buffer[..length].SequenceEqual(key));
+        SecretAssert.Equal(key, buffer[..length]);
 
         buffer.Clear();
         OperationStatus status = Base64.DecodeFromUtf8(
@@ -158,7 +158,7 @@ public class ReadASecretWithoutAStringSamples
             out length
         );
         Assert.Equal(OperationStatus.Done, status);
-        Assert.True(buffer[..length].SequenceEqual(key));
+        SecretAssert.Equal(key, buffer[..length]);
 
         buffer.Clear();
         status = Convert.FromHexString(
@@ -168,7 +168,7 @@ public class ReadASecretWithoutAStringSamples
             out length
         );
         Assert.Equal(OperationStatus.Done, status);
-        Assert.True(buffer[..length].SequenceEqual(key));
+        SecretAssert.Equal(key, buffer[..length]);
 
         Assert.False(Convert.TryFromBase64Chars("not base64!", buffer, out _));
     }
@@ -226,7 +226,7 @@ public class ReadASecretWithoutAStringSamples
         );
 
         // The exception carries the bytes it rejected, so logging it logs part of the secret.
-        Assert.Equal([0xFF], error.BytesUnknown);
+        SecretAssert.Equal([0xFF], error.BytesUnknown);
         Assert.Contains("[FF]", error.Message, StringComparison.Ordinal);
 
         // GetMaxCharCount is an upper bound, not the count: for UTF-8 it is one more than the bytes.

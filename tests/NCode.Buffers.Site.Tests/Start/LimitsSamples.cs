@@ -33,6 +33,6 @@ public class LimitsSamples
         // end-snippet
 
         Assert.False(original.ContainsAnyExcept((byte)0));
-        Assert.Equal(StoredKey, copy);
+        SecretAssert.Equal(StoredKey, copy);
     }
 }

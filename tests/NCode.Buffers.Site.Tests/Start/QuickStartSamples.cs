@@ -49,7 +49,7 @@ public class QuickStartSamples
             Console.SetOut(console);
         }
 
-        Assert.Equal(
+        SecretAssert.Equal(
             ReadFixture("quick-start.watch.txt"),
             output.ToString().ReplaceLineEndings("\n")
         );

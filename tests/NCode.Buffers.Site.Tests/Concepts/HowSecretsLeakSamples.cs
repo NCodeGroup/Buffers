@@ -14,6 +14,8 @@ namespace SiteSamples.Concepts;
 // its key (ADR-1010).
 public class HowSecretsLeakSamples
 {
+    // The page's usual code. Its SequenceEqual stops at the first byte that differs, one of the leaks the page
+    // points out, so it stays.
     // begin-snippet: SiteHowSecretsLeakUsual
     public static bool VerifySignature(
         byte[] password,

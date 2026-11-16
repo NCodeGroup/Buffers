@@ -42,8 +42,8 @@ public class SecretOfUnknownLengthSamples
         // end-snippet
 
         Assert.NotSame(before.Array, after.Array);
-        Assert.True(before.AsSpan().SequenceEqual(key.AsSpan(0, 16)));
-        Assert.True(after.AsSpan().SequenceEqual(key));
+        SecretAssert.Equal(key.AsSpan(0, 16), before.AsSpan());
+        SecretAssert.Equal(key, after.AsSpan());
 
         Assert.True(
             MemoryMarshal.TryGetArray(firstSegment, out ArraySegment<byte> first)
@@ -55,9 +55,7 @@ public class SecretOfUnknownLengthSamples
             )
         );
         Assert.Same(first.Array, stillFirst.Array);
-        Assert.True(
-            pooled.AsReadOnlySequence.First.Span[..16].SequenceEqual(key.AsSpan(0, 16))
-        );
+        SecretAssert.Equal(key.AsSpan(0, 16), pooled.AsReadOnlySequence.First.Span[..16]);
         Assert.False(pooled.AsReadOnlySequence.IsSingleSegment);
     }
 
@@ -96,7 +94,7 @@ public class SecretOfUnknownLengthSamples
 
         byte[] sealedDocument = Seal(storage, nonce, "2026-11", key, tag);
 
-        Assert.Equal(
+        SecretAssert.Equal(
             ExpectedDocument("2026-11", key),
             Open(storage, nonce, sealedDocument, tag)
         );
@@ -150,7 +148,7 @@ public class SecretOfUnknownLengthSamples
 
             byte[] sealedDocument = Seal(storage, nonce, "2026-11", key, tag);
 
-            Assert.Equal(
+            SecretAssert.Equal(
                 ExpectedDocument("2026-11", key),
                 Open(storage, nonce, sealedDocument, tag)
             );
@@ -181,7 +179,7 @@ public class SecretOfUnknownLengthSamples
         ComputeMac(writer.AsReadOnlySequence, macKey, mac);
 
         Assert.False(writer.AsReadOnlySequence.IsSingleSegment);
-        Assert.True(mac.SequenceEqual(HMACSHA256.HashData(macKey, whole)));
+        SecretAssert.Equal(HMACSHA256.HashData(macKey, whole), mac);
     }
 
     [Fact]
@@ -204,8 +202,8 @@ public class SecretOfUnknownLengthSamples
         // end-snippet
 
         Assert.Equal(document.Length, writer.Length);
-        Assert.Equal(document, writer.AsReadOnlySequence.ToArray());
-        Assert.Equal(document, Open(storage, nonce, ciphertext, tag));
+        SecretAssert.Equal(document, writer.AsReadOnlySequence.ToArray());
+        SecretAssert.Equal(document, Open(storage, nonce, ciphertext, tag));
     }
 
     [Fact]

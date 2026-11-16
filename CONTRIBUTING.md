@@ -73,7 +73,7 @@ To write a page:
 To write a sample ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)):
 
 1. Add a fact to the page's class in `tests/NCode.Buffers.Site.Tests`, a test project that cannot see the library's internal members, so a sample is code a user of the package can write. The class is named for the page's file, in a folder named for the page's folder: `docs/site/guides/verify-a-mac.mdx` has `Guides/VerifyAMacSamples.cs`, class `VerifyAMacSamples` in namespace `SiteSamples.Guides`. That file shows the form.
-2. Put the sample between `// begin-snippet: <Key>` and `// end-snippet`, name the fact `<Key>Sample_Runs`, and assert after the region what the sample's comments claim.
+2. Put the sample between `// begin-snippet: <Key>` and `// end-snippet`, name the fact `<Key>Sample_Runs`, and assert after the region what the sample's comments claim. Compare a key, a MAC or another secret with `SecretAssert.Equal`, which compares in fixed time, as the C# conventions require in tests too.
 3. Start the key with `Site`, in PascalCase: `SiteVerifyMacWebhook`. A key is defined once in the repository, and only a site sample's key starts with `Site`; the gate checks both. A page may also include a README sample by its key, and a change to that sample changes the READMEs too.
 4. Run `dotnet csharpier format .`, then `./build/gate.ps1 -Fast`.
 

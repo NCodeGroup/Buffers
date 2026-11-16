@@ -18,6 +18,8 @@ public class VerifyAMacSamples
     [Fact]
     public void SiteVerifyMacUsualSample_Runs()
     {
+        // The page's usual code. Its == on hex strings returns at the first character that differs, the leak
+        // the page points out, so it stays.
         // begin-snippet: SiteVerifyMacUsual
         static bool VerifyWebhook(byte[] secret, byte[] body, string signatureHeader)
         {

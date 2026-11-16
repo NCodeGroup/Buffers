@@ -123,7 +123,7 @@ public class ByteArrayApisSamples
 
         Assert.Equal(32, key.Length);
         Assert.False(key.AsSpan().ContainsAnyExcept((byte)0));
-        Assert.Equal(new byte[32], key);
+        SecretAssert.Equal(new byte[32], key);
     }
 
     [Fact]
@@ -171,7 +171,7 @@ public class ByteArrayApisSamples
         byte[] signature = imported.SignData(Data, HashAlgorithmName.SHA256);
 
         Assert.True(original.VerifyData(Data, signature, HashAlgorithmName.SHA256));
-        Assert.Equal(
+        SecretAssert.Equal(
             privateKey,
             imported.ExportParameters(includePrivateParameters: true).D
         );
