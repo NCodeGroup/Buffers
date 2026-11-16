@@ -50,7 +50,9 @@ public class ReadASecretWithoutAStringSamples
         Assert.True(IsKnownClient(Body, SecretHash));
         Assert.False(
             IsKnownClient(
-                Encoding.UTF8.GetBytes("""{"client_id":"reports","client_secret":"guess"}"""),
+                Encoding.UTF8.GetBytes(
+                    """{"client_id":"reports","client_secret":"guess"}"""
+                ),
                 SecretHash
             )
         );
@@ -67,7 +69,10 @@ public class ReadASecretWithoutAStringSamples
             {
                 if (reader.TokenType != JsonTokenType.PropertyName)
                     continue;
-                if (reader.CurrentDepth != 1 || !reader.ValueTextEquals("client_secret"u8))
+                if (
+                    reader.CurrentDepth != 1
+                    || !reader.ValueTextEquals("client_secret"u8)
+                )
                     continue;
                 if (!reader.Read() || reader.TokenType != JsonTokenType.String)
                     return false;
@@ -93,12 +98,24 @@ public class ReadASecretWithoutAStringSamples
         Assert.False(IsKnownClient("""{"client_secret":"guess"}"""u8, SecretHash));
         Assert.False(IsKnownClient("""{"client_id":"reports"}"""u8, SecretHash));
         Assert.False(
-            IsKnownClient("""{"nested":{"client_secret":"s3cr3t-Qx9vT2mZ"}}"""u8, SecretHash)
+            IsKnownClient(
+                """{"nested":{"client_secret":"s3cr3t-Qx9vT2mZ"}}"""u8,
+                SecretHash
+            )
         );
         Assert.False(IsKnownClient("""{"client_secret":42}"""u8, SecretHash));
 
-        // An escaped value is unescaped into the buffer: - is the hyphen.
-        Assert.True(IsKnownClient("""{"client_secret":"s3cr3t-Qx9vT2mZ"}"""u8, SecretHash));
+        // An escaped value is unescaped into the buffer: \u002D is the hyphen.
+        ReadOnlySpan<byte> escaped = """{"client_secret":"s3cr3t\u002DQx9vT2mZ"}"""u8;
+        Assert.True(IsKnownClient(escaped, SecretHash));
+
+        // The escaped length is larger than the unescaped one, so the buffer is sliced to what CopyString wrote.
+        var reader = new Utf8JsonReader(escaped);
+        Assert.True(reader.Read() && reader.Read() && reader.Read());
+        Assert.True(reader.ValueIsEscaped);
+        Span<byte> unescaped = stackalloc byte[reader.ValueSpan.Length];
+        Assert.Equal(ClientSecret.Length, reader.CopyString(unescaped));
+        Assert.True(reader.ValueSpan.Length > ClientSecret.Length);
     }
 
     [Fact]
@@ -125,7 +142,11 @@ public class ReadASecretWithoutAStringSamples
         // The other decoders the page names write into the same rented buffer, and report what they wrote.
         buffer.Clear();
         Assert.True(
-            Base64Url.TryDecodeFromChars(Base64Url.EncodeToString(key), buffer, out length)
+            Base64Url.TryDecodeFromChars(
+                Base64Url.EncodeToString(key),
+                buffer,
+                out length
+            )
         );
         Assert.True(buffer[..length].SequenceEqual(key));
 
@@ -140,7 +161,12 @@ public class ReadASecretWithoutAStringSamples
         Assert.True(buffer[..length].SequenceEqual(key));
 
         buffer.Clear();
-        status = Convert.FromHexString(Convert.ToHexString(key), buffer, out _, out length);
+        status = Convert.FromHexString(
+            Convert.ToHexString(key),
+            buffer,
+            out _,
+            out length
+        );
         Assert.Equal(OperationStatus.Done, status);
         Assert.True(buffer[..length].SequenceEqual(key));
 
@@ -154,7 +180,11 @@ public class ReadASecretWithoutAStringSamples
         using var original = ECDsa.Create(ECCurve.NamedCurves.nistP256);
         string encryptedPem = original.ExportEncryptedPkcs8PrivateKeyPem(
             Encoding.UTF8.GetString(password),
-            new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 100_000)
+            new PbeParameters(
+                PbeEncryptionAlgorithm.Aes256Cbc,
+                HashAlgorithmName.SHA256,
+                100_000
+            )
         );
 
         // begin-snippet: SiteReadSecretChars
@@ -185,17 +215,25 @@ public class ReadASecretWithoutAStringSamples
         // end-snippet
 
         using ECDsa imported = ImportKey(encryptedPem, password);
-        Assert.Equal(original.ExportSubjectPublicKeyInfo(), imported.ExportSubjectPublicKeyInfo());
+        Assert.Equal(
+            original.ExportSubjectPublicKeyInfo(),
+            imported.ExportSubjectPublicKeyInfo()
+        );
 
         byte[] invalid = [.. "correct horse"u8, 0xFF];
-        var error = Assert.Throws<DecoderFallbackException>(() => ImportKey(encryptedPem, invalid));
+        var error = Assert.Throws<DecoderFallbackException>(() =>
+            ImportKey(encryptedPem, invalid)
+        );
 
         // The exception carries the bytes it rejected, so logging it logs part of the secret.
         Assert.Equal([0xFF], error.BytesUnknown);
         Assert.Contains("[FF]", error.Message, StringComparison.Ordinal);
 
         // GetMaxCharCount is an upper bound, not the count: for UTF-8 it is one more than the bytes.
-        Assert.Equal(password.Length + 1, SecureEncoding.UTF8.GetMaxCharCount(password.Length));
+        Assert.Equal(
+            password.Length + 1,
+            SecureEncoding.UTF8.GetMaxCharCount(password.Length)
+        );
         Assert.True(SecureEncoding.UTF8.GetCharCount(password) < password.Length + 1);
     }
 }

@@ -1,6 +1,8 @@
 // Copyright © NCode Group
 // SPDX-License-Identifier: Apache-2.0
 
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using NCode.Buffers;
 
@@ -31,7 +33,8 @@ public class PitfallsSamples
         using var key = BufferFactory.CreatePinnedArray(32);
 
         // begin-snippet: SitePitfallLifetimeAsObject
-        object value = key; // Compiles: the lifetime converts to byte[], and byte[] to object.
+        // Compiles: the lifetime converts to byte[], and byte[] to object.
+        object value = key;
         string text = $"Derived {key}";
 
         // value is the key's own array. text is "Derived System.Byte[]".
@@ -124,12 +127,39 @@ public class PitfallsSamples
         double[] zero = [0.0];
         double[] negativeZero = [-0.0];
         bool sameValue = zero[0] == negativeZero[0];
-        bool sameBytes = CryptographicOperations.FixedTimeEquals<double>(zero, negativeZero);
+        bool sameBytes = CryptographicOperations.FixedTimeEquals<double>(
+            zero,
+            negativeZero
+        );
 
         // sameValue is true, sameBytes is false: the sign bit differs.
         // end-snippet
 
         Assert.True(sameValue);
+        Assert.False(sameBytes);
+    }
+
+    [Fact]
+    public void SitePitfallPaddingBytesCountSample_Runs()
+    {
+        // begin-snippet: SitePitfallPaddingBytesCount
+        // Reading is a struct of a byte Flags and an int Value,
+        // and three bytes of padding follow Flags.
+        byte[] stored = [1, 0, 0, 0, 42, 0, 0, 0];
+        byte[] received = [1, 0xFF, 0xFF, 0xFF, 42, 0, 0, 0];
+        ReadOnlySpan<Reading> left = MemoryMarshal.Cast<byte, Reading>(stored);
+        ReadOnlySpan<Reading> right = MemoryMarshal.Cast<byte, Reading>(received);
+
+        bool sameFields =
+            left[0].Flags == right[0].Flags && left[0].Value == right[0].Value;
+        bool sameBytes = CryptographicOperations.FixedTimeEquals(left, right);
+
+        // sameFields is true, sameBytes is false: the padding differs.
+        // end-snippet
+
+        Assert.Equal(8, Unsafe.SizeOf<Reading>());
+        Assert.Equal(1, left.Length);
+        Assert.True(sameFields);
         Assert.False(sameBytes);
     }
 
@@ -150,6 +180,13 @@ public class PitfallsSamples
         Assert.True(segments.IsEmpty);
         Assert.Empty(segments);
         Assert.Throws<InvalidOperationException>(() => segments.First);
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Reading
+    {
+        public byte Flags;
+        public int Value;
     }
 
     private static int LengthOfADefaultLifetime()

@@ -18,4 +18,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\NCode.Buffers\NCode.Buffers.csproj" />
   </ItemGroup>
+
+  <!-- The README's QuickStart sample, compiled here from its one file, so the quick start page calls the code it shows. It uses only the public API. -->
+  <ItemGroup>
+    <Compile
+      Include="..\NCode.Buffers.Tests\ReadmeSamples\Signatures.cs"
+      Link="Start\ReadmeSamples\Signatures.cs"
+    />
+  </ItemGroup>
 </Project>

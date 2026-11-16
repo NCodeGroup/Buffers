@@ -36,7 +36,8 @@ public class GuaranteesSamples
             view.Fill(0xA5);
         }
 
-        // The view still points at the array, and Dispose has overwritten every byte with zeros.
+        // The view still points at the array,
+        // and Dispose has overwritten every byte with zeros.
         // end-snippet
 
         Assert.Equal(32, view.Length);

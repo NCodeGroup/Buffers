@@ -12,13 +12,14 @@ namespace SiteSamples.Guides;
 public class SecretsAcrossAwaitSamples
 {
     private static readonly byte[] Key = RandomNumberGenerator.GetBytes(32);
-    private static readonly byte[] Message = """{"event":"invoice.paid","id":42}"""u8.ToArray();
+    private static readonly byte[] Message =
+        """{"event":"invoice.paid","id":42}"""u8.ToArray();
 
     // begin-snippet: SiteAcrossAwaitUsual
-    static async Task<bool> VerifyAsync(Stream keySource, byte[] message, byte[] mac)
+    static async Task<bool> VerifyAsync(Stream source, byte[] message, byte[] mac)
     {
         byte[] key = new byte[32];
-        await keySource.ReadExactlyAsync(key);
+        await source.ReadExactlyAsync(key);
 
         byte[] expected = HMACSHA256.HashData(key, message);
         return CryptographicOperations.FixedTimeEquals(expected, mac);
@@ -48,7 +49,7 @@ public class SecretsAcrossAwaitSamples
     {
         // begin-snippet: SiteAcrossAwaitMemory
         static async Task<bool> VerifyAsync(
-            Stream keySource,
+            Stream source,
             ReadOnlyMemory<byte> message,
             ReadOnlyMemory<byte> mac
         )
@@ -58,7 +59,7 @@ public class SecretsAcrossAwaitSamples
                 isSensitive: true,
                 out Memory<byte> key
             );
-            await keySource.ReadExactlyAsync(key);
+            await source.ReadExactlyAsync(key);
 
             return Verify(key.Span, message.Span, mac.Span);
 
@@ -81,7 +82,9 @@ public class SecretsAcrossAwaitSamples
 
         Assert.True(await VerifyAsync(new MemoryStream(Key), Message, mac));
         Assert.False(await VerifyAsync(new MemoryStream(Key), "{}"u8.ToArray(), mac));
-        Assert.False(await VerifyAsync(new MemoryStream(Key), Message, mac.AsMemory(0, 16)));
+        Assert.False(
+            await VerifyAsync(new MemoryStream(Key), Message, mac.AsMemory(0, 16))
+        );
         await Assert.ThrowsAsync<EndOfStreamException>(() =>
             VerifyAsync(new MemoryStream(Key, 0, 16), Message, mac)
         );
@@ -131,6 +134,8 @@ public class SecretsAcrossAwaitSamples
 
         public void Dispose()
         {
+            if (_disposed)
+                return;
             _disposed = true;
             _owner.Dispose(); // Overwrites the key with zeros.
         }
@@ -141,7 +146,10 @@ public class SecretsAcrossAwaitSamples
     [Fact]
     public async Task SiteSigningKeySample_Runs()
     {
-        using SigningKey signingKey = await SigningKey.ReadAsync(new MemoryStream(Key), Key.Length);
+        using SigningKey signingKey = await SigningKey.ReadAsync(
+            new MemoryStream(Key),
+            Key.Length
+        );
         byte[] mac = new byte[HMACSHA256.HashSizeInBytes];
 
         int written = signingKey.Sign(Message, mac);
@@ -210,7 +218,13 @@ public class SecretsAcrossAwaitSamples
 
         await WriteMacAsync(output, Key, Message, context);
 
-        byte[] messageKey = HKDF.DeriveKey(HashAlgorithmName.SHA256, Key, 32, [], context);
+        byte[] messageKey = HKDF.DeriveKey(
+            HashAlgorithmName.SHA256,
+            Key,
+            32,
+            [],
+            context
+        );
         Assert.Equal(HMACSHA256.HashData(messageKey, Message), output.ToArray());
     }
 }

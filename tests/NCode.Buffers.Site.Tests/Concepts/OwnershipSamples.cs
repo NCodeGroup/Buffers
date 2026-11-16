@@ -63,7 +63,13 @@ public class OwnershipSamples
     public static SecureArrayLifetime<byte> DeriveKey(ReadOnlySpan<byte> password)
     {
         var key = BufferFactory.CreatePinnedArray(32);
-        Rfc2898DeriveBytes.Pbkdf2(password, "salt"u8, key, 600_000, HashAlgorithmName.SHA256);
+        Rfc2898DeriveBytes.Pbkdf2(
+            password,
+            "salt"u8,
+            key,
+            600_000,
+            HashAlgorithmName.SHA256
+        );
         return key;
     }
 

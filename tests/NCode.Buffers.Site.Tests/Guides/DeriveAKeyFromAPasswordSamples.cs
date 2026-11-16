@@ -57,7 +57,13 @@ public class DeriveAKeyFromAPasswordSamples
         byte[] wrongTag = document.Tag.ToArray();
         wrongTag[0] ^= 1;
         Assert.Throws<AuthenticationTagMismatchException>(() =>
-            DecryptDocument(Password, document.Salt, document.Nonce, document.Ciphertext, wrongTag)
+            DecryptDocument(
+                Password,
+                document.Salt,
+                document.Nonce,
+                document.Ciphertext,
+                wrongTag
+            )
         );
     }
 
@@ -74,7 +80,11 @@ public class DeriveAKeyFromAPasswordSamples
             Span<byte> plaintext
         )
         {
-            using var keyOwner = BufferFactory.Rent(32, isSensitive: true, out Span<byte> key);
+            using var keyOwner = BufferFactory.Rent(
+                32,
+                isSensitive: true,
+                out Span<byte> key
+            );
             Rfc2898DeriveBytes.Pbkdf2(
                 password,
                 salt,
@@ -126,7 +136,11 @@ public class DeriveAKeyFromAPasswordSamples
             ReadOnlySpan<byte> storedHash
         )
         {
-            using var hashOwner = BufferFactory.Rent(32, isSensitive: true, out Span<byte> hash);
+            using var hashOwner = BufferFactory.Rent(
+                32,
+                isSensitive: true,
+                out Span<byte> hash
+            );
             Rfc2898DeriveBytes.Pbkdf2(
                 password,
                 salt,

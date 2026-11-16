@@ -12,7 +12,8 @@ namespace SiteSamples.Guides;
 public class VerifyAMacSamples
 {
     private static readonly byte[] Secret = RandomNumberGenerator.GetBytes(32);
-    private static readonly byte[] Body = """{"event":"invoice.paid","id":42}"""u8.ToArray();
+    private static readonly byte[] Body =
+        """{"event":"invoice.paid","id":42}"""u8.ToArray();
 
     [Fact]
     public void SiteVerifyMacUsualSample_Runs()
@@ -73,7 +74,10 @@ public class VerifyAMacSamples
     public void SiteVerifyMacTextSecretSample_Runs()
     {
         // begin-snippet: SiteVerifyMacTextSecret
-        static bool IsExpectedApiKey(ReadOnlySpan<char> presented, ReadOnlySpan<char> expected)
+        static bool IsExpectedApiKey(
+            ReadOnlySpan<char> presented,
+            ReadOnlySpan<char> expected
+        )
         {
             // Two spans of char: this is NCode.Buffers' FixedTimeEquals<char>, which compares
             // their bytes with .NET's fixed-time comparison. Ordinal and case-sensitive.
@@ -87,6 +91,27 @@ public class VerifyAMacSamples
         Assert.False(IsExpectedApiKey("K3Y-9QZX1FT7", apiKey));
         Assert.False(IsExpectedApiKey("k3y-9QzX1fT", apiKey));
         Assert.False(IsExpectedApiKey("", apiKey));
+    }
+
+    [Fact]
+    public void SiteVerifySignatureSample_Runs()
+    {
+        using var signer = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+
+        // begin-snippet: SiteVerifySignature
+        // Two ECDSA signatures of the same data differ, so there is no expected value.
+        // The algorithm checks a signature, and answers true or false.
+        byte[] signature = signer.SignData(Body, HashAlgorithmName.SHA256);
+        byte[] again = signer.SignData(Body, HashAlgorithmName.SHA256);
+        bool valid = signer.VerifyData(Body, signature, HashAlgorithmName.SHA256);
+        // end-snippet
+
+        byte[] changed = [.. Body, (byte)' '];
+
+        Assert.NotEqual(signature, again);
+        Assert.True(valid);
+        Assert.True(signer.VerifyData(Body, again, HashAlgorithmName.SHA256));
+        Assert.False(signer.VerifyData(changed, signature, HashAlgorithmName.SHA256));
     }
 
     // Changes the last hex digit, so the header keeps its length and stays valid hex.

@@ -12,6 +12,7 @@
     - a source range does not start with its `match` text at that commit, or runs past the end of the file;
     - a site sample's key is not defined in its file;
     - a claim, a leak card (leaks.json) or a buffer (buffers.json) names evidence that evidence.json does not list;
+    - a source, an outside page or a leak card's reference names a kind that evidence.json's kinds do not list;
     - a pin on a page, a quoted text in the info string of a `cs snippet=<Key>` block, does not match exactly one line
       of that sample.
     When the clone lacks the pinned commit, as a shallow clone does, the checks at that commit are skipped with a
@@ -75,6 +76,17 @@ try {
         }
     }
 
+    # Every kind an entry or a reference names is one of evidence.json's kinds.
+    foreach ($group in 'sources', 'external') {
+        foreach ($id in $evidence[$group].Keys) {
+            $kind = $evidence[$group][$id].kind
+            if ($kind -and -not $evidence.kinds.ContainsKey($kind)) { $problems.Add("$group entry $id has the kind `"$kind`", which evidence.json's kinds do not list") }
+        }
+    }
+    foreach ($leak in $leaks.leaks) {
+        foreach ($ref in $leak.evidence) { if ($ref.kind -and -not $evidence.kinds.ContainsKey($ref.kind)) { $problems.Add("leak card $($leak.id) names the kind `"$($ref.kind)`", which evidence.json's kinds do not list") } }
+    }
+
     # Every reference the data files make resolves to an entry of evidence.json.
     function Test-Ref([string]$where, [hashtable]$ref) {
         foreach ($kind in 'test', 'sample', 'source', 'external') {
@@ -85,6 +97,7 @@ try {
     }
     foreach ($claim in $evidence.claims) {
         foreach ($t in @($claim.tests)) { if ($t) { Test-Ref "claim $($claim.id)" @{ test = $t } } }
+        foreach ($s in @($claim.samples)) { if ($s) { Test-Ref "claim $($claim.id)" @{ sample = $s } } }
         foreach ($s in @($claim.sources)) { if ($s) { Test-Ref "claim $($claim.id)" @{ source = $s } } }
         foreach ($e in @($claim.external)) { if ($e) { Test-Ref "claim $($claim.id)" @{ external = $e } } }
     }

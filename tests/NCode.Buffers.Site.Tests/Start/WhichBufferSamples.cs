@@ -16,7 +16,11 @@ public class WhichBufferSamples
     public void SiteAnswerRentSpanSample_Runs()
     {
         // begin-snippet: SiteAnswerRentSpan
-        using var keyOwner = BufferFactory.Rent(32, isSensitive: true, out Span<byte> key);
+        using var keyOwner = BufferFactory.Rent(
+            32,
+            isSensitive: true,
+            out Span<byte> key
+        );
         RandomNumberGenerator.Fill(key);
         // end-snippet
 
@@ -30,7 +34,11 @@ public class WhichBufferSamples
         using var stream = new MemoryStream(new byte[64]);
 
         // begin-snippet: SiteAnswerRentMemory
-        using var keyOwner = BufferFactory.Rent(32, isSensitive: true, out Memory<byte> key);
+        using var keyOwner = BufferFactory.Rent(
+            32,
+            isSensitive: true,
+            out Memory<byte> key
+        );
         await stream.ReadExactlyAsync(key);
         // end-snippet
 
@@ -54,9 +62,11 @@ public class WhichBufferSamples
     public void SiteAnswerSecurePoolSample_Runs()
     {
         // begin-snippet: SiteAnswerSecurePool
-        using var pool = new SecureMemoryPool<byte>(); // one pool for the application
+        // In an application, one pool for its lifetime.
+        using var pool = new SecureMemoryPool<byte>();
         using var owner = pool.Rent(32);
-        Memory<byte> key = owner.Memory[..32]; // owner.Memory is the whole 4096-byte buffer
+        // owner.Memory is the whole 4096-byte buffer.
+        Memory<byte> key = owner.Memory[..32];
         // end-snippet
 
         Assert.Equal(4096, owner.Memory.Length);
@@ -90,7 +100,11 @@ public class WhichBufferSamples
     public void SiteAnswerPlainPooledSample_Runs()
     {
         // begin-snippet: SiteAnswerPlainPooled
-        using var owner = BufferFactory.Rent(1024, isSensitive: false, out Span<byte> buffer);
+        using var owner = BufferFactory.Rent(
+            1024,
+            isSensitive: false,
+            out Span<byte> buffer
+        );
         using var writer = BufferFactory.CreatePooledBufferWriter(isSensitive: false);
         // end-snippet
 

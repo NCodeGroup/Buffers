@@ -11,6 +11,10 @@ namespace SiteSamples.Start;
 // (ADR-1010).
 public class LimitsSamples
 {
+    private static readonly byte[] StoredKey = RandomNumberGenerator.GetBytes(32);
+
+    private static void ReadKey(Span<byte> destination) => StoredKey.CopyTo(destination);
+
     [Fact]
     public void SiteCopiesAreNotClearedSample_Runs()
     {
@@ -21,7 +25,7 @@ public class LimitsSamples
         using (var key = BufferFactory.CreatePinnedArray(32))
         {
             original = key;
-            RandomNumberGenerator.Fill(original);
+            ReadKey(original); // fills the buffer with the key
             copy = original.ToArray();
         }
 
@@ -29,6 +33,6 @@ public class LimitsSamples
         // end-snippet
 
         Assert.False(original.ContainsAnyExcept((byte)0));
-        Assert.True(copy.AsSpan().ContainsAnyExcept((byte)0));
+        Assert.Equal(StoredKey, copy);
     }
 }

@@ -3,13 +3,15 @@
 
 using System.Security.Cryptography;
 using NCode.Buffers;
+using ReadmeSamples;
 
 namespace SiteSamples.Start;
 
 // The samples of docs/site/start/quick-start.mdx. The site's build includes each begin-snippet region in the page by
 // its key (ADR-1010). SiteWatchAKeyDisappear writes to the console, so this class runs in a collection that no other
 // test runs beside, and its output is compared with the fixture the page shows,
-// docs/site/_components/data/quick-start.watch.txt.
+// docs/site/_components/data/quick-start.watch.txt. SiteQuickStartCall calls the README's own Signatures class, which
+// this project compiles from tests/NCode.Buffers.Tests/ReadmeSamples/Signatures.cs.
 [Collection(ConsoleTests.Name)]
 public class QuickStartSamples
 {
@@ -57,7 +59,11 @@ public class QuickStartSamples
     public void SiteRentLengthsSample_Runs()
     {
         // begin-snippet: SiteRentLengths
-        using var keyOwner = BufferFactory.Rent(32, isSensitive: true, out Span<byte> key);
+        using var keyOwner = BufferFactory.Rent(
+            32,
+            isSensitive: true,
+            out Span<byte> key
+        );
 
         var requested = key.Length; // 32: the length you asked for
         var whole = keyOwner.Memory.Length; // 4096: the whole buffer behind it
@@ -79,7 +85,13 @@ public class QuickStartSamples
         Span<byte> signature = stackalloc byte[HMACSHA256.HashSizeInBytes];
         using (BufferFactory.Rent(32, isSensitive: true, out Span<byte> key))
         {
-            Rfc2898DeriveBytes.Pbkdf2(password, salt, key, 600_000, HashAlgorithmName.SHA256);
+            Rfc2898DeriveBytes.Pbkdf2(
+                password,
+                salt,
+                key,
+                600_000,
+                HashAlgorithmName.SHA256
+            );
             HMACSHA256.HashData(key, payload, signature);
         }
 
@@ -102,7 +114,14 @@ public class QuickStartSamples
             folder = folder.Parent
         )
         {
-            var path = Path.Combine(folder.FullName, "docs", "site", "_components", "data", name);
+            var path = Path.Combine(
+                folder.FullName,
+                "docs",
+                "site",
+                "_components",
+                "data",
+                name
+            );
             if (File.Exists(path))
             {
                 return File.ReadAllText(path);
@@ -112,35 +131,6 @@ public class QuickStartSamples
         throw new FileNotFoundException(
             $"No docs/site/_components/data/{name} above {AppContext.BaseDirectory}."
         );
-    }
-
-    // The README's QuickStart sample, the code the page shows, as tests/NCode.Buffers.Tests/ReadmeSamples/Signatures.cs
-    // has it. That project is not visible from this one, so SiteQuickStartCall calls this copy, compiled here against
-    // the public API. Change both together.
-    private static class Signatures
-    {
-        public static bool VerifySignature(
-            ReadOnlySpan<byte> password,
-            ReadOnlySpan<byte> salt,
-            ReadOnlySpan<byte> payload,
-            ReadOnlySpan<byte> signature
-        )
-        {
-            using var keyOwner = BufferFactory.Rent(32, isSensitive: true, out Span<byte> key);
-            Rfc2898DeriveBytes.Pbkdf2(
-                password,
-                salt,
-                key,
-                iterations: 600_000,
-                HashAlgorithmName.SHA256
-            );
-
-            Span<byte> expected = stackalloc byte[HMACSHA256.HashSizeInBytes];
-            using var expectedLifetime = expected.GetSecureLifetime();
-            HMACSHA256.HashData(key, payload, expected);
-
-            return CryptographicOperations.FixedTimeEquals(expected, signature);
-        }
     }
 
     // The tests of this class redirect the console, so they run one at a time and never beside another test.

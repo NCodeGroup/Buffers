@@ -45,7 +45,9 @@ public class SecretOfUnknownLengthSamples
         Assert.True(before.AsSpan().SequenceEqual(key.AsSpan(0, 16)));
         Assert.True(after.AsSpan().SequenceEqual(key));
 
-        Assert.True(MemoryMarshal.TryGetArray(firstSegment, out ArraySegment<byte> first));
+        Assert.True(
+            MemoryMarshal.TryGetArray(firstSegment, out ArraySegment<byte> first)
+        );
         Assert.True(
             MemoryMarshal.TryGetArray(
                 pooled.AsReadOnlySequence.First,
@@ -53,7 +55,9 @@ public class SecretOfUnknownLengthSamples
             )
         );
         Assert.Same(first.Array, stillFirst.Array);
-        Assert.True(pooled.AsReadOnlySequence.First.Span[..16].SequenceEqual(key.AsSpan(0, 16)));
+        Assert.True(
+            pooled.AsReadOnlySequence.First.Span[..16].SequenceEqual(key.AsSpan(0, 16))
+        );
         Assert.False(pooled.AsReadOnlySequence.IsSingleSegment);
     }
 
@@ -61,7 +65,13 @@ public class SecretOfUnknownLengthSamples
     public void SiteUnknownLengthUsualSample_Runs()
     {
         // begin-snippet: SiteUnknownLengthUsual
-        static byte[] Seal(AesGcm storage, byte[] nonce, string keyId, byte[] key, byte[] tag)
+        static byte[] Seal(
+            AesGcm storage,
+            byte[] nonce,
+            string keyId,
+            byte[] key,
+            byte[] tag
+        )
         {
             var buffer = new ArrayBufferWriter<byte>();
             using (var json = new Utf8JsonWriter(buffer))
@@ -86,7 +96,10 @@ public class SecretOfUnknownLengthSamples
 
         byte[] sealedDocument = Seal(storage, nonce, "2026-11", key, tag);
 
-        Assert.Equal(ExpectedDocument("2026-11", key), Open(storage, nonce, sealedDocument, tag));
+        Assert.Equal(
+            ExpectedDocument("2026-11", key),
+            Open(storage, nonce, sealedDocument, tag)
+        );
     }
 
     [Fact]
@@ -123,11 +136,17 @@ public class SecretOfUnknownLengthSamples
         using var storage = new AesGcm(StorageKey, AesGcm.TagByteSizes.MaxSize);
         byte[] tag = new byte[AesGcm.TagByteSizes.MaxSize];
 
-        // A 32-byte key makes a document that fits in one segment; one of 6,000 bytes, two segments.
+        // A 32-byte key makes a document that fits in one segment; one of 6,000 bytes needs several.
         foreach (int keyLength in (int[])[32, 6_000])
         {
             byte[] key = RandomNumberGenerator.GetBytes(keyLength);
             byte[] nonce = RandomNumberGenerator.GetBytes(AesGcm.NonceByteSizes.MaxSize);
+
+            using (var probe = BufferFactory.CreatePooledBufferWriter(isSensitive: true))
+            {
+                probe.Write(ExpectedDocument("2026-11", key));
+                Assert.Equal(keyLength == 32, probe.AsReadOnlySequence.IsSingleSegment);
+            }
 
             byte[] sealedDocument = Seal(storage, nonce, "2026-11", key, tag);
 
@@ -195,15 +214,21 @@ public class SecretOfUnknownLengthSamples
         byte[] secret = RandomNumberGenerator.GetBytes(6_000);
 
         // begin-snippet: SiteLeaseOrConsume
-        // One segment: the lease is a view of the writer's own memory, and the owner is the writer.
+        // One segment: the lease is a view of the writer's own memory,
+        // and the owner is the writer.
         using var small = BufferFactory.CreatePooledBufferWriter(isSensitive: true);
         small.Write(secret.AsSpan(0, 32));
         bool smallLeaseIsTheWriter;
         using (RefSpanLease<byte> lease = small.GetSpanLease(isSensitive: true))
         {
-            smallLeaseIsTheWriter = lease.Span.Overlaps(small.AsReadOnlySequence.FirstSpan);
+            smallLeaseIsTheWriter = lease.Span.Overlaps(
+                small.AsReadOnlySequence.FirstSpan
+            );
         }
-        IDisposable smallOwner = small.ConsumeAsContiguousSpan(isSensitive: true, out _);
+        using IDisposable smallOwner = small.ConsumeAsContiguousSpan(
+            isSensitive: true,
+            out _
+        );
 
         // Several segments: the lease is a copy, and the writer keeps its data.
         using var large = BufferFactory.CreatePooledBufferWriter(isSensitive: true);
@@ -211,12 +236,18 @@ public class SecretOfUnknownLengthSamples
         bool largeLeaseIsTheWriter;
         using (RefSpanLease<byte> lease = large.GetSpanLease(isSensitive: true))
         {
-            largeLeaseIsTheWriter = lease.Span.Overlaps(large.AsReadOnlySequence.FirstSpan);
+            largeLeaseIsTheWriter = lease.Span.Overlaps(
+                large.AsReadOnlySequence.FirstSpan
+            );
         }
         long lengthAfterLease = large.Length;
 
-        // Several segments: consuming copies the data and disposes the writer before it returns.
-        using IDisposable largeOwner = large.ConsumeAsContiguousSpan(isSensitive: true, out _);
+        // Several segments: consuming copies the data,
+        // and disposes the writer before it returns.
+        using IDisposable largeOwner = large.ConsumeAsContiguousSpan(
+            isSensitive: true,
+            out _
+        );
         long lengthAfterConsume = large.Length;
         // end-snippet
 
@@ -241,12 +272,15 @@ public class SecretOfUnknownLengthSamples
         writer.Advance(1);
         Memory<byte> large = writer.GetMemory(10_000); // More than a page: its own array.
 
-        MemoryMarshal.TryGetArray<byte>(page, out ArraySegment<byte> pageArray);
-        MemoryMarshal.TryGetArray<byte>(large, out ArraySegment<byte> largeArray);
-
         // The collector reports an array on the pinned object heap as its oldest generation.
-        int pageGeneration = GC.GetGeneration(pageArray.Array!);
-        int largeGeneration = GC.GetGeneration(largeArray.Array!);
+        static int GenerationOf(Memory<byte> memory) =>
+            MemoryMarshal.TryGetArray<byte>(memory, out var segment)
+            && segment.Array is { } array
+                ? GC.GetGeneration(array)
+                : -1; // Not memory of an array.
+
+        int pageGeneration = GenerationOf(page);
+        int largeGeneration = GenerationOf(large);
         // end-snippet
 
         Assert.Equal(SecureMemoryPool<byte>.PageSize, page.Length);
@@ -260,7 +294,12 @@ public class SecretOfUnknownLengthSamples
             $$"""{"kid":"{{keyId}}","k":"{{Convert.ToBase64String(key)}}"}"""
         );
 
-    private static byte[] Open(AesGcm storage, byte[] nonce, byte[] ciphertext, byte[] tag)
+    private static byte[] Open(
+        AesGcm storage,
+        byte[] nonce,
+        byte[] ciphertext,
+        byte[] tag
+    )
     {
         byte[] plaintext = new byte[ciphertext.Length];
         storage.Decrypt(nonce, ciphertext, tag, plaintext);

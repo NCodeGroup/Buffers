@@ -154,7 +154,11 @@ public class HowSecretsLeakSamples
 
         Assert.Equal("a�", a);
         Assert.Equal(a, b);
-        Assert.Throws<DecoderFallbackException>(() => SecureEncoding.UTF8.GetString(first));
-        Assert.Throws<DecoderFallbackException>(() => SecureEncoding.UTF8.GetString(second));
+        Assert.Throws<DecoderFallbackException>(() =>
+            SecureEncoding.UTF8.GetString(first)
+        );
+        Assert.Throws<DecoderFallbackException>(() =>
+            SecureEncoding.UTF8.GetString(second)
+        );
     }
 }
