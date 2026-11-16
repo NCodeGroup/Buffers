@@ -71,6 +71,14 @@
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
       "line": 166
     },
+    "SecureArrayLifetimeTests.ImplicitConversionToArray_ReturnsPinnedArray": {
+      "file": "tests/NCode.Buffers.Tests/SecureArrayLifetimeTests.cs",
+      "line": 180
+    },
+    "BufferExtensionsTests.GetSecureLifetime_ZerosMemoryOnDispose": {
+      "file": "tests/NCode.Buffers.Tests/BufferExtensionsTests.cs",
+      "line": 433
+    },
     "BufferFactoryTests.ChoosePool_WhenSensitive_ReturnsSecureSharedPool": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
       "line": 13
@@ -232,6 +240,21 @@
     "SiteVerifyMacTextSecret": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/VerifyAMacSamples.cs"
     },
+    "SiteByteArrayUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ByteArrayApisSamples.cs"
+    },
+    "SiteByteArrayTakes": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ByteArrayApisSamples.cs"
+    },
+    "SiteByteArrayReturns": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ByteArrayApisSamples.cs"
+    },
+    "SiteByteArrayReturnTrap": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ByteArrayApisSamples.cs"
+    },
+    "SiteKeySetterCopies": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/ByteArrayApisSamples.cs"
+    },
     "SiteCopiesAreNotCleared": {
       "file": "tests/NCode.Buffers.Site.Tests/Start/LimitsSamples.cs"
     },
@@ -355,6 +378,22 @@
         76
       ],
       "match": "public void Dispose()"
+    },
+    "GetSecureLifetime": {
+      "file": "src/NCode.Buffers/BufferExtensions.cs",
+      "lines": [
+        61,
+        64
+      ],
+      "match": "public SecureSpanLifetime<T> GetSecureLifetime()"
+    },
+    "SecureArrayLifetime.ToArray": {
+      "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
+      "lines": [
+        81,
+        81
+      ],
+      "match": "public static implicit operator T[](SecureArrayLifetime<T> lifetime)"
     },
     "BufferFactory.ChoosePool": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
