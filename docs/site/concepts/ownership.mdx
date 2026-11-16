@@ -14,25 +14,25 @@ import TableColumns from '@site/components/TableColumns.astro';
 
 ## In short
 
-- **The rule.** Every buffer that holds a secret has one owner, an `IDisposable`, and the memory is zeroed in its
+- **The rule.** Every buffer holding a secret has one owner, an `IDisposable`, and the memory is zeroed in its
   `Dispose` and nowhere else.
-- **What you do.** Dispose the owner with `using`, in the tightest scope that covers the work, or hand the owner to
-  the code that will dispose it.
-- **The limit.** Nothing zeroes an owner you never dispose, or stops a view you kept from being read after `Dispose`.
+- **What you do.** Dispose the owner with `using`, in the tightest scope around the work, or hand it to the code
+  that disposes it.
+- **The limit.** Nothing zeroes an owner you never dispose, or stops a kept view from being read after `Dispose`.
 
 ## The problem
 
-Zeroing on dispose runs when, and only when, someone calls `Dispose`. A span is a view of memory that belongs to
-something else, and it keeps pointing there after the owner is done.
+Zeroing runs when, and only when, someone calls `Dispose`. A span is a view of memory something else owns, and
+keeps pointing there after the owner is done.
 
-Microsoft's guidelines for `Memory<T>` draw the same line, one owner per buffer: "If you have an
+Microsoft's `Memory<T>` guidelines draw the same line, one owner per buffer: "If you have an
 IMemoryOwner&lt;T&gt; reference, you must at some point dispose of it or transfer its ownership (but not both)".
-<Proof external="MemoryOwnershipRule7" /> NCode.Buffers follows that model, and overwrites the secret when the owner
-is disposed. <Proof source="ArchitectureDesignRules" />
+<Proof external="MemoryOwnershipRule7" /> NCode.Buffers follows it, and overwrites the secret on `Dispose`.
+<Proof source="ArchitectureDesignRules" />
 
 ## Five owners
 
-What you hold decides what `Dispose` does, what a second call does, and what a view you kept reads afterwards.
+What you hold decides what `Dispose` does, what a second call does and what a kept view reads.
 
 <TableColumns widths="30% 31% 16% 23%">
 
@@ -40,7 +40,7 @@ What you hold decides what `Dispose` does, what a second call does, and what a v
 | --- | --- | --- | --- |
 | The owner from `Rent` with `isSensitive: true`, or from a `SecureMemoryPool<T>` | Zeroes the whole buffer, beyond your slice too, then returns it to its pool, if it came from one | Does nothing | Reaches memory the pool can give to another caller |
 | A `SecureArrayLifetime<T>` from `CreatePinnedArray` | Zeroes the array. Frees and returns nothing | Zeroes it again | Is the same array, holding zeros |
-| A `SecureSpanLifetime<T>` from `GetSecureLifetime()` | Zeroes exactly its span. Releases nothing | Zeroes whatever is there by then | Is the same memory, still its supplier's |
+| A `SecureSpanLifetime<T>` from `GetSecureLifetime()` | Zeroes exactly its span. Releases nothing | Zeroes whatever is there by then | Is the same memory, its supplier's |
 | The `Sequence<T>` from `CreatePooledBufferWriter` | Disposes every segment: zeroed when sensitive, and pooled ones returned | Runs again without error | Reaches memory the pool can give to another caller |
 | A `RefSpanLease<T>` from `GetSpanLease` | Disposes its owner, if it has one | Disposes the owner again | Depends on the owner |
 
@@ -63,44 +63,44 @@ The five, at four moments:
 
 ## When it happens
 
-`using var` disposes at the end of the enclosing block, not after the variable's last use, so in a long method the
-secret lasts until the method ends. A `using` statement with its own block ends it where the work ends:
+`using var` disposes at the end of the enclosing block, not at the last use: in a long method, the secret lasts
+until the method ends. A `using` statement with its own block ends it with the work:
 
 ```cs snippet=SiteOwnershipTightScope title="Scope the owner to the work"
 ```
 
 <Proof sample="SiteOwnershipTightScope" /> The block disposes on every way out, exceptions and early returns
 included. <Proof external="UsingStatementDocs" /> A `Dispose()` call written after the work does not.
-<LeakCard leak="L6" /> `BufferFactory.Rent` does the same inside itself: if it fails after taking a buffer, it
-disposes that buffer before it throws.
+<LeakCard leak="L6" /> `BufferFactory.Rent` does the same inside: if it fails after taking a buffer, it disposes
+the buffer before it throws.
 <Proof source="BufferFactory.Rent.DisposeOnFailure" />
 
 ## Order
 
-When a lifetime wraps memory that something else owns, dispose the lifetime first: zero, then give back. `using`
-declarations are disposed in reverse order, so declare the owner first and the lifetime second. With an array from a
-pool, zero inside the `try` and return the array in the `finally`:
+When a lifetime wraps memory something else owns, dispose the lifetime first: zero, then give back. `using`
+declarations are disposed in reverse, so declare the owner first and the lifetime second. With a pooled array,
+zero inside the `try` and return it in the `finally`:
 
 ```cs snippet=SiteOwnershipUsingOrder title="Zero, then give the memory back"
 ```
 
 The sample's own pool hands the next caller the same array, its first 32 bytes zero.
-<Proof sample="SiteOwnershipUsingOrder" /> The other way round, the bytes go back with your secret in them.
+<Proof sample="SiteOwnershipUsingOrder" /> The other way round, the bytes go back holding your secret.
 
 ## Handing it over
 
-To give a buffer to a caller, return its owner, the `IMemoryOwner<T>` or the `SecureArrayLifetime<T>`, for the
-caller to dispose. An array or a span returned from inside the scope that disposes it reaches the caller zeroed.
+To give a buffer to a caller, return its owner, the `IMemoryOwner<T>` or the `SecureArrayLifetime<T>`, for it to
+dispose. An array or span returned from inside the disposing scope reaches the caller zeroed.
 
 ```cs snippet=SiteOwnershipReturnLifetime title="The caller owns what this returns"
 ```
 
-The caller holds the key until its own `using` ends. <Proof sample="SiteOwnershipReturnLifetime" />
+The caller holds the key until its `using` ends. <Proof sample="SiteOwnershipReturnLifetime" />
 [Returning the array from inside the scope](/reference/pitfalls/#returning-the-array-from-inside-the-scope) shows
 the other way, which compiles.
 
-A lifetime is a struct that holds one reference, so a copy of it is a second owner of the same array, and disposing
-either zeroes it for both. Pass the span to code that only uses the memory.
+A lifetime is a struct holding one reference, so a copy is a second owner of the same array: disposing either
+zeroes it for both. Pass the span to code that only uses the memory.
 [Copying a lifetime](/reference/pitfalls/#copying-a-lifetime) has the test.
 
 ## Sensitivity travels with the data
@@ -129,8 +129,8 @@ collections and the finalizers run, and the buffer still holds the key:
 
 <Proof sample="SiteNoFinalizer" />
 
-**There is no guard against use after `Dispose`.** A view you kept still points at the memory, and nothing throws.
-For a pooled buffer that memory may be another caller's by then:
+**There is no guard against use after `Dispose`.** A kept view still points at the memory, and nothing throws. For a
+pooled buffer, it may be another caller's by then:
 
 ```cs snippet=SiteOwnershipUseAfterDispose title="A view kept after Dispose"
 ```
@@ -140,15 +140,15 @@ The sample's own pool gives the second `Rent` the same buffer. <Proof sample="Si
 
 ## Why it is built this way
 
-The library's design rule: whatever rents memory returns an `IDisposable` owner, and the memory is zeroed and
+The design rule: whatever rents memory returns an `IDisposable` owner, and the memory is zeroed and
 returned only through `Dispose`. <Proof source="ArchitectureDesignRules" /> Three facts follow:
 
 - **No finalizer.** The rule has no exception: no `Dispose`, no zeroing.
 - **No disposed flag on the lifetimes.** Each holds one reference or one span, nothing else: cheap to copy, a copy is
   a second owner, and a second `Dispose` zeroes again. <Proof source="SecureArrayLifetime.Unmanaged" />
 - **Ref structs where they can be.** The compiler keeps a lifetime out of fields, lambdas and `await`
-  ([the errors](/reference/pitfalls/#it-did-not-compile)). Memory that must cross an `await` or live in a field is
-  owned by an `IMemoryOwner<T>`, a class.
+  ([the errors](/reference/pitfalls/#it-did-not-compile)). Memory that crosses an `await` or lives in a field is owned
+  by an `IMemoryOwner<T>`, a class.
 
 <Related>
 - **Learn** [Quick start](/start/quick-start/)
