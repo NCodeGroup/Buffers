@@ -29,7 +29,7 @@ jobs:
       contents: read # checks out this repository
       pages: write # reads the site's URL, and creates the deployment
       id-token: write # proves to GitHub Pages where the deployment comes from
-    uses: NCodeGroup/docs/.github/workflows/site.yml@03c41ac9fe2f6bada086b8fee5e40615acd20b03 # NCodeGroup/docs#1; the v0.1.0 release's commit replaces it
+    uses: NCodeGroup/docs/.github/workflows/site.yml@2eb506f9668b74ee854cd005042dfc056c07ccb6 # v0.1.0
     with:
       content-path: docs/site
       deploy: false
