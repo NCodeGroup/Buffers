@@ -21,8 +21,14 @@ pages get compiled samples:
   under `tests/`. The keys of all samples share one space. MarkdownSnippets does not reject a key defined twice: it
   writes both blocks at each use. Both match a key exactly, letter case included (MarkdownSnippets 29.0.0, tested
   2026-11-16): where two keys differ only in case, a key typed in the wrong case includes the other sample, and
-  nothing fails. Both read a marker only at the start of a line, after its indentation, and only in lower case, and
-  take the rest of the line as its key: MarkdownSnippets reads `// begin-snippet: Two Words` as the key `Two Words`.
+  nothing fails. Both take the rest of a marker's line, without the white space after it, as its key:
+  MarkdownSnippets reads `// begin-snippet: Two Words` as the key `Two Words`. They read different lines as markers
+  (tested 2026-11-16). The site's build reads a marker only from a line that, after its indentation, is
+  `// begin-snippet: ` and the key, and stops on any other line that starts with `//` and `begin-snippet` in any
+  letter case. MarkdownSnippets reads `begin-snippet: `, in lower case, wherever it starts within the first eleven
+  characters after a line's indentation: `//begin-snippet: Key`, `/// begin-snippet: Key` and
+  `x = 1; // begin-snippet: Key` are markers to it, and the site's build reports the first and skips the others. It
+  also reads `#region Key` as a sample when the region's name has no space.
 
 ## Decision
 
@@ -48,10 +54,12 @@ the site's build includes it in the page by its key. The READMEs keep MarkdownSn
    is never closed.
 5. A page is an `.mdx` file. `mdsnippets.json` excludes `*.mdx` documents and `*.astro` sources by file name, so
    MarkdownSnippets reads neither the pages nor the site's components.
-6. `build/Assert-SampleKeys.ps1`, which reads a marker as both tools do, fails on a key that is not PascalCase letters
-   and digits, on a key defined twice, on a site sample whose key lacks the prefix, on any other key that has it, and
-   when it finds no key at all. `build/Test-AssertSampleKeys.ps1` runs it against fixture repositories: clean ones,
-   which hold lines and files it must not read a key from, and one for each failure. `build/gate.ps1` runs the test,
+6. `build/Assert-SampleKeys.ps1` takes a key only from a line that, after its indentation, is `// begin-snippet: ` and
+   the key, which both tools read alike. It fails on any other line that either tool takes for a marker or a sample,
+   on a key that is not PascalCase letters and digits, on a key defined twice, on a site sample whose key lacks the
+   prefix, on any other key that has it, and when it finds no key at all. `build/Test-AssertSampleKeys.ps1` runs it
+   against fixture repositories: clean ones, which hold the lines and files it must read and those it must not, and
+   one for each failure, with marker lines whose reading by both tools was tested. `build/gate.ps1` runs the test,
    then the check. It hashes `*.mdx` with `*.md` around `dotnet mdsnippets` and fails when the tool changes either.
 7. `build/Test-Coverage.ps1` runs `tests/NCode.Buffers.Tests` alone, and the sample project references no coverage
    collector: a line of the library that only a sample runs counts as not covered.

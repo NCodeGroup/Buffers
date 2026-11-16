@@ -1,15 +1,23 @@
 #requires -version 7
 <#
 .SYNOPSIS
-    Checks the keys of the C# samples: each is PascalCase letters and digits and is defined once, and only a site
-    sample's key starts with Site (ADR-1010).
+    Checks the markers and keys of the C# samples: both tools read each marker alike, each key is PascalCase letters
+    and digits and is defined once, and only a site sample's key starts with Site (ADR-1010).
 .DESCRIPTION
     The READMEs and the site's pages take their samples by key from every C# file, so a key is PascalCase letters and
     digits and is defined once, keys that differ only in letter case counting as one, and only a site sample's key, in
-    tests/NCode.Buffers.Site.Tests, starts with Site. It reads a marker as MarkdownSnippets and the site's build do: a
-    line that starts with '// begin-snippet: ' after its indentation, in that letter case, whose key is the rest of the
-    line. Reads every C# file git lists, committed or not, and none it ignores, such as a plan's worktree. Prints
-    nothing when every key holds; otherwise prints 'Sample keys: FAILED.' and each problem, and exits 1. Finding no key
+    tests/NCode.Buffers.Site.Tests, starts with Site.
+
+    The two tools read different lines as markers. The site's build takes a key only from a line that holds the begin
+    marker, '// begin-snippet: ', and the key after its indentation, and it reports any other line that starts with
+    // and begin-snippet in some letter case. MarkdownSnippets, which copies the README samples, reads a marker in any
+    line that holds 'begin-snippet: ', in lower case, within the first 25 characters after its indentation, after code
+    or another comment's opening too, and reads a #region whose name has no space as a sample. So a key is the rest of
+    the first kind of line, without the white space after it, and every other line either tool takes for a marker is
+    a problem, whatever key it names.
+
+    Reads every C# file git lists, committed or not, and none it ignores, such as a plan's worktree. Prints nothing when
+    every marker and key holds; otherwise prints 'Sample keys: FAILED.' and each problem, and exits 1. Finding no key
     at all is a problem too: the READMEs always have samples, so a broken listing or pattern fails instead of passing.
     build/gate.ps1 runs it.
 .PARAMETER Root
@@ -21,14 +29,35 @@ $ErrorActionPreference = 'Stop'
 Push-Location -LiteralPath $Root
 try {
     $siteSamples = 'tests/NCode.Buffers.Site.Tests/'
-    $sources = @(git ls-files --cached --others --exclude-standard -- '*.cs' | Where-Object { Test-Path -LiteralPath $_ })
-    $keys = @(if ($sources) {
-            Select-String -LiteralPath $sources -Pattern '^\s*// begin-snippet: (.*?)\s*$' -CaseSensitive | ForEach-Object {
-                [pscustomobject]@{ Key = $_.Matches[0].Groups[1].Value; At = "$([IO.Path]::GetRelativePath($PWD.Path, $_.Path).Replace('\', '/')):$($_.LineNumber)" }
+    $marker = '// begin-snippet: '
+    $write = "write '$marker<Key>' alone on its line"
+    # -z prints each path as it is: without it, git quotes a name that holds a byte above 0x7F, and the quoted name
+    # matches no file.
+    $listed = (git ls-files -z --cached --others --exclude-standard -- '*.cs') -join "`n"
+    $sources = @($listed.Split([char]0, [StringSplitOptions]::RemoveEmptyEntries) | Where-Object { Test-Path -LiteralPath $_ })
+    $keys = [Collections.Generic.List[object]]::new()
+    $markers = [Collections.Generic.List[string]]::new()
+    foreach ($source in $sources) {
+        $number = 0
+        foreach ($line in [IO.File]::ReadLines([IO.Path]::Combine($PWD.Path, $source))) {
+            $number++
+            $text = $line.Trim()
+            $at = "${source}:$number"
+            if ($text.StartsWith($marker, [StringComparison]::Ordinal)) {
+                $keys.Add([pscustomobject]@{ Key = $text.Substring($marker.Length); At = $at })
             }
-        })
-    if (-not $keys) { 'Sample keys: FAILED.'; 'No C# file git lists defines a sample.'; exit 1 }
+            # MarkdownSnippets reads the first pattern, the site's build reports the second.
+            elseif ($text -cmatch '^.{0,10}begin-snippet: ' -or $text -match '^//\s*begin-snippet') {
+                $markers.Add("${at}: '$text' is a malformed marker: $write")
+            }
+            elseif ($text.StartsWith('#region ', [StringComparison]::Ordinal) -and -not $text.Substring(8).Trim().Contains(' ')) {
+                $markers.Add("${at}: '$text' is a sample to MarkdownSnippets: give the region a name with a space")
+            }
+        }
+    }
     $problems = @(
+        $markers
+        if (-not $keys.Count) { 'No C# file git lists defines a sample.' }
         $keys | Where-Object { $_.Key -cnotmatch '^[A-Z][A-Za-z0-9]*\z' } | ForEach-Object { "$($_.At): '$($_.Key)' is not PascalCase letters and digits" }
         $keys | Group-Object Key | Where-Object Count -GT 1 | ForEach-Object { "$($_.Name) is defined $($_.Count) times: $($_.Group.At -join ', ')" }
         $keys | Where-Object { $_.At.StartsWith($siteSamples, [StringComparison]::Ordinal) -and $_.Key -cnotlike 'Site*' } | ForEach-Object { "$($_.At): $($_.Key) is a site sample, so its key starts with Site" }
