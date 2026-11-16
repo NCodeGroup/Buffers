@@ -66,15 +66,15 @@ To write a page:
 4. Never type C# that must compile into a page. Include a sample by its key, with an empty code block:
 
    ````md
-   ```cs snippet=SiteZeroedAfterUse
+   ```cs snippet=SiteVerifyMacWebhook
    ```
    ````
 
 To write a sample ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)):
 
-1. Add a fact to the page's class in `tests/NCode.Buffers.Site.Tests`, a test project that cannot see the library's internal members, so a sample is code a user of the package can write. The class is named for the page's file, in a folder named for the page's folder: `docs/site/guides/verify-a-mac.mdx` has `Guides/VerifyAMacSamples.cs`, class `VerifyAMacSamples` in namespace `SiteSamples.Guides`. `IndexSamples.cs` shows the form.
+1. Add a fact to the page's class in `tests/NCode.Buffers.Site.Tests`, a test project that cannot see the library's internal members, so a sample is code a user of the package can write. The class is named for the page's file, in a folder named for the page's folder: `docs/site/guides/verify-a-mac.mdx` has `Guides/VerifyAMacSamples.cs`, class `VerifyAMacSamples` in namespace `SiteSamples.Guides`. That file shows the form.
 2. Put the sample between `// begin-snippet: <Key>` and `// end-snippet`, name the fact `<Key>Sample_Runs`, and assert after the region what the sample's comments claim.
-3. Start the key with `Site`, in PascalCase: `SiteZeroedAfterUse`. A key is defined once in the repository, and only a site sample's key starts with `Site`; the gate checks both. A page may also include a README sample by its key, and a change to that sample changes the READMEs too.
+3. Start the key with `Site`, in PascalCase: `SiteVerifyMacWebhook`. A key is defined once in the repository, and only a site sample's key starts with `Site`; the gate checks both. A page may also include a README sample by its key, and a change to that sample changes the READMEs too.
 4. Run `dotnet csharpier format .`, then `./build/gate.ps1 -Fast`.
 
 The site's own components are in `docs/site/_components/`, each with its usage in a comment at its top, and the data they draw from is in `docs/site/_components/data/`: `evidence.json` lists the claims of [Guarantees and their tests](docs/site/evidence/guarantees.mdx) and every test, sample and source line a page cites, linked at a pinned commit so the line a link opens never moves. `build/Test-SiteEvidence.ps1`, which the gate runs, fails when a test or a sample it names is gone, when a pinned line no longer holds what it names, and when a pin a page marks on a sample, a quoted text in the block's info string, does not match exactly one line of it.

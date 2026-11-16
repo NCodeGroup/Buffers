@@ -199,6 +199,10 @@
       "file": "tests/NCode.Buffers.Tests/ReadmeSamplesTests.cs",
       "line": 194
     },
+    "ReadmeSamplesTests.QuickStart_ValidSignature_ReturnsTrue": {
+      "file": "tests/NCode.Buffers.Tests/ReadmeSamplesTests.cs",
+      "line": 24
+    },
     "SequenceExtensionsTests.GetSpanLease_SingleSegment_Dispose_DoesNotResetSequence": {
       "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
       "line": 396

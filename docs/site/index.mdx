@@ -1,35 +1,272 @@
 ---
 title: NCode.Buffers
-description: Pinned, pooled .NET buffers that zero themselves on dispose, for keys and other secrets, plus fixed-size buffer writers and string splitting without substring copies.
+description: Buffers for keys, passwords and tokens that the garbage collector does not move and that are overwritten with zeros when you dispose them, with the test behind each claim.
 template: splash
 hero:
-  title: Secrets that clean up after themselves.
-  tagline: Pinned, pooled .NET buffers that zero themselves on dispose, for keys and other secrets, plus fixed-size buffer writers and string splitting without substring copies.
+  title: >-
+    <span class="landing-eyebrow" aria-hidden="true"><span>NCode.Buffers</span><span>a .NET library from NCode
+    Group</span><span>Apache-2.0</span></span>Secrets that clean up after themselves.
+  tagline: >-
+    <p>Put a key in an ordinary array and the runtime treats it like any other data. The garbage collector can copy it
+    to a new address and leave the old bytes behind, and nothing clears it when your method returns. NCode.Buffers
+    gives you buffers the collector does not move, overwritten with zeros when you dispose them.</p>
+    <p class="landing-limit">It does not lock memory into RAM, and it cannot hide memory from a debugger or a crash
+    dump.</p>
+  image:
+    html: >-
+      <figure class="landing-monitor not-content" aria-label="A drawing: the quick start's 32-byte key in memory, as
+      Dispose overwrites it with zeros. Twenty bytes are zeros, twelve still hold the key.">
+      <div class="landing-monitor__lamps" aria-hidden="true"><span class="ncode-status"><span class="ncode-lamp
+      ncode-lamp--on"></span>Not moved</span><span class="ncode-status"><span class="ncode-lamp
+      ncode-lamp--on"></span>Zeroed on dispose</span><span class="ncode-readout">32 bytes</span></div>
+      <div class="landing-monitor__screen" aria-hidden="true">
+      <div class="landing-monitor__head"><span>key</span><span>Dispose()</span></div>
+      <div class="landing-monitor__memory">
+      <div class="landing-monitor__offsets"><span>00</span><span>08</span><span>10</span><span>18</span></div>
+      <span class="landing-monitor__brace"><span class="brace"><svg class="brace__hook" viewBox="0 0 10 5"><path
+      d="M10 2H8A3 3 0 0 0 5 5H3A5 5 0 0 1 8 0H10Z"></path></svg><span class="brace__stem"></span><svg
+      class="brace__cusp" viewBox="0 -3.5 5 7"><path d="M5 -3.5A5 5 0 0 1 3.571 0A5 5 0 0 1 5 3.5H3A3 3 0 0 0 0
+      0.5V-0.5A3 3 0 0 0 3 -3.5Z"></path></svg><span class="brace__stem"></span><svg class="brace__hook"
+      viewBox="0 -5 10 5"><path d="M10 -2H8A3 3 0 0 1 5 -5H3A5 5 0 0 0 8 0H10Z"></path></svg></span></span>
+      <div class="landing-monitor__cells"><span class="lm-cell lm-cell--zero">00</span><span class="lm-cell
+      lm-cell--zero">00</span><span class="lm-cell lm-cell--zero">00</span><span class="lm-cell
+      lm-cell--zero">00</span><span class="lm-cell lm-cell--zero">00</span><span class="lm-cell
+      lm-cell--zero">00</span><span class="lm-cell lm-cell--zero">00</span><span class="lm-cell
+      lm-cell--zero">00</span><span class="lm-cell lm-cell--zero">00</span><span class="lm-cell
+      lm-cell--zero">00</span><span class="lm-cell lm-cell--zero">00</span><span class="lm-cell
+      lm-cell--zero">00</span><span class="lm-cell lm-cell--zero">00</span><span class="lm-cell
+      lm-cell--zero">00</span><span class="lm-cell lm-cell--zero">00</span><span class="lm-cell
+      lm-cell--zero">00</span><span class="lm-cell lm-cell--zero">00</span><span class="lm-cell
+      lm-cell--zero">00</span><span class="lm-cell lm-cell--zero">00</span><span class="lm-cell lm-cell--zero
+      lm-cell--cursor">00</span><span class="lm-cell lm-cell--key">E1</span><span class="lm-cell
+      lm-cell--key">F8</span><span class="lm-cell lm-cell--key">69</span><span class="lm-cell
+      lm-cell--key">6F</span><span class="lm-cell lm-cell--key">D0</span><span class="lm-cell
+      lm-cell--key">DD</span><span class="lm-cell lm-cell--key">5D</span><span class="lm-cell
+      lm-cell--key">8D</span><span class="lm-cell lm-cell--key">38</span><span class="lm-cell
+      lm-cell--key">5F</span><span class="lm-cell lm-cell--key">67</span><span class="lm-cell
+      lm-cell--key">6C</span></div>
+      <span class="landing-monitor__brace landing-monitor__brace--right"><span class="brace"><svg class="brace__hook"
+      viewBox="0 0 10 5"><path d="M10 2H8A3 3 0 0 0 5 5H3A5 5 0 0 1 8 0H10Z"></path></svg><span
+      class="brace__stem"></span><svg class="brace__cusp" viewBox="0 -3.5 5 7"><path d="M5 -3.5A5 5 0 0 1 3.571 0A5 5
+      0 0 1 5 3.5H3A3 3 0 0 0 0 0.5V-0.5A3 3 0 0 0 3 -3.5Z"></path></svg><span class="brace__stem"></span><svg
+      class="brace__hook" viewBox="0 -5 10 5"><path d="M10 -2H8A3 3 0 0 1 5 -5H3A5 5 0 0 0 8
+      0H10Z"></path></svg></span></span>
+      </div>
+      </div>
+      <figcaption>The quick start's key, on the stack, as the end of its <code>using</code> block overwrites it with
+      zeros. A drawing of the mechanism, not a trace of a real process.</figcaption>
+      </figure>
   actions:
-    - text: View on GitHub
-      link: https://github.com/NCodeGroup/Buffers
-      icon: external
+    - text: Quick start
+      link: /start/quick-start/
+      icon: right-arrow
       variant: primary
+    - text: Find your situation
+      link: /#find-your-situation
+      variant: secondary
 ---
 
-## Install
+import { Card, CardGrid } from '@ncode/docs/components';
+import LandingHero from '@site/components/LandingHero.astro';
+import LandingPair from '@site/components/LandingPair.astro';
+import LandingSituations from '@site/components/LandingSituations.astro';
+import LeakCard from '@site/components/LeakCard.astro';
+import MemoryStrip from '@site/components/MemoryStrip.astro';
+import Pinned from '@site/components/Pinned.astro';
+import PinNotes from '@site/components/PinNotes.astro';
+import Proof from '@site/components/Proof.astro';
 
 ```sh
 dotnet add package NCode.Buffers
 ```
 
-## A key that is zeroed after use
+<LandingHero />
 
-This example fills a key on the stack, computes an HMAC-SHA256 over a payload with it, and zeroes the key when the
-`using` block ends.
+<div class="landing-badges">
 
-```cs snippet=SiteZeroedAfterUse
+[![NuGet version](https://img.shields.io/nuget/v/NCode.Buffers?logo=nuget)](https://www.nuget.org/packages/NCode.Buffers/)
+[![CI](https://github.com/NCodeGroup/Buffers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/NCodeGroup/Buffers/actions/workflows/ci.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/NCodeGroup/Buffers/branch/main/graph/badge.svg)](https://codecov.io/gh/NCodeGroup/Buffers)
+[![Target framework](https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fraw.githubusercontent.com%2FNCodeGroup%2FBuffers%2Fmain%2Fsrc%2FNCode.Buffers%2FNCode.Buffers.csproj&query=%2F%2FTargetFramework%20%7C%20%2F%2FTargetFrameworks&label=target&logo=dotnet&color=512BD4)](https://www.nuget.org/packages/NCode.Buffers#supportedframeworks-body-tab)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/NCodeGroup/Buffers/badge)](https://scorecard.dev/viewer/?uri=github.com/NCodeGroup/Buffers)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16727/badge)](https://www.bestpractices.dev/projects/16727)
+[![License](https://img.shields.io/github/license/NCodeGroup/Buffers)](https://github.com/NCodeGroup/Buffers/blob/main/LICENSE.txt)
+
+</div>
+
+<CardGrid>
+<Card title="You have a task">
+
+Each guide is one situation: the usual code, what it leaves behind, the fix and a checklist.
+
+[Find your situation](#find-your-situation)
+
+</Card>
+<Card title="You are evaluating it">
+
+What it protects and what it does not, and the test behind each claim.
+
+[What it protects, and what it does not](/start/limits/) · [Guarantees and their tests](/evidence/guarantees/)
+
+</Card>
+<Card title="You have not thought about this before">
+
+What the garbage collector, array pools and strings do to a secret, in pictures.
+
+[How secrets leak in managed code](/concepts/how-secrets-leak/)
+
+</Card>
+</CardGrid>
+
+## Where a key goes
+
+The same 32-byte key, held in an ordinary array and in a buffer from `Rent` with `isSensitive: true`, at three
+moments of its life. [How secrets leak](/concepts/how-secrets-leak/#the-life-of-a-key) steps through all six.
+
+<MemoryStrip script="life-of-a-key" id="landing-key" frames="3,4,5" outside={false} />
+
+## The same method, twice
+
+Verify a signature with a key derived from a password. First the usual way, then with NCode.Buffers.
+
+<LandingPair>
+<div>
+
+**The usual code**
+
+<Pinned tone="usual">
+```cs snippet=SiteHowSecretsLeakUsual title="Signatures.cs" "byte[] key =" "byte[] expected =" "SequenceEqual("
 ```
+</Pinned>
 
-The example is a test in the repository. It compiles and passes on every pull request, and this page includes it
-from there.
+**Leaves behind**
 
-## Source
+<PinNotes tone="usual">
+1. The key, in an ordinary array. The collector can move it, and nothing clears it. <LeakCard leak="L1" />
+   <LeakCard leak="L2" />
+2. The expected MAC, the same way. Whoever reads it can forge this message. <LeakCard leak="L2" />
+3. A comparison that stops at the first wrong byte. <LeakCard leak="L7" />
+</PinNotes>
 
-The code, the README and the changelog are in the
-[NCodeGroup/Buffers repository](https://github.com/NCodeGroup/Buffers).
+</div>
+<div>
+
+**With NCode.Buffers**
+
+<Pinned tone="fix">
+```cs snippet=QuickStart title="Signatures.cs" "BufferFactory.Rent(" "GetSecureLifetime()" "return CryptographicOperations.FixedTimeEquals("
+```
+</Pinned>
+
+**What changed**
+
+<PinNotes tone="fix">
+1. The key is written into a pinned buffer and zeroed when `keyOwner` is disposed, on every exit.
+   <Proof claim="R3" /> <Proof claim="R1" />
+2. The expected MAC is on the stack and zeroed when `expectedLifetime` is disposed. <Proof claim="R1" />
+3. The comparison takes the same time wherever the MACs differ, for MACs of the same length. <Proof claim="R4" />
+</PinNotes>
+
+</div>
+</LandingPair>
+
+Both versions are tests in the repository. They compile and pass on every pull request, and this page copies them
+from there. <Proof sample="SiteHowSecretsLeakUsual" /> <Proof test="ReadmeSamplesTests.QuickStart_ValidSignature_ReturnsTrue" />
+The [Quick start](/start/quick-start/) reads the second one line by line; [Derive a key from a
+password](/guides/derive-a-key-from-a-password/) and [Verify a MAC without leaking timing](/guides/verify-a-mac/)
+take each half further.
+
+## What it does. What it does not.
+
+<CardGrid>
+<Card title="It does">
+
+- Allocate buffers for secrets on the pinned object heap. The collector does not move them, so no copy is left at an
+  old address. <Proof claim="R3" />
+- Overwrite the whole buffer with zeros in `Dispose`, including the part beyond the length you asked for.
+  <Proof claim="R1" />
+- Zero a pooled buffer before another caller can rent it. <Proof claim="R2" />
+- Make you say whether a pooled buffer holds a secret: `isSensitive` has no default value.
+  <Proof source="PublicApi.IsSensitive" />
+- Compare spans of any unmanaged type in time that does not depend on their contents, for equal lengths.
+  <Proof claim="R4" />
+- Reject malformed UTF-8 and ASCII with an exception instead of substituting characters. <Proof claim="R5" />
+- Refuse, at compile time, element types that hold references the zeroing would miss. <Proof claim="R8" />
+
+</Card>
+<Card title="It does not">
+
+- Lock memory into RAM. The operating system can still write it to a page file, swap or a hibernation file.
+  <Proof source="Roadmap.NotPlanned" />
+- Hide memory from a debugger, a crash dump, or a process that can read this one's memory.
+- Zero anything you do not dispose. There is no finalizer. <Proof sample="SiteNoFinalizer" />
+- Zero copies you make: a `string`, a `ToArray()` result, a buffer rented with `isSensitive: false`.
+  <Proof sample="SiteCopiesAreNotCleared" />
+- Clear a new buffer before you get it. Write before you read. <Proof source="SecureMemory.Allocate" />
+- Hide the length of what it compares.
+  <Proof test="CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentLengths_ReturnsFalse" />
+
+</Card>
+</CardGrid>
+
+If an attacker can read your process's memory while a secret is in use, no managed library changes that. This one
+reduces how many copies of a secret exist and how long they last. [What it protects, and what it does
+not](/start/limits/) draws the line in full, and [Guarantees and their tests](/evidence/guarantees/) lists each claim
+with the tests behind it and what they do not show.
+
+## Find your situation
+
+Each guide is one situation.
+
+<LandingSituations>
+- **I have a secret, and I need to…**
+  - [derive a key from a password](/guides/derive-a-key-from-a-password/)
+  - [check a MAC without leaking timing](/guides/verify-a-mac/)
+  - [pass it to an API that insists on `byte[]`](/guides/byte-array-apis/)
+  - [build it when I don't know its length](/guides/secret-of-unknown-length/)
+  - [read it from JSON or base64 without making a string](/guides/read-a-secret-without-a-string/)
+  - [keep it across an `await`, or in a field](/guides/secrets-across-await/)
+- **I look after a codebase, and I need to…**
+  - [know what this library will not do](/start/limits/)
+  - [know who zeroes what, and when](/concepts/ownership/)
+  - [know how I can still get it wrong](/reference/pitfalls/)
+</LandingSituations>
+
+Not sure which type you need? [Which buffer?](/start/which-buffer/) asks at most four questions.
+
+## Check it yourself
+
+- **Tests.** Each claim under "It does" names the test, or the line of code, that makes it true.
+  [Guarantees and their tests](/evidence/guarantees/)
+- **Samples.** Every C# sample on this site is a test in the repository, the usual code included. A sample that stops
+  compiling or passing fails the build. <Proof source="SiteSamplesDecision" />
+- **Coverage.** The build fails under 98% line or branch coverage. <Proof source="CoverageMinimums" />
+- **Analysis.** Warnings are errors. The library's own code cannot call a lenient text encoding or rent from a pool
+  without saying whether the buffer holds a secret: an analyzer rejects both. <Proof source="WarningsAsErrors" />
+  <Proof source="BannedEncoding" /> <Proof source="BannedBuffers" />
+- **Releases.** A package is built in CI from a tagged commit and pushed to nuget.org through trusted publishing after
+  a maintainer approves. `SECURITY.md` lists the checks you can run on a package you downloaded. <Proof claim="R7" />
+- **Decisions.** The reasons behind the design are on record, one short file each, in
+  [docs/decisions](https://github.com/NCodeGroup/Buffers/tree/main/docs/decisions).
+
+## In the package
+
+- One assembly. It has no runtime state beyond the memory pools it creates, starts no threads and performs no I/O.
+  <Proof source="Architecture.Scope" />
+- It depends on Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers return, and on JetBrains.Annotations.
+  <Proof source="PackageDependencies" />
+- The target frameworks are the ones the package's project file declares. The badge above shows them,
+  [nuget.org](https://www.nuget.org/packages/NCode.Buffers#supportedframeworks-body-tab) lists them, and the
+  [changelog](https://github.com/NCodeGroup/Buffers/blob/main/CHANGELOG.md) records when one is added or dropped.
+- Also in the package:
+  - [Fixed-size buffer writers](/start/which-buffer/#a-fixed-span-writer) that throw instead of writing past the
+    end. <Proof claim="R6" />
+  - [Helpers that read a multi-segment buffer as one span](/start/which-buffer/#helpers-you-will-meet), and copy only
+    when they must.
+  - [String splitting](/start/which-buffer/#helpers-you-will-meet) that slices the original instead of copying
+    substrings.
+  - [UTF-8 and ASCII encodings](/start/which-buffer/#helpers-you-will-meet) that reject invalid input.
+    <Proof claim="R5" />
+  - [`ZeroMemory` and `FixedTimeEquals`](/start/which-buffer/#helpers-you-will-meet) for spans of any unmanaged type.
+- Apache License 2.0. Copyright NCode Group. Report a vulnerability privately, as the
+  [security policy](https://github.com/NCodeGroup/Buffers/blob/main/SECURITY.md) says.
