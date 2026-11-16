@@ -26,16 +26,18 @@ function Invoke-Case([string]$Name, [string]$Baseline, [string]$Unreleased, [str
 
         $actualProject = [IO.File]::ReadAllText($projectPath)
         $actualChangelog = [IO.File]::ReadAllText($changelogPath)
+        # A baseline already at or above the version changes nothing; a lower one is raised, once.
         if ($Baseline -eq '5.0.2' -or [version]$Baseline -gt [version]'5.0.2') {
             if ($set -or $actualProject -ne $project -or $actualChangelog -ne $changelog) { throw 'changed files for a baseline that was already high enough' }
-            return
         }
-        if ($set -ne '5.0.2') { throw "printed '$set' instead of 5.0.2" }
-        if ($actualProject -notmatch '<PackageValidationBaselineVersion>5\.0\.2<') { throw 'baseline not raised' }
-        $expected = "# Changelog`n`n## [Unreleased]`n$ExpectedUnreleased`n## [5.0.1] - 2026-11-14`n`n### Added`n`n- Old.`n`n[unreleased]: https://example.test/compare/v5.0.1...HEAD`n"
-        if ($actualChangelog -ne $expected) { throw "changelog differs:`n$actualChangelog" }
-        & $script -Version 5.0.2 -Root $root -SkipNugetCheck | Out-Null
-        if ([IO.File]::ReadAllText($changelogPath) -ne $expected) { throw 'a second run changed the changelog' }
+        else {
+            if ($set -ne '5.0.2') { throw "printed '$set' instead of 5.0.2" }
+            if ($actualProject -notmatch '<PackageValidationBaselineVersion>5\.0\.2<') { throw 'baseline not raised' }
+            $expected = "# Changelog`n`n## [Unreleased]`n$ExpectedUnreleased`n## [5.0.1] - 2026-11-14`n`n### Added`n`n- Old.`n`n[unreleased]: https://example.test/compare/v5.0.1...HEAD`n"
+            if ($actualChangelog -ne $expected) { throw "changelog differs:`n$actualChangelog" }
+            & $script -Version 5.0.2 -Root $root -SkipNugetCheck | Out-Null
+            if ([IO.File]::ReadAllText($changelogPath) -ne $expected) { throw 'a second run changed the changelog' }
+        }
     }
     catch { Write-Host "FAILED: $Name`n$_"; exit 1 }
     finally { Remove-Item -LiteralPath $root -Recurse -Force }
