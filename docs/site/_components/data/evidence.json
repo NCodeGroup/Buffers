@@ -223,6 +223,15 @@
     "SitePasswordKeyVerify": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/DeriveAKeyFromAPasswordSamples.cs"
     },
+    "SiteVerifyMacUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/VerifyAMacSamples.cs"
+    },
+    "SiteVerifyMacWebhook": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/VerifyAMacSamples.cs"
+    },
+    "SiteVerifyMacTextSecret": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/VerifyAMacSamples.cs"
+    },
     "SiteCopiesAreNotCleared": {
       "file": "tests/NCode.Buffers.Site.Tests/Start/LimitsSamples.cs"
     },

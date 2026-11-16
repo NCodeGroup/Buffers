@@ -1,0 +1,132 @@
+---
+title: Verify a MAC without leaking timing
+description: Check a signature header, a signed cookie or an API key so that neither the time the check takes nor the memory it leaves gives the expected value away.
+---
+
+import LeakCard from '@site/components/LeakCard.astro';
+import Pinned from '@site/components/Pinned.astro';
+import PinNotes from '@site/components/PinNotes.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+import VerifyAMacTimingModel from '@site/components/VerifyAMacTimingModel.astro';
+
+This is your situation when a request carries a value and its MAC, such as a webhook's signature header, a signed
+cookie or an API key, and your code must say whether they match. The example verifies a webhook's HMAC-SHA256
+signature, sent as hex.
+
+You'll use `HMACSHA256.HashData` · `stackalloc` · `GetSecureLifetime()` · `Convert.FromHexString` ·
+`CryptographicOperations.FixedTimeEquals`
+
+## The usual code
+
+It computes the expected MAC, writes it as hex, and compares the two strings.
+
+<Pinned tone="usual">
+```cs snippet=SiteVerifyMacUsual title="Webhooks.cs" "HMACSHA256.HashData(" "Convert.ToHexStringLower(" "== signatureHeader"
+```
+</Pinned>
+
+**Leaves behind**
+
+<PinNotes tone="usual">
+
+1. The expected MAC, in an array that nothing clears. <LeakCard leak="L2" />
+2. The expected MAC again, as a string, which nothing can erase. <LeakCard leak="L5" />
+3. A comparison that returns as soon as it finds a difference, so the time it takes depends on how much of the
+   signature is right. <LeakCard leak="L7" />
+
+</PinNotes>
+
+The third is the one a sender can use from outside the process. A sender who can try many signatures and time each
+answer learns how much of a guess was right, and can build the expected MAC from the front.
+
+<VerifyAMacTimingModel />
+
+## With NCode.Buffers
+
+The same check. The expected MAC stays on the stack and never becomes text; the header is decoded into bytes and
+compared in fixed time.
+
+<Pinned tone="fix">
+```cs snippet=SiteVerifyMacWebhook title="Webhooks.cs" "expected.GetSecureLifetime()" "Convert.FromHexString(" "FixedTimeEquals("
+```
+</Pinned>
+
+**What changed**
+
+<PinNotes tone="fix">
+
+1. The expected MAC is in stack memory the method owns, and `expectedLifetime` overwrites it with zeros at the end of
+   the scope, on every way out of it. <Proof claim="R1" />
+2. The header is decoded into bytes, so the expected value is never written as text. A header of the wrong length, or
+   one that is not hex, returns `false` and throws nothing. <Proof sample="SiteVerifyMacWebhook" />
+3. `FixedTimeEquals` reads every byte of two spans of the same length, wherever they differ.
+   <Proof claim="R4" />
+
+</PinNotes>
+
+For two spans of bytes, the call is .NET's own `CryptographicOperations.FixedTimeEquals`. For spans of any other
+unmanaged type, it is NCode.Buffers' `FixedTimeEquals<T>`, which views both spans as bytes and calls the same method.
+<Proof source="FixedTimeEquals" /> <Proof external="FixedTimeEqualsDocs" />
+
+## If the secret is text
+
+An API key compared as characters takes the same call. With two spans of `char`, it is NCode.Buffers'
+`FixedTimeEquals<char>`: an ordinal comparison of UTF-16 code units, so case counts.
+
+```cs snippet=SiteVerifyMacTextSecret title="ApiKeys.cs"
+```
+
+<Proof sample="SiteVerifyMacTextSecret" /> Written this way, as a member of `CryptographicOperations`, it is a C# 14
+extension member and needs `using NCode.Buffers;`. A project on an earlier language version calls the same method as
+`CryptographicOperationsExtensions.FixedTimeEquals`. <Proof source="FixedTimeEquals" />
+
+The expected key still has to come from somewhere. A key read from configuration is already a `string`; [Read a
+secret without leaving a string behind](/guides/read-a-secret-without-a-string/) reads one into a buffer instead.
+
+## Pitfalls
+
+[Ways to get it wrong](/reference/pitfalls/) has more, each with its evidence.
+
+- **Encoding the expected value.** `Convert.ToHexString(expected)` or `ToBase64String` makes a string of the
+  expected MAC. Decode the value you received into bytes, and compare bytes. <LeakCard leak="L5" />
+- **Decoding before you check the length.** Check the length first, so that a value of the wrong length is a plain
+  `false` before any decoding, as the sample does. <Proof sample="SiteVerifyMacWebhook" />
+- **Expecting the length to stay hidden.** Spans of different lengths return `false` at once. A MAC has a fixed
+  length, so that tells nobody anything; when the length of an expected value is itself a secret, compare values of
+  a fixed length, such as the MACs of the two. <Proof test="CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentLengths_ReturnsFalse" />
+- **Comparing values that have more than one encoding.** `FixedTimeEquals<T>` compares the bytes the values
+  occupy, not the values. Compare spans of bytes, characters or integers; a floating-point value or a struct with
+  padding can be stored as different bytes from an equal one. <Proof source="FixedTimeEquals" />
+- **Comparing a digital signature by hand.** An RSA or ECDSA signature is checked by the algorithm's `VerifyData`
+  or `VerifyHash`, which answers `true` or `false`: there is no expected value to compare.
+- **Leaving the MAC key in an ordinary array.** The key that computes the MAC is a secret too, and it usually lives
+  for as long as the application. [Keep a secret across an await, or in a field](/guides/secrets-across-await/)
+  holds one.
+
+## What this does not fix
+
+:::caution[Outside this check]
+- **Timing elsewhere in the request.** Looking up the secret, parsing the body and logging the result take their own
+  time.
+- **The length of what you compare.** It shows, as the pitfall above says.
+- **Who can read the secret where it is configured,** or the process while the check runs:
+  [what it protects, and what it does not](/start/limits/).
+:::
+
+## Checklist
+
+- The comparison is `CryptographicOperations.FixedTimeEquals`, never `==`, `Equals`, `SequenceEqual` or
+  `StartsWith`.
+- The incoming value is decoded to bytes; the expected value is never encoded as text.
+- The expected value is in memory under `GetSecureLifetime()`, or another owner that zeroes it, and never
+  becomes a string.
+- A value of the wrong length is rejected before it is decoded.
+- The MAC key is held in a buffer that is zeroed when its owner is disposed.
+
+<Related>
+- **Learn** [Quick start](/start/quick-start/)
+- **Do** [Derive a key from a password](/guides/derive-a-key-from-a-password/)
+- **Understand** [How secrets leak in managed code](/concepts/how-secrets-leak/)
+- **Look up** [Guarantees: fixed-time comparison](/evidence/guarantees/#fixed-time)
+</Related>

@@ -1,0 +1,162 @@
+---
+// The timing model, as the static figure for /guides/verify-a-mac/: five guesses at a four-byte value,
+// with zero to four leading bytes right, and the byte comparisons each kind of comparison makes before it answers.
+// A comparison that stops at the first difference makes 1, 2, 3, 4 and 4; a fixed-time comparison makes 4 every time.
+// It is a model that counts comparisons, not a measurement, and it says so. No script: it renders whole without
+// JavaScript and in print.
+// Usage: <VerifyAMacTimingModel />
+import KindMark from '@site/components/KindMark.astro';
+
+const expected = ['7F', '3A', 'C2', '91'];
+const guesses = [0, 1, 2, 3, 4].map((right) => {
+  const bytes = expected.map((byte, i) => (i < right ? byte : '00'));
+  const cells = bytes.map((text, i) => ({ text, state: i < right ? 'right' : i === right ? 'first' : 'unread' }));
+  return { right, cells, early: Math.min(right + 1, expected.length), fixed: expected.length };
+});
+const units = Array.from({ length: expected.length }, (_, i) => i);
+---
+
+<figure class="tm not-content" aria-labelledby="tm-title">
+  <div class="tm__head">
+    <span class="tm__title" id="tm-title">The timing model</span>
+    <KindMark kind="illustration" note="A model, not a measurement" />
+  </div>
+
+  <div class="tm__screen">
+    <p class="tm__expected">
+      <span class="tm__label">Expected MAC, first four bytes</span>
+      <span class="tm__cells" aria-label={expected.join(' ')}>
+        {expected.map((byte) => <span class="cell cell--secret">{byte}</span>)}
+      </span>
+    </p>
+
+    <table class="tm__table">
+      <thead>
+        <tr>
+          <th scope="col">Guess</th>
+          <th scope="col">Stops at the first difference</th>
+          <th scope="col">Fixed time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {guesses.map((guess) => (
+          <tr>
+            <th scope="row" class="tm__guess">
+              <span class="tm__cells" aria-label={`${guess.cells.map((c) => c.text).join(' ')}: ${guess.right} of 4 bytes right`}>
+                {guess.cells.map((cell) => <span class:list={['cell', `cell--${cell.state}`]}>{cell.text}</span>)}
+              </span>
+            </th>
+            <td>
+              <span class="tm__bar tm__bar--early" aria-label={`${guess.early} of 4 byte comparisons`}>
+                {units.map((i) => <span class:list={['tm__unit', i < guess.early && 'tm__unit--on']} />)}
+                <span class="tm__count" aria-hidden="true">{guess.early}</span>
+              </span>
+            </td>
+            <td>
+              <span class="tm__bar tm__bar--fixed" aria-label={`${guess.fixed} of 4 byte comparisons`}>
+                {units.map((i) => <span class:list={['tm__unit', i < guess.fixed && 'tm__unit--on']} />)}
+                <span class="tm__count" aria-hidden="true">{guess.fixed}</span>
+              </span>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <figcaption class="tm__caption">
+    Each guess gets one more leading byte right. A comparison that stops at the first difference does one more step for
+    each byte that is right, so the time it takes answers "how much of my guess was right?". A fixed-time comparison
+    does all four steps every time, and its time answers nothing about the contents. A model. It counts comparisons and
+    does not measure .NET.
+  </figcaption>
+</figure>
+
+<style>
+  .tm {
+    display: grid;
+    gap: var(--space-4);
+    margin: var(--space-6) 0;
+    padding: var(--space-5);
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+  }
+  .tm__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+  .tm__title,
+  .tm__label,
+  .tm__table thead th {
+    font-size: var(--text-2xs);
+    font-stretch: var(--width-label);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+  .tm__title { color: var(--color-text-secondary); }
+  .tm__screen {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius-panel);
+    background: var(--color-screen);
+    color: var(--color-on-screen);
+  }
+  .tm__expected { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); margin: 0; }
+  .tm__label { color: var(--color-on-screen-muted); }
+  .tm__cells { display: inline-grid; grid-template-columns: repeat(4, 2rem); gap: 3px; }
+
+  .cell {
+    display: grid;
+    place-items: center;
+    height: 1.625rem;
+    border-radius: var(--radius-cell);
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    line-height: 1;
+    font-feature-settings: 'zero' 1;
+  }
+  .cell--secret { background: color-mix(in srgb, var(--color-screen-hot) 16%, var(--color-screen-raised)); color: var(--color-screen-hot); }
+  .cell--right { background: color-mix(in srgb, var(--color-screen-lit) 18%, var(--color-screen-raised)); color: var(--color-screen-lit); }
+  .cell--first { box-shadow: inset 0 0 0 1.5px var(--color-screen-hot); color: var(--color-on-screen-secondary); }
+  .cell--unread { box-shadow: inset 0 0 0 1px var(--color-screen-border); color: var(--color-on-screen-muted); }
+
+  .tm__table { width: 100%; margin: 0; border-collapse: collapse; }
+  .tm__table th,
+  .tm__table td { padding: var(--space-2) 0; border: 0; background: none; text-align: start; vertical-align: middle; }
+  .tm__table thead th { padding-bottom: var(--space-3); color: var(--color-on-screen-muted); white-space: normal; }
+  .tm__table thead th + th,
+  .tm__table td { padding-inline-start: var(--space-4); }
+  .tm__table tbody tr + tr > * { border-top: var(--border-hair) solid color-mix(in srgb, var(--color-screen-border) 55%, transparent); }
+  .tm__guess { font-weight: inherit; }
+
+  .tm__bar { display: inline-flex; align-items: center; gap: 3px; }
+  .tm__unit {
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: var(--radius-cell);
+    box-shadow: inset 0 0 0 1px var(--color-screen-border);
+  }
+  .tm__bar--early .tm__unit--on { background: var(--color-screen-hot); box-shadow: none; }
+  .tm__bar--fixed .tm__unit--on { background: var(--color-screen-lit); box-shadow: none; }
+  .tm__count {
+    min-width: 1ch;
+    margin-inline-start: var(--space-2);
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+    font-size: var(--text-sm);
+    color: var(--color-on-screen-secondary);
+  }
+  .tm__caption { margin: 0; color: var(--color-text-secondary); font-size: var(--text-md); line-height: var(--leading-normal); text-wrap: pretty; }
+
+  @media (max-width: 40rem) {
+    .tm { padding: var(--space-4); }
+    .tm__screen { padding: var(--space-3); }
+    .tm__cells { grid-template-columns: repeat(4, 1.625rem); gap: 2px; }
+    .cell { font-size: 0.6875rem; }
+    .tm__unit { width: 0.625rem; height: 0.75rem; }
+    .tm__table thead th + th,
+    .tm__table td { padding-inline-start: var(--space-3); }
+  }
+</style>
