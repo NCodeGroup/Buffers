@@ -51,7 +51,7 @@ public class DeriveAKeyFromAPasswordSamples
             document.Tag
         );
 
-        Assert.Equal(Plaintext, plaintext);
+        SecretAssert.Equal(Plaintext, plaintext);
 
         // A tag that does not match throws from Decrypt, so a line after it never runs.
         byte[] wrongTag = document.Tag.ToArray();
@@ -109,7 +109,7 @@ public class DeriveAKeyFromAPasswordSamples
             plaintext
         );
 
-        Assert.Equal(Plaintext, plaintext);
+        SecretAssert.Equal(Plaintext, plaintext);
 
         // A tag that does not match throws from Decrypt; the using declarations still run on the way out.
         byte[] wrongTag = document.Tag.ToArray();

@@ -215,7 +215,7 @@ public class ReadASecretWithoutAStringSamples
         // end-snippet
 
         using ECDsa imported = ImportKey(encryptedPem, password);
-        Assert.Equal(
+        SecretAssert.Equal(
             original.ExportSubjectPublicKeyInfo(),
             imported.ExportSubjectPublicKeyInfo()
         );

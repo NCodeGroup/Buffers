@@ -193,6 +193,6 @@ public class ByteArrayApisSamples
         using var aes = new AesGcm(key, tagSizeInBytes: 16);
         byte[] opened = new byte[Data.Length];
         aes.Decrypt(nonce, ciphertext, tag, opened);
-        Assert.Equal(Data, opened);
+        SecretAssert.Equal(Data, opened);
     }
 }
