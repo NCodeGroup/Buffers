@@ -3,7 +3,6 @@
   "description": "Pinned, pooled .NET buffers that zero themselves on dispose, for keys and other secrets, plus fixed-size buffer writers and string splitting without substring copies.",
   "product": "Buffers",
   "mark": "ncode",
-  "version": "v5",
   "repository": {
     "url": "https://github.com/NCodeGroup/Buffers",
     "branch": "main"
