@@ -214,6 +214,15 @@
     "SiteGrowthLeavesCopies": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
     },
+    "SitePasswordKeyUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/DeriveAKeyFromAPasswordSamples.cs"
+    },
+    "SitePasswordKeyDecrypt": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/DeriveAKeyFromAPasswordSamples.cs"
+    },
+    "SitePasswordKeyVerify": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/DeriveAKeyFromAPasswordSamples.cs"
+    },
     "SiteCopiesAreNotCleared": {
       "file": "tests/NCode.Buffers.Site.Tests/Start/LimitsSamples.cs"
     },
