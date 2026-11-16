@@ -35,17 +35,20 @@ pages get compiled samples:
 **Every C# sample on the site is a region of a compiled, passing xUnit test in `tests/NCode.Buffers.Site.Tests`, and
 the site's build includes it in the page by its key. The READMEs keep MarkdownSnippets.**
 
-1. `tests/NCode.Buffers.Site.Tests` holds the site's samples and nothing else. The library grants it no
-   `InternalsVisibleTo`, and its namespace, `SiteSamples`, is outside `NCode.Buffers`, so a sample needs
-   `using NCode.Buffers;` and compiles only against the public API, as a consumer's code does. The project is named
-   `.Tests` so that the template's test settings apply and `dotnet test` runs it. It departs from the convention that
-   a test project is named for the project it tests, because it tests the site's pages.
+1. `tests/NCode.Buffers.Site.Tests` holds the site's samples, the `SecretAssert` helper their tests compare secrets
+   with, and that helper's tests, and nothing else. The library grants it no `InternalsVisibleTo`, and its namespace,
+   `SiteSamples`, is outside `NCode.Buffers`, so a sample needs `using NCode.Buffers;` and compiles only against the
+   public API, as a consumer's code does. The project is named `.Tests` so that the template's test settings apply
+   and `dotnet test` runs it. It departs from the convention that a test project is named for the project it tests,
+   because it tests the site's pages.
 2. A page's samples are one class named for the page's file, in a folder named for the page's folder:
    `docs/site/guides/verify-a-mac.mdx` has `Guides/VerifyAMacSamples.cs`, class `VerifyAMacSamples` in namespace
    `SiteSamples.Guides`, and samples of `docs/site/index.mdx` would be in `IndexSamples.cs`. Each sample is one fact
    named `<Key>Sample_Runs`, with the sample between `// begin-snippet: <Key>` and `// end-snippet`, asserting what the
    sample's comments claim; it compares a key, a MAC or another secret with the project's `SecretAssert.Equal`, in
    fixed time. These names replace the test conventions' `Method_State_Expected` and mirrored types, as ADR-1005's do.
+   The helper is the one exception: `SecretAssert.cs` and `SecretAssertTests.cs`, at the project's root, show no
+   sample. The helper's tests keep the test conventions' names, and fail if it stops failing on a difference.
 3. A key is PascalCase letters and digits, and is defined once in the repository; keys that differ only in letter
    case count as one key. The key of a site sample starts with `Site`, and no other key does. A page may also include
    a README sample by its key; the missing prefix shows that a change to that sample changes the READMEs.
