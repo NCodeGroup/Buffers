@@ -9,13 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- The content of a documentation site, in `docs/site/`: a landing page and the site's settings, which the shared Astro Starlight toolchain in [NCodeGroup/docs](https://github.com/NCodeGroup/docs) builds, so this repository holds no npm manifest or lockfile. A workflow builds the site on every pull request, and nothing publishes it yet ([#56](https://github.com/NCodeGroup/Buffers/issues/56), [ADR-1009](docs/decisions/1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md)).
+- The content of a documentation site, in `docs/site/`, which the shared Astro Starlight toolchain in [NCodeGroup/docs](https://github.com/NCodeGroup/docs) builds, so this repository holds no npm manifest or lockfile. A workflow builds the site on every pull request, and nothing publishes it yet ([#56](https://github.com/NCodeGroup/Buffers/issues/56), [ADR-1009](docs/decisions/1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md)). The site holds:
+  - A landing page: the usual code beside the same method written with NCode.Buffers, what the library does and does not do with the evidence for each, and a guide for each situation.
+  - Start: a quick start that shows a key turn to zeros, a "Which buffer?" picker of at most four questions with a card for each of the ten buffers, and what the library protects and what it does not.
+  - Six guides, each the usual code, what it leaves in memory, the fix, its pitfalls, what it does not fix and a checklist: derive a key from a password, verify a MAC without leaking timing, work with an API that takes or returns `byte[]`, build a secret of unknown length, read a secret without leaving a string behind, and keep a secret across an `await` or in a field.
+  - Concepts: how secrets leak in managed code, with nine leak cards and a memory strip that steps through the life of a key, and who zeroes what, and when.
+  - Evidence: each requirement the library accepts, with the tests that fail when it stops being true, the source lines behind it and what that evidence does not show.
+  - Reference: the ways to get it wrong, by symptom, with the compiler errors and what to write instead.
 - `tests/NCode.Buffers.Site.Tests`, a test project for the site's samples that cannot see the library's internal members; a page includes a sample by its key when the site is built ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)).
 
 ### Changed
 
 - Package validation compares every package with the published 5.0.3 package ([ADR-1001](docs/decisions/1001-each-package-is-validated-against-the-last-released-package.md)).
 - `./build/gate.ps1` fails on a sample key defined twice, on a site sample's key that does not start with `Site`, and when `dotnet mdsnippets` changes an `.mdx` file; `mdsnippets.json` keeps MarkdownSnippets off `.mdx` pages and `.astro` components ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)).
+- `./build/gate.ps1` runs `build/Test-SiteEvidence.ps1`, which fails when a test, sample or source line the site cites is gone or has moved, and when a line a page marks on a sample does not match exactly one line of it.
 
 ## [5.0.3] - 2026-11-15
 
