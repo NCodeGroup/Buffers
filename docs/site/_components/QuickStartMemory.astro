@@ -5,14 +5,17 @@
 //                  the lifetime holds them, and after it is disposed. The bytes are the program's, not a drawing.
 //   view="stills"  three still frames of `VerifySignature`: the key in a pinned buffer, the expected MAC on the
 //                  stack, and both zeroed when the method returns. Two secrets with bytes of their own, which the
-//                  memory strip, drawn for one key, does not show. A drawing of the mechanism.
+//                  memory strip, drawn for one key, does not show. A drawing of the mechanism, with the bytes of the
+//                  quick start's call, from docs/site/_components/data/quick-start.stills.txt, which the call's test
+//                  compares with the key and the MAC the call computes.
 // Without JavaScript and in print, both render whole: they have no script.
 // Usage: <QuickStartMemory view="watch" />  ·  <QuickStartMemory view="stills" />
 import { Readout } from '@ncodegroup/docs/components';
 import Brace from '@site/components/Brace.astro';
 import KindMark from '@site/components/KindMark.astro';
 import Proof from '@site/components/Proof.astro';
-import fixture from '@site/components/data/quick-start.watch.txt?raw';
+import stillsFixture from '@site/components/data/quick-start.stills.txt?raw';
+import watchFixture from '@site/components/data/quick-start.watch.txt?raw';
 import { inline } from '@site/components/lib/evidence';
 
 interface Props {
@@ -20,23 +23,30 @@ interface Props {
 }
 const { view } = Astro.props;
 
-// The fixture: two lines, "<label>: <64 hex digits>".
-const lines = fixture
-  .trimEnd()
-  .split('\n')
-  .map((line) => {
-    const match = /^(.+?):\s+([0-9A-F]{64})$/.exec(line);
-    if (!match) throw new Error(`[quick start] quick-start.watch.txt: "${line}" is not "<label>: <64 hex digits>"`);
-    return { text: line, label: match[1], bytes: match[2].match(/../g) ?? [] };
-  });
-if (lines.length !== 2) throw new Error('[quick start] quick-start.watch.txt must hold two lines');
+// Each fixture holds two lines, "<label>: <64 hex digits>".
+function readFixture(name: string, text: string) {
+  const read = text
+    .trimEnd()
+    .split('\n')
+    .map((line) => {
+      const match = /^(.+?):\s+([0-9A-F]{64})$/.exec(line);
+      if (!match) throw new Error(`[quick start] ${name}: "${line}" is not "<label>: <64 hex digits>"`);
+      return { text: line, label: match[1], bytes: match[2].match(/../g) ?? [] };
+    });
+  if (read.length !== 2) throw new Error(`[quick start] ${name} must hold two lines`);
+  return read;
+}
+const lines = readFixture('quick-start.watch.txt', watchFixture);
+const [keyLine, macLine] = readFixture('quick-start.stills.txt', stillsFixture);
+if (keyLine.label !== 'key' || macLine.label !== 'expected') {
+  throw new Error('[quick start] quick-start.stills.txt must hold "key:", then "expected:"');
+}
 
 type Cell = 'key' | 'mac' | 'zero' | 'unknown' | 'free';
-// Each cell stands for four bytes and shows the first of them. The key is the fixture's, which is also the key the
-// README's test derives (the same password and salt); the MAC is HMAC-SHA256 of "payload" under that key, the
-// signature that test checks.
-const key = lines[0].bytes.filter((_, i) => i % 4 === 0);
-const mac = ['18', '34', 'C7', '3B', 'F4', '07', '64', '5E'];
+// Each cell stands for four bytes and shows the first of them: the key the call derives, and the expected MAC,
+// HMAC-SHA256 of "payload" under that key.
+const key = keyLine.bytes.filter((_, i) => i % 4 === 0);
+const mac = macLine.bytes.filter((_, i) => i % 4 === 0);
 const row = (kind: Cell, count = 8) =>
   Array.from({ length: count }, (_, i) => ({
     kind,

@@ -11,7 +11,8 @@ namespace SiteSamples.Start;
 // its key (ADR-1010). SiteWatchAKeyDisappear writes to the console, so this class runs in a collection that no other
 // test runs beside, and its output is compared with the fixture the page shows,
 // docs/site/_components/data/quick-start.watch.txt. SiteQuickStartCall calls the README's own Signatures class, which
-// this project compiles from tests/NCode.Buffers.Tests/ReadmeSamples/Signatures.cs.
+// this project compiles from tests/NCode.Buffers.Tests/ReadmeSamples/Signatures.cs, and its key and MAC are compared
+// with the bytes the page's stills draw, docs/site/_components/data/quick-start.stills.txt.
 [Collection(ConsoleTests.Name)]
 public class QuickStartSamples
 {
@@ -104,6 +105,36 @@ public class QuickStartSamples
 
         Assert.True(valid);
         Assert.False(tampered);
+
+        // The stills draw this call: the key it derives, and the expected MAC, which is the signature before the
+        // sample changed one bit of it.
+        signature[0] ^= 1;
+        Span<byte> derivedKey = stackalloc byte[32];
+        Rfc2898DeriveBytes.Pbkdf2(
+            password,
+            salt,
+            derivedKey,
+            600_000,
+            HashAlgorithmName.SHA256
+        );
+        byte[] stillsKey = ReadStill("key");
+        byte[] stillsMac = ReadStill("expected");
+        SecretAssert.Equal(stillsKey, derivedKey);
+        SecretAssert.Equal(stillsMac, signature);
+    }
+
+    // A line of quick-start.stills.txt, "<label>: <hex digits>", as bytes.
+    private static byte[] ReadStill(string label)
+    {
+        foreach (string line in ReadFixture("quick-start.stills.txt").Split('\n'))
+        {
+            if (line.StartsWith($"{label}:", StringComparison.Ordinal))
+            {
+                return Convert.FromHexString(line[(label.Length + 1)..].Trim());
+            }
+        }
+
+        throw new InvalidDataException($"quick-start.stills.txt has no {label}: line.");
     }
 
     private static string ReadFixture(string name)
