@@ -19,7 +19,9 @@ pages get compiled samples:
   of the page can.
 - MarkdownSnippets reads every C# file in the repository for sample regions, and the site's build reads every C# file
   under `tests/`. The keys of all samples share one space. MarkdownSnippets does not reject a key defined twice: it
-  writes both blocks at each use.
+  writes both blocks at each use. Both match a key exactly, letter case included (MarkdownSnippets 29.0.0, tested
+  2026-11-16): where two keys differ only in case, a key typed in the wrong case includes the other sample, and
+  nothing fails.
 
 ## Decision
 
@@ -37,16 +39,18 @@ the site's build includes it in the page by its key. The READMEs keep MarkdownSn
    `<Key>Sample_Runs`, with the sample between `// begin-snippet: <Key>` and `// end-snippet`, asserting what the
    sample's comments claim. These names replace the test conventions' `Method_State_Expected` and mirrored types, as
    ADR-1005's do.
-3. A key is PascalCase letters and digits, and is defined once in the repository. The key of a site sample starts
-   with `Site`, and no other key does. A page may also include a README sample by its key; the missing prefix shows
-   that a change to that sample changes the READMEs.
+3. A key is PascalCase letters and digits, and is defined once in the repository; keys that differ only in letter
+   case count as one key. The key of a site sample starts with `Site`, and no other key does. A page may also include
+   a README sample by its key; the missing prefix shows that a change to that sample changes the READMEs.
 4. A page includes a sample with an empty fenced block whose info string is `cs snippet=<Key>`. A page holds no copy
    of C# that must compile. The site's build stops on a key no sample defines, a key defined twice and a region that
    is never closed.
 5. A page is an `.mdx` file. `mdsnippets.json` excludes `*.mdx` documents and `*.astro` sources by file name, so
    MarkdownSnippets reads neither the pages nor the site's components.
-6. `build/gate.ps1` fails on a key defined twice, on a site sample whose key lacks the prefix and on any other key
-   that has it. It hashes `*.mdx` with `*.md` around `dotnet mdsnippets` and fails when the tool changes either.
+6. `build/Assert-SampleKeys.ps1` fails on a key defined twice, on a site sample whose key lacks the prefix and on any
+   other key that has it, and `build/Test-AssertSampleKeys.ps1` runs it against fixture repositories: a clean one,
+   and one for each failure. `build/gate.ps1` runs the test, then the check. It hashes `*.mdx` with `*.md` around
+   `dotnet mdsnippets` and fails when the tool changes either.
 7. `build/Test-Coverage.ps1` runs `tests/NCode.Buffers.Tests` alone, and the sample project references no coverage
    collector: a line of the library that only a sample runs counts as not covered.
 
@@ -76,7 +80,8 @@ the site's build includes it in the page by its key. The READMEs keep MarkdownSn
 
 ## References
 
-- `tests/NCode.Buffers.Site.Tests/`, `docs/site/`, `mdsnippets.json`, `build/gate.ps1`, `build/Test-Coverage.ps1`
+- `tests/NCode.Buffers.Site.Tests/`, `docs/site/`, `mdsnippets.json`, `build/gate.ps1`, `build/Assert-SampleKeys.ps1`,
+  `build/Test-AssertSampleKeys.ps1`, `build/Test-Coverage.ps1`
 - [ADR-1005](1005-readme-samples-are-compiled-tests-that-markdownsnippets-copies-into-the-readmes.md): the README
   samples.
 - [ADR-1009](1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md):
