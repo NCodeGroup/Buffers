@@ -1,0 +1,109 @@
+---
+title: What it protects, and what it does not
+description: The threat NCode.Buffers answers, the six it counters, the nine limits it has, and what to use for the rest.
+---
+
+import LeakCard from '@site/components/LeakCard.astro';
+import LimitsBoundaryMap from '@site/components/LimitsBoundaryMap.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+
+## In short
+
+- **The problem.** A secret your code is done with stays readable in memory: in arrays nothing clears, in copies the
+  collector leaves behind, in pooled buffers the next caller rents.
+- **What the library does.** It keeps a secret in one place the collector does not move, and overwrites that place
+  with zeros when you dispose it.
+- **The limit.** It works inside your process. It cannot stop anything that can read that process's memory, and it
+  cannot reach copies your code makes.
+
+## The threat it answers
+
+A secret stays readable in memory after your code is done with it, for as long as nothing overwrites it. Anything
+that later reads that memory reads the secret: a crash dump, a page file, a pool's next renter. NCode.Buffers
+shortens how long a secret lasts, and lowers the number of places that hold it.
+
+The library is one assembly inside your process, running with your privileges, and every input it gets comes from
+your code. It starts no threads, performs no I/O and opens no network connection. <Proof source="Architecture.Scope" />
+
+## In scope
+
+Six threats, each with the requirement that counters it. A mark opens the requirement's row on [Guarantees and their
+tests](/evidence/guarantees/), with the tests behind it and what they do not show.
+
+- A secret stays readable in freed or reused memory. <Proof claim="R1" /> <Proof claim="R2" />
+- A compacting collection leaves a copy of a secret at an earlier address. <Proof claim="R3" />
+- The time a comparison takes reveals where two MACs differ. <Proof claim="R4" />
+- Malformed text decodes to a different string that looks valid. <Proof claim="R5" />
+- A fixed-size writer writes past the memory it was given. <Proof claim="R6" />
+- A tampered or substituted package. <Proof claim="R7" />
+
+## Out of scope
+
+Each limit says what is true, why, and what addresses it instead. The numbers match the drawing below.
+
+1. **Memory is not locked into RAM.** The library allocates memory and writes zeros to it, and nothing more. The
+   operating system can write any page to a page file, to swap or to a hibernation file. Locking pages is an
+   operating system call; the project does not plan it. <Proof source="Roadmap.NotPlanned" />
+2. **Memory is not hidden from a debugger, a crash dump or another process.** Whatever can read your process's memory
+   reads a secret while it is there. The operating system decides who may attach a debugger or collect a dump.
+3. **A secret in use is readable.** To use a key, the processor needs it in plain form. The library shortens how long
+   that lasts, and in how many places: keep the `using` block around the work, and no wider.
+4. **Nothing is zeroed without `Dispose`.** There is no finalizer to do it later. <Proof sample="SiteNoFinalizer" />
+   <Proof source="Architecture.NoFinalizers" /> Put every owner in a `using`, which disposes on every way out of the
+   block. <LeakCard leak="L6" />
+5. **Copies you make are yours.** `Dispose` writes zeros to the memory it owns, and to nothing else.
+   <Proof sample="SiteCopiesAreNotCleared" /> Write into the buffer itself, with the overloads that take a
+   destination span. <LeakCard leak="L9" />
+6. **A new buffer is not cleared before you get it.** It is allocated without initialization, and such an array "can
+   contain … sensitive information created by other parts of the application". <Proof external="AllocateUninitializedArrayDocs" />
+   Never read, send, hash or compare the part you did not write. <Proof source="SecureMemory.Allocate" />
+7. **`GetSecureLifetime()` does not pin memory you already had.** It zeroes the span you give it, wherever that span
+   is. If the collector moved the array before, the copy at its old address stays. <Proof source="BufferExtensions.GetSecureLifetime" />
+   Use `stackalloc`, which does not move, or a buffer from `Rent` or `CreatePinnedArray`. <LeakCard leak="L1" />
+8. **The library zeroes buffers, and nothing else.** Registers, stack slots the compiler used and memory inside native
+   libraries are out of its reach: it writes only to the span it is given. <Proof source="ZeroMemory" /> At this level
+   the remedy is a different tool, below.
+9. **A comparison does not hide the length.** `FixedTimeEquals` returns `false` at once when the lengths differ.
+   <Proof test="CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentLengths_ReturnsFalse" /> Compare
+   values of one fixed length, such as MACs of one algorithm.
+
+<LimitsBoundaryMap />
+
+## A copy, in code
+
+The fifth limit, as a test. The pinned array is zeros after its lifetime ends; the array `ToArray()` made still holds
+the key.
+
+```cs snippet=SiteCopiesAreNotCleared title="A copy outlives Dispose"
+```
+
+<Proof sample="SiteCopiesAreNotCleared" />
+
+## What about…
+
+- **`SecureString`?** Microsoft recommends against it for new development. <Proof external="SecureStringNotForNewCode" />
+  It encrypts its contents on Windows only, and a string you build it from cannot be erased.
+  <Proof external="SecureStringNoEncryption" /> <LeakCard leak="L5" />
+- **`mlock` and `VirtualLock`?** They keep pages out of the page file or swap while they are locked
+  ([VirtualLock](https://learn.microsoft.com/windows/win32/api/memoryapi/nf-memoryapi-virtuallock), read
+  2026-11-16). Linux's manual page warns that suspend mode "will save a copy of the system's RAM to disk, regardless
+  of memory locks" ([mlock(2)](https://man7.org/linux/man-pages/man2/mlock.2.html), read 2026-11-16). They are
+  operating system calls, outside this library.
+- **Encrypting memory?** The library does not encrypt memory. A key that decrypts memory is one more secret in that
+  memory.
+- **Hardware side channels?** Out of scope. The library's requirements are the seven above, and none of them concerns
+  the processor's caches or speculative execution.
+
+## When the answer is a different tool
+
+When a secret must not be readable even while in use, keep it out of your process. A key store, a hardware security
+module or an operating system's credential service holds the key, and your code holds an opaque handle to it. That
+is Microsoft's recommendation in place of `SecureString`. <Proof external="SecureStringOpaqueHandle" />
+
+<Related>
+- **Learn** [Quick start](/start/quick-start/)
+- **Do** [Which buffer?](/start/which-buffer/)
+- **Understand** [How secrets leak in managed code](/concepts/how-secrets-leak/)
+- **Look up** [Ways to get it wrong](/reference/pitfalls/)
+</Related>

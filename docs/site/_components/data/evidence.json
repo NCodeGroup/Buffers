@@ -469,6 +469,30 @@
         43
       ],
       "match": "public readonly struct StringSegments"
+    },
+    "Architecture.Scope": {
+      "file": "docs/architecture.md",
+      "lines": [
+        3,
+        5
+      ],
+      "match": "NCode.Buffers is one assembly"
+    },
+    "Architecture.NoFinalizers": {
+      "file": "docs/architecture.md",
+      "lines": [
+        42,
+        43
+      ],
+      "match": "Ownership is explicit"
+    },
+    "Roadmap.NotPlanned": {
+      "file": "ROADMAP.md",
+      "lines": [
+        30,
+        31
+      ],
+      "match": "Locking memory into RAM"
     }
   },
   "external": {
@@ -524,6 +548,24 @@
       "url": "https://learn.microsoft.com/dotnet/csharp/language-reference/operators/stackalloc",
       "read": "2026-11-16",
       "quote": "A stack-allocated memory block isn't subject to garbage collection and doesn't need to be pinned by a fixed statement."
+    },
+    "SecureStringNotForNewCode": {
+      "title": "SecureString",
+      "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
+      "read": "2026-11-16",
+      "quote": "We recommend that you don't use the SecureString class for new development on .NET (Core) or when you migrate from .NET Framework."
+    },
+    "SecureStringOpaqueHandle": {
+      "title": "SecureString: how secure is SecureString?",
+      "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
+      "read": "2026-11-16",
+      "quote": "Instead of using SecureString to protect passwords, the recommended alternative is to use an opaque handle to credentials that are stored outside of the process."
+    },
+    "SecureStringNoEncryption": {
+      "title": "SecureString: how secure is SecureString?",
+      "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
+      "read": "2026-11-16",
+      "quote": "Because of this platform dependency, SecureString does not encrypt the internal storage on non-Windows platform."
     }
   },
   "claims": [
