@@ -3,12 +3,15 @@ title: Verify a MAC without leaking timing
 description: Check a signature header, a signed cookie or an API key so that neither the time the check takes nor the memory it leaves gives the expected value away.
 ---
 
+import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Pinned from '@site/components/Pinned.astro';
 import PinNotes from '@site/components/PinNotes.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
 import VerifyAMacTimingModel from '@site/components/VerifyAMacTimingModel.astro';
+
+<KindLabel kind="how-to" />
 
 This is your situation when a request carries a value and its MAC, such as a webhook's signature header, a signed
 cookie or an API key, and your code must say whether they match. The example verifies a webhook's HMAC-SHA256
@@ -37,8 +40,8 @@ It computes the expected MAC, writes it as hex, and compares the two strings.
 
 </PinNotes>
 
-The third is the one a sender can use from outside the process. A sender who can try many signatures and time each
-answer learns how much of a guess was right, and can build the expected MAC from the front.
+The third is the one a sender can use from outside the process: by timing many guesses, it learns how much of each
+was right, and builds the expected MAC from the front.
 
 <VerifyAMacTimingModel />
 
@@ -65,8 +68,8 @@ compared in fixed time.
 
 </PinNotes>
 
-For two spans of bytes, the call is .NET's own `CryptographicOperations.FixedTimeEquals`. For spans of any other
-unmanaged type, it is NCode.Buffers' `FixedTimeEquals<T>`, which views both spans as bytes and calls the same method.
+For spans of bytes, the call is .NET's own `CryptographicOperations.FixedTimeEquals`; for any other unmanaged type,
+NCode.Buffers' `FixedTimeEquals<T>` views both spans as bytes and calls it.
 <Proof source="FixedTimeEquals" /> <Proof external="FixedTimeEqualsDocs" />
 
 ## If the secret is text
@@ -81,36 +84,39 @@ An API key compared as characters takes the same call. With two spans of `char`,
 extension member and needs `using NCode.Buffers;`. A project on an earlier language version calls the same method as
 `CryptographicOperationsExtensions.FixedTimeEquals`. <Proof source="FixedTimeEquals" />
 
-The expected key still has to come from somewhere. A key read from configuration is already a `string`; [Read a
-secret without leaving a string behind](/guides/read-a-secret-without-a-string/) reads one into a buffer instead.
+A key read from configuration is already a `string`; [Read a secret without leaving a string
+behind](/guides/read-a-secret-without-a-string/) reads one into a buffer instead.
 
 ## Pitfalls
 
 [Ways to get it wrong](/reference/pitfalls/) has more, each with its evidence.
 
-- **Encoding the expected value.** `Convert.ToHexString(expected)` or `ToBase64String` makes a string of the
-  expected MAC. Decode the value you received into bytes, and compare bytes. <LeakCard leak="L5" />
-  [A string of the secret](/reference/pitfalls/#a-string-of-the-secret)
-- **Decoding before you check the length.** Check the length first, so that a value of the wrong length is a plain
-  `false` before any decoding, as the sample does. <Proof sample="SiteVerifyMacWebhook" />
-- **Expecting the length to stay hidden.** Spans of different lengths return `false` at once. A MAC has a fixed
-  length, so that tells nobody anything; when the length of an expected value is itself a secret, compare values of
-  a fixed length, such as the MACs of the two. <Proof test="CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentLengths_ReturnsFalse" />
-- **Comparing values that have more than one encoding.** `FixedTimeEquals<T>` compares the bytes the values
-  occupy, not the values. Compare spans of bytes, characters or integers; a floating-point value or a struct with
-  padding can be stored as different bytes from an equal one. <Proof source="FixedTimeEquals" />
+- **Encoding the expected value.** *You write* `Convert.ToHexString(expected)`, and compare strings. *What
+  happens:* a string of the expected MAC exists, which nothing can erase. <LeakCard leak="L5" /> *Write instead:*
+  decode the value you received, and compare bytes. [A string of the secret](/reference/pitfalls/#a-string-of-the-secret)
+- **Decoding before you check the length.** *You write* the length check after decoding, or none. *What happens:* a
+  value of the wrong length fills part of the buffer, or does not fit. *Write instead:* check the length first, so it
+  is a plain `false`, as the sample does. <Proof sample="SiteVerifyMacWebhook" />
+- **Expecting the length to stay hidden.** *You write* a comparison of values whose length is a secret. *What
+  happens:* spans of different lengths return `false` at once.
+  <Proof test="CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentLengths_ReturnsFalse" /> *Write
+  instead:* compare values of one fixed length, such as the MACs of the two.
+- **Comparing values that have more than one encoding.** *You write* `FixedTimeEquals<T>` on `double` values or a
+  struct with padding. *What happens:* it compares bytes, not values, so equal values can compare unequal.
+  <Proof sample="SitePitfallCompareBytesNotValues" /> <Proof sample="SitePitfallPaddingBytesCount" /> *Write
+  instead:* spans of bytes, characters or integers.
   [FixedTimeEquals on values that are not bytes](/reference/pitfalls/#fixedtimeequals-on-values-that-are-not-bytes)
-- **Comparing a digital signature by hand.** An RSA or ECDSA signature is checked by the algorithm's `VerifyData`
-  or `VerifyHash`, which answers `true` or `false`: there is no expected value to compare.
-- **Leaving the MAC key in an ordinary array.** The key that computes the MAC is a secret too, and it usually lives
-  for as long as the application. [Keep a secret across an await, or in a field](/guides/secrets-across-await/)
-  holds one.
+- **Comparing a digital signature by hand.** *You write* code that signs the data again and compares signatures.
+  *What happens:* an ECDSA signature differs each time, so there is no expected value. *Write instead:* the
+  algorithm's `VerifyData`, which answers `true` or `false`. <Proof sample="SiteVerifySignature" />
+- **Leaving the MAC key in an ordinary array.** *You write* the MAC key into a long-lived `byte[]`. *What happens:*
+  nothing clears it. <LeakCard leak="L2" /> *Write instead:* a rented sensitive buffer, as [Keep a secret across an
+  await, or in a field](/guides/secrets-across-await/) holds one.
 
 ## What this does not fix
 
 :::caution[Outside this check]
-- **Timing elsewhere in the request.** Looking up the secret, parsing the body and logging the result take their own
-  time.
+- **Timing elsewhere in the request,** such as looking up the secret, parsing the body and logging.
 - **The length of what you compare.** It shows, as the pitfall above says.
 - **Who can read the secret where it is configured,** or the process while the check runs:
   [what it protects, and what it does not](/start/limits/).
@@ -121,8 +127,7 @@ secret without leaving a string behind](/guides/read-a-secret-without-a-string/)
 - The comparison is `CryptographicOperations.FixedTimeEquals`, never `==`, `Equals`, `SequenceEqual` or
   `StartsWith`.
 - The incoming value is decoded to bytes; the expected value is never encoded as text.
-- The expected value is in memory under `GetSecureLifetime()`, or another owner that zeroes it, and never
-  becomes a string.
+- The expected value is under `GetSecureLifetime()`, or another owner that zeroes it.
 - A value of the wrong length is rejected before it is decoded.
 - The MAC key is held in a buffer that is zeroed when its owner is disposed.
 

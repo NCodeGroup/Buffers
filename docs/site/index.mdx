@@ -5,7 +5,7 @@ template: splash
 hero:
   title: >-
     <span class="landing-eyebrow" aria-hidden="true"><span>NCode.Buffers</span><span>a .NET library from NCode
-    Group</span><span>Apache-2.0</span></span>Secrets that clean up after themselves.
+    Group</span><span>Apache-2.0</span></span>A secret should not outlive its use.
   tagline: >-
     <p>Put a key in an ordinary array and the runtime treats it like any other data. The garbage collector can copy it
     to a new address and leave the old bytes behind, and nothing clears it when your method returns. NCode.Buffers
@@ -106,7 +106,9 @@ Each guide is one situation: the usual code, what it leaves behind, the fix and 
 
 What it protects and what it does not, and the test behind each claim.
 
-[What it protects, and what it does not](/start/limits/) · [Guarantees and their tests](/evidence/guarantees/)
+[What it protects, and what it does not](/start/limits/)
+
+[Guarantees and their tests](/evidence/guarantees/)
 
 </Card>
 <Card title="You have not thought about this before">
@@ -135,7 +137,7 @@ Verify a signature with a key derived from a password. First the usual way, then
 **The usual code**
 
 <Pinned tone="usual">
-```cs snippet=SiteHowSecretsLeakUsual title="Signatures.cs" "byte[] key =" "byte[] expected =" "SequenceEqual("
+```cs snippet=SiteHowSecretsLeakUsual title="Signatures.cs" wrap "byte[] key =" "byte[] expected =" "SequenceEqual("
 ```
 </Pinned>
 
@@ -154,7 +156,7 @@ Verify a signature with a key derived from a password. First the usual way, then
 **With NCode.Buffers**
 
 <Pinned tone="fix">
-```cs snippet=QuickStart title="Signatures.cs" "BufferFactory.Rent(" "GetSecureLifetime()" "return CryptographicOperations.FixedTimeEquals("
+```cs snippet=QuickStart title="Signatures.cs" wrap "BufferFactory.Rent(" "GetSecureLifetime()" "return CryptographicOperations.FixedTimeEquals("
 ```
 </Pinned>
 
@@ -199,6 +201,7 @@ take each half further.
 - Lock memory into RAM. The operating system can still write it to a page file, swap or a hibernation file.
   <Proof source="Roadmap.NotPlanned" />
 - Hide memory from a debugger, a crash dump, or a process that can read this one's memory.
+  [What it protects, and what it does not](/start/limits/)
 - Zero anything you do not dispose. There is no finalizer. <Proof sample="SiteNoFinalizer" />
 - Zero copies you make: a `string`, a `ToArray()` result, a buffer rented with `isSensitive: false`.
   <Proof sample="SiteCopiesAreNotCleared" />
@@ -238,8 +241,9 @@ Not sure which type you need? [Which buffer?](/start/which-buffer/) asks at most
 
 - **Tests.** Each claim under "It does" names the test, or the line of code, that makes it true.
   [Guarantees and their tests](/evidence/guarantees/)
-- **Samples.** Every C# sample on this site is a test in the repository, the usual code included. A sample that stops
-  compiling or passing fails the build. <Proof source="SiteSamplesDecision" />
+- **Samples.** Every C# sample on this site that compiles is a test in the repository, the usual code included. A
+  sample that stops compiling or passing fails the build. Code shown as not compiling is marked so, with the
+  compiler's error. <Proof source="SiteSamplesDecision" />
 - **Coverage.** The build fails under 98% line or branch coverage. <Proof source="CoverageMinimums" />
 - **Analysis.** Warnings are errors. The library's own code cannot call a lenient text encoding or rent from a pool
   without saying whether the buffer holds a secret: an analyzer rejects both. <Proof source="WarningsAsErrors" />
@@ -261,11 +265,11 @@ Not sure which type you need? [Which buffer?](/start/which-buffer/) asks at most
 - Also in the package:
   - [Fixed-size buffer writers](/start/which-buffer/#a-fixed-span-writer) that throw instead of writing past the
     end. <Proof claim="R6" />
-  - [Helpers that read a multi-segment buffer as one span](/start/which-buffer/#helpers-you-will-meet), and copy only
+  - [Helpers that read a multi-segment buffer as one span](/guides/secret-of-unknown-length/), and copy only
     when they must.
   - [String splitting](/start/which-buffer/#helpers-you-will-meet) that slices the original instead of copying
     substrings.
-  - [UTF-8 and ASCII encodings](/start/which-buffer/#helpers-you-will-meet) that reject invalid input.
+  - [UTF-8 and ASCII encodings](/evidence/guarantees/#strict-encoding) that reject invalid input.
     <Proof claim="R5" />
   - [`ZeroMemory` and `FixedTimeEquals`](/start/which-buffer/#helpers-you-will-meet) for spans of any unmanaged type.
 - Apache License 2.0. Copyright NCode Group. Report a vulnerability privately, as the

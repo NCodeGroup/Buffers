@@ -3,10 +3,13 @@ title: What it protects, and what it does not
 description: The threat NCode.Buffers answers, the six it counters, the nine limits it has, and what to use for the rest.
 ---
 
+import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import LimitsBoundaryMap from '@site/components/LimitsBoundaryMap.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
+
+<KindLabel kind="explanation" />
 
 ## In short
 
@@ -92,8 +95,8 @@ the key.
   operating system calls, outside this library.
 - **Encrypting memory?** The library does not encrypt memory. A key that decrypts memory is one more secret in that
   memory.
-- **Hardware side channels?** Out of scope. The library's requirements are the seven above, and none of them concerns
-  the processor's caches or speculative execution.
+- **Hardware side channels?** Out of scope. None of the library's requirements on [Guarantees and their
+  tests](/evidence/guarantees/) concerns the processor's caches or speculative execution.
 
 ## When the answer is a different tool
 

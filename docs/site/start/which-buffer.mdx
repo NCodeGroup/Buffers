@@ -4,9 +4,12 @@ description: Answer at most four questions about the data in front of you, and g
 ---
 
 import BufferCard from '@site/components/BufferCard.astro';
+import KindLabel from '@site/components/KindLabel.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
 import WhichBuffer from '@site/components/WhichBuffer.astro';
+
+<KindLabel kind="how-to" />
 
 Pick the buffer for the data in front of you. Answer the questions, and the card for your buffer is marked below,
 with its call, what to watch for and what you dispose. The answers stay in the page's address, so you can paste a
@@ -119,8 +122,8 @@ Nothing here is pinned or zeroed. Never put a secret in one of these.
 
 - The `out` buffer of `Rent` is exactly the length you asked for.
   <Proof test="BufferFactoryPropertyTests.Rent_WithSpan_ReturnsABufferOfTheExactRequestedLength" />
-- The owner's `Memory` is the whole buffer behind it: 4096 bytes for a sensitive request of 4096 bytes or less, and
-  exactly the length you asked for above that. <Proof test="SecureMemoryPoolTests.Rent_SizeLessThanPage_ReturnsPageSizeBuffer" />
+- The owner's `Memory` is the whole buffer behind it: 4096 bytes for a sensitive request of 1 to 4096 bytes, and
+  exactly the length you asked for above that. A request of zero gives an empty owner. <Proof test="SecureMemoryPoolTests.Rent_SizeLessThanPage_ReturnsPageSizeBuffer" />
   <Proof test="SecureMemoryPoolTests.Rent_SizeMoreThanPage_ReturnsExactSizeBuffer" />
 - `SecureMemoryPool<T>.Rent` hands back the whole buffer, so slice `owner.Memory` to the length you need, as the
   card's call does. <Proof sample="SiteAnswerSecurePool" />

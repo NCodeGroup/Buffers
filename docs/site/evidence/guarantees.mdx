@@ -4,10 +4,13 @@ description: Each requirement the library accepts, the test that fails when it s
 ---
 
 import EvidenceKinds from '@site/components/EvidenceKinds.astro';
+import KindLabel from '@site/components/KindLabel.astro';
 import Ledger from '@site/components/Ledger.astro';
 import LedgerRow from '@site/components/LedgerRow.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
+
+<KindLabel kind="reference" />
 
 This page lists what NCode.Buffers claims about its own behavior, one row per requirement. Each row names the tests
 that fail when the claim stops being true, the lines of source that make it true, and what the evidence does not
@@ -65,8 +68,10 @@ The project maps each weakness in MITRE's Common Weakness Enumeration to the row
 - **Two ban lists.** The library's own code cannot call a lenient text encoding or rent from a pool without saying
   whether the buffer holds a secret: an analyzer rejects both. <Proof source="BannedEncoding" />
   <Proof source="BannedBuffers" />
-- **The samples are tests.** Every C# sample on this site is a test in `tests/NCode.Buffers.Site.Tests`, a project
-  that sees only the public API, so a sample compiles only as your code would. <Proof source="SiteSamplesDecision" />
+- **The samples are tests.** Every C# sample on this site that compiles is a test: the site's own in
+  `tests/NCode.Buffers.Site.Tests`, which sees only the public API, so they compile only as your code would, and the
+  README's in `tests/NCode.Buffers.Tests`. Code shown as not compiling is marked so, with the compiler's error.
+  <Proof source="SiteSamplesDecision" />
 
 ### What a test can see
 
@@ -78,13 +83,13 @@ behind [R3](#not-moved) assert that.
 ```
 
 A test of zeroing keeps a view of the memory, disposes the owner, and reads the view. The tests behind
-[R1](#zeroed-on-dispose) do this for each kind of owner.
+[R1](#zeroed-on-dispose) do this for a rented buffer and for both lifetimes.
 
 ```cs snippet=SiteGuaranteesZeroedThroughAView title="How a test sees that memory was zeroed"
 ```
 
-Both are tests in the repository, and this page includes them from there. <Proof sample="SiteGuaranteesPinnedGeneration" />
-<Proof sample="SiteGuaranteesZeroedThroughAView" />
+Both are tests in the repository, and this page includes them from there.
+<Proof sample="SiteGuaranteesPinnedGeneration" /> <Proof sample="SiteGuaranteesZeroedThroughAView" />
 
 ## What tests cannot prove
 

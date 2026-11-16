@@ -4,6 +4,7 @@ description: Install the package, watch a key turn to zeros, then read the READM
 ---
 
 import { Card, CardGrid } from '@ncode/docs/components';
+import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Pinned from '@site/components/Pinned.astro';
 import PinNotes from '@site/components/PinNotes.astro';
@@ -11,10 +12,12 @@ import Proof from '@site/components/Proof.astro';
 import QuickStartMemory from '@site/components/QuickStartMemory.astro';
 import Related from '@site/components/Related.astro';
 
+<KindLabel kind="tutorial" />
+
 This page holds one secret the way the library means it to be held. You install the package, watch a key turn to
 zeros on your screen, then read a complete method that derives a key, checks a signature with it and leaves neither
-the key nor the expected MAC behind. Every sample on the page is a test in the repository, and the page includes it
-from there.
+the key nor the expected MAC behind. Every sample that runs on this page is a test in the repository, and the page
+includes it from there.
 
 ## Install
 
@@ -57,7 +60,7 @@ it, and zeroes the derived key and the expected MAC when the method returns. Fou
 them.
 
 <Pinned tone="fix">
-```cs snippet=QuickStart title="Signatures.cs" "BufferFactory.Rent(" "Rfc2898DeriveBytes.Pbkdf2(" "expected.GetSecureLifetime()" "FixedTimeEquals("
+```cs snippet=QuickStart title="Signatures.cs" wrap "BufferFactory.Rent(" "Rfc2898DeriveBytes.Pbkdf2(" "expected.GetSecureLifetime()" "FixedTimeEquals("
 ```
 </Pinned>
 
@@ -131,7 +134,7 @@ behind](/guides/read-a-secret-without-a-string/) shows.
 2. **Write the `out` type.** `Rent` has a `Span<T>` overload and a `Memory<T>` overload, so `out var` does not
    compile:
 
-   ```cs title="Does not compile"
+   ```cs title="Does not compile" wrap
    using var keyOwner = BufferFactory.Rent(32, isSensitive: true, out var key);
    // error CS0121: The call is ambiguous between the following methods or properties:
    // 'NCode.Buffers.BufferFactory.Rent(int, bool, out System.Span<byte>)' and

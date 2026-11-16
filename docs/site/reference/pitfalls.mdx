@@ -3,9 +3,12 @@ title: Ways to get it wrong
 description: The mistakes the library lets you make, what each one does, and what to write instead.
 ---
 
+import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
+
+<KindLabel kind="reference" />
 
 Used as the guides show, a secret lives in memory the collector does not move, for the length of one `using` scope,
 and is overwritten with zeros when that scope ends. <Proof claim="R3" /> <Proof claim="R1" /> This page lists the
@@ -55,36 +58,36 @@ What each looks like, with the start of the compiler's message:
 
 ```cs
 // CS0121: The call is ambiguous between the following methods or properties:
-//   'BufferFactory.Rent(int, bool, out Span<byte>)' and
-//   'BufferFactory.Rent(int, bool, out Memory<byte>)'
+//   'NCode.Buffers.BufferFactory.Rent(int, bool, out System.Span<byte>)' and
+//   'NCode.Buffers.BufferFactory.Rent(int, bool, out System.Memory<byte>)'
 using var owner = BufferFactory.Rent(32, isSensitive: true, out var key);
 
-// CS4007: Instance of type 'System.Span<byte>' cannot be preserved across 'await' or 'yield'
-//   boundary.
+// CS4007: Instance of type 'System.Span<byte>' cannot be preserved across 'await'
+//   or 'yield' boundary.
 using var owner = BufferFactory.Rent(32, isSensitive: true, out Span<byte> key);
 await stream.FlushAsync();
 key[0] = 1;
 
-// CS8345: Field or auto-implemented property cannot be of type 'SecureArrayLifetime<byte>'
-//   unless it is an instance member of a ref struct.
+// CS8345: Field or auto-implemented property cannot be of type
+//   'SecureArrayLifetime<byte>' unless it is an instance member of a ref struct.
 private SecureArrayLifetime<byte> _key;
 
-// CS8175: Cannot use ref local 'key' inside an anonymous method, lambda expression, or query
-//   expression
+// CS8175: Cannot use ref local 'key' inside an anonymous method, lambda expression,
+//   or query expression
 using var key = BufferFactory.CreatePinnedArray(32);
 Action fill = () => RandomNumberGenerator.Fill(key);
 
-// CS8377: The type 'string' must be a non-nullable value type, along with all fields at any level
-//   of nesting, in order to use it as parameter 'T' in the generic type or method
-//   'BufferFactory.CreatePinnedArray<T>(int)'
+// CS8377: The type 'string' must be a non-nullable value type, along with all
+//   fields at any level of nesting, in order to use it as parameter 'T' in the
+//   generic type or method 'BufferFactory.CreatePinnedArray<T>(int)'
 using var keys = BufferFactory.CreatePinnedArray<string>(4);
 
 // CS1503: Argument 1: cannot convert from 'NCode.Buffers.FixedSpanBufferWriter<byte>'
 //   to 'System.Buffers.IBufferWriter<byte>'
 Fill(writer); // static void Fill(IBufferWriter<byte> target)
 
-// CS1929: 'FixedSpanBufferWriter<byte>' does not contain a definition for 'Write' and the best
-//   extension method overload
+// CS1929: 'FixedSpanBufferWriter<byte>' does not contain a definition for 'Write'
+//   and the best extension method overload
 //   'BuffersExtensions.Write<byte>(IBufferWriter<byte>, ReadOnlySpan<byte>)'
 //   requires a receiver of type 'System.Buffers.IBufferWriter<byte>'
 writer.Write("abcd"u8);
@@ -367,8 +370,12 @@ has the rule.
 ```cs snippet=SitePitfallCompareBytesNotValues
 ```
 
-**What happens** It compares memory, not values: `0.0` and `-0.0` are equal values with different bytes, and a
-struct's padding bytes count too. <Proof sample="SitePitfallCompareBytesNotValues" />
+**What happens** It compares memory, not values: `0.0` and `-0.0` are equal values with different bytes.
+<Proof sample="SitePitfallCompareBytesNotValues" /> A struct's padding bytes count too: two readings with equal fields
+compare unequal when the bytes between their fields differ. <Proof sample="SitePitfallPaddingBytesCount" />
+
+```cs snippet=SitePitfallPaddingBytesCount
+```
 
 **Why** It views both spans as bytes and compares those. <Proof source="FixedTimeEquals" />
 
