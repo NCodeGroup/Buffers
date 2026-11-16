@@ -1,0 +1,157 @@
+---
+title: Quick start
+description: Install the package, watch a key turn to zeros, then read the README's example line by line.
+---
+
+import { Card, CardGrid } from '@ncode/docs/components';
+import LeakCard from '@site/components/LeakCard.astro';
+import Pinned from '@site/components/Pinned.astro';
+import PinNotes from '@site/components/PinNotes.astro';
+import Proof from '@site/components/Proof.astro';
+import QuickStartMemory from '@site/components/QuickStartMemory.astro';
+import Related from '@site/components/Related.astro';
+
+This page holds one secret the way the library means it to be held. You install the package, watch a key turn to
+zeros on your screen, then read a complete method that derives a key, checks a signature with it and leaves neither
+the key nor the expected MAC behind. Every sample on the page is a test in the repository, and the page includes it
+from there.
+
+## Install
+
+```sh
+dotnet add package NCode.Buffers
+```
+
+The package targets the frameworks its project file declares. [nuget.org's Frameworks
+tab](https://www.nuget.org/packages/NCode.Buffers#supportedframeworks-body-tab) lists them, and this badge reads them
+from the project file:
+[![Target framework](https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fraw.githubusercontent.com%2FNCodeGroup%2FBuffers%2Fmain%2Fsrc%2FNCode.Buffers%2FNCode.Buffers.csproj&query=%2F%2FTargetFramework%20%7C%20%2F%2FTargetFrameworks&label=target&logo=dotnet&color=512BD4)](https://www.nuget.org/packages/NCode.Buffers#supportedframeworks-body-tab)
+
+It brings two dependencies: Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers return, and
+JetBrains.Annotations. <Proof source="PackageDependencies" />
+
+## Watch a key disappear
+
+Derive a 32-byte key into memory on the stack, inside a `using` block that owns its lifetime. Print the key inside
+the block, and again after it.
+
+```cs snippet=SiteWatchAKeyDisappear title="Program.cs"
+```
+
+We print the key only to see it. Never log a real one: the string `ToHexString` returns is a copy that nothing can
+erase. <LeakCard leak="L5" />
+
+<QuickStartMemory view="watch" />
+
+`GetSecureLifetime()` wraps the span, and disposing it, where the `using` block ends, overwrites the span with zeros.
+<Proof claim="R1" /> The output above is the file the sample's test compares with what the program prints, so the
+test fails when the two differ. <Proof sample="SiteWatchAKeyDisappear" />
+
+Stack memory suits a small secret in one synchronous method: the collector neither collects nor
+moves it, so it leaves no copy at an earlier address. <Proof external="StackallocDocs" />
+
+## The example
+
+This is the README's quick start, unchanged. It derives a key from a password, verifies an HMAC-SHA256 signature with
+it, and zeroes the derived key and the expected MAC when the method returns. Four lines do the work; the numbers mark
+them.
+
+<Pinned tone="fix">
+```cs snippet=QuickStart title="Signatures.cs" "BufferFactory.Rent(" "Rfc2898DeriveBytes.Pbkdf2(" "expected.GetSecureLifetime()" "FixedTimeEquals("
+```
+</Pinned>
+
+## Line by line
+
+<PinNotes tone="fix">
+
+1. `Rent` with `isSensitive: true` rents a buffer on the pinned heap, so the collector does not move the key.
+   <Proof claim="R3" /> `key` is the 32 bytes you asked for, and `keyOwner` owns the whole buffer: disposing it
+   overwrites all of it with zeros. <Proof claim="R1" /> The buffer is not cleared before you get it, so read only
+   what you wrote. <Proof source="SecureMemory.Allocate" />
+2. `Pbkdf2` writes the derived key straight into `key`. The overload that returns a new `byte[]` would leave the key
+   in an ordinary array that nothing clears. <LeakCard leak="L2" />
+3. `stackalloc` puts the expected MAC on the stack, and `GetSecureLifetime()` zeroes it when `expectedLifetime` is
+   disposed. It pins nothing, and stack memory needs no pinning. <Proof source="BufferExtensions.GetSecureLifetime" />
+4. `FixedTimeEquals` takes the same time wherever the two MACs differ, for MACs of the same length.
+   <Proof claim="R4" />
+
+</PinNotes>
+
+`key` and `keyOwner.Memory` are two views of one buffer, and their lengths differ:
+
+```cs snippet=SiteRentLengths title="Two lengths"
+```
+
+Work with `key`. Filling, hashing or comparing `keyOwner.Memory` would take in all 4096 bytes.
+<Proof sample="SiteRentLengths" /> <Proof test="BufferFactoryPropertyTests.Rent_WithSpan_ReturnsABufferOfTheExactRequestedLength" />
+
+<QuickStartMemory view="stills" />
+
+`using var` disposes in the reverse order of the declarations, when the method's block ends, whichever way it ends.
+
+## Call it
+
+A sender signs the payload with a key derived from the same password and salt. `VerifySignature` returns `true` for
+that signature, and `false` once one bit of it changes.
+
+```cs snippet=SiteQuickStartCall title="Calling VerifySignature"
+```
+
+<Proof sample="SiteQuickStartCall" /> The password is yours: `VerifySignature` reads it through a
+`ReadOnlySpan<byte>` and does not zero it. Keep it in a buffer you dispose, as [Read a secret without leaving a string
+behind](/guides/read-a-secret-without-a-string/) shows.
+
+## What you got, and what you did not
+
+<CardGrid>
+<Card title="You got">
+
+- A key the collector does not move, in a buffer that is zeroed when `keyOwner` is disposed. <Proof claim="R3" />
+  <Proof claim="R1" />
+- An expected MAC that is zeroed when `expectedLifetime` is disposed. <Proof claim="R1" />
+- A comparison whose time does not depend on where the MACs differ. <Proof claim="R4" />
+
+</Card>
+<Card title="You did not get">
+
+- Memory locked into RAM, or hidden from a debugger or a crash dump: [what it protects, and what it does
+  not](/start/limits/).
+- Zeroing without `Dispose`: there is no finalizer to do it later. <Proof sample="SiteNoFinalizer" />
+- Zeroing of copies you make, such as a `ToArray()` result or a `string`. <Proof sample="SiteCopiesAreNotCleared" />
+
+</Card>
+</CardGrid>
+
+## Three rules before you write more
+
+1. **Always `using`.** It disposes on every way out of the block, an exception included; that is the language's rule.
+   <Proof external="UsingStatementDocs" /> A `Dispose()` call written after the work never runs when the work
+   throws. <LeakCard leak="L6" />
+2. **Write the `out` type.** `Rent` has a `Span<T>` overload and a `Memory<T>` overload, so `out var` does not
+   compile:
+
+   ```cs title="Does not compile"
+   using var keyOwner = BufferFactory.Rent(32, isSensitive: true, out var key);
+   // error CS0121: The call is ambiguous between the following methods or properties:
+   // 'NCode.Buffers.BufferFactory.Rent(int, bool, out System.Span<byte>)' and
+   // 'NCode.Buffers.BufferFactory.Rent(int, bool, out System.Memory<byte>)'
+   ```
+
+   Write `out Span<byte> key` in synchronous code, and `out Memory<byte> key` when the buffer must cross an `await`,
+   as [Keep a secret across an await, or in a field](/guides/secrets-across-await/) shows.
+3. **Do not copy the secret out.** `ToArray()`, `Convert.ToHexString` and a `string` each make ordinary memory that
+   `Dispose` never reaches. <LeakCard leak="L9" />
+
+## Where next
+
+[Which buffer?](/start/which-buffer/) finds the buffer for the data in front of you in at most four questions. Each
+situation has a guide of its own, such as [Derive a key from a password](/guides/derive-a-key-from-a-password/).
+[How secrets leak in managed code](/concepts/how-secrets-leak/) shows what the collector, pools and strings do to a
+secret, in pictures.
+
+<Related>
+- **Do** [Which buffer?](/start/which-buffer/)
+- **Understand** [What it protects, and what it does not](/start/limits/)
+- **Look up** [Guarantees and their tests](/evidence/guarantees/)
+</Related>

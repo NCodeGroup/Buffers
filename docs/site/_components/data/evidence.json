@@ -200,6 +200,15 @@
     },
     "SiteCopiesAreNotCleared": {
       "file": "tests/NCode.Buffers.Site.Tests/Start/LimitsSamples.cs"
+    },
+    "SiteWatchAKeyDisappear": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/QuickStartSamples.cs"
+    },
+    "SiteRentLengths": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/QuickStartSamples.cs"
+    },
+    "SiteQuickStartCall": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/QuickStartSamples.cs"
     }
   },
   "sources": {
@@ -378,6 +387,22 @@
     "SiteSamplesDecision": {
       "file": "docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md",
       "branch": "main"
+    },
+    "BufferExtensions.GetSecureLifetime": {
+      "file": "src/NCode.Buffers/BufferExtensions.cs",
+      "lines": [
+        61,
+        64
+      ],
+      "match": "public SecureSpanLifetime<T> GetSecureLifetime()"
+    },
+    "PackageDependencies": {
+      "file": "src/NCode.Buffers/NCode.Buffers.csproj",
+      "lines": [
+        11,
+        12
+      ],
+      "match": "<PackageReference Include=\"JetBrains.Annotations\" />"
     }
   },
   "external": {
@@ -427,6 +452,12 @@
       "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
       "read": "2026-11-16",
       "quote": "Because its memory is not pinned, the garbage collector will make additional copies of String values when moving and compacting memory."
+    },
+    "StackallocDocs": {
+      "title": "stackalloc expression",
+      "url": "https://learn.microsoft.com/dotnet/csharp/language-reference/operators/stackalloc",
+      "read": "2026-11-16",
+      "quote": "A stack-allocated memory block isn't subject to garbage collection and doesn't need to be pinned by a fixed statement."
     }
   },
   "claims": [
