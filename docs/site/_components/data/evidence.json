@@ -249,6 +249,36 @@
     },
     "SiteOwnershipUseAfterDispose": {
       "file": "tests/NCode.Buffers.Site.Tests/Concepts/OwnershipSamples.cs"
+    },
+    "SitePitfallReturnFromScope": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallCopyOfALifetime": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallLifetimeAsObject": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallSliceLifetime": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallApiKeepsACopy": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallWriterByValue": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallAdvanceBySpanLength": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallResetAfterClear": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallCompareBytesNotValues": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SitePitfallDefaultValues": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
     }
   },
   "sources": {
@@ -555,6 +585,22 @@
         162
       ],
       "match": "finally"
+    },
+    "BufferExtensions.GetSecureLifetime": {
+      "file": "src/NCode.Buffers/BufferExtensions.cs",
+      "lines": [
+        61,
+        64
+      ],
+      "match": "public SecureSpanLifetime<T> GetSecureLifetime()"
+    },
+    "FixedSpanBufferWriter.Reset": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        107,
+        112
+      ],
+      "match": "public void Reset()"
     }
   },
   "external": {

@@ -1,0 +1,401 @@
+---
+title: Ways to get it wrong
+description: The mistakes the library lets you make, what each one does, and what to write instead.
+---
+
+import LeakCard from '@site/components/LeakCard.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+
+Used as the guides show, a secret lives in memory the collector does not move, for the length of one `using` scope,
+and is overwritten with zeros when that scope ends. <Proof claim="R3" /> <Proof claim="R1" /> This page lists the
+code that compiles, or nearly does, and breaks that: each entry says what you wrote, what happens, why, and what to
+write instead, with the test that shows it.
+
+## Find it by symptom
+
+| What you see | Where to look |
+| --- | --- |
+| The `out var` in `Rent` does not compile | [It did not compile](#it-did-not-compile) |
+| A type will not compile in `CreatePinnedArray` or `Rent` | [It did not compile](#it-did-not-compile) |
+| My buffer is 4096 bytes long | [Using the whole rented buffer](#using-the-whole-rented-buffer) |
+| The key I returned is all zeros | [Returning the array from inside the scope](#returning-the-array-from-inside-the-scope) |
+| My key turned to zeros while I was still using it | [Copying a lifetime](#copying-a-lifetime) |
+| My span holds someone else's data | [A view kept after Dispose](#a-view-kept-after-dispose) |
+| Half my buffer was zeroed, half was not | [A lifetime over a slice](#a-lifetime-over-a-slice) |
+| My log line says `System.Byte[]` | [Passing a lifetime as an object](#passing-a-lifetime-as-an-object) |
+| My writer keeps writing at the same place | [A fixed span writer passed by value](#a-fixed-span-writer-passed-by-value) |
+| The writer threw `InvalidOperationException` | [A fixed writer that is too small](#a-fixed-writer-that-is-too-small) |
+| `Reset()` left my bytes in the buffer | [Clear, Reset and a wipe](#clear-reset-and-a-wipe) |
+| Two equal values compare unequal | [FixedTimeEquals on values that are not bytes](#fixedtimeequals-on-values-that-are-not-bytes) |
+
+## It did not compile
+
+These are compile errors, so they cost nothing at run time. Each was compiled by hand with the C# 14 compiler, and
+CS9260 with C# 13.
+
+- **CS0121.** `out var` in a call to `BufferFactory.Rent`: the `Span<T>` and `Memory<T>` overloads differ only in the
+  `out` type. **Write instead:** the type: `out Span<byte> key` or `out Memory<byte> key`.
+- **CS4007.** A span, a lifetime or a lease still in use after an `await`. **Write instead:** the `Memory<T>` overload
+  of `Rent`, a block that ends before the `await`, or a synchronous helper.
+- **CS8345.** A field whose type is a lifetime, a lease or `FixedSpanBufferWriter<T>`. **Write instead:** hold an
+  `IMemoryOwner<T>`; use `FixedMemoryBufferWriter<T>`.
+- **CS8175.** A lifetime used inside a lambda. **Write instead:** pass the span to the code as a parameter.
+- **CS8377.** An element type that is or holds a reference, a nullable value type, or a type parameter that is only
+  `struct`. **Write instead:** an unmanaged type, and `where T : unmanaged` on a type parameter of your own, as
+  [R8](/evidence/guarantees/#unmanaged-only) says.
+- **CS1503, CS0029.** A `FixedSpanBufferWriter<T>` where an `IBufferWriter<T>` is expected. **Write instead:**
+  `FixedMemoryBufferWriter<T>`.
+- **CS1929.** `Write(…)` called on a `FixedSpanBufferWriter<T>`. **Write instead:** copy into `writer.GetSpan(n)`,
+  then `writer.Advance(n)`.
+- **CS9260.** `CryptographicOperations.ZeroMemory` on a span of anything but bytes, in a project on a language
+  version before C# 14 (checked with C# 13). **Write instead:** `CryptographicOperationsExtensions.ZeroMemory(span)`.
+
+What each looks like, with the start of the compiler's message:
+
+```cs
+// CS0121: The call is ambiguous between the following methods or properties:
+//   'BufferFactory.Rent(int, bool, out Span<byte>)' and
+//   'BufferFactory.Rent(int, bool, out Memory<byte>)'
+using var owner = BufferFactory.Rent(32, isSensitive: true, out var key);
+
+// CS4007: Instance of type 'System.Span<byte>' cannot be preserved across 'await' or 'yield'
+//   boundary.
+using var owner = BufferFactory.Rent(32, isSensitive: true, out Span<byte> key);
+await stream.FlushAsync();
+key[0] = 1;
+
+// CS8345: Field or auto-implemented property cannot be of type 'SecureArrayLifetime<byte>'
+//   unless it is an instance member of a ref struct.
+private SecureArrayLifetime<byte> _key;
+
+// CS8175: Cannot use ref local 'key' inside an anonymous method, lambda expression, or query
+//   expression
+using var key = BufferFactory.CreatePinnedArray(32);
+Action fill = () => RandomNumberGenerator.Fill(key);
+
+// CS8377: The type 'string' must be a non-nullable value type, along with all fields at any level
+//   of nesting, in order to use it as parameter 'T' in the generic type or method
+//   'BufferFactory.CreatePinnedArray<T>(int)'
+using var keys = BufferFactory.CreatePinnedArray<string>(4);
+
+// CS1503: Argument 1: cannot convert from 'NCode.Buffers.FixedSpanBufferWriter<byte>'
+//   to 'System.Buffers.IBufferWriter<byte>'
+Fill(writer); // static void Fill(IBufferWriter<byte> target)
+
+// CS1929: 'FixedSpanBufferWriter<byte>' does not contain a definition for 'Write' and the best
+//   extension method overload
+//   'BuffersExtensions.Write<byte>(IBufferWriter<byte>, ReadOnlySpan<byte>)'
+//   requires a receiver of type 'System.Buffers.IBufferWriter<byte>'
+writer.Write("abcd"u8);
+
+// CS9260 (C# 13): Feature 'extensions' is not available in C# 13.0.
+Span<int> values = stackalloc int[4];
+CryptographicOperations.ZeroMemory(values);
+```
+
+## It compiled, and it was wrong
+
+### Lifetimes
+
+#### No using statement
+
+**You write** `var key = BufferFactory.CreatePinnedArray(32);`, and `key.Dispose();` after the work, or no call at
+all.
+
+**What happens** An exception, or an early `return`, leaves before the call, and the key stays in the array. With no
+call at all, nothing ever zeroes it. <Proof sample="SiteExceptionSkipsClear" /> <Proof sample="SiteNoFinalizer" />
+
+**Why** The memory is zeroed in `Dispose` and nowhere else; there is no finalizer.
+
+**Write instead** `using var key = …;`, or a `using` statement with its own block. <LeakCard leak="L6" />
+
+#### Returning the array from inside the scope
+
+**You write** a method that returns `byte[]` and ends with `return key;` inside the `using` scope of a lifetime.
+
+```cs snippet=SitePitfallReturnFromScope
+```
+
+**What happens** It compiles, and the caller gets the array after `Dispose` zeroed it: 32 zero bytes, which still
+work as a key, and give the same MAC as `new byte[32]`. <Proof sample="SitePitfallReturnFromScope" />
+
+**Why** A `SecureArrayLifetime<T>` converts to `T[]` without a cast, and the `using` scope ends after the return value
+is taken.
+
+**Write instead** Return the lifetime itself and let the caller dispose it, as
+[Ownership](/concepts/ownership/#handing-it-over) shows.
+
+#### Copying a lifetime
+
+**You write** `var copy = key;`, or pass a lifetime by value to a helper that disposes it.
+
+```cs snippet=SitePitfallCopyOfALifetime
+```
+
+**What happens** Both lifetimes are the same array. Disposing either zeroes the key the other is still using.
+<Proof sample="SitePitfallCopyOfALifetime" />
+
+**Why** A lifetime is a struct that holds one reference, so a copy is a second owner. `var` takes the lifetime's
+type, not `Span<byte>`.
+
+**Write instead** `Span<byte> span = key;` when you want a span, and pass spans, not lifetimes, to code that only
+uses the memory.
+
+#### Passing a lifetime as an object
+
+**You write** a lifetime as an argument to a parameter of type `object`: a logger, `string.Format`, interpolation.
+
+```cs snippet=SitePitfallLifetimeAsObject
+```
+
+**What happens** The callee gets the key's own array, not a lifetime. Interpolation happens to print only
+`System.Byte[]`, but anything that reads an array's elements reads the key. <Proof sample="SitePitfallLifetimeAsObject" />
+
+**Why** The lifetime converts to `byte[]`, and `byte[]` converts to `object`.
+
+**Write instead** Never pass a lifetime or its array where `object` is expected. Log a length, never a key.
+
+#### A lifetime over a slice
+
+**You write** `buffer[..32].GetSecureLifetime()` over a buffer that holds a secret beyond the slice.
+
+```cs snippet=SitePitfallSliceLifetime
+```
+
+**What happens** `Dispose` zeroes the 32 bytes of the slice and leaves the rest. <Proof sample="SitePitfallSliceLifetime" />
+
+**Why** A `SecureSpanLifetime<T>` zeroes exactly the span it wraps. It does not know the buffer the span came from.
+<Proof source="SecureSpanLifetime.Dispose" />
+
+**Write instead** Call `GetSecureLifetime()` on the whole buffer.
+
+#### Expecting GetSecureLifetime to pin
+
+**You write** `array.AsSpan().GetSecureLifetime()` over an ordinary array, as if it were a pinned buffer.
+
+**What happens** The array is still an ordinary array: the collector can move it while the lifetime wraps it, and
+`Dispose` zeroes it only where it is by then. <LeakCard leak="L1" />
+
+**Why** `GetSecureLifetime()` wraps the span it is given and does nothing else. <Proof source="BufferExtensions.GetSecureLifetime" />
+
+**Write instead** `BufferFactory.CreatePinnedArray` for an array you allocate, or `stackalloc` for a small secret of
+a fixed size. Wrap an array an API gave you as soon as you get it.
+
+### Renting
+
+#### Using the whole rented buffer
+
+**You write** `owner.Memory` where you meant the key, after `BufferFactory.Rent(32, isSensitive: true, …)`.
+
+**What happens** `owner.Memory` is the whole rented buffer, 4096 bytes for any request up to one page. Hashing,
+sending or comparing it processes all 4096. <Proof test="SecureMemoryPoolTests.Rent_SizeLessThanPage_ReturnsPageSizeBuffer" />
+
+**Why** Only the `out` buffer of `Rent` has the length you asked for.
+<Proof test="BufferFactoryPropertyTests.Rent_WithSpan_ReturnsABufferOfTheExactRequestedLength" />
+
+**Write instead** The `out` buffer, or `owner.Memory[..length]` when you rent from a pool directly.
+
+#### Reading a new buffer before writing it
+
+**You write** code that reads, hashes, sends or compares a rented buffer, or a part of it, before writing it.
+
+**What happens** You read whatever the memory held: a new buffer is not cleared for you, and it can hold what an
+earlier allocation left. <Proof external="AllocateUninitializedArrayDocs" />
+
+**Why** Sensitive buffers are allocated with `GC.AllocateUninitializedArray`, which skips clearing.
+<Proof source="SecureMemory.Allocate" />
+
+**Write instead** Write before you read, and use only the part you wrote.
+
+#### A view kept after Dispose
+
+**You write** a span or a `Memory<T>` from an owner, kept after the owner is disposed.
+
+**What happens** Nothing throws. A pooled buffer may be another caller's by then, and the view reads and writes their
+data. <Proof sample="SiteOwnershipUseAfterDispose" /> A `SecureArrayLifetime<T>`'s array is nobody else's: the view
+reads zeros. <Proof sample="SiteGuaranteesZeroedThroughAView" />
+
+**Why** A view is not tied to its owner.
+
+**Write instead** Drop every view of the memory when you dispose its owner. [Ownership](/concepts/ownership/) has the
+sample.
+
+#### isSensitive false on a secret's path
+
+**You write** `isSensitive: false` for a buffer, a writer, a lease or a copy that holds a secret or anything derived
+from one.
+
+**What happens** The memory comes from the shared pool: not pinned, not zeroed, and the next caller to rent it can
+read what you left. <Proof test="BufferFactoryTests.ChoosePool_WhenNotSensitive_ReturnsSharedPool" />
+<LeakCard leak="L3" />
+
+**Write instead** `isSensitive: true` everywhere a secret's bytes go.
+
+#### A key kept for the life of the process
+
+**You write** a key rented once and held until the application stops.
+
+**What happens** Pinning keeps the collector from copying it, and the key is readable for as long as it lives.
+<Proof claim="R3" />
+
+**Write instead** Hold it no longer than you need it, and dispose its holder when the key is replaced.
+[Keep a secret across an await, or in a field](/guides/secrets-across-await/) shows the holder.
+
+### Copies
+
+#### A string of the secret
+
+**You write** `Encoding.UTF8.GetString`, `Convert.ToBase64String`, `Convert.ToHexString`, interpolation or a
+deserialized `string` property, for a secret.
+
+**What happens** Each makes a string that your code cannot overwrite. <LeakCard leak="L5" />
+
+**Write instead** Decode straight into a sensitive buffer, as
+[Read a secret without leaving a string behind](/guides/read-a-secret-without-a-string/) shows.
+
+#### A copy you make
+
+**You write** `ToArray()`, or any call that returns the secret in new memory.
+
+**What happens** `Dispose` zeroes the original. The copy keeps the key. <Proof sample="SiteCopiesAreNotCleared" />
+<LeakCard leak="L9" />
+
+**Write instead** Pass the span; do the work where the secret already is.
+
+#### A writer that grows
+
+**You write** an `ArrayBufferWriter<byte>`, a `MemoryStream` or a `List<byte>` for a secret of unknown length.
+
+**What happens** Each time it grows, the smaller array is dropped with the first part of the secret in it.
+<Proof sample="SiteGrowthLeavesCopies" /> <LeakCard leak="L4" />
+
+**Write instead** `BufferFactory.CreatePooledBufferWriter(isSensitive: true)`, as
+[Build a secret of unknown length](/guides/secret-of-unknown-length/) shows.
+
+#### An API object that keeps the key
+
+**You write** a key from a pinned array given to an object, such as `aes.Key = key;`.
+
+```cs snippet=SitePitfallApiKeepsACopy
+```
+
+**What happens** The object copies the key into memory of its own. Disposing your lifetime zeroes your array, not
+the object's copy. <Proof sample="SitePitfallApiKeepsACopy" />
+
+**Write instead** Prefer the static methods that take the key as a span and return no object, such as
+`HMACSHA256.HashData(key, data, destination)`. When you need an object, keep it in the same scope as the key and
+dispose it there.
+
+### Writers and sequences
+
+#### A fixed span writer passed by value
+
+**You write** a helper that takes a `FixedSpanBufferWriter<T>` as an ordinary parameter.
+
+```cs snippet=SitePitfallWriterByValue
+```
+
+**What happens** The helper writes into the buffer and advances its own copy. The caller's `WrittenCount` stays at 0,
+so the next write lands on top. <Proof sample="SitePitfallWriterByValue" />
+
+**Why** The writer is a mutable struct: a copy has its own position over the same memory.
+
+**Write instead** Pass it by `ref`.
+
+#### Advancing by the span's length
+
+**You write** `writer.Advance(span.Length)` after `GetSpan(n)`.
+
+```cs snippet=SitePitfallAdvanceBySpanLength
+```
+
+**What happens** `GetSpan` returns all the free space, not `n` elements, so the writer commits elements you never
+wrote. <Proof sample="SitePitfallAdvanceBySpanLength" />
+
+**Write instead** `Advance` by the number of elements you wrote.
+
+#### Clear, Reset and a wipe
+
+**You write** `Clear()` to remove a secret from a fixed writer, or `Reset()` after `Clear()`.
+
+```cs snippet=SitePitfallResetAfterClear
+```
+
+**What happens** `Clear()` sets the position to 0 and touches nothing. `Reset()` sets the elements written since the
+last `Clear()` to their default with `Span<T>.Clear()`, and nothing past them. After `Clear()`, that is nothing.
+<Proof sample="SitePitfallResetAfterClear" /> <Proof source="FixedSpanBufferWriter.Reset" />
+
+**Write instead** To remove a secret, zero the memory you gave the writer: put that memory under a lifetime, or call
+`CryptographicOperations.ZeroMemory` on all of it.
+
+#### A fixed writer that is too small
+
+**You write** a `FixedMemoryBufferWriter<byte>` over a buffer smaller than the largest output, given to a serializer.
+
+**What happens** When the serializer asks for more space than is free, the writer throws `InvalidOperationException`
+instead of growing. <Proof claim="R6" />
+
+**Write instead** Size the buffer for the largest output, or use `CreatePooledBufferWriter` when you cannot.
+
+#### A lease or a copy with isSensitive false
+
+**You write** `GetSpanLease(isSensitive: false)` or `ConsumeAsContiguousSpan(isSensitive: false, …)` on a sensitive
+writer.
+
+**What happens** When the data spans several segments, it is copied into a buffer from the shared pool, which is
+neither pinned nor zeroed. <Proof source="SequenceExtensions.GetSpanLease.Rent" />
+
+**Write instead** Pass the writer's own `isSensitive`. [Ownership](/concepts/ownership/#sensitivity-travels-with-the-data)
+has the rule.
+
+### Text and comparison
+
+#### Comparing a MAC the usual way
+
+**You write** `==`, `Equals`, `SequenceEqual` or `StartsWith` on a MAC, a token or a password hash.
+
+**What happens** The comparison stops at the first difference, and its time tells where that was. <LeakCard leak="L7" />
+
+**Write instead** `CryptographicOperations.FixedTimeEquals`, as
+[Verify a MAC without leaking timing](/guides/verify-a-mac/) shows.
+
+#### FixedTimeEquals on values that are not bytes
+
+**You write** `FixedTimeEquals<T>` on `double`, `decimal` or a struct, expecting `==`.
+
+```cs snippet=SitePitfallCompareBytesNotValues
+```
+
+**What happens** It compares memory, not values: `0.0` and `-0.0` are equal values with different bytes, and a
+struct's padding bytes count too. <Proof sample="SitePitfallCompareBytesNotValues" />
+
+**Why** It views both spans as bytes and compares those. <Proof source="FixedTimeEquals" />
+
+**Write instead** Compare spans of bytes, or of integer types, whose bytes are their value.
+
+## A second Dispose
+
+What a second call does depends on the owner: it does nothing for a rented buffer, and zeroes again for a lifetime.
+[Ownership](/concepts/ownership/#five-owners) lists all five, with their tests.
+
+## Default and empty values
+
+A default value is not an empty buffer.
+
+```cs snippet=SitePitfallDefaultValues
+```
+
+<Proof sample="SitePitfallDefaultValues" />
+
+| Value | What it is |
+| --- | --- |
+| `default(SecureArrayLifetime<T>)` | `PinnedArray` is `null`, `Length` throws `NullReferenceException`, `Dispose` does nothing |
+| `default(StringSegments)` | Empty: `IsEmpty` is true, and `First` throws `InvalidOperationException` |
+
+<Related>
+- **Learn** [Quick start](/start/quick-start/)
+- **Do** [Work with an API that takes or returns byte[]](/guides/byte-array-apis/)
+- **Understand** [Ownership: who zeroes what, and when](/concepts/ownership/)
+- **Look up** [Guarantees and their tests](/evidence/guarantees/)
+</Related>
