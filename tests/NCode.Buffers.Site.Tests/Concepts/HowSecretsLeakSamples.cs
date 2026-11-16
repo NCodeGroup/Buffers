@@ -14,6 +14,48 @@ namespace SiteSamples.Concepts;
 // its key (ADR-1010).
 public class HowSecretsLeakSamples
 {
+    // begin-snippet: SiteHowSecretsLeakUsual
+    public static bool VerifySignature(
+        byte[] password,
+        byte[] salt,
+        byte[] payload,
+        byte[] signature
+    )
+    {
+        byte[] key = Rfc2898DeriveBytes.Pbkdf2(
+            password,
+            salt,
+            600_000,
+            HashAlgorithmName.SHA256,
+            32
+        );
+        byte[] expected = HMACSHA256.HashData(key, payload);
+        return expected.AsSpan().SequenceEqual(signature);
+    }
+
+    // end-snippet
+
+    [Fact]
+    public void SiteHowSecretsLeakUsualSample_Runs()
+    {
+        byte[] password = "correct horse battery staple"u8.ToArray();
+        byte[] salt = "salt"u8.ToArray();
+        byte[] payload = "payload"u8.ToArray();
+        byte[] key = Rfc2898DeriveBytes.Pbkdf2(
+            password,
+            salt,
+            600_000,
+            HashAlgorithmName.SHA256,
+            32
+        );
+        byte[] signature = HMACSHA256.HashData(key, payload);
+
+        // The usual code works: it accepts the right signature and rejects a changed one.
+        Assert.True(VerifySignature(password, salt, payload, signature));
+        signature[0] ^= 1;
+        Assert.False(VerifySignature(password, salt, payload, signature));
+    }
+
     [Fact]
     public void SiteArrayPoolKeepsBytesSample_Runs()
     {

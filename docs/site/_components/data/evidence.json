@@ -219,6 +219,9 @@
     },
     "SiteAnswerRentMemory": {
       "file": "tests/NCode.Buffers.Site.Tests/Start/WhichBufferSamples.cs"
+    },
+    "SiteHowSecretsLeakUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/HowSecretsLeakSamples.cs"
     }
   },
   "sources": {
@@ -566,6 +569,12 @@
       "url": "https://learn.microsoft.com/dotnet/api/system.security.securestring",
       "read": "2026-11-16",
       "quote": "Because of this platform dependency, SecureString does not encrypt the internal storage on non-Windows platform."
+    },
+    "ZeroMemoryRemarks": {
+      "title": "CryptographicOperations.ZeroMemory",
+      "url": "https://learn.microsoft.com/dotnet/api/system.security.cryptography.cryptographicoperations.zeromemory",
+      "read": "2026-11-16",
+      "quote": "This method exists to future-proof against potential optimizations in the .NET runtime that could eliminate memory writes that aren't followed by memory reads."
     }
   },
   "claims": [
