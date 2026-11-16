@@ -109,6 +109,7 @@ behind](/guides/read-a-secret-without-a-string/) reads one into a buffer instead
 - **Comparing a digital signature by hand.** *You write* code that signs the data again and compares signatures.
   *What happens:* an ECDSA signature differs each time, so there is no expected value. *Write instead:* the
   algorithm's `VerifyData`, which answers `true` or `false`. <Proof sample="SiteVerifySignature" />
+  <Proof external="EcdsaVerifyDataDocs" />
 - **Leaving the MAC key in an ordinary array.** *You write* the MAC key into a long-lived `byte[]`. *What happens:*
   nothing clears it. <LeakCard leak="L2" /> *Write instead:* a rented sensitive buffer, as [Keep a secret across an
   await, or in a field](/guides/secrets-across-await/) holds one.

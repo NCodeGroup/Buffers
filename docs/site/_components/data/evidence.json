@@ -909,6 +909,13 @@
       "read": "2026-11-16",
       "quote": "If your constructor accepts IMemoryOwner<T> as a parameter, its type should implement IDisposable, and your Dispose method should call Dispose on the IMemoryOwner<T> object.",
       "kind": "documented"
+    },
+    "EcdsaVerifyDataDocs": {
+      "title": "ECDsa.VerifyData",
+      "url": "https://learn.microsoft.com/dotnet/api/system.security.cryptography.ecdsa.verifydata",
+      "read": "2026-11-16",
+      "quote": "true if the signature is valid; otherwise, false.",
+      "kind": "documented"
     }
   },
   "claims": [
