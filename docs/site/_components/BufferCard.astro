@@ -84,7 +84,7 @@ const tests = card.evidence.map(testLink);
     border-color: var(--color-primary-text);
     box-shadow: 0 0 0 1px var(--color-primary-text);
   }
-  .buffer__head { display: grid; gap: var(--space-2); }
+  .buffer__head { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
   .buffer__group {
     font-size: var(--text-2xs);
     font-stretch: var(--width-label);
@@ -102,7 +102,7 @@ const tests = card.evidence.map(testLink);
     line-height: var(--leading-snug);
     overflow-wrap: anywhere;
   }
-  .buffer__title :global(code) { font-family: var(--font-mono); font-stretch: var(--width-code); font-size: 0.82em; }
+  .buffer__title :global(code) { font-family: var(--font-mono); font-stretch: var(--width-code); font-size: 0.82em; overflow-wrap: anywhere; }
   .buffer__use { margin: 0; color: var(--color-text-secondary); }
   .buffer__badges { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); margin: 0; padding: 0; list-style: none; font-size: var(--text-md); }
   .buffer__badges li { margin: 0; }

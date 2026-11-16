@@ -174,6 +174,10 @@
     "FixedMemoryBufferWriterPropertyTests.GetMemory_GivenAnySizeHint_ReturnsEnoughMemoryOrThrowsADocumentedException": {
       "file": "tests/NCode.Buffers.Tests/FixedMemoryBufferWriterPropertyTests.cs",
       "line": 76
+    },
+    "BufferFactoryTests.Rent_WhenSizeIsZeroAndSensitive_ReturnsEmptyMemorySingleton": {
+      "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
+      "line": 115
     }
   },
   "samples": {
@@ -209,6 +213,12 @@
     },
     "SiteQuickStartCall": {
       "file": "tests/NCode.Buffers.Site.Tests/Start/QuickStartSamples.cs"
+    },
+    "SiteAnswerSecurePool": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/WhichBufferSamples.cs"
+    },
+    "SiteAnswerRentMemory": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/WhichBufferSamples.cs"
     }
   },
   "sources": {
@@ -403,6 +413,62 @@
         12
       ],
       "match": "<PackageReference Include=\"JetBrains.Annotations\" />"
+    },
+    "SecureMemoryPool.Rent": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        161,
+        170
+      ],
+      "match": "var byteCount = minBufferSize == -1 ? PageSize"
+    },
+    "PublicApi.IsSensitive": {
+      "file": "src/NCode.Buffers/PublicAPI.Shipped.txt",
+      "lines": [
+        96,
+        103
+      ],
+      "match": "static NCode.Buffers.BufferFactory.CreatePinnedArray(int length)"
+    },
+    "PublicApi.SequenceIsSensitive": {
+      "file": "src/NCode.Buffers/PublicAPI.Shipped.txt",
+      "lines": [
+        116,
+        117
+      ],
+      "match": "static NCode.Buffers.SequenceExtensions.ConsumeAsContiguousSpan<T>"
+    },
+    "RefSpanLease.Type": {
+      "file": "src/NCode.Buffers/RefSpanLease.cs",
+      "lines": [
+        42,
+        42
+      ],
+      "match": "public readonly ref struct RefSpanLease<T>"
+    },
+    "EmptyMemory.Type": {
+      "file": "src/NCode.Buffers/EmptyMemory.cs",
+      "lines": [
+        33,
+        33
+      ],
+      "match": "public sealed class EmptyMemory<T> : IMemoryOwner<T>"
+    },
+    "MemorySegment.Type": {
+      "file": "src/NCode.Buffers/MemorySegment.cs",
+      "lines": [
+        27,
+        27
+      ],
+      "match": "public class MemorySegment<T> : ReadOnlySequenceSegment<T>"
+    },
+    "StringSegments.Type": {
+      "file": "src/NCode.Buffers/StringSegments.cs",
+      "lines": [
+        43,
+        43
+      ],
+      "match": "public readonly struct StringSegments"
     }
   },
   "external": {

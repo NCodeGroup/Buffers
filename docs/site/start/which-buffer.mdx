@@ -1,0 +1,176 @@
+---
+title: Which buffer?
+description: Answer at most four questions about the data in front of you, and get the buffer to use, its call, what to watch for and what you dispose.
+---
+
+import BufferCard from '@site/components/BufferCard.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+import WhichBuffer from '@site/components/WhichBuffer.astro';
+
+Pick the buffer for the data in front of you. Answer the questions, and the card for your buffer is marked below,
+with its call, what to watch for and what you dispose. The answers stay in the page's address, so you can paste a
+choice into a pull request.
+
+## Answer at most four questions
+
+<WhichBuffer />
+
+## The same decision, as a list
+
+1. Is the data a secret, or derived from one? If it is not, go to step 5.
+2. Do you already have the memory, such as an array an API handed you? Or is the secret small, of a fixed size, and
+   used in one synchronous method? Call `GetSecureLifetime()` on it, on `stackalloc` memory for the small secret:
+   [a lifetime for memory you have](#a-lifetime-for-memory-you-have).
+3. Do you know its length before you start writing it? If you do not, write it into
+   [a pooled writer](#a-pooled-writer).
+4. What does the code that uses it need?
+   - A span, in synchronous code: [rent a span](#rent-a-span), `Rent` with `out Span<T>`.
+   - To cross an `await`, or to live in a field: [rent across an await](#rent-across-await), `Rent` with
+     `out Memory<T>`.
+   - A `T[]`, within one synchronous scope: [a pinned array](#a-pinned-array).
+   - A `MemoryPool<T>`: [a memory pool](#a-memory-pool), a `SecureMemoryPool<T>` of your own.
+5. For other data:
+   - A fixed-size buffer in synchronous code: [a fixed span writer](#a-fixed-span-writer).
+   - A fixed-size buffer in a field or across an `await`: [a fixed memory writer](#a-fixed-memory-writer).
+   - Pooled buffers: [pooled buffers for other data](#pooled-buffers-for-other-data), with `isSensitive: false`.
+   - A writer that grows: [a growable writer](#a-growable-writer).
+
+## For secrets
+
+Each of these zeroes its memory when you dispose what the card names, and all but `GetSecureLifetime()`, which wraps
+memory you already have, allocate it pinned. <Proof claim="R1" /> <Proof claim="R3" />
+
+<BufferCard id="rent-a-span" outcome="rent-span">
+
+```cs snippet=SiteAnswerRentSpan title="The call"
+```
+
+</BufferCard>
+
+<BufferCard id="rent-across-await" outcome="rent-memory">
+
+```cs snippet=SiteAnswerRentMemory title="The call"
+```
+
+</BufferCard>
+
+<BufferCard id="a-pooled-writer" outcome="pooled-writer">
+
+```cs snippet=SiteAnswerPooledWriter title="The call"
+```
+
+</BufferCard>
+
+<BufferCard id="a-pinned-array" outcome="pinned-array">
+
+```cs snippet=SiteAnswerPinnedArray title="The call"
+```
+
+</BufferCard>
+
+<BufferCard id="a-memory-pool" outcome="secure-pool">
+
+```cs snippet=SiteAnswerSecurePool title="The call"
+```
+
+</BufferCard>
+
+<BufferCard id="a-lifetime-for-memory-you-have" outcome="secure-lifetime">
+
+```cs snippet=SiteAnswerSecureLifetime title="The call"
+```
+
+</BufferCard>
+
+## For other data
+
+Nothing here is pinned or zeroed. Never put a secret in one of these.
+
+<BufferCard id="a-fixed-span-writer" outcome="fixed-span-writer">
+
+```cs snippet=SiteAnswerFixedSpanWriter title="The call"
+```
+
+</BufferCard>
+
+<BufferCard id="a-fixed-memory-writer" outcome="fixed-memory-writer">
+
+```cs snippet=SiteAnswerFixedMemoryWriter title="The call"
+```
+
+</BufferCard>
+
+<BufferCard id="pooled-buffers-for-other-data" outcome="plain-pooled">
+
+```cs snippet=SiteAnswerPlainPooled title="The call"
+```
+
+</BufferCard>
+
+<BufferCard id="a-growable-writer" outcome="array-writer">
+
+```cs snippet=SiteAnswerArrayWriter title="The call"
+```
+
+</BufferCard>
+
+## What length you get
+
+- The `out` buffer of `Rent` is exactly the length you asked for.
+  <Proof test="BufferFactoryPropertyTests.Rent_WithSpan_ReturnsABufferOfTheExactRequestedLength" />
+- The owner's `Memory` is the whole buffer behind it: 4096 bytes for a sensitive request of 4096 bytes or less, and
+  exactly the length you asked for above that. <Proof test="SecureMemoryPoolTests.Rent_SizeLessThanPage_ReturnsPageSizeBuffer" />
+  <Proof test="SecureMemoryPoolTests.Rent_SizeMoreThanPage_ReturnsExactSizeBuffer" />
+- `SecureMemoryPool<T>.Rent` hands back the whole buffer, so slice `owner.Memory` to the length you need, as the
+  card's call does. <Proof sample="SiteAnswerSecurePool" />
+- A length counts elements, and the 4096 counts bytes: a pooled buffer of `int` holds 1024 of them.
+  <Proof source="SecureMemoryPool.Rent" />
+
+## Stack or rent
+
+- Stack memory is not collected and needs no pinning, so it leaves no copy at an earlier address.
+  <Proof external="StackallocDocs" />
+- A span over it cannot be kept across an `await`: the compiler stops it with error CS4007. A secret that crosses an
+  `await` goes in a buffer [rented across an await](#rent-across-await). <Proof sample="SiteAnswerRentMemory" />
+- A rented buffer takes 4096 bytes for any small secret, and `Dispose` writes zeros over all 4096.
+  <Proof claim="R1" />
+- Above 4096 bytes, every `Rent` allocates a new pinned array of its own, which no pool keeps.
+  <Proof source="SecureMemoryPool.Rent" />
+
+## Which calls ask whether it is a secret
+
+`isSensitive` has no default value, so a call that can go either way makes you say which.
+<Proof source="PublicApi.IsSensitive" /> <Proof source="PublicApi.SequenceIsSensitive" />
+
+| Call | `isSensitive` |
+| --- | --- |
+| `Rent`, `CreatePooledBufferWriter` | Required. `true` rents from `SecureMemoryPool<T>.Shared`, pinned and zeroed on dispose; `false` from `MemoryPool<T>.Shared`, neither |
+| `GetSpanLease`, `ConsumeAsContiguousSpan` | Required, for the buffer they rent when the data must be copied into one span |
+| `CreatePinnedArray`, `SecureMemoryPool<T>.Rent` | None: always pinned, and zeroed on dispose |
+| `GetSecureLifetime()` | None: always zeroed on dispose, and never pinned |
+
+The tests that assert which pool each value chooses:
+<Proof test="BufferFactoryTests.ChoosePool_WhenSensitive_ReturnsSecureSharedPool" />
+<Proof test="BufferFactoryTests.ChoosePool_WhenNotSensitive_ReturnsSharedPool" />
+
+## Helpers you will meet
+
+- `RefSpanLease<T>`: a read-only span paired with the owner to dispose, which `GetSpanLease` returns. [Build a secret
+  of unknown length](/guides/secret-of-unknown-length/) uses it. <Proof source="RefSpanLease.Type" />
+- `EmptyMemory<T>`: the empty `IMemoryOwner<T>` that a sensitive `Rent` of zero elements returns.
+  <Proof test="BufferFactoryTests.Rent_WhenSizeIsZeroAndSensitive_ReturnsEmptyMemorySingleton" />
+- `MemorySegment<T>`: chains blocks of memory into a `ReadOnlySequence<T>`. <Proof source="MemorySegment.Type" />
+- `StringSegments`: the pieces of a split `string`, each a slice of the original rather than a new substring.
+  <Proof source="StringSegments.Type" />
+- `SecureEncoding`: UTF-8 and ASCII that throw on invalid input instead of substituting a character.
+  <Proof claim="R5" />
+- `ZeroMemory` and `FixedTimeEquals` for spans of any unmanaged type. [Verify a MAC without leaking
+  timing](/guides/verify-a-mac/) uses the comparison. <Proof claim="R4" />
+
+<Related>
+- **Learn** [Quick start](/start/quick-start/)
+- **Do** [Derive a key from a password](/guides/derive-a-key-from-a-password/)
+- **Understand** [Ownership: who zeroes what, and when](/concepts/ownership/)
+- **Look up** [Guarantees and their tests](/evidence/guarantees/)
+</Related>
