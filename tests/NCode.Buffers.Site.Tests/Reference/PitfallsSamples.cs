@@ -10,30 +10,6 @@ namespace SiteSamples.Reference;
 // The site's build includes each begin-snippet region in the page by its key (ADR-1010).
 public class PitfallsSamples
 {
-    // begin-snippet: SitePitfallReturnFromScope
-    public static byte[] DeriveKey(ReadOnlySpan<byte> password, ReadOnlySpan<byte> salt)
-    {
-        using var key = BufferFactory.CreatePinnedArray(32);
-        Rfc2898DeriveBytes.Pbkdf2(password, salt, key, 600_000, HashAlgorithmName.SHA256);
-        return key; // Compiles. Dispose runs after this line.
-    }
-
-    // end-snippet
-
-    [Fact]
-    public void SitePitfallReturnFromScopeSample_Runs()
-    {
-        byte[] key = DeriveKey("correct horse battery staple"u8, "salt"u8);
-
-        // The caller gets the array after Dispose zeroed it: 32 zero bytes, which still work as a key.
-        Assert.Equal(32, key.Length);
-        Assert.False(key.AsSpan().ContainsAnyExcept((byte)0));
-        Assert.Equal(
-            HMACSHA256.HashData(new byte[32], "payload"u8),
-            HMACSHA256.HashData(key, "payload"u8)
-        );
-    }
-
     [Fact]
     public void SitePitfallCopyOfALifetimeSample_Runs()
     {
@@ -82,28 +58,6 @@ public class PitfallsSamples
 
         Assert.False(buffer[..32].ContainsAnyExcept((byte)0));
         Assert.True(buffer[32..].ContainsAnyExcept((byte)0));
-    }
-
-    [Fact]
-    public void SitePitfallApiKeepsACopySample_Runs()
-    {
-        byte[] fromTheApi;
-
-        // begin-snippet: SitePitfallApiKeepsACopy
-        using var aes = Aes.Create();
-
-        using (var key = BufferFactory.CreatePinnedArray(32))
-        {
-            RandomNumberGenerator.Fill(key);
-            aes.Key = key; // The setter copies the array.
-        }
-
-        // The pinned array is zeros now. The Aes object still holds its own copy of the key.
-        fromTheApi = aes.Key;
-        // end-snippet
-
-        Assert.Equal(32, fromTheApi.Length);
-        Assert.True(fromTheApi.AsSpan().ContainsAnyExcept((byte)0));
     }
 
     [Fact]

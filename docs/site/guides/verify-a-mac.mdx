@@ -90,6 +90,7 @@ secret without leaving a string behind](/guides/read-a-secret-without-a-string/)
 
 - **Encoding the expected value.** `Convert.ToHexString(expected)` or `ToBase64String` makes a string of the
   expected MAC. Decode the value you received into bytes, and compare bytes. <LeakCard leak="L5" />
+  [A string of the secret](/reference/pitfalls/#a-string-of-the-secret)
 - **Decoding before you check the length.** Check the length first, so that a value of the wrong length is a plain
   `false` before any decoding, as the sample does. <Proof sample="SiteVerifyMacWebhook" />
 - **Expecting the length to stay hidden.** Spans of different lengths return `false` at once. A MAC has a fixed
@@ -98,6 +99,7 @@ secret without leaving a string behind](/guides/read-a-secret-without-a-string/)
 - **Comparing values that have more than one encoding.** `FixedTimeEquals<T>` compares the bytes the values
   occupy, not the values. Compare spans of bytes, characters or integers; a floating-point value or a struct with
   padding can be stored as different bytes from an equal one. <Proof source="FixedTimeEquals" />
+  [FixedTimeEquals on values that are not bytes](/reference/pitfalls/#fixedtimeequals-on-values-that-are-not-bytes)
 - **Comparing a digital signature by hand.** An RSA or ECDSA signature is checked by the algorithm's `VerifyData`
   or `VerifyHash`, which answers `true` or `false`: there is no expected value to compare.
 - **Leaving the MAC key in an ordinary array.** The key that computes the MAC is a secret too, and it usually lives

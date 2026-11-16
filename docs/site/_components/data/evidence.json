@@ -311,9 +311,6 @@
     "SiteOwnershipUseAfterDispose": {
       "file": "tests/NCode.Buffers.Site.Tests/Concepts/OwnershipSamples.cs"
     },
-    "SitePitfallReturnFromScope": {
-      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
-    },
     "SitePitfallCopyOfALifetime": {
       "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
     },
@@ -321,9 +318,6 @@
       "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
     },
     "SitePitfallSliceLifetime": {
-      "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
-    },
-    "SitePitfallApiKeepsACopy": {
       "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
     },
     "SitePitfallWriterByValue": {
@@ -443,14 +437,6 @@
         76
       ],
       "match": "public void Dispose()"
-    },
-    "GetSecureLifetime": {
-      "file": "src/NCode.Buffers/BufferExtensions.cs",
-      "lines": [
-        61,
-        64
-      ],
-      "match": "public SecureSpanLifetime<T> GetSecureLifetime()"
     },
     "SecureArrayLifetime.ToArray": {
       "file": "src/NCode.Buffers/SecureArrayLifetime.cs",

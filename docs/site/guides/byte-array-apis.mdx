@@ -78,10 +78,12 @@ Both versions import the same key and seal a message the other side opens: their
   ```
 
   <Proof sample="SiteByteArrayReturnTrap" /> Do the work inside the scope, or hand the lifetime itself to the caller
-  to dispose, as [Ownership](/concepts/ownership/) describes.
+  to dispose, as [Ownership](/concepts/ownership/#handing-it-over) describes.
+  [Returning the array from inside the scope](/reference/pitfalls/#returning-the-array-from-inside-the-scope)
 - **Passing a lifetime where an `object` is expected.** `SecureArrayLifetime<T>` converts to `T[]`, and an array to
   `object`, so a call to a logger or to `string.Format` compiles and receives the key's own array.
   <Proof source="SecureArrayLifetime.ToArray" /> Never pass a lifetime, or its array, to anything that logs.
+  [Passing a lifetime as an object](/reference/pitfalls/#passing-a-lifetime-as-an-object)
 - **Forgetting the copy the API keeps.** Setting `Aes.Key` copies the array. Zeroing your array leaves that copy in
   the `Aes` object.
 
@@ -89,12 +91,14 @@ Both versions import the same key and seal a message the other side opens: their
   ```
 
   <Proof sample="SiteKeySetterCopies" /> Dispose an algorithm object in the same scope as the key it took.
+  [An API object that keeps the key](/reference/pitfalls/#an-api-object-that-keeps-the-key)
 - **Calling `CreatePinnedArray` on a hot path.** Every call allocates a new pinned array; nothing is pooled.
   <Proof source="SecureArrayLifetime.Allocate" /> For a buffer you need again and again, rent one: [Which
   buffer?](/start/which-buffer/)
 - **Treating a returned array as if it had been pinned.** `GetSecureLifetime()` pins nothing. It zeroes the array
   where it is now, and a copy the collector left at an earlier address is out of its reach.
-  <Proof source="GetSecureLifetime" /> <LeakCard leak="L1" /> Where the API has a span overload, use it.
+  <Proof source="BufferExtensions.GetSecureLifetime" /> <LeakCard leak="L1" /> Where the API has a span overload, use it.
+  [Expecting GetSecureLifetime to pin](/reference/pitfalls/#expecting-getsecurelifetime-to-pin)
 
 ## What this does not fix
 

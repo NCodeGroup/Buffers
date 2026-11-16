@@ -114,11 +114,11 @@ call at all, nothing ever zeroes it. <Proof sample="SiteExceptionSkipsClear" /> 
 
 **You write** a method that returns `byte[]` and ends with `return key;` inside the `using` scope of a lifetime.
 
-```cs snippet=SitePitfallReturnFromScope
+```cs snippet=SiteByteArrayReturnTrap
 ```
 
 **What happens** It compiles, and the caller gets the array after `Dispose` zeroed it: 32 zero bytes, which still
-work as a key, and give the same MAC as `new byte[32]`. <Proof sample="SitePitfallReturnFromScope" />
+work as a key, so nothing fails. <Proof sample="SiteByteArrayReturnTrap" />
 
 **Why** A `SecureArrayLifetime<T>` converts to `T[]` without a cast, and the `using` scope ends after the return value
 is taken.
@@ -277,11 +277,11 @@ deserialized `string` property, for a secret.
 
 **You write** a key from a pinned array given to an object, such as `aes.Key = key;`.
 
-```cs snippet=SitePitfallApiKeepsACopy
+```cs snippet=SiteKeySetterCopies
 ```
 
 **What happens** The object copies the key into memory of its own. Disposing your lifetime zeroes your array, not
-the object's copy. <Proof sample="SitePitfallApiKeepsACopy" />
+the object's copy. <Proof sample="SiteKeySetterCopies" />
 
 **Write instead** Prefer the static methods that take the key as a span and return no object, such as
 `HMACSHA256.HashData(key, data, destination)`. When you need an object, keep it in the same scope as the key and
