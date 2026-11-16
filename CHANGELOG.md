@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Package validation compares every package with the published 5.0.3 package ([ADR-1001](docs/decisions/1001-each-package-is-validated-against-the-last-released-package.md)).
-- `./build/gate.ps1` fails on a sample key defined twice, on a site sample's key that does not start with `Site`, on any other key that does, and when `dotnet mdsnippets` changes an `.mdx` file; `mdsnippets.json` keeps MarkdownSnippets off `.mdx` pages and `.astro` components ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)).
+- `./build/gate.ps1` fails on a sample key that is not PascalCase letters and digits, on one defined twice, on a site sample's key that does not start with `Site`, on any other key that does, and when `dotnet mdsnippets` changes an `.mdx` file; `mdsnippets.json` keeps MarkdownSnippets off `.mdx` pages and `.astro` components ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)).
 - `./build/gate.ps1` runs `build/Test-SiteEvidence.ps1`, which fails when a test, sample or source line the site cites is gone or has moved, and when a line a page marks on a sample does not match exactly one line of it.
 
 ## [5.0.3] - 2026-11-15

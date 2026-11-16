@@ -21,7 +21,8 @@ pages get compiled samples:
   under `tests/`. The keys of all samples share one space. MarkdownSnippets does not reject a key defined twice: it
   writes both blocks at each use. Both match a key exactly, letter case included (MarkdownSnippets 29.0.0, tested
   2026-11-16): where two keys differ only in case, a key typed in the wrong case includes the other sample, and
-  nothing fails.
+  nothing fails. Both read a marker only at the start of a line, after its indentation, and only in lower case, and
+  take the rest of the line as its key: MarkdownSnippets reads `// begin-snippet: Two Words` as the key `Two Words`.
 
 ## Decision
 
@@ -47,10 +48,11 @@ the site's build includes it in the page by its key. The READMEs keep MarkdownSn
    is never closed.
 5. A page is an `.mdx` file. `mdsnippets.json` excludes `*.mdx` documents and `*.astro` sources by file name, so
    MarkdownSnippets reads neither the pages nor the site's components.
-6. `build/Assert-SampleKeys.ps1` fails on a key defined twice, on a site sample whose key lacks the prefix and on any
-   other key that has it, and `build/Test-AssertSampleKeys.ps1` runs it against fixture repositories: a clean one,
-   and one for each failure. `build/gate.ps1` runs the test, then the check. It hashes `*.mdx` with `*.md` around
-   `dotnet mdsnippets` and fails when the tool changes either.
+6. `build/Assert-SampleKeys.ps1`, which reads a marker as both tools do, fails on a key that is not PascalCase letters
+   and digits, on a key defined twice, on a site sample whose key lacks the prefix, on any other key that has it, and
+   when it finds no key at all. `build/Test-AssertSampleKeys.ps1` runs it against fixture repositories: clean ones,
+   which hold lines and files it must not read a key from, and one for each failure. `build/gate.ps1` runs the test,
+   then the check. It hashes `*.mdx` with `*.md` around `dotnet mdsnippets` and fails when the tool changes either.
 7. `build/Test-Coverage.ps1` runs `tests/NCode.Buffers.Tests` alone, and the sample project references no coverage
    collector: a line of the library that only a sample runs counts as not covered.
 

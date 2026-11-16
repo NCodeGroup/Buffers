@@ -13,9 +13,9 @@ Push-Location (Split-Path -Parent $PSScriptRoot)
 try {
     dotnet tool restore
     if ($LASTEXITCODE) { exit $LASTEXITCODE }
-    # The READMEs and the site's pages take their samples by key from every C# file, so a key is defined once, and
-    # only a site sample's key, in tests/NCode.Buffers.Site.Tests, starts with Site (ADR-1010). A check that matched no
-    # key would pass, so its rules are tested offline first.
+    # The READMEs and the site's pages take their samples by key from every C# file, so a key is PascalCase, is defined
+    # once, and only a site sample's key, in tests/NCode.Buffers.Site.Tests, starts with Site (ADR-1010). The check's
+    # rules are tested offline first, so a rule broken in the check fails here instead of passing every key.
     ./build/Test-AssertSampleKeys.ps1
     if ($LASTEXITCODE) { exit $LASTEXITCODE }
     ./build/Assert-SampleKeys.ps1
