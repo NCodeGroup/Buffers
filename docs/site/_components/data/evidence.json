@@ -198,6 +198,22 @@
     "ReadmeSamplesTests.ConsumeAsContiguousSpanSample_Runs": {
       "file": "tests/NCode.Buffers.Tests/ReadmeSamplesTests.cs",
       "line": 194
+    },
+    "SequenceExtensionsTests.GetSpanLease_SingleSegment_Dispose_DoesNotResetSequence": {
+      "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
+      "line": 396
+    },
+    "SequenceExtensionsTests.GetSpanLease_MultipleSegments_CopiesDataToContiguousBuffer": {
+      "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
+      "line": 61
+    },
+    "SequenceExtensionsTests.ConsumeAsContiguousSpan_SingleSegment_ReturnsSequenceAsOwner": {
+      "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
+      "line": 589
+    },
+    "SequenceExtensionsTests.ConsumeAsContiguousSpan_MultipleSegments_DisposesOriginalSequence": {
+      "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
+      "line": 629
     }
   },
   "samples": {
@@ -320,6 +336,24 @@
     },
     "SitePitfallDefaultValues": {
       "file": "tests/NCode.Buffers.Site.Tests/Reference/PitfallsSamples.cs"
+    },
+    "SiteUnknownLengthUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
+    },
+    "SiteUnknownLengthWriter": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
+    },
+    "SiteContiguousIncremental": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
+    },
+    "SiteUnknownLengthLease": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
+    },
+    "SiteLeaseOrConsume": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
+    },
+    "SiteSegmentsArePinned": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretOfUnknownLengthSamples.cs"
     }
   },
   "sources": {
@@ -643,14 +677,6 @@
       ],
       "match": "finally"
     },
-    "BufferExtensions.GetSecureLifetime": {
-      "file": "src/NCode.Buffers/BufferExtensions.cs",
-      "lines": [
-        61,
-        64
-      ],
-      "match": "public SecureSpanLifetime<T> GetSecureLifetime()"
-    },
     "FixedSpanBufferWriter.Reset": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
@@ -658,6 +684,22 @@
         112
       ],
       "match": "public void Reset()"
+    },
+    "BufferFactory.CreatePooledBufferWriter": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        278,
+        286
+      ],
+      "match": "public static Sequence<T> CreatePooledBufferWriter<T>("
+    },
+    "SequenceExtensions.GetSpanLease.Remarks": {
+      "file": "src/NCode.Buffers/SequenceExtensions.cs",
+      "lines": [
+        48,
+        50
+      ],
+      "match": "<strong>Single-segment optimization:</strong>"
     }
   },
   "external": {

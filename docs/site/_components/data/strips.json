@@ -119,5 +119,109 @@
         }
       }
     ]
+  },
+  "grow-or-append": {
+    "title": "Grow or append",
+    "summary": "A key document, a secret as a whole, written into a writer that grows by copying into a larger array, and into one that adds pinned segments. Each cell is a part of the document.",
+    "key": ["E1", "5C", "90", "3B", "A4", "7D", "02", "C8"],
+    "tracks": [
+      { "id": "growing", "label": "A writer that grows", "code": "new ArrayBufferWriter<byte>()" },
+      { "id": "segments", "label": "A writer that adds segments", "code": "CreatePooledBufferWriter(isSensitive: true)" }
+    ],
+    "regions": {
+      "growing": [{ "id": "heap", "label": "Heap" }],
+      "segments": [
+        { "id": "heap", "label": "Heap" },
+        { "id": "pinned", "label": "Pinned heap" }
+      ]
+    },
+    "frames": [
+      {
+        "title": "Write the first part",
+        "tracks": {
+          "growing": {
+            "cells": { "heap": "oossssoo ........ ........ ........ ........ ........" },
+            "count": 1,
+            "caption": "The writer starts with a small array, and the first part of the document fills it."
+          },
+          "segments": {
+            "cells": { "heap": "oooooooo ....oooo", "pinned": "ssss???? ........ ........ ........" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "The writer rents a page on the pinned heap and writes the first part into it."
+          }
+        }
+      },
+      {
+        "title": "It runs out of room",
+        "tracks": {
+          "growing": {
+            "cells": { "heap": "ooxxxxoo ssssssss ........ ........ ........ ........" },
+            "count": 2,
+            "caption": "With no room left, it allocates an array twice the size, copies what it has, and drops the old array with the first part still in it.",
+            "refs": ["L4"]
+          },
+          "segments": {
+            "cells": { "heap": "oooooooo ....oooo", "pinned": "ssssssss ........ ........ ........" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "The page still has room, so the writer keeps writing into it. Nothing moves."
+          }
+        }
+      },
+      {
+        "title": "It runs out of room again",
+        "tracks": {
+          "growing": {
+            "cells": { "heap": "ooxxxxoo xxxxxxxx ssssssss ssssssss ........ ........" },
+            "count": 3,
+            "caption": "Each time it grows, one more copy of what was written so far is left behind.",
+            "refs": ["L4"]
+          },
+          "segments": {
+            "cells": { "heap": "oooooooo ....oooo", "pinned": "ssssssss ssssssss ........ ........" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "The page is full, so the writer adds a second segment. Nothing already written is copied or dropped.",
+            "refs": ["L4"]
+          }
+        }
+      },
+      {
+        "title": "Read it as one span",
+        "tracks": {
+          "growing": {
+            "cells": { "heap": "ooxxxxoo xxxxxxxx ssssssss ssssssss ssssssss ssssssss" },
+            "count": 4,
+            "caption": "`ToArray()` copies the whole document into one more array.",
+            "refs": ["L9"]
+          },
+          "segments": {
+            "cells": { "heap": "oooooooo ....oooo", "pinned": "00000000 00000000 ssssssss ssssssss" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "With two segments, `ConsumeAsContiguousSpan` copies the document into one sensitive buffer and disposes the writer, which zeroes its segments. With one segment it copies nothing.",
+            "refs": ["R1"]
+          }
+        }
+      },
+      {
+        "title": "You are done with it",
+        "tracks": {
+          "growing": {
+            "cells": { "heap": "ooxxxxoo xxxxxxxx ssssssss ssssssss ssssssss ssssssss" },
+            "count": 4,
+            "caption": "The method returns. Nothing clears any of the four.",
+            "refs": ["L2"]
+          },
+          "segments": {
+            "cells": { "heap": "oooooooo ....oooo", "pinned": "00000000 00000000 00000000 00000000" },
+            "count": 0,
+            "caption": "Disposing the owner overwrites the copy with zeros.",
+            "refs": ["R1"]
+          }
+        }
+      }
+    ]
   }
 }
