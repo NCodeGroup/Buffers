@@ -15,8 +15,8 @@ offers. Every document in `docs/` has a line here.
   ([ADR-1009](decisions/1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md)),
   and the samples its pages show are tests in `tests/NCode.Buffers.Site.Tests`
   ([ADR-1010](decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)).
-  The site is not published: [#56](https://github.com/NCodeGroup/Buffers/issues/56) tracks the workflow that builds
-  and deploys it.
+  `.github/workflows/docs.yml` builds the site on every pull request and publishes nothing:
+  [#56](https://github.com/NCodeGroup/Buffers/issues/56) tracks publishing it.
 - [metrics.md](metrics.md): the metrics and traces catalog, every meter, instrument, attribute, activity source and
   span the project defines, which dashboards and alerts are built against.
 - [api-compatibility.md](api-compatibility.md): how the public API of the published packages evolves and is checked, and how the package validation baseline is kept.

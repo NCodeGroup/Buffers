@@ -68,7 +68,8 @@ the site's build includes it in the page by its key. The READMEs keep MarkdownSn
 - A sample that uses an internal member fails the build with CS0122.
 - The samples show CSharpier's formatting, and a title or marked lines are written on the page's code block, never
   after the key in the test.
-- The gate does not build the site. A page that names a key no sample defines stops the site's build, not the gate.
+- The gate does not build the site. A page that names a key no sample defines stops the site's build in
+  `.github/workflows/docs.yml`, not the gate.
 - A Markdown file under `docs/site/` whose name ends in `.md` is processed by MarkdownSnippets like every other
   Markdown file in the repository.
 - A README sample's key cannot start with `Site`.

@@ -56,7 +56,7 @@ Commits record the people who wrote them, so avoid AI agent attribution: don't a
 
 ## Documentation Site
 
-The site's content is in `docs/site/`. The shared toolchain in [NCodeGroup/docs](https://github.com/NCodeGroup/docs) builds it, and this repository holds no `package.json`, no lockfile and no Node.js code ([ADR-1009](docs/decisions/1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md)). The toolchain's `CONTRACT.md` is the reference for pages, links, components and images. The site is not published: [#56](https://github.com/NCodeGroup/Buffers/issues/56) tracks the workflow that builds and deploys it.
+The site's content is in `docs/site/`. The shared toolchain in [NCodeGroup/docs](https://github.com/NCodeGroup/docs) builds it, and this repository holds no `package.json`, no lockfile and no Node.js code ([ADR-1009](docs/decisions/1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md)). The toolchain's `CONTRACT.md` is the reference for pages, links, components and images. `.github/workflows/docs.yml` builds the site on every pull request, with the toolchain pinned by commit, and keeps the build for a week as the run's `github-pages` artifact. It publishes nothing: [#56](https://github.com/NCodeGroup/Buffers/issues/56) tracks publishing the site.
 
 To write a page:
 
@@ -77,7 +77,7 @@ To write a sample ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-test
 3. Start the key with `Site`, in PascalCase: `SiteZeroedAfterUse`. A key is defined once in the repository, and only a site sample's key starts with `Site`; the gate checks both. A page may also include a README sample by its key, and a change to that sample changes the READMEs too.
 4. Run `dotnet csharpier format .`, then `./build/gate.ps1 -Fast`.
 
-To see the result, clone NCodeGroup/docs beside this repository and set it up as its README says. From this repository's root, `npm --prefix ../docs run dev -- .` then serves the site at `http://localhost:4321/Buffers/`, and `npm --prefix ../docs run site -- build . --out <folder>` builds it into a folder outside this repository and stops on a sample key no test defines. Neither writes into this repository. The gate does not build the site.
+To see the result, clone NCodeGroup/docs beside this repository and set it up as its README says. From this repository's root, `npm --prefix ../docs run dev -- .` then serves the site at `http://localhost:4321/Buffers/`, and `npm --prefix ../docs run site -- build . --out <folder>` builds it into a folder outside this repository and stops on a sample key no test defines. Neither writes into this repository. The gate does not build the site; the documentation site workflow does, on every pull request.
 
 ## Conventions
 

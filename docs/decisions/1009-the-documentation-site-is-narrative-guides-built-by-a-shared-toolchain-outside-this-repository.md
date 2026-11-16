@@ -66,13 +66,14 @@ issue names.
   toolchain commit moves.
 - A contributor who previews the site needs Node.js and a clone of the toolchain. A contributor who changes only the
   library needs neither.
-- The workflow that calls the toolchain's reusable workflow at a pinned commit, and the one-time GitHub Pages setup,
-  are part of #56 and not of this record. Without that workflow, no CI job builds the site and nothing publishes it.
+- `.github/workflows/docs.yml` calls the toolchain's reusable workflow at a pinned commit and builds the site on every
+  pull request and push to the default branch. Publishing it, with the one-time GitHub Pages setup, is part of #56 and
+  not of this record.
 - The API reference remains open in #56.
 
 ## References
 
-- `docs/site/`, `.github/workflows/release-provenance.yml`
+- `docs/site/`, `.github/workflows/docs.yml`, `.github/workflows/release-provenance.yml`
 - [#56](https://github.com/NCodeGroup/Buffers/issues/56)
 - [NCodeGroup/docs](https://github.com/NCodeGroup/docs): the toolchain, its `README.md` and `CONTRACT.md`
 - [Project-template ADR-0020](project-template/0020-github-projects-are-scored-by-openssf-scorecard.md)

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- The content of a documentation site, in `docs/site/`: a landing page and the site's settings, which the shared Astro Starlight toolchain in [NCodeGroup/docs](https://github.com/NCodeGroup/docs) builds, so this repository holds no npm manifest or lockfile. The site is not published ([#56](https://github.com/NCodeGroup/Buffers/issues/56), [ADR-1009](docs/decisions/1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md)).
+- The content of a documentation site, in `docs/site/`: a landing page and the site's settings, which the shared Astro Starlight toolchain in [NCodeGroup/docs](https://github.com/NCodeGroup/docs) builds, so this repository holds no npm manifest or lockfile. A workflow builds the site on every pull request, and nothing publishes it yet ([#56](https://github.com/NCodeGroup/Buffers/issues/56), [ADR-1009](docs/decisions/1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md)).
 - `tests/NCode.Buffers.Site.Tests`, a test project for the site's samples that cannot see the library's internal members; a page includes a sample by its key when the site is built ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)).
 
 ### Changed
