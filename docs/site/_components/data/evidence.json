@@ -370,6 +370,21 @@
     },
     "SiteReadSecretChars": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/ReadASecretWithoutAStringSamples.cs"
+    },
+    "SiteAcrossAwaitUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretsAcrossAwaitSamples.cs"
+    },
+    "SiteAcrossAwaitMemory": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretsAcrossAwaitSamples.cs"
+    },
+    "SiteSigningKey": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretsAcrossAwaitSamples.cs"
+    },
+    "SiteSigningKeyUse": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretsAcrossAwaitSamples.cs"
+    },
+    "SiteBlockBetweenAwaits": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretsAcrossAwaitSamples.cs"
     }
   },
   "sources": {
@@ -724,6 +739,46 @@
         328
       ],
       "match": "A `string` decoded with `SecureEncoding` can't be zeroed."
+    },
+    "BufferFactory.RentMemory": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        126,
+        146
+      ],
+      "match": "/// <remarks>"
+    },
+    "SecureArrayLifetime.Declaration": {
+      "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
+      "lines": [
+        36,
+        36
+      ],
+      "match": "public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable"
+    },
+    "SecureSpanLifetime.Declaration": {
+      "file": "src/NCode.Buffers/SecureSpanLifetime.cs",
+      "lines": [
+        35,
+        35
+      ],
+      "match": "public readonly ref struct SecureSpanLifetime<T>(Span<T> span) : IDisposable"
+    },
+    "RefSpanLease.Declaration": {
+      "file": "src/NCode.Buffers/RefSpanLease.cs",
+      "lines": [
+        42,
+        42
+      ],
+      "match": "public readonly ref struct RefSpanLease<T>(IDisposable? owner, ReadOnlySpan<T> span) : IDisposable"
+    },
+    "FixedSpanBufferWriter.Declaration": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        46,
+        46
+      ],
+      "match": "public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>"
     }
   },
   "external": {
@@ -809,6 +864,24 @@
       "url": "https://learn.microsoft.com/dotnet/standard/memory-and-spans/memory-t-usage-guidelines",
       "read": "2026-11-16",
       "quote": "If you have an IMemoryOwner<T> reference, you must at some point dispose of it or transfer its ownership (but not both)"
+    },
+    "UsingDeclarationDocs": {
+      "title": "The using statement: using declarations",
+      "url": "https://learn.microsoft.com/dotnet/csharp/language-reference/statements/using",
+      "read": "2026-11-16",
+      "quote": "When declared in a `using` declaration, a local variable is disposed at the end of the scope in which it's declared."
+    },
+    "SpanStackOnlyDocs": {
+      "title": "Memory<T> and Span<T> usage guidelines",
+      "url": "https://learn.microsoft.com/dotnet/standard/memory-and-spans/memory-t-usage-guidelines",
+      "read": "2026-11-16",
+      "quote": "Because these types can only be stored on the stack, they're unsuitable for scenarios such as asynchronous method calls."
+    },
+    "MemoryOwnerHolderDocs": {
+      "title": "Memory<T> usage, rule 8",
+      "url": "https://learn.microsoft.com/dotnet/standard/memory-and-spans/memory-t-usage-guidelines",
+      "read": "2026-11-16",
+      "quote": "If your constructor accepts IMemoryOwner<T> as a parameter, its type should implement IDisposable, and your Dispose method should call Dispose on the IMemoryOwner<T> object."
     }
   },
   "claims": [
