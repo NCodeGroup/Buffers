@@ -1,7 +1,7 @@
 {
   "$comment": "The site's evidence: the tests, source lines and outside pages a claim names, and the claims the ledger on /evidence/guarantees/ lists. A test or source is linked at `commit`, a commit of the default branch, so its line never moves; build/Test-SiteEvidence.ps1, which the gate runs, checks every entry against that commit and the working tree. Text fields take `code` and [links](/x/).",
   "repository": "https://github.com/NCodeGroup/Buffers",
-  "commit": "4a79f552babcd8aaaa537d58f9139c0e403ecbc4",
+  "commit": "29f9ed7b098abe83993315ca46f1eedab45a027b",
   "tests": {
     "SecureMemoryTests.Dispose_ZeroesMemory": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryTests.cs",
@@ -97,19 +97,19 @@
     },
     "CryptographicOperationsExtensionsTests.FixedTimeEquals_SameContents_ReturnsTrue": {
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
-      "line": 58
+      "line": 84
     },
     "CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentElement_ReturnsFalse": {
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
-      "line": 69
+      "line": 95
     },
     "CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferenceOnlyInHighByte_ReturnsFalse": {
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
-      "line": 81
+      "line": 107
     },
     "CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentLengths_ReturnsFalse": {
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
-      "line": 92
+      "line": 118
     },
     "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_WithBytes_MatchesSequenceEqual": {
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsPropertyTests.cs",
@@ -153,23 +153,23 @@
     },
     "FixedSpanBufferWriterTests.GetSpan_SizeHintExceedsFreeCapacity_ThrowsInvalidOperationException": {
       "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterTests.cs",
-      "line": 431
+      "line": 459
     },
     "FixedSpanBufferWriterTests.GetSpan_WhenBufferFull_WithZeroSizeHint_ReturnsEmptySpan": {
       "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterTests.cs",
-      "line": 465
+      "line": 493
     },
     "FixedMemoryBufferWriterTests.GetMemory_SizeHintExceedsFreeCapacity_ThrowsInvalidOperationException": {
       "file": "tests/NCode.Buffers.Tests/FixedMemoryBufferWriterTests.cs",
-      "line": 528
+      "line": 556
     },
     "FixedMemoryBufferWriterTests.GetSpan_SizeHintExceedsFreeCapacity_ThrowsInvalidOperationException": {
       "file": "tests/NCode.Buffers.Tests/FixedMemoryBufferWriterTests.cs",
-      "line": 433
+      "line": 461
     },
     "FixedMemoryBufferWriterTests.CanBeUsedInAsyncMethods_UnlikeSpanVersion": {
       "file": "tests/NCode.Buffers.Tests/FixedMemoryBufferWriterTests.cs",
-      "line": 804
+      "line": 832
     },
     "FixedSpanBufferWriterPropertyTests.GetSpan_GivenAnySizeHint_ReturnsEnoughSpanOrThrowsADocumentedException": {
       "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterPropertyTests.cs",
@@ -273,7 +273,7 @@
     },
     "FixedSpanBufferWriterTests.GetMemory_ThrowsNotSupportedException": {
       "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterTests.cs",
-      "line": 496
+      "line": 524
     },
     "FixedSpanBufferWriterTests.Reset_OnlyClearsWrittenPortion": {
       "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterTests.cs",
@@ -630,16 +630,16 @@
     "ZeroMemory": {
       "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
       "lines": [
-        56,
-        60
+        99,
+        103
       ],
       "match": "public static void ZeroMemory<T>(Span<T> buffer)"
     },
     "FixedTimeEquals": {
       "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
       "lines": [
-        94,
-        101
+        137,
+        144
       ],
       "match": "public static bool FixedTimeEquals<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right)"
     },
@@ -662,16 +662,16 @@
     "FixedSpanBufferWriter.GetSpan": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        172,
-        195
+        177,
+        200
       ],
       "match": "public Span<T> GetSpan(int sizeHint = 0)"
     },
     "FixedMemoryBufferWriter.GetMemory": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        200,
-        223
+        205,
+        228
       ],
       "match": "public Memory<T> GetMemory(int sizeHint = 0)"
     },
@@ -887,8 +887,8 @@
     "FixedSpanBufferWriter.Reset": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        107,
-        112
+        112,
+        117
       ],
       "match": "public void Reset()"
     },
@@ -952,8 +952,8 @@
     "FixedSpanBufferWriter.Declaration": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        46,
-        46
+        47,
+        47
       ],
       "match": "public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>"
     },
@@ -1100,24 +1100,24 @@
     "FixedSpanBufferWriter.GetMemory": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        203,
-        208
+        208,
+        213
       ],
       "match": "public Memory<T> GetMemory(int sizeHint = 0)"
     },
     "FixedSpanBufferWriter.Clear": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        95,
-        99
+        96,
+        100
       ],
       "match": "public void Clear()"
     },
     "Changelog.SplitAllocations": {
       "file": "CHANGELOG.md",
       "lines": [
-        128,
-        128
+        138,
+        138
       ],
       "match": "The XML documentation of",
       "kind": "documented"
@@ -1465,184 +1465,184 @@
     "Api.FixedSpanBufferWriter": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        46,
-        46
+        47,
+        47
       ],
       "match": "public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>"
     },
     "Api.FixedSpanBufferWriter.Constructor": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        46,
-        46
+        47,
+        47
       ],
       "match": "public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>"
     },
     "Api.FixedSpanBufferWriter.Capacity": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        57,
-        57
+        58,
+        58
       ],
       "match": "public readonly int Capacity => Buffer.Length;"
     },
     "Api.FixedSpanBufferWriter.WrittenCount": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        63,
-        63
+        64,
+        64
       ],
       "match": "public int WrittenCount { get; private set; }"
     },
     "Api.FixedSpanBufferWriter.FreeCapacity": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        69,
-        69
+        70,
+        70
       ],
       "match": "public readonly int FreeCapacity => Buffer.Length - WrittenCount;"
     },
     "Api.FixedSpanBufferWriter.WrittenSpan": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        79,
-        79
+        80,
+        80
       ],
       "match": "public readonly ReadOnlySpan<T> WrittenSpan"
     },
     "Api.FixedSpanBufferWriter.Clear": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        95,
-        95
+        96,
+        96
       ],
       "match": "public void Clear()"
     },
     "Api.FixedSpanBufferWriter.Reset": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        107,
-        107
+        112,
+        112
       ],
       "match": "public void Reset()"
     },
     "Api.FixedSpanBufferWriter.Advance": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        129,
-        129
+        134,
+        134
       ],
       "match": "public void Advance(int count)"
     },
     "Api.FixedSpanBufferWriter.GetSpan": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        172,
-        172
+        177,
+        177
       ],
       "match": "public Span<T> GetSpan(int sizeHint = 0)"
     },
     "Api.FixedSpanBufferWriter.GetMemory": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        203,
-        203
+        208,
+        208
       ],
       "match": "public Memory<T> GetMemory(int sizeHint = 0)"
     },
     "Api.FixedMemoryBufferWriter": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        46,
-        46
+        47,
+        47
       ],
       "match": "public class FixedMemoryBufferWriter<T> : IBufferWriter<T>"
     },
     "Api.FixedMemoryBufferWriter.Constructor": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        57,
-        57
+        58,
+        58
       ],
       "match": "public FixedMemoryBufferWriter(Memory<T> buffer)"
     },
     "Api.FixedMemoryBufferWriter.Capacity": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        66,
-        66
+        67,
+        67
       ],
       "match": "public int Capacity => Buffer.Length;"
     },
     "Api.FixedMemoryBufferWriter.WrittenCount": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        72,
-        72
+        73,
+        73
       ],
       "match": "public int WrittenCount { get; private set; }"
     },
     "Api.FixedMemoryBufferWriter.FreeCapacity": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        78,
-        78
+        79,
+        79
       ],
       "match": "public int FreeCapacity => Buffer.Length - WrittenCount;"
     },
     "Api.FixedMemoryBufferWriter.WrittenMemory": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        89,
-        89
+        90,
+        90
       ],
       "match": "public ReadOnlyMemory<T> WrittenMemory"
     },
     "Api.FixedMemoryBufferWriter.WrittenSpan": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        106,
-        106
+        107,
+        107
       ],
       "match": "public ReadOnlySpan<T> WrittenSpan"
     },
     "Api.FixedMemoryBufferWriter.Clear": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        122,
-        122
+        123,
+        123
       ],
       "match": "public void Clear()"
     },
     "Api.FixedMemoryBufferWriter.Reset": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        134,
-        134
+        139,
+        139
       ],
       "match": "public void Reset()"
     },
     "Api.FixedMemoryBufferWriter.Advance": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        156,
-        156
+        161,
+        161
       ],
       "match": "public void Advance(int count)"
     },
     "Api.FixedMemoryBufferWriter.GetMemory": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        200,
-        200
+        205,
+        205
       ],
       "match": "public Memory<T> GetMemory(int sizeHint = 0)"
     },
     "Api.FixedMemoryBufferWriter.GetSpan": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        245,
-        245
+        250,
+        250
       ],
       "match": "public Span<T> GetSpan(int sizeHint = 0)"
     },
@@ -1881,24 +1881,24 @@
     "Api.CryptographicOperationsExtensions": {
       "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
       "lines": [
-        26,
-        26
+        27,
+        27
       ],
       "match": "public static class CryptographicOperationsExtensions"
     },
     "Api.CryptographicOperationsExtensions.ZeroMemory": {
       "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
       "lines": [
-        56,
-        56
+        99,
+        99
       ],
       "match": "public static void ZeroMemory<T>(Span<T> buffer)"
     },
     "Api.CryptographicOperationsExtensions.FixedTimeEquals": {
       "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
       "lines": [
-        94,
-        94
+        137,
+        137
       ],
       "match": "public static bool FixedTimeEquals<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right)"
     },
