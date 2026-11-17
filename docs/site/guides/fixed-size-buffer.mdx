@@ -1,0 +1,170 @@
+---
+title: Serialize into a buffer that must not grow
+description: Write a frame, a header or a token into memory of a size you chose, so that nothing grows, nothing is copied to a larger array, and a write that does not fit fails instead of moving.
+---
+
+import FixedBufferBars from '@site/components/FixedBufferBars.astro';
+import KindLabel from '@site/components/KindLabel.astro';
+import LeakCard from '@site/components/LeakCard.astro';
+import Pinned from '@site/components/Pinned.astro';
+import PinNotes from '@site/components/PinNotes.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+
+<KindLabel kind="how-to" />
+
+This is your situation when your code writes bytes through an `IBufferWriter<byte>`, such as a length-prefixed frame,
+a header or a JSON token, and you know how large the largest output is. The example writes a frame: a 4-byte length,
+then the payload.
+
+You'll use `GetFixedBufferWriter()` · `FixedSpanBufferWriter<T>` · `FixedMemoryBufferWriter<T>` · `stackalloc` ·
+`BufferFactory.Rent` · `Utf8JsonWriter`
+
+## The usual code
+
+It writes into an `ArrayBufferWriter<byte>` with an initial size. The size is where the buffer starts, not where it
+stops.
+
+<Pinned tone="usual">
+```cs snippet=SiteFixedBufferUsual title="Frames.cs" "new ArrayBufferWriter<byte>(256)" "writer.Write(frame)"
+```
+</Pinned>
+
+**Leaves behind**
+
+<PinNotes tone="usual">
+
+1. A buffer of 256 bytes. It is a starting size.
+2. A 300-byte frame does not fit, so the writer allocates a larger array and copies the bytes written so far into it.
+   The smaller array is dropped with those bytes in it, and nothing clears it. <LeakCard leak="L4" />
+   <Proof sample="SiteFixedBufferUsual" />
+
+</PinNotes>
+
+## With NCode.Buffers
+
+The writer works over memory you already have, such as a `stackalloc` span. It cannot grow, so it never copies.
+
+<Pinned tone="fix">
+```cs snippet=SiteFixedBufferFrame title="Frames.cs" "stackalloc" "GetFixedBufferWriter()" "ref TWriter"
+```
+</Pinned>
+
+**What changed**
+
+<PinNotes tone="fix">
+
+1. The 64 bytes are on the stack, in the method that owns them. No array is allocated for them.
+2. `GetFixedBufferWriter()` returns a `FixedSpanBufferWriter<byte>` over that span. <Proof source="FixedSpanBufferWriter.GetSpan" />
+3. The writer is a `ref struct`, so the helper takes it by `ref`. A `TWriter` constrained to `IBufferWriter<byte>` and
+   `allows ref struct` takes any buffer writer, including this one. A copy of the writer would have a position of its
+   own: [a fixed span writer passed by value](/reference/pitfalls/#writers-and-sequences) shows what that costs.
+
+</PinNotes>
+
+The sample writes `hello` and asserts the nine bytes: the length 5 as four bytes, big-endian, then the payload.
+<Proof sample="SiteFixedBufferFrame" />
+
+### Over a sensitive rental
+
+When the frame holds a secret, give the writer a sensitive rental instead of the stack. The rental is zeroed when its
+owner is disposed.
+
+```cs snippet=SiteFixedBufferOverSensitiveRental title="Frames.cs"
+```
+
+The writer is a view of `buffer`. Disposing `owner` overwrites all 64 bytes of the rental with zeros, the 32 that were
+written and the 32 that were not. <Proof claim="R1" /> <Proof sample="SiteFixedBufferOverSensitiveRental" />
+
+## How it behaves
+
+- **`GetSpan` and `GetMemory` return all the free space.** A hint of 4 on an empty 64-byte buffer returns 64 bytes.
+  <Proof sample="SitePitfallAdvanceBySpanLength" /> When the hint is larger than the free space, they throw
+  `InvalidOperationException`. <Proof source="FixedSpanBufferWriter.GetSpan" />
+  <Proof source="FixedMemoryBufferWriter.GetMemory" /> <Proof claim="R6" />
+- **`FixedSpanBufferWriter<T>.GetMemory` throws `NotSupportedException`.** A `Span<T>` cannot become a `Memory<T>`.
+  Call `GetSpan`. <Proof source="FixedSpanBufferWriter.GetMemory" />
+  <Proof test="FixedSpanBufferWriterTests.GetMemory_ThrowsNotSupportedException" />
+- **`Clear()` sets the count to 0 and leaves the bytes.** The written bytes are still in the buffer, and the next
+  write goes over them. <Proof source="FixedSpanBufferWriter.Clear" />
+  <Proof test="FixedSpanBufferWriterTests.Clear_DoesNotClearBufferContents" />
+- **`Reset()` zeroes what was written since the last `Clear()`, then sets the count to 0.** It zeroes the written
+  part with `Span<T>.Clear()` and nothing past it. <Proof source="FixedSpanBufferWriter.Reset" />
+  <Proof test="FixedSpanBufferWriterTests.Reset_OnlyClearsWrittenPortion" />
+
+The figure draws these rules on a 64-byte buffer. **A drawing, not a trace:** no code produced it.
+
+<FixedBufferBars />
+
+## Pitfalls
+
+[Ways to get it wrong](/reference/pitfalls/) has more, each with its evidence.
+
+### A buffer smaller than the serializer asks for
+
+*You write* a `FixedMemoryBufferWriter<byte>` over 128 bytes and give it to a `Utf8JsonWriter` that writes 12 bytes.
+
+```cs snippet=SiteFixedBufferTooSmallForJson title="Tokens.cs"
+```
+
+*What happens:* the JSON writer asks for 256 bytes of free space before it writes the first byte, so the 128-byte
+writer throws `InvalidOperationException`. A buffer of 256 bytes succeeds, and `WrittenCount` is 12.
+<Proof sample="SiteFixedBufferTooSmallForJson" /> <Proof claim="R6" /> *Write instead:* size the buffer for what the
+serializer asks for, not for what it writes, or use `CreatePooledBufferWriter` when you cannot say.
+
+### Passing the writer by value
+
+*You write* a helper that takes a `FixedSpanBufferWriter<T>` as an ordinary parameter.
+
+```cs snippet=SitePitfallWriterByValue title="Header.cs"
+```
+
+*What happens:* the helper advances its own copy. The caller's `WrittenCount` stays at 0, so the second header lands
+on the first. <Proof sample="SitePitfallWriterByValue" /> *Write instead:* pass it by `ref`.
+[A fixed span writer passed by value](/reference/pitfalls/#writers-and-sequences)
+
+### A partial write left in the buffer
+
+*You write* a frame in several steps, and one of them throws.
+
+```cs snippet=SiteFixedBufferPartialWrite title="Partial.cs"
+```
+
+*What happens:* the 4 bytes already written stay in the buffer. *Write instead:* call `Reset()` where you catch the
+failure. It zeroes the 4 bytes and sets the count to 0. <Proof sample="SiteFixedBufferPartialWrite" />
+<Proof source="FixedSpanBufferWriter.Reset" />
+
+### Advancing by the span's length
+
+*You write* `writer.Advance(span.Length)` after `GetSpan(n)`.
+
+```cs snippet=SitePitfallAdvanceBySpanLength title="Advance.cs"
+```
+
+*What happens:* `GetSpan(4)` returned all 64 free bytes, so the writer commits 64 bytes, 60 of which were never
+written. <Proof sample="SitePitfallAdvanceBySpanLength" /> *Write instead:* `Advance` by the number of bytes you
+wrote.
+
+## What this does not fix
+
+:::caution[Outside a fixed buffer]
+- **Output larger than the buffer.** The writer throws instead of growing, so your code decides what a frame that is
+  too large means. <Proof claim="R6" />
+- **Secrets the serializer copies elsewhere.** A serializer that builds a string, or buffers internally, has made
+  copies the writer never sees. The writer holds only what the serializer writes to it.
+- **Zeroing a stack buffer.** The writer does not zero the span it was given, except through `Reset()`. For a secret,
+  put the span under a lifetime, or give the writer a sensitive rental, as above.
+:::
+
+## Checklist
+
+- The buffer is sized for the largest output, and for the largest request the serializer makes.
+- A helper takes the writer by `ref`, never by value.
+- `Advance` is called with the number of bytes written, never `span.Length`.
+- A partial write is followed by `Reset()` where the failure is caught.
+- A buffer that holds a secret is a sensitive rental or is under a lifetime, so that something zeroes all of it.
+
+<Related>
+- **Do** [Build a secret of unknown length](/guides/secret-of-unknown-length/)
+- **Look up** [Ways to get it wrong](/reference/pitfalls/)
+</Related>

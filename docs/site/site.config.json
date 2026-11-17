@@ -35,7 +35,10 @@
             "guides/secrets-across-await"
           ]
         },
-        { "label": "Text and buffers", "items": ["guides/strict-decoding"] }
+        {
+          "label": "Text and buffers",
+          "items": ["guides/strict-decoding", "guides/fixed-size-buffer"]
+        }
       ]
     },
     { "label": "Concepts", "items": ["concepts/how-secrets-leak", "concepts/ownership"] },
