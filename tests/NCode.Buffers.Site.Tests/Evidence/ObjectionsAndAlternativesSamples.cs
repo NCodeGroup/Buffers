@@ -26,9 +26,11 @@ public class ObjectionsAndAlternativesSamples
         }
         // end-snippet
 
-        Assert.Equal(GC.MaxGeneration, GC.GetGeneration(key));
+        int generation = GC.GetGeneration(key);
+        Assert.Equal(GC.MaxGeneration, generation);
         Assert.Equal(32, key.Length);
-        Assert.False(key.AsSpan().ContainsAnyExcept((byte)0));
+        bool hasData = key.AsSpan().ContainsAnyExcept((byte)0);
+        Assert.False(hasData);
     }
 
     [Fact]
@@ -48,6 +50,7 @@ public class ObjectionsAndAlternativesSamples
         // end-snippet
 
         Assert.Equal(32, key.Length);
-        Assert.False(key.ContainsAnyExcept((byte)0));
+        bool hasData = key.ContainsAnyExcept((byte)0);
+        Assert.False(hasData);
     }
 }

@@ -40,10 +40,12 @@ public class FixedSizeBufferSamples
         static void WriteFrame<TWriter>(ref TWriter writer, ReadOnlySpan<byte> payload)
             where TWriter : IBufferWriter<byte>, allows ref struct
         {
-            BinaryPrimitives.WriteInt32BigEndian(writer.GetSpan(4), payload.Length);
+            Span<byte> prefix = writer.GetSpan(4);
+            BinaryPrimitives.WriteInt32BigEndian(prefix, payload.Length);
             writer.Advance(4);
 
-            payload.CopyTo(writer.GetSpan(payload.Length));
+            Span<byte> body = writer.GetSpan(payload.Length);
+            payload.CopyTo(body);
             writer.Advance(payload.Length);
         }
 
@@ -53,11 +55,9 @@ public class FixedSizeBufferSamples
         // end-snippet
 
         Assert.Equal(9, writer.WrittenCount);
-        Assert.True(
-            writer.WrittenSpan.SequenceEqual(
-                (byte[])[0, 0, 0, 5, 0x68, 0x65, 0x6C, 0x6C, 0x6F]
-            )
-        );
+        ReadOnlySpan<byte> expectedFrame = [0, 0, 0, 5, 0x68, 0x65, 0x6C, 0x6C, 0x6F];
+        bool frameMatches = writer.WrittenSpan.SequenceEqual(expectedFrame);
+        Assert.True(frameMatches);
     }
 
     [Fact]
@@ -71,19 +71,22 @@ public class FixedSizeBufferSamples
         );
         var writer = buffer.GetFixedBufferWriter();
 
-        RandomNumberGenerator.Fill(writer.GetSpan(32)[..32]); // A 32-byte key.
+        Span<byte> key = writer.GetSpan(32)[..32];
+        RandomNumberGenerator.Fill(key); // A 32-byte key.
         writer.Advance(32);
         // end-snippet
 
         Assert.Equal(32, writer.WrittenCount);
         Assert.Equal(64, buffer.Length);
-        Assert.True(writer.WrittenSpan.ContainsAnyExcept((byte)0));
+        bool hasData = writer.WrittenSpan.ContainsAnyExcept((byte)0);
+        Assert.True(hasData);
         SecretAssert.Equal(buffer.Span[..32], writer.WrittenSpan);
 
         Memory<byte> kept = buffer;
         owner.Dispose();
 
-        Assert.False(kept.Span.ContainsAnyExcept((byte)0));
+        bool keptHasData = kept.Span.ContainsAnyExcept((byte)0);
+        Assert.False(keptHasData);
     }
 
     [Fact]
@@ -109,7 +112,9 @@ public class FixedSizeBufferSamples
         WriteToken(exact);
 
         Assert.Equal(12, exact.WrittenCount);
-        Assert.True(exact.WrittenSpan.SequenceEqual("""{"sub":"42"}"""u8));
+        ReadOnlySpan<byte> expectedJson = """{"sub":"42"}"""u8;
+        bool jsonMatches = exact.WrittenSpan.SequenceEqual(expectedJson);
+        Assert.True(jsonMatches);
     }
 
     [Fact]
@@ -122,7 +127,8 @@ public class FixedSizeBufferSamples
         var writer = buffer.GetFixedBufferWriter();
         try
         {
-            "HEAD"u8.CopyTo(writer.GetSpan(4));
+            Span<byte> head = writer.GetSpan(4);
+            "HEAD"u8.CopyTo(head);
             writer.Advance(4);
 
             writer.GetSpan(7); // Only 4 bytes are free.
@@ -134,6 +140,7 @@ public class FixedSizeBufferSamples
         // end-snippet
 
         Assert.Equal(0, writer.WrittenCount);
-        Assert.False(buffer.ContainsAnyExcept((byte)0));
+        bool bufferHasData = buffer.ContainsAnyExcept((byte)0);
+        Assert.False(bufferHasData);
     }
 }

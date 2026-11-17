@@ -29,7 +29,8 @@ public class HowTheBuffersWorkSamples
         // end-snippet
 
         Assert.Equal(4096, page.Length);
-        Assert.False(page.Span.ContainsAnyExcept((byte)0));
+        bool pageHasData = page.Span.ContainsAnyExcept((byte)0);
+        Assert.False(pageHasData);
     }
 
     [Fact]
@@ -46,13 +47,20 @@ public class HowTheBuffersWorkSamples
         using var second = pool.Rent(32);
         // end-snippet
 
-        Assert.True(MemoryMarshal.TryGetArray<byte>(first.Memory, out var firstSegment));
-        Assert.True(
-            MemoryMarshal.TryGetArray<byte>(second.Memory, out var secondSegment)
+        bool firstHasArray = MemoryMarshal.TryGetArray<byte>(
+            first.Memory,
+            out var firstSegment
         );
+        Assert.True(firstHasArray);
+        bool secondHasArray = MemoryMarshal.TryGetArray<byte>(
+            second.Memory,
+            out var secondSegment
+        );
+        Assert.True(secondHasArray);
         Assert.Same(firstSegment.Array, secondSegment.Array);
         Assert.Equal(4096, second.Memory.Length);
-        Assert.False(second.Memory.Span.ContainsAnyExcept((byte)0));
+        bool secondHasData = second.Memory.Span.ContainsAnyExcept((byte)0);
+        Assert.False(secondHasData);
     }
 
     [Fact]
@@ -77,6 +85,7 @@ public class HowTheBuffersWorkSamples
 
         Assert.Throws<ObjectDisposedException>(() => pool.Rent(32));
         Assert.Equal(4096, stillRented.Memory.Length);
-        Assert.False(stillRented.Memory.Span.ContainsAnyExcept((byte)0));
+        bool stillRentedHasData = stillRented.Memory.Span.ContainsAnyExcept((byte)0);
+        Assert.False(stillRentedHasData);
     }
 }

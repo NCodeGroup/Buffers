@@ -29,8 +29,10 @@ public class StrictDecodingSamples
         }
         // end-snippet
 
-        Assert.Equal("café", ReadName("café"u8));
-        Assert.Equal("invalid input", ReadName([0x61, 0x80]));
+        string name = ReadName("caf\u00e9"u8);
+        Assert.Equal("caf\u00e9", name);
+        string rejected = ReadName([0x61, 0x80]);
+        Assert.Equal("invalid input", rejected);
 
         // The exception carries the bytes it rejected.
         byte[] invalid = [0x61, 0x80];
@@ -59,7 +61,9 @@ public class StrictDecodingSamples
         Assert.Throws<DecoderFallbackException>(() =>
             ReadAll(new MemoryStream([0x61, 0xFF]))
         );
-        Assert.Equal("café", ReadAll(new MemoryStream("café"u8.ToArray())));
+        byte[] cafe = "caf\u00e9"u8.ToArray();
+        string text = ReadAll(new MemoryStream(cafe));
+        Assert.Equal("caf\u00e9", text);
 
         // A byte order mark switches the decoder, so a stream that starts with one is read
         // as the encoding the mark names unless the reader is told not to look.
@@ -92,27 +96,31 @@ public class StrictDecodingSamples
 
         byte[] input = [0x48, 0x69, 0x80];
         Assert.Throws<DecoderFallbackException>(() => Decode(input));
-        Assert.Throws<EncoderFallbackException>(() => Encode("é"));
-        Assert.Equal("Hi?", DecodeLenient(input));
-        Assert.Equal("Hi", Decode([0x48, 0x69]));
+        Assert.Throws<EncoderFallbackException>(() => Encode("\u00e9"));
+        string lenient = DecodeLenient(input);
+        Assert.Equal("Hi?", lenient);
+        string strict = Decode([0x48, 0x69]);
+        Assert.Equal("Hi", strict);
     }
 
     [Fact]
     public void SiteStrictDecodingValidateOnlySample_Runs()
     {
         // begin-snippet: SiteStrictDecodingValidateOnly
-        ReadOnlySpan<byte> input = "café"u8;
+        ReadOnlySpan<byte> input = "caf\u00e9"u8;
 
         bool isUtf8 = Utf8.IsValid(input); // true: the bytes are well-formed UTF-8.
-        bool isAscii = Ascii.IsValid(input); // false: the é is two bytes above 0x7F.
+        bool isAscii = Ascii.IsValid(input); // false: the U+00E9 is two bytes above 0x7F.
         // end-snippet
 
         Assert.True(isUtf8);
         Assert.False(isAscii);
 
         ReadOnlySpan<byte> broken = [0x61, 0x80];
-        Assert.False(Utf8.IsValid(broken));
-        Assert.False(Ascii.IsValid(broken));
+        bool brokenIsUtf8 = Utf8.IsValid(broken);
+        Assert.False(brokenIsUtf8);
+        bool brokenIsAscii = Ascii.IsValid(broken);
+        Assert.False(brokenIsAscii);
     }
 
     [Fact]
@@ -126,20 +134,23 @@ public class StrictDecodingSamples
             ([0xC0, 0xAF], "\uFFFD\uFFFD"), // an overlong form of "/"
             ([0xED, 0xA0, 0x80], "\uFFFD\uFFFD\uFFFD"), // a surrogate code point
             ([0xE2, 0x82], "\uFFFD"), // a sequence cut short
-            ([0xC3, 0xA9], "é"), // valid: é
+            ([0xC3, 0xA9], "\u00e9"), // valid: U+00E9
         ];
         // end-snippet
 
-        foreach (var (input, lenient) in rows[..5])
+        foreach (var (input, expectedLenient) in rows[..5])
         {
-            Assert.Equal(lenient, Encoding.UTF8.GetString(input));
+            string decoded = Encoding.UTF8.GetString(input);
+            Assert.Equal(expectedLenient, decoded);
             Assert.Throws<DecoderFallbackException>(() =>
                 SecureEncoding.UTF8.GetString(input)
             );
         }
 
         var valid = rows[5];
-        Assert.Equal(valid.Lenient, Encoding.UTF8.GetString(valid.Input));
-        Assert.Equal("é", SecureEncoding.UTF8.GetString(valid.Input));
+        string validLenient = Encoding.UTF8.GetString(valid.Input);
+        Assert.Equal(valid.Lenient, validLenient);
+        string validStrict = SecureEncoding.UTF8.GetString(valid.Input);
+        Assert.Equal("\u00e9", validStrict);
     }
 }

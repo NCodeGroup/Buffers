@@ -50,10 +50,14 @@ public class SplitTextSamples
 
         const string List = "theme=dark;lang=en;id=42";
 
-        Assert.Equal("en", FindValue(List, "lang").ToString());
-        Assert.Equal("42", FindValue(List, "id").ToString());
-        Assert.True(FindValue(List, "missing").IsEmpty);
-        Assert.True(FindValue(" lang=en", "lang").IsEmpty);
+        string lang = FindValue(List, "lang").ToString();
+        Assert.Equal("en", lang);
+        string id = FindValue(List, "id").ToString();
+        Assert.Equal("42", id);
+        ReadOnlyMemory<char> missing = FindValue(List, "missing");
+        Assert.True(missing.IsEmpty);
+        ReadOnlyMemory<char> padded = FindValue(" lang=en", "lang");
+        Assert.True(padded.IsEmpty);
     }
 
     [Fact]
@@ -91,14 +95,21 @@ public class SplitTextSamples
         }
         // end-snippet
 
-        Assert.True(
-            TrySplitToken("aaa.bbb.ccc", out var signingInput, out var signature)
+        bool split = TrySplitToken(
+            "aaa.bbb.ccc",
+            out var signingInput,
+            out var signature
         );
-        Assert.Equal("aaa.bbb", signingInput.ToString());
-        Assert.Equal("ccc", signature.ToString());
+        Assert.True(split);
+        string signingText = signingInput.ToString();
+        Assert.Equal("aaa.bbb", signingText);
+        string signatureText = signature.ToString();
+        Assert.Equal("ccc", signatureText);
 
-        Assert.False(TrySplitToken("aaa.bbb", out _, out _));
-        Assert.False(TrySplitToken("aaa.bbb.ccc.ddd", out _, out _));
+        bool twoParts = TrySplitToken("aaa.bbb", out _, out _);
+        Assert.False(twoParts);
+        bool fourParts = TrySplitToken("aaa.bbb.ccc.ddd", out _, out _);
+        Assert.False(fourParts);
     }
 
     [Fact]
@@ -147,8 +158,10 @@ public class SplitTextSamples
     public void SiteSequenceSplitJsonSample_Runs()
     {
         // begin-snippet: SiteSequenceSplitJson
-        var first = new MemorySegment<byte>("{\"sub\":"u8.ToArray());
-        var last = first.Append("\"42\"}"u8.ToArray());
+        byte[] firstBytes = "{\"sub\":"u8.ToArray();
+        byte[] lastBytes = "\"42\"}"u8.ToArray();
+        var first = new MemorySegment<byte>(firstBytes);
+        var last = first.Append(lastBytes);
         var sequence = new ReadOnlySequence<byte>(first, 0, last, last.Memory.Length);
 
         // The reader reads across the two segments as one document.
@@ -189,8 +202,10 @@ public class SplitTextSamples
         var index = 0;
         for (var s = parts.First; s is not null; s = s.Next)
         {
-            SecretAssert.Equal(expected[index].AsSpan(), s.Memory.Span);
-            Assert.True(buffer.Span.Overlaps(s.Memory.Span, out var offset));
+            ReadOnlySpan<char> expectedPiece = expected[index].AsSpan();
+            SecretAssert.Equal(expectedPiece, s.Memory.Span);
+            bool overlaps = buffer.Span.Overlaps(s.Memory.Span, out var offset);
+            Assert.True(overlaps);
             Assert.True(offset + s.Memory.Length <= buffer.Length);
             ++index;
         }
@@ -198,6 +213,7 @@ public class SplitTextSamples
         Memory<char> kept = buffer;
         owner.Dispose();
 
-        Assert.False(kept.Span.ContainsAnyExcept('\0'));
+        bool keptHasData = kept.Span.ContainsAnyExcept('\0');
+        Assert.False(keptHasData);
     }
 }

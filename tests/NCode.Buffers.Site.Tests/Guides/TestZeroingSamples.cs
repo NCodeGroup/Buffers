@@ -30,7 +30,8 @@ public class TestZeroingSamples
 
         UseKeyOnce(lifetime);
 
-        Assert.False(seen.AsSpan().ContainsAnyExcept((byte)0));
+        bool seenHasData = seen.AsSpan().ContainsAnyExcept((byte)0);
+        Assert.False(seenHasData);
         // end-snippet
     }
 
@@ -48,7 +49,8 @@ public class TestZeroingSamples
         } // The lifetime zeroes the span here.
 
         // The span outlives the block, so the test reads it after the block.
-        Assert.False(key.ContainsAnyExcept((byte)0));
+        bool keyHasData = key.ContainsAnyExcept((byte)0);
+        Assert.False(keyHasData);
         // end-snippet
     }
 
@@ -72,7 +74,8 @@ public class TestZeroingSamples
 
         // The pool hands the same buffer out again. It holds only zeros.
         using var next = pool.Rent(32);
-        Assert.False(next.Memory.Span.ContainsAnyExcept((byte)0));
+        bool nextHasData = next.Memory.Span.ContainsAnyExcept((byte)0);
+        Assert.False(nextHasData);
         // end-snippet
     }
 }

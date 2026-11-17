@@ -67,9 +67,10 @@ public class PipesAndStreamsSamples
 
         SecretAssert.Equal(secret, readBack);
         Assert.Equal(4096, memory.Length);
-        Assert.False(memory.Span.ContainsAnyExcept((byte)0));
+        bool memoryHasData = memory.Span.ContainsAnyExcept((byte)0);
+        Assert.False(memoryHasData);
         using IMemoryOwner<byte> next = pool.Rent(1);
-        Assert.NotNull(next);
+        Assert.Equal(SecureMemoryPool<byte>.PageSize, next.Memory.Length);
     }
 
     [Fact]
@@ -101,7 +102,8 @@ public class PipesAndStreamsSamples
         // end-snippet
 
         Assert.True(heldWithOneEnd);
-        Assert.False(memory.Span.ContainsAnyExcept((byte)0));
+        bool memoryHasData = memory.Span.ContainsAnyExcept((byte)0);
+        Assert.False(memoryHasData);
     }
 
     [Fact]
@@ -128,8 +130,9 @@ public class PipesAndStreamsSamples
         await reader.CompleteAsync();
         // end-snippet
 
-        SecretAssert.Equal(secret, destination.ToArray());
+        byte[] copied = destination.ToArray();
+        SecretAssert.Equal(secret, copied);
         using IMemoryOwner<byte> next = pool.Rent(1);
-        Assert.NotNull(next);
+        Assert.Equal(SecureMemoryPool<byte>.PageSize, next.Memory.Length);
     }
 }
