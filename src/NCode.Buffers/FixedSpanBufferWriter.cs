@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using JetBrains.Annotations;
 
 namespace NCode.Buffers;
@@ -103,9 +104,10 @@ public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>
     /// </summary>
     /// <remarks>
     /// Use this method when the buffer may contain sensitive data that should be securely cleared.
-    /// The written elements are zeroed with <see cref="System.Security.Cryptography.CryptographicOperations.ZeroMemory(Span{byte})"/>, which the compiler and runtime do not optimize away.
-    /// When <typeparamref name="T"/> is or contains a reference, they are set to their default with <see cref="Span{T}.Clear"/>.
-    /// Elements past the written part are not touched.
+    /// The written elements are zeroed with <see cref="CryptographicOperations.ZeroMemory(Span{byte})"/>,
+    /// which the compiler and runtime do not optimize away. When <typeparamref name="T"/> is or contains a
+    /// reference, they are set to their default with <see cref="Span{T}.Clear"/>. Elements past the written
+    /// part are not touched.
     /// </remarks>
     public void Reset()
     {
