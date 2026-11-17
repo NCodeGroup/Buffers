@@ -218,6 +218,50 @@
     "SecureMemoryPoolTests.Rent_CharPool_ReturnsOnePageOfBytes": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
       "line": 306
+    },
+    "SecureMemoryPoolTests.Rent_SizeZero_ReturnsEmptyMemorySingleton": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 166
+    },
+    "SecureMemoryPoolTests.Rent_SizeNegativeOne_ReturnsPageSizeBuffer": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 176
+    },
+    "SecureMemoryPoolTests.Rent_SizeLessThanNegativeOne_ThrowsArgumentOutOfRangeException": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 158
+    },
+    "SecureMemoryPoolTests.Rent_LargeBuffer_IsNotPooled": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 233
+    },
+    "SecureMemoryPoolTests.Rent_Int32Pool_ReturnsOnePageOfBytes": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 274
+    },
+    "SecureMemoryPoolTests.Rent_ElementLargerThanPage_ReturnsOneElement": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 316
+    },
+    "SecureMemoryPoolTests.Return_AddsToMemoryQueue": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 339
+    },
+    "SecureMemoryPoolTests.TrimMemory_WhenHighPressure_ClearsQueue": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 387
+    },
+    "SecureMemoryPoolTests.TrimMemory_WhenLowPressure_KeepsQueue": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 411
+    },
+    "SecureMemoryPoolTests.Dispose_ClearsMemoryQueue": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 108
+    },
+    "SecureMemoryPoolTests.RentDisposeRent_ReusesBuffer": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 488
     }
   },
   "samples": {
@@ -385,6 +429,9 @@
     },
     "SiteBlockBetweenAwaits": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/SecretsAcrossAwaitSamples.cs"
+    },
+    "SitePoolPageSizes": {
+      "file": "tests/NCode.Buffers.Site.Tests/Reference/BufferBehaviorSamples.cs"
     }
   },
   "sources": {
@@ -867,6 +914,68 @@
       "branch": "main",
       "kind": "documented",
       "label": "ADR-1018"
+    },
+    "SecureMemoryPool.PageSize": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        61,
+        61
+      ],
+      "match": "public const int PageSize = 4096;"
+    },
+    "SecureMemoryPool.ElementsPerPage": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        79,
+        79
+      ],
+      "match": "private static readonly int ElementsPerPage"
+    },
+    "SecureMemoryPool.MemoryQueue": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        91,
+        91
+      ],
+      "match": "internal ConcurrentQueue<SecureMemory<T>> MemoryQueue"
+    },
+    "SecureMemoryPool.RegisterTrim": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        119,
+        119
+      ],
+      "match": "Gen2GcCallback.Register("
+    },
+    "SecureMemoryPool.Dispose": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        127,
+        133
+      ],
+      "match": "protected override void Dispose(bool disposing)"
+    },
+    "SecureMemoryPool.TrimMemory": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        198,
+        212
+      ],
+      "match": "internal bool TrimMemory()"
+    },
+    "Gen2GcCallback.CopiedFrom": {
+      "file": "src/NCode.Buffers/Gen2GcCallback.cs",
+      "lines": [
+        11,
+        12
+      ],
+      "match": "// Copied as-is from:"
+    },
+    "BufferBehaviorMatrixTests": {
+      "file": "tests/NCode.Buffers.Tests/BufferBehaviorMatrixTests.cs",
+      "branch": "main",
+      "kind": "asserted",
+      "label": "BufferBehaviorMatrixTests"
     }
   },
   "external": {

@@ -221,7 +221,7 @@ public class BufferBehaviorMatrixTests
 
     #endregion
 
-    #region Helpers
+    #region Helper Methods
 
     private static void AssertPinned(bool pinned, byte[] array)
     {
