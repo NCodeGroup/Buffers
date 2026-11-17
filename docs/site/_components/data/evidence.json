@@ -282,6 +282,18 @@
     "FixedSpanBufferWriterTests.Clear_DoesNotClearBufferContents": {
       "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterTests.cs",
       "line": 174
+    },
+    "StringSegmentsPropertyTests.Split_WhenCounting_CountMatchesStringSplit": {
+      "file": "tests/NCode.Buffers.Tests/StringSegmentsPropertyTests.cs",
+      "line": 30
+    },
+    "StringSegmentsPropertyTests.Split_WhenSlicing_SegmentsHoldNoSeparatorAndCoverTheOriginal": {
+      "file": "tests/NCode.Buffers.Tests/StringSegmentsPropertyTests.cs",
+      "line": 40
+    },
+    "StringSegmentsTests.First_WhenEmpty_ThrowsInvalidOperationException": {
+      "file": "tests/NCode.Buffers.Tests/StringSegmentsTests.cs",
+      "line": 90
     }
   },
   "samples": {
@@ -482,6 +494,27 @@
     },
     "SiteFixedBufferPartialWrite": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/FixedSizeBufferSamples.cs"
+    },
+    "SiteSplitTextUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SplitTextSamples.cs"
+    },
+    "SiteSplitTextHeader": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SplitTextSamples.cs"
+    },
+    "SiteSplitTextToken": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SplitTextSamples.cs"
+    },
+    "SiteSplitTextWalk": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SplitTextSamples.cs"
+    },
+    "SiteSplitTextSpanSplit": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SplitTextSamples.cs"
+    },
+    "SiteSequenceSplitJson": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SplitTextSamples.cs"
+    },
+    "SiteSplitTextOverSensitiveBuffer": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/SplitTextSamples.cs"
     }
   },
   "sources": {
@@ -1042,6 +1075,15 @@
         99
       ],
       "match": "public void Clear()"
+    },
+    "Changelog.SplitAllocations": {
+      "file": "CHANGELOG.md",
+      "lines": [
+        93,
+        93
+      ],
+      "match": "The XML documentation of",
+      "kind": "documented"
     }
   },
   "external": {
@@ -1188,6 +1230,13 @@
       "url": "https://learn.microsoft.com/dotnet/api/system.text.decoderfallbackexception",
       "read": "2026-11-17",
       "quote": "The exception that is thrown when a decoder fallback operation fails.",
+      "kind": "documented"
+    },
+    "MemoryExtensionsSplitDocs": {
+      "title": "MemoryExtensions.Split",
+      "url": "https://learn.microsoft.com/dotnet/api/system.memoryextensions.split",
+      "read": "2026-11-17",
+      "quote": "Parses the source ReadOnlySpan<T> for the specified separator, populating the destination span with Range instances representing the regions between the separators.",
       "kind": "documented"
     }
   },
