@@ -1210,6 +1210,315 @@
       "api": [
         "NCode.Buffers.EmptyMemory<T>.Dispose() -> void"
       ]
+    },
+    {
+      "id": "string-segments",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": null,
+      "signatures": [
+        "public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegment<char>>"
+      ],
+      "summary": "The result of a split: a read-only collection of segments that are slices of the original text. Splitting copies no substring; it allocates one segment object per substring.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments",
+      "api": [
+        "NCode.Buffers.StringSegments"
+      ]
+    },
+    {
+      "id": "string-segments-constructor",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": "constructor",
+      "signatures": [
+        "public StringSegments(ReadOnlyMemory<char> original, int count, ReadOnlySequenceSegment<char> first)"
+      ],
+      "summary": "Creates the result from `original`, `count` and `first`; `default` is empty. `Split` is the usual way to make one.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments.Constructor",
+      "api": [
+        "NCode.Buffers.StringSegments.StringSegments() -> void",
+        "NCode.Buffers.StringSegments.StringSegments(System.ReadOnlyMemory<char> original, int count, System.Buffers.ReadOnlySequenceSegment<char>! first) -> void"
+      ]
+    },
+    {
+      "id": "string-segments-is-empty",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": "IsEmpty",
+      "signatures": [
+        "public bool IsEmpty => FirstOrDefault is null;"
+      ],
+      "summary": "`true` when the result has no segments, as `default` has none.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments.IsEmpty",
+      "api": [
+        "NCode.Buffers.StringSegments.IsEmpty.get -> bool"
+      ]
+    },
+    {
+      "id": "string-segments-original",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": "Original",
+      "signatures": [
+        "public ReadOnlyMemory<char> Original { get; }"
+      ],
+      "summary": "The text that was split.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments.Original",
+      "api": [
+        "NCode.Buffers.StringSegments.Original.get -> System.ReadOnlyMemory<char>"
+      ]
+    },
+    {
+      "id": "string-segments-count",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": "Count",
+      "signatures": [
+        "public int Count { get; }"
+      ],
+      "summary": "The number of substrings: at least 1 for a result from `Split`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments.Count",
+      "api": [
+        "NCode.Buffers.StringSegments.Count.get -> int"
+      ]
+    },
+    {
+      "id": "string-segments-first",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": "First",
+      "signatures": [
+        "public ReadOnlySequenceSegment<char> First => FirstOrDefault ?? throw new InvalidOperationException(\"No segments found.\");"
+      ],
+      "summary": "The first segment. Follow `Next` to walk the rest without an enumerator.",
+      "constraint": null,
+      "throws": "`InvalidOperationException` when the result is empty.",
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments.First",
+      "api": [
+        "NCode.Buffers.StringSegments.First.get -> System.Buffers.ReadOnlySequenceSegment<char>!"
+      ]
+    },
+    {
+      "id": "string-segments-get-enumerator",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": "GetEnumerator",
+      "signatures": [
+        "public IEnumerator<ReadOnlySequenceSegment<char>> GetEnumerator()"
+      ],
+      "summary": "Enumerates the segments in order. It allocates an enumerator object; walking `First` and `Next` does not.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments.GetEnumerator",
+      "api": [
+        "NCode.Buffers.StringSegments.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Buffers.ReadOnlySequenceSegment<char>!>!"
+      ]
+    },
+    {
+      "id": "string-segments-split",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": "Split",
+      "signatures": [
+        "public static StringSegments Split(string value, char separator)",
+        "public static StringSegments Split(ReadOnlyMemory<char> value, char separator)",
+        "public static StringSegments Split(string value, ReadOnlySpan<char> separator)",
+        "public static StringSegments Split(string value, ReadOnlySpan<char> separator, StringComparison comparisonType)",
+        "public static StringSegments Split(ReadOnlyMemory<char> value, ReadOnlySpan<char> separator)",
+        "public static StringSegments Split(ReadOnlyMemory<char> value, ReadOnlySpan<char> separator, StringComparison comparisonType)"
+      ],
+      "summary": "Splits `value` at each `separator` into segments that are slices of `value`. Empty segments are kept. A character separator compares ordinally, and so does a string separator unless `comparisonType` says otherwise.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments.Split",
+      "api": [
+        "static NCode.Buffers.StringSegments.Split(string! value, char separator) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringSegments.Split(string! value, System.ReadOnlySpan<char> separator, System.StringComparison comparisonType) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringSegments.Split(string! value, System.ReadOnlySpan<char> separator) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringSegments.Split(System.ReadOnlyMemory<char> value, char separator) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringSegments.Split(System.ReadOnlyMemory<char> value, System.ReadOnlySpan<char> separator, System.StringComparison comparisonType) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringSegments.Split(System.ReadOnlyMemory<char> value, System.ReadOnlySpan<char> separator) -> NCode.Buffers.StringSegments"
+      ]
+    },
+    {
+      "id": "string-extensions",
+      "group": "string-splitting",
+      "type": "StringExtensions",
+      "member": null,
+      "signatures": [
+        "public static class StringExtensions",
+        "extension(string value)",
+        "extension(ReadOnlyMemory<char> value)"
+      ],
+      "summary": "Extension members on `string` and `ReadOnlyMemory<char>` that split text into `StringSegments`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringExtensions",
+      "api": [
+        "NCode.Buffers.StringExtensions",
+        "NCode.Buffers.StringExtensions.extension(string!)",
+        "NCode.Buffers.StringExtensions.extension(System.ReadOnlyMemory<char>)"
+      ]
+    },
+    {
+      "id": "string-extensions-split-segments",
+      "group": "string-splitting",
+      "type": "StringExtensions",
+      "member": "SplitSegments",
+      "signatures": [
+        "public StringSegments SplitSegments(char separator)",
+        "public StringSegments SplitSegments(ReadOnlySpan<char> separator)",
+        "public StringSegments SplitSegments(ReadOnlySpan<char> separator, StringComparison comparisonType)",
+        "public StringSegments SplitSegments(char separator)",
+        "public StringSegments SplitSegments(ReadOnlySpan<char> separator)",
+        "public StringSegments SplitSegments(ReadOnlySpan<char> separator, StringComparison comparisonType)"
+      ],
+      "summary": "Splits a `string` or a `ReadOnlyMemory<char>` as `StringSegments.Split` does. The overloads take a character, a string separator, or a string separator with a `StringComparison`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringExtensions.SplitSegments",
+      "api": [
+        "NCode.Buffers.StringExtensions.extension(string!).SplitSegments(char separator) -> NCode.Buffers.StringSegments",
+        "NCode.Buffers.StringExtensions.extension(string!).SplitSegments(System.ReadOnlySpan<char> separator, System.StringComparison comparisonType) -> NCode.Buffers.StringSegments",
+        "NCode.Buffers.StringExtensions.extension(string!).SplitSegments(System.ReadOnlySpan<char> separator) -> NCode.Buffers.StringSegments",
+        "NCode.Buffers.StringExtensions.extension(System.ReadOnlyMemory<char>).SplitSegments(char separator) -> NCode.Buffers.StringSegments",
+        "NCode.Buffers.StringExtensions.extension(System.ReadOnlyMemory<char>).SplitSegments(System.ReadOnlySpan<char> separator, System.StringComparison comparisonType) -> NCode.Buffers.StringSegments",
+        "NCode.Buffers.StringExtensions.extension(System.ReadOnlyMemory<char>).SplitSegments(System.ReadOnlySpan<char> separator) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringExtensions.SplitSegments(this string! value, char separator) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringExtensions.SplitSegments(this string! value, System.ReadOnlySpan<char> separator, System.StringComparison comparisonType) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringExtensions.SplitSegments(this string! value, System.ReadOnlySpan<char> separator) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringExtensions.SplitSegments(this System.ReadOnlyMemory<char> value, char separator) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringExtensions.SplitSegments(this System.ReadOnlyMemory<char> value, System.ReadOnlySpan<char> separator, System.StringComparison comparisonType) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringExtensions.SplitSegments(this System.ReadOnlyMemory<char> value, System.ReadOnlySpan<char> separator) -> NCode.Buffers.StringSegments"
+      ]
+    },
+    {
+      "id": "secure-encoding",
+      "group": "secure-encoding",
+      "type": "SecureEncoding",
+      "member": null,
+      "signatures": [
+        "public static class SecureEncoding"
+      ],
+      "summary": "Encodings that throw on invalid input instead of substituting a replacement character.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/strict-decoding/",
+      "source": "Api.SecureEncoding",
+      "api": [
+        "NCode.Buffers.SecureEncoding"
+      ]
+    },
+    {
+      "id": "secure-encoding-ascii",
+      "group": "secure-encoding",
+      "type": "SecureEncoding",
+      "member": "ASCII",
+      "signatures": [
+        "public static ASCIIEncoding ASCII { get; } = CreateSecureAsciiEncoding();"
+      ],
+      "summary": "An ASCII encoding with exception fallbacks: a character above 0x7F fails to encode and a byte above 0x7F fails to decode.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/strict-decoding/",
+      "source": "Api.SecureEncoding.ASCII",
+      "api": [
+        "static NCode.Buffers.SecureEncoding.ASCII.get -> System.Text.ASCIIEncoding!"
+      ]
+    },
+    {
+      "id": "secure-encoding-utf8",
+      "group": "secure-encoding",
+      "type": "SecureEncoding",
+      "member": "UTF8",
+      "signatures": [
+        "public static UTF8Encoding UTF8 { get; } = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);"
+      ],
+      "summary": "A UTF-8 encoding with exception fallbacks that writes no byte order mark.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/strict-decoding/",
+      "source": "Api.SecureEncoding.UTF8",
+      "api": [
+        "static NCode.Buffers.SecureEncoding.UTF8.get -> System.Text.UTF8Encoding!"
+      ]
+    },
+    {
+      "id": "cryptographic-operations-extensions",
+      "group": "cryptographic-operations",
+      "type": "CryptographicOperationsExtensions",
+      "member": null,
+      "signatures": [
+        "public static class CryptographicOperationsExtensions",
+        "extension(CryptographicOperations)"
+      ],
+      "summary": "Extension members on `CryptographicOperations` that work on spans of any unmanaged element type, not only bytes.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/verify-a-mac/",
+      "source": "Api.CryptographicOperationsExtensions",
+      "api": [
+        "NCode.Buffers.CryptographicOperationsExtensions",
+        "NCode.Buffers.CryptographicOperationsExtensions.extension(System.Security.Cryptography.CryptographicOperations!)"
+      ]
+    },
+    {
+      "id": "cryptographic-operations-extensions-zero-memory",
+      "group": "cryptographic-operations",
+      "type": "CryptographicOperationsExtensions",
+      "member": "ZeroMemory",
+      "signatures": [
+        "extension(CryptographicOperations)",
+        "public static void ZeroMemory<T>(Span<T> buffer) where T : unmanaged"
+      ],
+      "summary": "Fills the span with zeros through `CryptographicOperations.ZeroMemory`, so the compiler and runtime do not remove the write. The elements may be of any unmanaged type.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.CryptographicOperationsExtensions.ZeroMemory",
+      "api": [
+        "static NCode.Buffers.CryptographicOperationsExtensions.extension(System.Security.Cryptography.CryptographicOperations!).ZeroMemory<T>(System.Span<T> buffer) -> void",
+        "static NCode.Buffers.CryptographicOperationsExtensions.ZeroMemory<T>(System.Span<T> buffer) -> void"
+      ]
+    },
+    {
+      "id": "cryptographic-operations-extensions-fixed-time-equals",
+      "group": "cryptographic-operations",
+      "type": "CryptographicOperationsExtensions",
+      "member": "FixedTimeEquals",
+      "signatures": [
+        "extension(CryptographicOperations)",
+        "public static bool FixedTimeEquals<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right) where T : unmanaged"
+      ],
+      "summary": "Compares two spans of any unmanaged element type in time that does not depend on where they first differ. It returns `true` only when the lengths and the contents match.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/verify-a-mac/",
+      "source": "Api.CryptographicOperationsExtensions.FixedTimeEquals",
+      "api": [
+        "static NCode.Buffers.CryptographicOperationsExtensions.extension(System.Security.Cryptography.CryptographicOperations!).FixedTimeEquals<T>(System.ReadOnlySpan<T> left, System.ReadOnlySpan<T> right) -> bool",
+        "static NCode.Buffers.CryptographicOperationsExtensions.FixedTimeEquals<T>(System.ReadOnlySpan<T> left, System.ReadOnlySpan<T> right) -> bool"
+      ]
     }
   ]
 }

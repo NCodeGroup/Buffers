@@ -1755,6 +1755,134 @@
         63
       ],
       "match": "public void Dispose()"
+    },
+    "Api.StringSegments": {
+      "file": "src/NCode.Buffers/StringSegments.cs",
+      "lines": [
+        43,
+        43
+      ],
+      "match": "public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegment<char>>"
+    },
+    "Api.StringSegments.Constructor": {
+      "file": "src/NCode.Buffers/StringSegments.cs",
+      "lines": [
+        95,
+        95
+      ],
+      "match": "public StringSegments("
+    },
+    "Api.StringSegments.IsEmpty": {
+      "file": "src/NCode.Buffers/StringSegments.cs",
+      "lines": [
+        57,
+        57
+      ],
+      "match": "public bool IsEmpty => FirstOrDefault is null;"
+    },
+    "Api.StringSegments.Original": {
+      "file": "src/NCode.Buffers/StringSegments.cs",
+      "lines": [
+        65,
+        65
+      ],
+      "match": "public ReadOnlyMemory<char> Original { get; }"
+    },
+    "Api.StringSegments.Count": {
+      "file": "src/NCode.Buffers/StringSegments.cs",
+      "lines": [
+        73,
+        73
+      ],
+      "match": "public int Count { get; }"
+    },
+    "Api.StringSegments.First": {
+      "file": "src/NCode.Buffers/StringSegments.cs",
+      "lines": [
+        82,
+        82
+      ],
+      "match": "public ReadOnlySequenceSegment<char> First =>"
+    },
+    "Api.StringSegments.GetEnumerator": {
+      "file": "src/NCode.Buffers/StringSegments.cs",
+      "lines": [
+        107,
+        107
+      ],
+      "match": "public IEnumerator<ReadOnlySequenceSegment<char>> GetEnumerator()"
+    },
+    "Api.StringSegments.Split": {
+      "file": "src/NCode.Buffers/StringSegments.cs",
+      "lines": [
+        137,
+        137
+      ],
+      "match": "public static StringSegments Split(string value, char separator) =>"
+    },
+    "Api.StringExtensions": {
+      "file": "src/NCode.Buffers/StringExtensions.cs",
+      "lines": [
+        37,
+        37
+      ],
+      "match": "public static class StringExtensions"
+    },
+    "Api.StringExtensions.SplitSegments": {
+      "file": "src/NCode.Buffers/StringExtensions.cs",
+      "lines": [
+        53,
+        53
+      ],
+      "match": "public StringSegments SplitSegments(char separator) =>"
+    },
+    "Api.SecureEncoding": {
+      "file": "src/NCode.Buffers/SecureEncoding.cs",
+      "lines": [
+        36,
+        36
+      ],
+      "match": "public static class SecureEncoding"
+    },
+    "Api.SecureEncoding.ASCII": {
+      "file": "src/NCode.Buffers/SecureEncoding.cs",
+      "lines": [
+        65,
+        65
+      ],
+      "match": "public static ASCIIEncoding ASCII { get; } = CreateSecureAsciiEncoding();"
+    },
+    "Api.SecureEncoding.UTF8": {
+      "file": "src/NCode.Buffers/SecureEncoding.cs",
+      "lines": [
+        81,
+        81
+      ],
+      "match": "public static UTF8Encoding UTF8 { get; } ="
+    },
+    "Api.CryptographicOperationsExtensions": {
+      "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
+      "lines": [
+        26,
+        26
+      ],
+      "match": "public static class CryptographicOperationsExtensions"
+    },
+    "Api.CryptographicOperationsExtensions.ZeroMemory": {
+      "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
+      "lines": [
+        56,
+        56
+      ],
+      "match": "public static void ZeroMemory<T>(Span<T> buffer)"
+    },
+    "Api.CryptographicOperationsExtensions.FixedTimeEquals": {
+      "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
+      "lines": [
+        94,
+        94
+      ],
+      "match": "public static bool FixedTimeEquals<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right)"
     }
   },
   "external": {
