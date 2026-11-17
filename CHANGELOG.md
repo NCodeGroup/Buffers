@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Package validation compares each package with the published 5.1.1 package.
+- Package validation compares each package with the published 5.1.2 package.
 
 ## [5.1.2] - 2026-11-17
 
