@@ -40,6 +40,9 @@ try {
     if ($LASTEXITCODE) { exit $LASTEXITCODE }
     ./build/Test-SiteEvidence.ps1
     if ($LASTEXITCODE) { exit $LASTEXITCODE }
+    # The review checklist's data is generated from the guides' Checklist sections; a guide changed without it fails here.
+    ./build/Update-ReviewChecklist.ps1 -Check
+    if ($LASTEXITCODE) { exit $LASTEXITCODE }
     $dod = @{}
     if ($Fast) { $dod.Fast = $true }
     if ($Filter) { $dod.Filter = $Filter }
