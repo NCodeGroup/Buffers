@@ -1,0 +1,171 @@
+---
+title: Reject malformed UTF-8 and ASCII
+description: Decode bytes from a request, a file or a stream so that invalid input throws, instead of becoming a replacement character that makes two different inputs the same string.
+---
+
+import KindLabel from '@site/components/KindLabel.astro';
+import LeakCard from '@site/components/LeakCard.astro';
+import Pinned from '@site/components/Pinned.astro';
+import PinNotes from '@site/components/PinNotes.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+
+<KindLabel kind="how-to" />
+
+This is your situation when your code turns bytes it did not write into text, such as a request body, a header, a file
+or a stream, and then checks, hashes, compares or stores that text. The example decodes a name from bytes.
+
+You'll use `SecureEncoding.UTF8` · `SecureEncoding.ASCII` · `DecoderFallbackException` · `StreamReader` ·
+`Utf8.IsValid` · `Ascii.IsValid`
+
+## The usual code
+
+It decodes with the standard encoding. Input that is not valid UTF-8 does not fail: each bad byte becomes a
+replacement character, and decoding goes on.
+
+<Pinned tone="usual">
+```cs snippet=SiteLenientDecodingCollision title="Decoding.cs" "string a = Encoding.UTF8.GetString(" "string b = Encoding.UTF8.GetString("
+```
+</Pinned>
+
+**Leaves behind**
+
+<PinNotes tone="usual">
+
+1. The first input is not valid UTF-8, and its text is `a` followed by the replacement character `U+FFFD`.
+2. The second input is a different, also invalid, sequence, and its text is the same string. Two different inputs
+   decode to one string, so the bytes you checked are not the text you used. <LeakCard leak="L8" />
+
+</PinNotes>
+
+## With NCode.Buffers
+
+`SecureEncoding.UTF8` decodes the same bytes, and throws on invalid input instead of substituting a character. Your
+code decides what an invalid input means.
+
+<Pinned tone="fix">
+```cs snippet=SiteStrictDecodingReject title="Names.cs" "SecureEncoding.UTF8.GetString(" "catch (DecoderFallbackException)"
+```
+</Pinned>
+
+**What changed**
+
+<PinNotes tone="fix">
+
+1. The decoder is strict. A byte it cannot decode stops the call, and no text of the input exists.
+   <Proof source="SecureEncoding.UTF8" /> <Proof claim="R5" />
+2. The exception is `DecoderFallbackException`, which your code catches where it knows what to do with a bad input.
+   <Proof external="DecoderFallbackExceptionDocs" /> The sample returns a fixed message and discards the input.
+   <Proof sample="SiteStrictDecodingReject" />
+
+</PinNotes>
+
+Valid input decodes as it does with the standard encoding: the sample returns `café` for the bytes of `café`.
+Neither `SecureEncoding.UTF8` nor `SecureEncoding.ASCII` writes a byte order mark when it encodes.
+<Proof test="SecureEncodingTests.UTF8_HasNoPreamble" /> <Proof test="SecureEncodingTests.ASCII_HasNoPreamble" />
+
+### Reading a stream
+
+A reader over a stream takes an encoding. Give it `SecureEncoding.UTF8`, and tell it not to look for a byte order
+mark.
+
+<Pinned tone="fix">
+```cs snippet=SiteStrictDecodingStreamReader title="Streams.cs" "detectEncodingFromByteOrderMarks: false"
+```
+</Pinned>
+
+<PinNotes tone="fix">
+
+1. With detection off, the reader decodes with the encoding you passed and no other. A stream that starts with a byte
+   order mark, such as `FF FE`, throws instead of switching the decoder. <Proof sample="SiteStrictDecodingStreamReader" />
+
+</PinNotes>
+
+Invalid bytes in the stream throw `DecoderFallbackException` from `ReadToEnd()`, as they do from `GetString`.
+<Proof sample="SiteStrictDecodingStreamReader" />
+
+### ASCII
+
+`SecureEncoding.ASCII` is strict in both directions. Decoding a byte above `0x7F` throws `DecoderFallbackException`,
+and encoding a character above `U+007F` throws `EncoderFallbackException`. The standard `Encoding.ASCII` replaces
+the byte with a question mark and goes on. <Proof source="SecureEncoding.ASCII" />
+
+```cs snippet=SiteStrictAscii title="Ascii.cs"
+```
+
+<Proof sample="SiteStrictAscii" />
+
+`SecureEncoding.UTF8` also throws on text it cannot encode, such as a high surrogate with no low surrogate after it.
+<Proof test="SecureEncodingTests.UTF8_EncodeUnpairedHighSurrogate_ThrowsEncoderFallbackException" />
+
+### When you only need to know
+
+Sometimes the question is only whether the bytes are valid, and you do not need the text. `Utf8.IsValid` and
+`Ascii.IsValid` answer it without decoding. <Proof external="Utf8IsValidDocs" /> <Proof external="AsciiIsValidDocs" />
+
+```cs snippet=SiteStrictDecodingValidateOnly title="Validate.cs"
+```
+
+<Proof sample="SiteStrictDecodingValidateOnly" />
+
+## Six byte sequences
+
+Each row is a sequence of bytes, the text the standard UTF-8 encoding makes of it, and what `SecureEncoding.UTF8`
+does. Five are invalid, and the sixth is the valid `é`.
+
+| Bytes | Standard UTF-8 | `SecureEncoding.UTF8` |
+| --- | --- | --- |
+| `61 80` | `a` `U+FFFD` | throws |
+| `61 FF` | `a` `U+FFFD` | throws |
+| `C0 AF` | `U+FFFD` `U+FFFD` | throws |
+| `ED A0 80` | `U+FFFD` `U+FFFD` `U+FFFD` | throws |
+| `E2 82` | `U+FFFD` | throws |
+| `C3 A9` | `é` | `é` |
+
+The first two rows decode to the same string with the standard encoding. The third is an overlong form of `/`, the
+fourth is a surrogate code point, and the fifth is a sequence cut short. The sample asserts every row.
+<Proof sample="SiteStrictExamplesTable" />
+
+## Pitfalls
+
+[Ways to get it wrong](/reference/pitfalls/) has more, each with its evidence.
+
+- **Decoding again with the standard encoding.** *You write* a `catch` that calls `Encoding.UTF8.GetString` on the
+  same bytes. *What happens:* the input you rejected becomes a string anyway, with replacement characters in it.
+  <LeakCard leak="L8" /> <Proof sample="SiteLenientDecodingCollision" /> *Write instead:* reject the input, as the
+  sample does.
+- **A lenient encoding that looks strict.** *You write* `new UTF8Encoding()` or `Encoding.GetEncoding("utf-8")`.
+  *What happens:* the repository bans both outside test projects, and names `SecureEncoding` instead.
+  <Proof source="BannedEncoding" /> *Write instead:* `SecureEncoding.UTF8` or `SecureEncoding.ASCII`.
+- **Letting a byte order mark choose the encoding.** *You write* a `StreamReader` that looks for a mark. *What
+  happens:* a stream that starts with `FF FE` is decoded as the encoding the mark names, so the encoding you chose
+  does not apply. <Proof sample="SiteStrictDecodingStreamReader" /> *Write instead:* pass
+  `detectEncodingFromByteOrderMarks: false`.
+- **Logging the exception.** *You write* the whole `DecoderFallbackException` into a log. *What happens:* its
+  `BytesUnknown` holds the bytes it rejected, which are part of the input. <Proof sample="SiteStrictDecodingReject" />
+  *Write instead:* log that the input was invalid, and not the exception or its bytes.
+
+## What this does not fix
+
+:::caution[Outside strict decoding]
+- **Valid text that is wrong.** Characters that look alike, and Unicode normalization: two valid strings that read the
+  same are still two different strings. <Proof claim="R5" />
+- **Strings already decoded by other code.** A framework that decoded a body before your code saw it has made its own
+  choice about invalid bytes.
+- **Who can read the text afterwards.** A `string` cannot be erased: [what it protects, and what it does not](/start/limits/).
+:::
+
+## Checklist
+
+- Every decode of bytes you did not write uses `SecureEncoding.UTF8` or `SecureEncoding.ASCII`, never `Encoding.UTF8`
+  or `Encoding.ASCII`.
+- A `DecoderFallbackException` is caught where the input enters, and turned into a rejection.
+- The rejection does not decode the bytes again with another encoding.
+- A `StreamReader` is given the encoding and `detectEncodingFromByteOrderMarks: false`.
+- Nothing logs the exception or its `BytesUnknown`.
+
+<Related>
+- **Learn** [Quick start](/start/quick-start/)
+- **Understand** [How secrets leak in managed code](/concepts/how-secrets-leak/)
+- **Look up** [Ways to get it wrong](/reference/pitfalls/)
+</Related>

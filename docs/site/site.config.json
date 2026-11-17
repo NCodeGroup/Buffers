@@ -34,7 +34,8 @@
             "guides/read-a-secret-without-a-string",
             "guides/secrets-across-await"
           ]
-        }
+        },
+        { "label": "Text and buffers", "items": ["guides/strict-decoding"] }
       ]
     },
     { "label": "Concepts", "items": ["concepts/how-secrets-leak", "concepts/ownership"] },
