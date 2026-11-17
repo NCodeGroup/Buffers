@@ -58,11 +58,9 @@ public class CryptographicOperationsExtensionsTests
     public void ZeroMemoryOrClear_WithSeveralChunks_ZeroesEveryElement()
     {
         long[] buffer = [-1, -1, -1, -1, -1, -1];
+        var firstFive = buffer.AsSpan(0, 5);
 
-        CryptographicOperationsExtensions.ZeroMemoryOrClear(
-            buffer.AsSpan(0, 5),
-            maxElementsPerChunk: 2
-        );
+        CryptographicOperationsExtensions.ZeroMemoryOrClear(firstFive, maxElementsPerChunk: 2);
 
         Assert.Equal<long>([0, 0, 0, 0, 0, -1], buffer);
     }
@@ -71,11 +69,9 @@ public class CryptographicOperationsExtensionsTests
     public void ZeroMemoryOrClear_WithEmptySpan_DoesNothing()
     {
         long[] buffer = [-1];
+        var empty = buffer.AsSpan(0, 0);
 
-        CryptographicOperationsExtensions.ZeroMemoryOrClear(
-            buffer.AsSpan(0, 0),
-            maxElementsPerChunk: 2
-        );
+        CryptographicOperationsExtensions.ZeroMemoryOrClear(empty, maxElementsPerChunk: 2);
 
         Assert.Equal<long>([-1], buffer);
     }
