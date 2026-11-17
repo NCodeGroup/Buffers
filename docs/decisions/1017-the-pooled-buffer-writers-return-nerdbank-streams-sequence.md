@@ -1,4 +1,4 @@
-# 1017. The pooled buffer writers return Nerdbank.Streams' Sequence&lt;T&gt;
+# 1017. The pooled buffer writers return Nerdbank.Streams' `Sequence<T>`
 
 - **Status:** Accepted
 - **Date:** 2026-11-17
