@@ -789,6 +789,84 @@
         46
       ],
       "match": "public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>"
+    },
+    "Adr1001": {
+      "file": "docs/decisions/1001-each-package-is-validated-against-the-last-released-package.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1001"
+    },
+    "Adr1003": {
+      "file": "docs/decisions/1003-shipping-code-takes-buffers-and-encodings-through-bufferfactory-and-secureencoding.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1003"
+    },
+    "Adr1004": {
+      "file": "docs/decisions/1004-the-package-targets-only-supported-lts-dotnet-versions.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1004"
+    },
+    "Adr1005": {
+      "file": "docs/decisions/1005-readme-samples-are-compiled-tests-that-markdownsnippets-copies-into-the-readmes.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1005"
+    },
+    "Adr1006": {
+      "file": "docs/decisions/1006-the-secure-apis-constrain-their-element-type-to-unmanaged.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1006"
+    },
+    "Adr1011": {
+      "file": "docs/decisions/1011-buffers-have-no-finalizer-and-are-zeroed-only-by-dispose.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1011"
+    },
+    "Adr1012": {
+      "file": "docs/decisions/1012-the-secure-pool-caches-buffers-of-one-4096-byte-page.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1012"
+    },
+    "Adr1013": {
+      "file": "docs/decisions/1013-pinned-buffers-are-allocated-without-being-cleared.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1013"
+    },
+    "Adr1014": {
+      "file": "docs/decisions/1014-securespanlifetime-zeroes-the-callers-span-and-does-not-pin-it.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1014"
+    },
+    "Adr1015": {
+      "file": "docs/decisions/1015-the-secure-pools-cache-has-no-size-limit-and-is-dropped-under-memory-pressure.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1015"
+    },
+    "Adr1016": {
+      "file": "docs/decisions/1016-zeroing-and-fixed-time-comparison-call-cryptographicoperations.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1016"
+    },
+    "Adr1017": {
+      "file": "docs/decisions/1017-the-pooled-buffer-writers-return-nerdbank-streams-sequence.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1017"
+    },
+    "Adr1018": {
+      "file": "docs/decisions/1018-the-library-neither-locks-nor-encrypts-memory.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1018"
     }
   },
   "external": {
