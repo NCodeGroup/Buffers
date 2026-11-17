@@ -45,7 +45,8 @@ attack surface is its public API.
 - **Fail-safe defaults:** analyzers ban raw `ArrayPool`, `MemoryPool` and `Encoding` use in shipping code, so buffers and
   encodings come from the secure entry points (ADR-1003); encodings throw rather than guess.
 - **Complete mediation of ownership:** memory is returned only through its owner's `Dispose`, which zeroes it; double
-  dispose is a no-op.
+  dispose is a no-op. Every rental gets an owner of its own, so a second `Dispose` of an earlier rental can't zero or
+  return a buffer another caller has rented since.
 - **Least common mechanism:** secret-holding types accept only unmanaged element types, so they never hold object
   references the zeroing can't clear (ADR-1006).
 - **Open design:** the code, the tests, the decision records and this case are public.
@@ -60,8 +61,8 @@ attack surface is its public API.
 
 ## Evidence
 
-- **Tests:** unit and FsCheck property tests cover zeroing, pool reuse, writer bounds and encodings; the gate fails
-  under 98% line or branch coverage (`./build/Test-Coverage.ps1`).
+- **Tests:** unit and FsCheck property tests cover zeroing, including of a buffer the pool hands out again, pool
+  reuse, writer bounds and encodings; the gate fails under 98% line or branch coverage (`./build/Test-Coverage.ps1`).
 - **Static analysis:** the .NET analyzers at `latest-recommended` with warnings as errors, banned-API analyzers, and
   CodeQL on every pull request, which the `main` ruleset requires.
 - **Review:** every change reaches `main` through a pull request with required CI, resolved review threads and an

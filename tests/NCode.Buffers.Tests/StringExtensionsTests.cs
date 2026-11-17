@@ -111,5 +111,37 @@ public class StringExtensionsTests
         Assert.Equal("3", list[1].Memory.ToString());
     }
 
+    [Fact]
+    public void SplitSegments_String_EmptySeparator_ReturnsWholeValue()
+    {
+        var segments = "abc".SplitSegments("");
+
+        Assert.Equal("abc", Assert.Single(segments).Memory.ToString());
+    }
+
+    [Fact]
+    public void SplitSegments_String_EmptySeparatorWithComparison_ReturnsWholeValue()
+    {
+        var segments = "abc".SplitSegments("", StringComparison.Ordinal);
+
+        Assert.Equal("abc", Assert.Single(segments).Memory.ToString());
+    }
+
+    [Fact]
+    public void SplitSegments_ReadOnlyMemory_EmptySeparator_ReturnsWholeValue()
+    {
+        var segments = "abc".AsMemory().SplitSegments("");
+
+        Assert.Equal("abc", Assert.Single(segments).Memory.ToString());
+    }
+
+    [Fact]
+    public void SplitSegments_ReadOnlyMemory_EmptySeparatorWithComparison_ReturnsWholeValue()
+    {
+        var segments = "abc".AsMemory().SplitSegments("", StringComparison.Ordinal);
+
+        Assert.Equal("abc", Assert.Single(segments).Memory.ToString());
+    }
+
     #endregion
 }

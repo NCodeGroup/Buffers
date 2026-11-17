@@ -57,11 +57,6 @@ public class StringSegmentsPropertyTests
         NonNull<string> separator
     )
     {
-        if (separator.Get.Length == 0)
-        {
-            return true;
-        }
-
         var separatorSpan = separator.Get.AsSpan();
         var segments = StringSegments.Split(value.Get, separatorSpan, StringComparison.Ordinal);
 

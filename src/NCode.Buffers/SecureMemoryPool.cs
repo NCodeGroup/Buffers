@@ -86,9 +86,10 @@ public class SecureMemoryPool<T> : MemoryPool<T>
     internal bool IsDisposed => Volatile.Read(ref _disposed) != 0;
 
     /// <summary>
-    /// Gets the queue of available memory buffers for reuse.
+    /// Gets the queue of zeroed pinned arrays available for reuse.
     /// </summary>
-    internal ConcurrentQueue<SecureMemory<T>> MemoryQueue { get; } = new();
+    // The pool keeps arrays, never owners: every rental gets a new owner, so an earlier renter's second Dispose can't zero or return a buffer someone rents later.
+    internal ConcurrentQueue<T[]> MemoryQueue { get; } = new();
 
     /// <summary>
     /// Gets or sets the high pressure threshold when the memory pool should trim cached memory.
@@ -145,6 +146,10 @@ public class SecureMemoryPool<T> : MemoryPool<T>
     /// If the requested size exceeds <see cref="PageSize"/> bytes, a non-pooled buffer is allocated.
     /// Non-pooled buffers are still securely zeroed when disposed but are not returned to the pool.
     /// </para>
+    /// <para>
+    /// Each call returns an owner of its own. Its first <c>Dispose</c> zeroes the buffer and returns a pooled buffer to the pool;
+    /// a later <c>Dispose</c> of the same owner does nothing, so it never affects a later renter of the buffer.
+    /// </para>
     /// </remarks>
     /// <exception cref="ObjectDisposedException">The pool has been disposed.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="minBufferSize"/> is less than -1.</exception>
@@ -161,8 +166,8 @@ public class SecureMemoryPool<T> : MemoryPool<T>
         var byteCount = minBufferSize == -1 ? PageSize : (long)minBufferSize * Unsafe.SizeOf<T>();
         if (byteCount <= PageSize)
         {
-            return MemoryQueue.TryDequeue(out var memory)
-                ? memory
+            return MemoryQueue.TryDequeue(out var pinnedArray)
+                ? new SecureMemory<T>(this, pinnedArray)
                 : new SecureMemory<T>(this, ElementsPerPage);
         }
 
@@ -173,17 +178,17 @@ public class SecureMemoryPool<T> : MemoryPool<T>
     /// <summary>
     /// Returns a memory buffer to the pool for reuse.
     /// </summary>
-    /// <param name="memory">The memory buffer to return to the pool.</param>
+    /// <param name="pinnedArray">The zeroed pinned array of a disposed owner.</param>
     /// <remarks>
     /// If the pool has been disposed, the memory is not returned to the pool.
     /// The memory should already be zeroed before calling this method.
     /// </remarks>
-    internal virtual void Return(SecureMemory<T> memory)
+    internal virtual void Return(T[] pinnedArray)
     {
         if (IsDisposed)
             return;
 
-        MemoryQueue.Enqueue(memory);
+        MemoryQueue.Enqueue(pinnedArray);
     }
 
     /// <summary>

@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using JetBrains.Annotations;
 
 namespace NCode.Buffers;
@@ -191,6 +192,7 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// This method uses <see cref="StringComparison.Ordinal"/> comparison for the separator string.
     /// Empty segments are included in the result when consecutive separators are encountered.
     /// The substrings aren't copied, but the split allocates one segment object per substring.
+    /// An empty separator returns one segment that holds the whole value, as <see cref="string.Split(string, StringSplitOptions)"/> does.
     /// </remarks>
     public static StringSegments Split(string value, ReadOnlySpan<char> separator) =>
         Split(value.AsMemory(), separator, StringComparison.Ordinal);
@@ -208,6 +210,9 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// Use this overload when you need case-insensitive or culture-aware separator matching.
     /// Empty segments are included in the result when consecutive separators are encountered.
     /// The substrings aren't copied, but the split allocates one segment object per substring.
+    /// Each split cuts out the text the separator matched, whose length a culture-aware comparison can make differ from the separator's.
+    /// A separator that matches no text, such as an empty one or, under a culture-aware comparison, one made only of ignorable characters,
+    /// returns one segment that holds the whole value, as <see cref="string.Split(string, StringSplitOptions)"/> does for an empty separator.
     /// </remarks>
     public static StringSegments Split(
         string value,
@@ -227,6 +232,7 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// This method uses <see cref="StringComparison.Ordinal"/> comparison for the separator string.
     /// Empty segments are included in the result when consecutive separators are encountered.
     /// The substrings aren't copied, but the split allocates one segment object per substring.
+    /// An empty separator returns one segment that holds the whole value, as <see cref="string.Split(string, StringSplitOptions)"/> does.
     /// </remarks>
     public static StringSegments Split(ReadOnlyMemory<char> value, ReadOnlySpan<char> separator) =>
         Split(value, separator, StringComparison.Ordinal);
@@ -244,6 +250,9 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     /// Use this overload when you need case-insensitive or culture-aware separator matching.
     /// Empty segments are included in the result when consecutive separators are encountered.
     /// The substrings aren't copied, but the split allocates one segment object per substring.
+    /// Each split cuts out the text the separator matched, whose length a culture-aware comparison can make differ from the separator's.
+    /// A separator that matches no text, such as an empty one or, under a culture-aware comparison, one made only of ignorable characters,
+    /// returns one segment that holds the whole value, as <see cref="string.Split(string, StringSplitOptions)"/> does for an empty separator.
     /// </remarks>
     public static StringSegments Split(
         ReadOnlyMemory<char> value,
@@ -252,13 +261,13 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
     )
     {
         var count = 1;
-        var index = value.Span.IndexOf(separator, comparisonType);
+        var index = IndexOfSeparator(value.Span, separator, comparisonType, out var matchLength);
         if (index == -1)
         {
             return new StringSegments(value, count, new MemorySegment<char>(value));
         }
 
-        var remaining = value[(index + separator.Length)..];
+        var remaining = value[(index + matchLength)..];
         var first = new MemorySegment<char>(value[..index]);
         var last = first;
 
@@ -266,7 +275,7 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
         {
             ++count;
 
-            index = remaining.Span.IndexOf(separator, comparisonType);
+            index = IndexOfSeparator(remaining.Span, separator, comparisonType, out matchLength);
             if (index == -1)
             {
                 last.Append(remaining);
@@ -274,7 +283,64 @@ public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegm
             }
 
             last = last.Append(remaining[..index]);
-            remaining = remaining[(index + separator.Length)..];
+            remaining = remaining[(index + matchLength)..];
         }
+    }
+
+    // A culture-aware comparison can match text of another length than the separator, or no text at all; a match of no
+    // text counts as none, so every match a split cuts out is at least one character long.
+    private static int IndexOfSeparator(
+        ReadOnlySpan<char> source,
+        ReadOnlySpan<char> separator,
+        StringComparison comparisonType,
+        out int matchLength
+    )
+    {
+        int index;
+        switch (comparisonType)
+        {
+            case StringComparison.CurrentCulture:
+                index = CultureInfo.CurrentCulture.CompareInfo.IndexOf(
+                    source,
+                    separator,
+                    CompareOptions.None,
+                    out matchLength
+                );
+                break;
+
+            case StringComparison.CurrentCultureIgnoreCase:
+                index = CultureInfo.CurrentCulture.CompareInfo.IndexOf(
+                    source,
+                    separator,
+                    CompareOptions.IgnoreCase,
+                    out matchLength
+                );
+                break;
+
+            case StringComparison.InvariantCulture:
+                index = CultureInfo.InvariantCulture.CompareInfo.IndexOf(
+                    source,
+                    separator,
+                    CompareOptions.None,
+                    out matchLength
+                );
+                break;
+
+            case StringComparison.InvariantCultureIgnoreCase:
+                index = CultureInfo.InvariantCulture.CompareInfo.IndexOf(
+                    source,
+                    separator,
+                    CompareOptions.IgnoreCase,
+                    out matchLength
+                );
+                break;
+
+            default:
+                index = source.IndexOf(separator, comparisonType);
+                matchLength = separator.Length;
+                break;
+        }
+
+        return matchLength == 0 ? -1 : index;
     }
 }

@@ -63,6 +63,7 @@ public static class StringExtensions
         /// This method uses <see cref="StringComparison.Ordinal"/> comparison for the separator string.
         /// Empty segments are included in the result when consecutive separators are encountered.
         /// The substrings aren't copied, but the split allocates one segment object per substring.
+        /// An empty separator returns one segment that holds the whole value, as <see cref="string.Split(string, StringSplitOptions)"/> does.
         /// </remarks>
         public StringSegments SplitSegments(ReadOnlySpan<char> separator) =>
             StringSegments.Split(value, separator);
@@ -79,6 +80,9 @@ public static class StringExtensions
         /// Use this overload when you need case-insensitive or culture-aware separator matching.
         /// Empty segments are included in the result when consecutive separators are encountered.
         /// The substrings aren't copied, but the split allocates one segment object per substring.
+        /// Each split cuts out the text the separator matched, whose length a culture-aware comparison can make differ from the separator's.
+        /// A separator that matches no text, such as an empty one or, under a culture-aware comparison, one made only of ignorable characters,
+        /// returns one segment that holds the whole value, as <see cref="string.Split(string, StringSplitOptions)"/> does for an empty separator.
         /// </remarks>
         public StringSegments SplitSegments(
             ReadOnlySpan<char> separator,
@@ -115,6 +119,7 @@ public static class StringExtensions
         /// This method uses <see cref="StringComparison.Ordinal"/> comparison for the separator string.
         /// Empty segments are included in the result when consecutive separators are encountered.
         /// The substrings aren't copied, but the split allocates one segment object per substring.
+        /// An empty separator returns one segment that holds the whole value, as <see cref="string.Split(string, StringSplitOptions)"/> does.
         /// </remarks>
         public StringSegments SplitSegments(ReadOnlySpan<char> separator) =>
             StringSegments.Split(value, separator);
@@ -131,6 +136,9 @@ public static class StringExtensions
         /// Use this overload when you need case-insensitive or culture-aware separator matching.
         /// Empty segments are included in the result when consecutive separators are encountered.
         /// The substrings aren't copied, but the split allocates one segment object per substring.
+        /// Each split cuts out the text the separator matched, whose length a culture-aware comparison can make differ from the separator's.
+        /// A separator that matches no text, such as an empty one or, under a culture-aware comparison, one made only of ignorable characters,
+        /// returns one segment that holds the whole value, as <see cref="string.Split(string, StringSplitOptions)"/> does for an empty separator.
         /// </remarks>
         public StringSegments SplitSegments(
             ReadOnlySpan<char> separator,
