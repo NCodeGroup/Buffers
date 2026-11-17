@@ -298,6 +298,34 @@ public class FixedMemoryBufferWriterTests
         Assert.Equal(0xFF, buffer[0]);
     }
 
+    [Fact]
+    public void Reset_WithMultiByteElements_ZeroesEveryByteOfTheWrittenPart()
+    {
+        long[] buffer = [-1, -1, -1, -1, -1];
+        var writer = new FixedMemoryBufferWriter<long>(buffer);
+        writer.Advance(3);
+
+        writer.Reset();
+
+        Assert.Equal<long>([0, 0, 0, -1, -1], buffer);
+        Assert.Equal(0, writer.WrittenCount);
+    }
+
+    [Fact]
+    public void Reset_WithReferenceElements_ClearsTheWrittenPart()
+    {
+        string?[] buffer = ["a", "b", "c"];
+        var writer = new FixedMemoryBufferWriter<string?>(buffer);
+        writer.Advance(2);
+
+        writer.Reset();
+
+        Assert.Null(buffer[0]);
+        Assert.Null(buffer[1]);
+        Assert.Equal("c", buffer[2]);
+        Assert.Equal(0, writer.WrittenCount);
+    }
+
     #endregion
 
     #region Advance Method Tests
