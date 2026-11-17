@@ -25,6 +25,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # Nerdbank.GitVersioning computes the version from the history and fails on a shallow clone.
+          fetch-depth: 0
           persist-credentials: false
       # The SDK global.json selects and the runtime of each older .NET a test project targets.
       - uses: ./.github/actions/install-dotnet
