@@ -1,0 +1,132 @@
+---
+// One group of the API map on /reference/api-map/: the entries of api-map.json that name the group, in file order, as one
+// table. Each row has the entry's id as its anchor. Below 40rem each row is a card. The text fields take `code` and
+// links. Usage:
+// <ApiMap group="secure-memory" />
+import apiMap from '@site/components/data/api-map.json';
+import { inline, sitePath, sourceLink } from '@site/components/lib/evidence';
+
+interface Props {
+  /** A group id of api-map.json. */
+  group: string;
+}
+
+const { group } = Astro.props;
+const known = apiMap.groups.find((g) => g.id === group);
+if (!known) {
+  throw new Error(`[site evidence] no group "${group}" in docs/site/_components/data/api-map.json`);
+}
+const rows = apiMap.entries
+  .filter((entry) => entry.group === group)
+  .map((entry) => ({
+    id: entry.id,
+    type: entry.type,
+    member: entry.member as string | null,
+    signatures: entry.signatures as string[],
+    summary: entry.summary,
+    constraint: (entry.constraint as string | null) ?? 'Any',
+    throws: (entry.throws as string | null) ?? 'Nothing',
+    page: entry.page,
+    href: sitePath(entry.page),
+    source: sourceLink(entry.source),
+  }));
+const headings = ['Member', 'Signature', 'What it does', '`T`', 'Throws', 'Explained on', 'Source'];
+---
+
+<div class="api-map not-content">
+  <div class="api-map__scroll" role="region" aria-label={`API map: ${known.title.replace(/`/g, '')}`} tabindex="0">
+    <table class="api-map__table">
+      <thead>
+        <tr>
+          {headings.map((heading) => (
+            <th scope="col" set:html={inline(heading)} />
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr id={row.id} class="api-map__row">
+            <th scope="row" data-label="Member">
+              <code>{row.member ? `${row.type}.${row.member}` : row.type}</code>
+            </th>
+            <td data-label="Signature">
+              {row.signatures.map((signature) => (
+                <code class="api-map__signature">{signature}</code>
+              ))}
+            </td>
+            <td data-label="What it does" set:html={inline(row.summary)} />
+            <td data-label="T">{row.constraint === 'Any' ? 'Any' : <code>{row.constraint}</code>}</td>
+            <td data-label="Throws" set:html={inline(row.throws)} />
+            <td data-label="Explained on">
+              <a href={row.href}>{row.page}</a>
+            </td>
+            <td data-label="Source">
+              <a href={row.source.href} rel="noopener">{row.source.label}</a>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+  .api-map { margin-block: var(--space-5); color: var(--color-text); }
+  .api-map__scroll { overflow-x: auto; }
+  .api-map__scroll:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-gap); }
+  .api-map__table {
+    width: 100%;
+    min-width: 64rem;
+    border-collapse: collapse;
+    font-size: var(--text-md);
+    line-height: var(--leading-snug);
+  }
+  .api-map__table th,
+  .api-map__table td { padding: var(--space-3); border-bottom: var(--border-hair) solid var(--color-border); text-align: start; vertical-align: top; }
+  .api-map__table thead th {
+    font-size: var(--text-2xs);
+    font-stretch: var(--width-label);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .api-map__table tbody th { font-weight: var(--weight-semibold); }
+  .api-map__row { scroll-margin-top: calc(var(--sl-nav-height) + var(--space-5)); }
+  .api-map__row:target { background: var(--color-surface-sunken); }
+  .api-map__table a { color: var(--color-text); text-decoration-color: var(--color-border-strong); text-underline-offset: 0.2em; overflow-wrap: anywhere; }
+  .api-map__table a:hover { color: var(--color-primary-text); }
+  .api-map__table a:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-gap); }
+  .api-map :global(code) { font-family: var(--font-mono); font-stretch: var(--width-code); font-size: 0.88em; overflow-wrap: anywhere; }
+  .api-map__signature { display: block; margin-bottom: var(--space-1); }
+
+  @media (max-width: 40rem) {
+    .api-map__table { min-width: 0; }
+    .api-map__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .api-map__table,
+    .api-map__table tbody,
+    .api-map__table th,
+    .api-map__table td { display: block; }
+    .api-map__table .api-map__row {
+      display: block;
+      margin-bottom: var(--space-4);
+      padding: var(--space-4);
+      border: var(--border-hair) solid var(--color-border);
+      border-radius: var(--radius-panel);
+      background: var(--color-surface);
+    }
+    .api-map__table th,
+    .api-map__table td { padding: var(--space-1) 0; border: 0; }
+    .api-map__table td::before,
+    .api-map__table th[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      font-size: var(--text-2xs);
+      font-stretch: var(--width-label);
+      font-weight: var(--weight-semibold);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+  }
+</style>

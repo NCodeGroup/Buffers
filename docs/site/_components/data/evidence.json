@@ -1883,6 +1883,22 @@
         94
       ],
       "match": "public static bool FixedTimeEquals<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right)"
+    },
+    "Api.SecureMemoryPool.Shared.ThreadSafe": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        66,
+        66
+      ],
+      "match": "A shared, thread-safe instance"
+    },
+    "Api.EmptyMemory.Singleton.ThreadSafe": {
+      "file": "src/NCode.Buffers/EmptyMemory.cs",
+      "lines": [
+        43,
+        43
+      ],
+      "match": "The singleton is safe to use across multiple threads"
     }
   },
   "external": {
