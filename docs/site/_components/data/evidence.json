@@ -262,6 +262,14 @@
     "SecureMemoryPoolTests.RentDisposeRent_ReusesBuffer": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
       "line": 488
+    },
+    "SecureEncodingTests.UTF8_HasNoPreamble": {
+      "file": "tests/NCode.Buffers.Tests/SecureEncodingTests.cs",
+      "line": 219
+    },
+    "SecureEncodingTests.ASCII_HasNoPreamble": {
+      "file": "tests/NCode.Buffers.Tests/SecureEncodingTests.cs",
+      "line": 21
     }
   },
   "samples": {
@@ -432,6 +440,21 @@
     },
     "SitePoolPageSizes": {
       "file": "tests/NCode.Buffers.Site.Tests/Reference/BufferBehaviorSamples.cs"
+    },
+    "SiteStrictDecodingReject": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/StrictDecodingSamples.cs"
+    },
+    "SiteStrictDecodingStreamReader": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/StrictDecodingSamples.cs"
+    },
+    "SiteStrictAscii": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/StrictDecodingSamples.cs"
+    },
+    "SiteStrictDecodingValidateOnly": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/StrictDecodingSamples.cs"
+    },
+    "SiteStrictExamplesTable": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/StrictDecodingSamples.cs"
     }
   },
   "sources": {
@@ -1102,6 +1125,26 @@
       "url": "https://learn.microsoft.com/dotnet/api/system.security.cryptography.ecdsa.verifydata",
       "read": "2026-11-16",
       "quote": "true if the signature is valid; otherwise, false.",
+      "kind": "documented"
+    },
+    "Utf8IsValidDocs": {
+      "title": "Utf8.IsValid",
+      "url": "https://learn.microsoft.com/dotnet/api/system.text.unicode.utf8.isvalid",
+      "read": "2026-11-17",
+      "quote": "Validates that the value is well-formed UTF-8.",
+      "kind": "documented"
+    },
+    "AsciiIsValidDocs": {
+      "title": "Ascii.IsValid",
+      "url": "https://learn.microsoft.com/dotnet/api/system.text.ascii.isvalid",
+      "read": "2026-11-17",
+      "kind": "documented"
+    },
+    "DecoderFallbackExceptionDocs": {
+      "title": "DecoderFallbackException",
+      "url": "https://learn.microsoft.com/dotnet/api/system.text.decoderfallbackexception",
+      "read": "2026-11-17",
+      "quote": "The exception that is thrown when a decoder fallback operation fails.",
       "kind": "documented"
     }
   },
