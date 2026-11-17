@@ -35,8 +35,8 @@ The release change runs `./build/Update-PublicApi.ps1 -Release` and sets `versio
 the push to nuget.org, `publish.yml` calls `.github/workflows/raise-baseline.yml`, which waits until nuget.org lists the
 release, then opens a draft pull request that sets `PackageValidationBaselineVersion` in
 `src/NCode.Buffers/NCode.Buffers.csproj` to it; mark it ready and merge it
-([ADR-1007](decisions/1007-a-workflow-raises-the-package-validation-baseline-after-each-release.md),
-[ADR-1008](decisions/1008-release-follow-ups-are-jobs-publish-calls.md)). `./build/Update-Baseline.ps1 -Version <version>`
+(project-template [ADR-0150](decisions/project-template/0150-a-workflow-raises-the-package-validation-baseline-after-each-release.md)
+and [ADR-0151](decisions/project-template/0151-release-follow-ups-are-jobs-publish-calls.md)). `./build/Update-Baseline.ps1 -Version <version>`
 does the same by hand.
 
 An intended break in a new major version is recorded with
