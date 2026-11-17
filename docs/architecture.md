@@ -24,7 +24,7 @@ Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers return.
 | Component | Role |
 | --- | --- |
 | `BufferFactory` | Rents buffers and creates writers; `isSensitive` chooses the secure pool or the shared pool |
-| `SecureMemoryPool<T>`, `SecureMemory<T>` | A `MemoryPool<T>` of pinned arrays from the Pinned Object Heap, each zeroed with `CryptographicOperations.ZeroMemory` before it is reused or released; buffers up to `PageSize` (4096 bytes) are cached, larger ones are allocated per rent |
+| `SecureMemoryPool<T>`, `SecureMemory<T>` | A `MemoryPool<T>` of pinned arrays from the Pinned Object Heap, each zeroed with `CryptographicOperations.ZeroMemory` before it is reused or released; buffers up to `PageSize` (4096 bytes) are cached, larger ones are allocated per rent; every rent returns a new `SecureMemory<T>`, whose first `Dispose` zeroes its array and returns it to the pool |
 | `Gen2GcCallback` | Calls the pool on each Gen2 collection, so it drops cached buffers when memory load passes `HighPressureThreshold` |
 | `SecureArrayLifetime<T>`, `SecureSpanLifetime<T>` | `ref struct`s that zero an array they allocate pinned, or a span the caller has, on `Dispose` |
 | `FixedSpanBufferWriter<T>`, `FixedMemoryBufferWriter<T>` | `IBufferWriter<T>` over a fixed span or `Memory<T>`, throwing when it would pass its capacity |

@@ -52,7 +52,7 @@ public class SecureMemoryTests
 
         memory.Dispose();
 
-        Assert.Single(pool.MemoryQueue, memory);
+        Assert.Same(SecureMemoryPoolTests.GetArray(memory), Assert.Single(pool.MemoryQueue));
     }
 
     [Fact]

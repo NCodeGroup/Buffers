@@ -12,17 +12,25 @@ internal class SecureMemory<T> : IMemoryOwner<T>
 {
     private int _disposed;
     private SecureMemoryPool<T>? Pool { get; }
+    private T[] PinnedArray { get; }
 
     /// <inheritdoc />
     public Memory<T> Memory { get; }
 
     internal SecureMemory(SecureMemoryPool<T>? pool, int bufferSize)
+        // https://devblogs.microsoft.com/dotnet/internals-of-the-poh/
+        : this(pool, GC.AllocateUninitializedArray<T>(bufferSize, pinned: true)) { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SecureMemory{T}"/> class that wraps an existing array.
+    /// </summary>
+    /// <param name="pool">The pool that receives the array when this owner is disposed, or <see langword="null"/> for none.</param>
+    /// <param name="pinnedArray">The array to wrap. It must be pinned, for example allocated on the pinned object heap.</param>
+    internal SecureMemory(SecureMemoryPool<T>? pool, T[] pinnedArray)
     {
         Pool = pool;
-
-        // https://devblogs.microsoft.com/dotnet/internals-of-the-poh/
-        var pinnedArray = GC.AllocateUninitializedArray<T>(bufferSize, pinned: true);
-        Memory = MemoryMarshal.CreateFromPinnedArray(pinnedArray, 0, bufferSize);
+        PinnedArray = pinnedArray;
+        Memory = MemoryMarshal.CreateFromPinnedArray(pinnedArray, 0, pinnedArray.Length);
     }
 
     /// <inheritdoc />
@@ -33,11 +41,6 @@ internal class SecureMemory<T> : IMemoryOwner<T>
 
         CryptographicOperations.ZeroMemory(Memory.Span);
 
-        Return();
-    }
-
-    internal virtual void Return()
-    {
-        Pool?.Return(this);
+        Pool?.Return(PinnedArray);
     }
 }
