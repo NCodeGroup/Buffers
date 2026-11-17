@@ -77,3 +77,4 @@ override in `AGENTS.md`.
 | [ADR-1012](1012-the-secure-pool-caches-buffers-of-one-4096-byte-page.md) | The secure pool caches buffers of one 4096-byte page | Accepted |
 | [ADR-1013](1013-pinned-buffers-are-allocated-without-being-cleared.md) | Pinned buffers are allocated without being cleared | Accepted |
 | [ADR-1014](1014-securespanlifetime-zeroes-the-callers-span-and-does-not-pin-it.md) | SecureSpanLifetime zeroes the caller's span and does not pin it | Accepted |
+| [ADR-1015](1015-the-secure-pools-cache-has-no-size-limit-and-is-dropped-under-memory-pressure.md) | The secure pool's cache has no size limit and is dropped under memory pressure | Accepted |
