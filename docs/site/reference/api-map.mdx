@@ -1,0 +1,83 @@
+---
+title: API map
+description: Every public type and member of the package, grouped as the README groups them, with its signature, its element type, what it throws, the page that explains it and its source line.
+---
+
+import ApiMap from '@site/components/ApiMap.astro';
+import KindLabel from '@site/components/KindLabel.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+
+<KindLabel kind="reference" />
+
+This page lists every public type and member of the package, grouped as the README groups them. Each row gives the
+signature, the element type it accepts, what it throws, the page that explains it and the source line. The gate fails
+when this map and `PublicAPI.Shipped.txt` differ, so a member that ships has a row here.
+<Proof source="CiGateAndCoverage" />
+
+## Secure memory
+
+<ApiMap group="secure-memory" />
+
+## Buffer writers
+
+<ApiMap group="buffer-writers" />
+
+## Sequences
+
+<ApiMap group="sequences" />
+
+## String splitting
+
+<ApiMap group="string-splitting" />
+
+## Secure encoding
+
+<ApiMap group="secure-encoding" />
+
+## `CryptographicOperations` extensions
+
+<ApiMap group="cryptographic-operations" />
+
+## Extension members
+
+The extension members are declared in C# 14 `extension` blocks. <Proof source="Api.BufferExtensions.GetSecureLifetime" />
+A project on an earlier language version calls the same methods in their static form, such as
+`BufferExtensions.GetSecureLifetime(span)` and `CryptographicOperationsExtensions.FixedTimeEquals(a, b)`. [Verify a MAC
+without leaking timing](/guides/verify-a-mac/#if-the-secret-is-text) shows the second.
+
+## Element types
+
+The APIs that pin, zero, compare or rent secure buffers take `unmanaged`. `CreateArrayBufferWriter<T>` and
+`Span<T>.GetFixedBufferWriter()` take `struct`, and `Memory<T>.GetFixedBufferWriter()` takes any `T`, because they do
+not pin, zero or rent a secure buffer. <Proof source="Adr1006" />
+
+## Thread safety
+
+Only two members are documented as safe to share across threads: `SecureMemoryPool<T>.Shared` and
+`EmptyMemory<T>.Singleton`. <Proof source="Api.SecureMemoryPool.Shared.ThreadSafe" />
+<Proof source="Api.EmptyMemory.Singleton.ThreadSafe" />
+
+## Terms
+
+| Term | Meaning |
+| --- | --- |
+| <span id="term-pinned"></span>Pinned | Memory the collector does not move, so no copy of its contents is left at an earlier address. <Proof claim="R3" /> |
+| <span id="term-pinned-object-heap"></span>Pinned object heap | The part of the managed heap where the collector does not move objects. The library allocates its pinned arrays there. <Proof source="SecureMemory.Allocate" /> |
+| <span id="term-zeroed"></span>Zeroed | Overwritten with zero bytes when the owner is disposed. A rented buffer is zeroed whole. <Proof claim="R1" /> |
+| <span id="term-pooled"></span>Pooled | Taken from a pool and given back to it on `Dispose`, instead of allocated for each use. <Proof source="SecureMemoryPool.MemoryQueue" /> |
+| <span id="term-page"></span>Page | The 4096-byte buffer that `SecureMemoryPool<T>` caches and hands out for a request that fits in it. <Proof source="SecureMemoryPool.PageSize" /> |
+| <span id="term-owner"></span>Owner | The `IDisposable` that holds a buffer and zeroes or returns it in `Dispose`. One buffer has one owner. <Proof external="MemoryOwnershipRule7" /> |
+| <span id="term-lease"></span>Lease | A read-only span paired with the owner to dispose, a `RefSpanLease<T>`. <Proof source="RefSpanLease.Type" /> |
+| <span id="term-lifetime"></span>Lifetime | A `ref struct` that zeroes memory when it is disposed: `SecureArrayLifetime<T>` allocates its own pinned array, and `SecureSpanLifetime<T>` wraps memory you already have. <Proof source="SecureArrayLifetime.Declaration" /> <Proof source="SecureSpanLifetime.Declaration" /> |
+| <span id="term-sensitive"></span>Sensitive | The `isSensitive: true` argument: the data is a secret, so the buffer comes from `SecureMemoryPool<T>.Shared`, pinned and zeroed on dispose. <Proof source="PublicApi.IsSensitive" /> |
+| <span id="term-segment"></span>Segment | One block of memory in a `ReadOnlySequence<T>`, a `MemorySegment<T>`. <Proof source="MemorySegment.Type" /> |
+| <span id="term-sequence"></span>Sequence | A `ReadOnlySequence<T>`: data in one or more segments that reads as one run. <Proof source="Api.SequenceExtensions" /> |
+| <span id="term-fixed-time-comparison"></span>Fixed-time comparison | A comparison of two spans of the same length whose time does not depend on their contents. <Proof claim="R4" /> |
+| <span id="term-strict-encoding"></span>Strict encoding | An encoding that throws on invalid input instead of substituting a character. <Proof claim="R5" /> |
+| <span id="term-unmanaged-type"></span>Unmanaged type | A value type that is not a reference and holds none, the only element type the secure APIs accept. <Proof claim="R8" /> |
+
+<Related>
+- **Learn** [Quick start](/start/quick-start/)
+- **Look up** [Buffer behavior, sizes and pooling](/reference/buffer-behavior/)
+</Related>
