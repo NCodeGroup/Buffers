@@ -294,6 +294,10 @@
     "StringSegmentsTests.First_WhenEmpty_ThrowsInvalidOperationException": {
       "file": "tests/NCode.Buffers.Tests/StringSegmentsTests.cs",
       "line": 90
+    },
+    "SecureMemoryPoolTests.Rent_WhenDisposed_ThrowsObjectDisposedException": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 149
     }
   },
   "samples": {
@@ -515,6 +519,15 @@
     },
     "SiteSplitTextOverSensitiveBuffer": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/SplitTextSamples.cs"
+    },
+    "SiteDisposeZeroesWholePage": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/HowTheBuffersWorkSamples.cs"
+    },
+    "SiteSecondRenterSeesZeros": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/HowTheBuffersWorkSamples.cs"
+    },
+    "SiteOwnPool": {
+      "file": "tests/NCode.Buffers.Site.Tests/Concepts/HowTheBuffersWorkSamples.cs"
     }
   },
   "sources": {
@@ -1129,6 +1142,15 @@
       ],
       "match": "Microsoft.CodeAnalysis.BannedApiAnalyzers",
       "kind": "process"
+    },
+    "Metrics.None": {
+      "file": "docs/metrics.md",
+      "lines": [
+        33,
+        33
+      ],
+      "match": "NCode.Buffers defines no meters",
+      "kind": "documented"
     }
   },
   "external": {
@@ -1291,6 +1313,14 @@
       "quote": "The following file or files have to be added to any project referencing this package to enable analysis:",
       "kind": "documented",
       "site": "GitHub"
+    },
+    "PohInternals": {
+      "title": "Internals of the POH",
+      "url": "https://devblogs.microsoft.com/dotnet/internals-of-the-poh/",
+      "read": "2026-11-17",
+      "quote": "So I chose to provide an API to pin an object at the allocation time.",
+      "kind": "documented",
+      "site": ".NET Blog"
     }
   },
   "claims": [
