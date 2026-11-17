@@ -89,7 +89,8 @@ written and the 32 that were not. <Proof claim="R1" /> <Proof sample="SiteFixedB
   write goes over them. <Proof source="FixedSpanBufferWriter.Clear" />
   <Proof test="FixedSpanBufferWriterTests.Clear_DoesNotClearBufferContents" />
 - **`Reset()` zeroes what was written since the last `Clear()`, then sets the count to 0.** It zeroes the written
-  part with `Span<T>.Clear()` and nothing past it. <Proof source="FixedSpanBufferWriter.Reset" />
+  part with `CryptographicOperations.ZeroMemory`, or sets it to default with `Span<T>.Clear()` when the element type
+  holds references, and touches nothing past it. <Proof source="FixedSpanBufferWriter.Reset" />
   <Proof test="FixedSpanBufferWriterTests.Reset_OnlyClearsWrittenPortion" />
 
 The figure draws these rules on a 64-byte buffer. **A drawing, not a trace:** no code produced it.

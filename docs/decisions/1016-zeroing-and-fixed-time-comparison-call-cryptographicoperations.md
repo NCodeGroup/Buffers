@@ -11,9 +11,11 @@ line 110) and `SecureSpanLifetime<T>` (`SecureSpanLifetime.cs` line 75) calls `C
 `CryptographicOperationsExtensions.ZeroMemory<T>` and `FixedTimeEquals<T>` view their spans as bytes with
 `MemoryMarshal.AsBytes` and call `CryptographicOperations.ZeroMemory` and `CryptographicOperations.FixedTimeEquals`.
 
-One path does not. `FixedSpanBufferWriter<T>.Reset()` (`FixedSpanBufferWriter.cs` line 110) and
-`FixedMemoryBufferWriter<T>.Reset()` (`FixedMemoryBufferWriter.cs` line 137) clear the written part with
-`Span<T>.Clear()`, while their XML docs say to use `Reset` when the buffer holds sensitive data.
+`FixedSpanBufferWriter<T>.Reset()` (`FixedSpanBufferWriter.cs` line 112) and `FixedMemoryBufferWriter<T>.Reset()`
+(`FixedMemoryBufferWriter.cs` line 139) call the internal `CryptographicOperationsExtensions.ZeroMemoryOrClear`
+(`CryptographicOperationsExtensions.cs` line 50) on the written part of the buffer. It calls
+`CryptographicOperations.ZeroMemory` in chunks of at most `int.MaxValue` bytes. When `T` is or contains a reference, it
+sets the elements to default with `Span<T>.Clear()`. Elements past the written part are untouched.
 
 Microsoft documents ZeroMemory: "This method exists to future-proof against potential optimizations in the .NET runtime
 that could eliminate memory writes that aren't followed by memory reads."
@@ -28,8 +30,9 @@ one. This record states the rule as the code keeps it, so that a change to it is
 
 ## Decision
 
-**The secure owners' `Dispose`, `ZeroMemory<T>` and `FixedTimeEquals<T>` zero and compare memory only through
-`CryptographicOperations`.**
+**The secure owners' `Dispose`, the fixed writers' `Reset()`, `ZeroMemory<T>` and `FixedTimeEquals<T>` zero and compare
+memory only through `CryptographicOperations`; a `Reset()` over elements that hold references sets them to default with
+`Span<T>.Clear()`.**
 
 ## Options considered
 
@@ -42,8 +45,6 @@ one. This record states the rule as the code keeps it, so that a change to it is
 - The zeroing and timing guarantees are the ones Microsoft documents for those two methods.
 - `FixedTimeEquals<T>` compares bytes, so values with more than one encoding (a `double`, a struct with padding) can
   compare unequal.
-- The fixed writers' `Reset()` is outside this rule: it clears with `Span<T>.Clear()`, which carries no such guarantee.
-  Moving it to `CryptographicOperations` is decided by a change to this record.
 
 ## References
 

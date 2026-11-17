@@ -661,7 +661,7 @@
       "signatures": [
         "public void Reset()"
       ],
-      "summary": "Zeroes the written elements, then sets `WrittenCount` to zero.",
+      "summary": "Zeroes the written elements with `CryptographicOperations.ZeroMemory`, or sets them to default with `Span<T>.Clear()` when `T` holds references, then sets `WrittenCount` to zero.",
       "constraint": null,
       "throws": null,
       "page": "/guides/fixed-size-buffer/",
@@ -865,7 +865,7 @@
       "signatures": [
         "public void Reset()"
       ],
-      "summary": "Zeroes the written elements, then sets `WrittenCount` to zero.",
+      "summary": "Zeroes the written elements with `CryptographicOperations.ZeroMemory`, or sets them to default with `Span<T>.Clear()` when `T` holds references, then sets `WrittenCount` to zero.",
       "constraint": null,
       "throws": null,
       "page": "/guides/fixed-size-buffer/",

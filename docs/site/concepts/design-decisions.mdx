@@ -149,15 +149,16 @@ no metrics, so measure in your workload.
 
 ### Zeroing and comparison call `CryptographicOperations`
 
-**The rule.** The `Dispose` of `SecureMemory<T>`, `SecureArrayLifetime<T>` and `SecureSpanLifetime<T>`,
-`ZeroMemory<T>` and `FixedTimeEquals<T>` zero and compare memory only through `CryptographicOperations`.
+**The rule.** The `Dispose` of `SecureMemory<T>`, `SecureArrayLifetime<T>` and `SecureSpanLifetime<T>`, the fixed
+writers' `Reset()`, `ZeroMemory<T>` and `FixedTimeEquals<T>` zero and compare memory only through
+`CryptographicOperations`; a `Reset()` over elements that hold references sets them to default with `Span<T>.Clear()`.
 
 **Reason.** No reason is recorded.
 
 **What it costs you.** The zeroing and timing guarantees are the ones Microsoft documents for those two methods.
 `FixedTimeEquals<T>` compares bytes, so values with more than one encoding (a `double`, a struct with padding) can
-compare unequal. The rule does not cover the fixed writers' `Reset()`: it clears with `Span<T>.Clear()`, which carries
-no such guarantee, and moving it to `CryptographicOperations` is decided by a change to the record.
+compare unequal. The fixed writers' `Reset()` zeroes the written part through `CryptographicOperations`; when the
+element type holds references, it sets them to default with `Span<T>.Clear()`.
 
 <Proof source="Adr1016" />
 
