@@ -1,27 +1,28 @@
-name: Raise the package validation baseline
-
-# After Publish packages pushes a stable version, waits for nuget.org to list it, then opens a draft pull request that
-# raises PackageValidationBaselineVersion to it (ADR-1007, ADR-1001) and starts CI on its branch, because a pull request
-# the workflow's token opens starts no workflow by itself. A person marks it ready and merges it. Needs Settings >
-# Actions > General > Workflow permissions > "Allow GitHub Actions to create and approve pull requests". To raise the
-# baseline by hand, run build/Update-Baseline.ps1 -Version <version>, or this workflow for a tag. The checkout keeps no
-# credential.
+# Raise the package validation baseline: publish.yml calls this workflow as its baseline job after it publishes a stable
+# release, or a person runs it by hand with a release tag. It runs build/Update-Baseline.ps1, which waits for nuget.org
+# to list the version and raises PackageValidationBaselineVersion to it, then pushes baseline-<version>, opens it as a
+# draft pull request, which a person marks ready and merges, and starts CI on its branch, because a pull request opened
+# with the workflow's token starts no workflow. It is not started by a workflow-run trigger, which GitHub never fires
+# for the run tag-release.yml starts with GITHUB_TOKEN. The template's ADR-0150 and ADR-0151 say why; it changes
+# nothing until the project sets the baseline once (ADR-0147).
 #
-# publish.yml calls this workflow as a job after the push. It is not started by workflow_run: tag-release.yml starts
-# publish.yml with the workflow's GITHUB_TOKEN, and GitHub creates no workflow_run event for a run started that way
-# (ADR-1008).
+# Needs Settings > Actions > General > Workflow permissions > "Allow GitHub Actions to create and approve pull
+# requests", which tools/Set-RepositoryBaseline.ps1 in the project template turns on for a repository with this file.
+# The checkout keeps no credential; the branch check and the push get the token for that one command. The template
+# owns this file.
+name: Raise the package validation baseline
 
 on:
   workflow_call:
     inputs:
       tag:
-        description: The release tag whose version is the new baseline, such as v5.0.2
+        description: The release tag whose version becomes the baseline, such as v1.2.3
         required: true
         type: string
   workflow_dispatch:
     inputs:
       tag:
-        description: The release tag whose version is the new baseline, such as v5.0.2
+        description: The release tag whose version becomes the baseline, such as v1.2.3
         required: true
         type: string
 
@@ -32,6 +33,7 @@ jobs:
     name: Open the baseline pull request
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    # One raise at a time; a second waits, so two releases never race to one branch.
     concurrency:
       group: raise-baseline
       cancel-in-progress: false
@@ -50,38 +52,49 @@ jobs:
         env:
           TAG: ${{ inputs.tag }}
         run: |
-          if ($env:TAG -notmatch '^v(\d+\.\d+\.\d+)$') { throw "The tag '$env:TAG' isn't a stable version such as v5.0.2." }
-          "version=$($Matches[1])" >> $env:GITHUB_OUTPUT
+          if ($env:TAG -match '^v(\d+\.\d+\.\d+)$') { "version=$($Matches[1])" >> $env:GITHUB_OUTPUT; exit 0 }
+          if ($env:TAG -match '^v\d+\.\d+\.\d+-[0-9A-Za-z.-]+$') { "$env:TAG is a prerelease, which is never a baseline." >> $env:GITHUB_STEP_SUMMARY; exit 0 }
+          throw "The tag '$env:TAG' isn't a version such as v1.2.3."
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.tag.outputs.version
         with:
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
       - name: Raise the baseline
         id: baseline
+        if: steps.tag.outputs.version
         shell: pwsh
         env:
           VERSION: ${{ steps.tag.outputs.version }}
         run: |
           $set = ./build/Update-Baseline.ps1 -Version $env:VERSION
-          "set=$([bool]$set)".ToLowerInvariant() >> $env:GITHUB_OUTPUT
+          "set=$(([bool]$set).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
       - name: Open the pull request and start CI
         if: steps.baseline.outputs.set == 'true'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           VERSION: ${{ steps.tag.outputs.version }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           $branch = "baseline-$env:VERSION"
-          git ls-remote --exit-code --heads origin $branch *> $null
-          if ($LASTEXITCODE -eq 0) { Write-Host "$branch already exists; nothing to open."; exit 0 }
+          $auth = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("x-access-token:$env:GH_TOKEN"))
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" ls-remote --exit-code --heads origin $branch *> $null
+          if ($LASTEXITCODE -eq 0) { "$branch already exists; nothing to open." >> $env:GITHUB_STEP_SUMMARY; exit 0 }
           if ($LASTEXITCODE -ne 2) { throw "git ls-remote failed with exit code $LASTEXITCODE." }
           git config user.name 'github-actions[bot]'
+          if ($LASTEXITCODE) { throw "git config user.name failed with exit code $LASTEXITCODE." }
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if ($LASTEXITCODE) { throw "git config user.email failed with exit code $LASTEXITCODE." }
           git switch -c $branch
+          if ($LASTEXITCODE) { throw "git switch failed with exit code $LASTEXITCODE." }
           git commit -am "Raise the package validation baseline to $env:VERSION"
-          # The checkout keeps no credential (it would stay in .git/config for later steps); the push gets it for this one command.
-          $auth = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("x-access-token:$env:GH_TOKEN"))
+          if ($LASTEXITCODE) { throw "git commit failed with exit code $LASTEXITCODE." }
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" push origin $branch
-          gh pr create --draft --base $env:DEFAULT_BRANCH --head $branch --title "Raise the package validation baseline to $env:VERSION" --body "Raises ``PackageValidationBaselineVersion`` to the published $env:VERSION (ADR-1007). Opened by .github/workflows/raise-baseline.yml."
+          if ($LASTEXITCODE) { throw "git push failed with exit code $LASTEXITCODE." }
+          $body = 'Raises `PackageValidationBaselineVersion` to {0}, which nuget.org now lists, so each pack is validated against the newest release (the template''s ADR-0150). Opened by `.github/workflows/raise-baseline.yml`, which started CI on this branch; mark it ready for review once CI passes.' -f $env:VERSION
+          gh pr create --base $env:DEFAULT_BRANCH --head $branch --draft --title "Raise the package validation baseline to $env:VERSION" --body $body
+          if ($LASTEXITCODE) { throw "gh pr create failed with exit code $LASTEXITCODE." }
           gh workflow run ci.yml --ref $branch
+          if ($LASTEXITCODE) { throw "Couldn't start ci.yml on ${branch} (exit code $LASTEXITCODE): its on: section needs workflow_dispatch, as the template's ci.yml has. Start CI on the pull request by hand." }

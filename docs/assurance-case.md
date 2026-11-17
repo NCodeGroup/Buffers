@@ -64,12 +64,20 @@ attack surface is its public API.
   under 98% line or branch coverage (`./build/Test-Coverage.ps1`).
 - **Static analysis:** the .NET analyzers at `latest-recommended` with warnings as errors, banned-API analyzers, and
   CodeQL on every pull request, which the `main` ruleset requires.
-- **Review:** every change reaches `main` through a pull request with required CI, resolved review threads and an NCode
-  Review pass; force pushes and deletion are blocked.
+- **Review:** every change reaches `main` through a pull request with required CI, resolved review threads and an
+  approval, which NCode Review gives a clean pull request and a maintainer gives a bot's; force pushes and deletion
+  are blocked.
 - **Dependencies:** central package management, Dependabot updates with a cooldown, and NuGet vulnerability warnings as
   errors in CI.
 - **Release integrity (R7):** packages are built deterministically with Source Link from a tagged commit on `main`,
   pushed through nuget.org trusted publishing with no stored key after a maintainer approves, signed by nuget.org, and
-  each GitHub release carries a Sigstore-signed provenance attestation and an SBOM. [SECURITY.md](../SECURITY.md#verify-a-package)
+  each GitHub release carries a Sigstore-signed provenance attestation and an SBOM. A release is tagged only once CI
+  passes again on its commit, and its tag is signed with gitsign. [SECURITY.md](../SECURITY.md#verify-a-package)
   says how to verify each.
 - **Response:** [SECURITY.md](../SECURITY.md) defines private reporting, coordinated disclosure and credit.
+
+## Security Reviews
+
+[//]: # "Maintainers: record each security review, newest first: its date, who did it, what it covered (the security requirements and the trust boundary above) and what it found. The OpenSSF Best Practices gold level asks for one in the last five years."
+
+None recorded yet.

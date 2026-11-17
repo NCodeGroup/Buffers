@@ -1,73 +1,189 @@
-#requires -version 7
 <#
 .SYNOPSIS
-    Raises PackageValidationBaselineVersion in src/NCode.Buffers/NCode.Buffers.csproj to a version that is on nuget.org (ADR-1007).
+    Raises PackageValidationBaselineVersion to a released version once nuget.org lists it, the template's ADR-0150.
+
 .DESCRIPTION
-    Waits until nuget.org lists the version, since a version that is not indexed yet cannot be downloaded for validation
-    (ADR-1001), then sets the baseline and adds a changelog entry under [Unreleased]. It never lowers the baseline, and it
-    changes nothing when the baseline already holds the version. Prints the version it set, or nothing.
+    From the project template; template updates replace this file. Sets PackageValidationBaselineVersion in each
+    Directory.Build.props and project file that already sets it, so package validation compares each package with the
+    release just published. It never lowers the baseline: it changes nothing when no file sets the property, or when
+    every file already holds the version or a later one. It prints the version it set, or nothing.
+
+    A prerelease is never a baseline, so the version must be a stable one such as 1.4.0 or v1.4.0.
+
 .PARAMETER Version
-    The released version, such as 5.0.2. A leading v is ignored.
-.PARAMETER TimeoutMinutes
-    How long to wait for nuget.org to list the version.
+    The released version, such as 1.4.0 or v1.4.0.
+
 .PARAMETER Root
-    The repository root; build/Test-UpdateBaseline.ps1 points it at a copy.
+    The repository root to search. Defaults to the folder above this script's.
+
+.PARAMETER TimeoutMinutes
+    How long to wait for nuget.org to list the version. Defaults to 30.
+
 .PARAMETER SkipNugetCheck
-    Doesn't wait for nuget.org; for build/Test-UpdateBaseline.ps1 only.
+    Raises the baseline without waiting for nuget.org.
+
+.EXAMPLE
+    ./build/Update-Baseline.ps1 -Version 1.4.0
 #>
+#Requires -Version 7.4
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][string]$Version,
-    [int]$TimeoutMinutes = 30,
+    [Parameter(Mandatory)]
+    [string]$Version,
+
     [string]$Root = (Split-Path -Parent $PSScriptRoot),
+
+    [int]$TimeoutMinutes = 30,
+
     [switch]$SkipNugetCheck
 )
+
 $ErrorActionPreference = 'Stop'
-$root = $Root
-$version = $Version.TrimStart('v')
-if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "'$Version' isn't a stable version such as 5.0.2." }
 
-$project = Join-Path $root 'src/NCode.Buffers/NCode.Buffers.csproj'
-$projectText = [IO.File]::ReadAllText($project)
-$pattern = '<PackageValidationBaselineVersion>(\d+\.\d+\.\d+)</PackageValidationBaselineVersion>'
-$current = [regex]::Match($projectText, $pattern)
-if (-not $current.Success) { throw "$project has no PackageValidationBaselineVersion with a stable version." }
-if ([version]$current.Groups[1].Value -ge [version]$version) { return }
+if ($Version -notmatch '^v?(\d+\.\d+\.\d+)$') {
+    throw "'$Version' isn't a stable version such as 1.4.0 or v1.4.0: a prerelease is never a baseline."
+}
+$target = $Matches[1]
+$targetVersion = [System.Management.Automation.SemanticVersion]$target
 
-$index = 'https://api.nuget.org/v3-flatcontainer/ncode.buffers/index.json'
-$deadline = [DateTime]::UtcNow.AddMinutes($TimeoutMinutes)
-$delay = 15
-while (-not $SkipNugetCheck) {
-    # A failed or slow request counts as "not listed yet", so one network error doesn't end the wait.
-    try {
-        $answer = Invoke-RestMethod -Uri $index -TimeoutSec 30 -SkipHttpErrorCheck -StatusCodeVariable status
-        if ($status -eq 200 -and $answer.versions -contains $version) { break }
+$candidates = @(
+    Get-ChildItem -LiteralPath $Root -Recurse -File -Include Directory.Build.props, *.csproj |
+        ForEach-Object {
+            [pscustomobject]@{
+                File     = $_
+                Relative = [IO.Path]::GetRelativePath($Root, $_.FullName)
+            }
+        } |
+        Where-Object { $_.Relative -notmatch '(^|[\\/])(bin|obj|node_modules|artifacts|\.git)[\\/]' } |
+        Sort-Object -Property Relative
+)
+
+$pattern = '(<PackageValidationBaselineVersion>\s*)([^<]*?)(\s*</PackageValidationBaselineVersion>)'
+$setters = 0
+$changed = [ordered]@{}
+foreach ($candidate in $candidates) {
+    $path = $candidate.File.FullName
+    $relative = $candidate.Relative
+    $text = [IO.File]::ReadAllText($path)
+    if ($text -notmatch $pattern) { continue }
+    $setters++
+    $newText = [regex]::Replace($text, $pattern, {
+            param($m)
+            $value = $m.Groups[2].Value
+            $parsed = $null
+            if (-not [System.Management.Automation.SemanticVersion]::TryParse($value, [ref]$parsed)) {
+                Write-Warning "${relative}: PackageValidationBaselineVersion '$value' isn't a version; left as it is."
+                return $m.Value
+            }
+            if ($parsed -ge $targetVersion) { return $m.Value }
+            return $m.Groups[1].Value + $target + $m.Groups[3].Value
+        })
+    if ($newText -ceq $text) { continue }
+    $bytes = [IO.File]::ReadAllBytes($path)
+    $hadBom = $bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
+    $changed[$path] = @{ Text = $newText; HadBom = $hadBom }
+}
+
+if ($setters -eq 0) {
+    Write-Host 'No Directory.Build.props or project file sets PackageValidationBaselineVersion: set it once by hand, as the template''s ADR-0147 says, and this script raises it from then on.'
+    return
+}
+if ($changed.Count -eq 0) {
+    Write-Host "PackageValidationBaselineVersion is already $target or later."
+    return
+}
+
+if (-not $SkipNugetCheck) {
+    $ids = @(
+        foreach ($candidate in $candidates) {
+            $file = $candidate.File
+            if ($file.Extension -ne '.csproj' -or $file.Name -like '*.Tests.csproj') { continue }
+            $projectText = [IO.File]::ReadAllText($file.FullName)
+            if ($projectText -match '<IsPackable>\s*false') { continue }
+            $idMatch = [regex]::Match($projectText, '<PackageId>\s*([^<]*?)\s*</PackageId>')
+            if ($idMatch.Success -and $idMatch.Groups[1].Value) { $idMatch.Groups[1].Value } else { $file.BaseName }
+        }
+    )
+    if (-not $ids.Count) { throw 'No packable project found: nothing to wait for on nuget.org.' }
+
+    $lastError = @{}
+    function Test-Listed([string]$Id) {
+        try {
+            $listed = @((Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/$($Id.ToLowerInvariant())/index.json" -TimeoutSec 30).versions) -contains $target
+            $lastError.Remove($Id)
+            $listed
+        }
+        catch {
+            Write-Warning "nuget.org gave no answer for ${Id}: $($_.Exception.Message)"
+            $response = $_.Exception.PSObject.Properties['Response']
+            $notFound = $response -and $response.Value -and [int]$response.Value.StatusCode -eq 404
+            if ($notFound) { $lastError.Remove($Id) } else { $lastError[$Id] = $_.Exception.Message }
+            $false
+        }
     }
-    catch { Write-Warning "nuget.org request failed: $($_.Exception.Message)" }
-    if ([DateTime]::UtcNow -ge $deadline) { throw "nuget.org doesn't list NCode.Buffers $version after $TimeoutMinutes minutes." }
-    Start-Sleep -Seconds ($delay + (Get-Random -Maximum 5))
-    $delay = [Math]::Min($delay * 2, 120)
+    $pending = $ids
+    $slept = 0
+    $delay = 15
+    while ($true) {
+        $pending = @($pending | Where-Object { -not (Test-Listed $_) })
+        if (-not $pending.Count) { break }
+        if ($slept -ge $TimeoutMinutes * 60) {
+            $errors = @($pending | Where-Object { $lastError.ContainsKey($_) } | ForEach-Object { "${_}: $($lastError[$_])" })
+            $detail = if ($errors.Count) { " The last error from nuget.org: $($errors -join '; ')." } else { '' }
+            throw "nuget.org doesn't list $($pending -join ', ') at $target after $TimeoutMinutes minutes: run this again once it does.$detail"
+        }
+        $wait = $delay + (Get-Random -Maximum 5)
+        Write-Host "Waiting $wait seconds for nuget.org to list $($pending -join ', ') at $target."
+        Start-Sleep -Seconds $wait
+        $slept += $wait
+        $delay = [Math]::Min($delay * 2, 120)
+    }
 }
 
-$utf8 = [Text.UTF8Encoding]::new($false)
-[IO.File]::WriteAllText($project, [regex]::Replace($projectText, $pattern, "<PackageValidationBaselineVersion>$version</PackageValidationBaselineVersion>"), $utf8)
+foreach ($path in $changed.Keys) {
+    [IO.File]::WriteAllText($path, $changed[$path].Text, [Text.UTF8Encoding]::new($changed[$path].HadBom))
+}
 
-$changelog = Join-Path $root 'CHANGELOG.md'
-$entry = "- Package validation compares every package with the published $version package ([ADR-1001](docs/decisions/1001-each-package-is-validated-against-the-last-released-package.md))."
-$text = [IO.File]::ReadAllText($changelog) -replace "`r`n", "`n"
-$unreleased = [regex]::Match($text, '(?s)## \[Unreleased\]\n(.*?)(?=\n## \[|\n\[unreleased\]:)')
-if (-not $unreleased.Success) { throw 'CHANGELOG.md has no [Unreleased] section.' }
-$body = $unreleased.Groups[1].Value
-if ($body -match '(?m)^### Changed\n') {
-    $newBody = [regex]::Replace($body, '(?m)^### Changed\n\n?', "### Changed`n`n$entry`n", 1)
+$changelog = 'CHANGELOG.md'
+$agentsPath = Join-Path $Root 'AGENTS.md'
+if (Test-Path -LiteralPath $agentsPath -PathType Leaf) {
+    $agents = [IO.File]::ReadAllText($agentsPath)
+    $landing = [regex]::Match($agents, '(?ms)^## Landing[ \t]*\r?$(.*?)(?=^## |\z)')
+    if ($landing.Success) {
+        $named = [regex]::Match($landing.Groups[1].Value, '(?m)^- changelog:[ \t]*(.+?)[ \t]*\r?$')
+        if ($named.Success) { $changelog = $named.Groups[1].Value.Trim('`', '"', "'") }
+    }
 }
-else {
-    # Keep a Changelog order: Changed goes after Added and before Deprecated, Removed, Fixed and Security.
-    $later = [regex]::Match($body, '(?m)^### (Deprecated|Removed|Fixed|Security)\n')
-    $section = "### Changed`n`n$entry`n`n"
-    if ($later.Success) { $newBody = $body.Insert($later.Index, $section) }
-    else { $newBody = $body.TrimEnd("`n") + "`n`n" + $section.TrimEnd("`n") + "`n"; $newBody = "`n" + $newBody.TrimStart("`n") }
+$changelogPath = Join-Path $Root $changelog
+if (Test-Path -LiteralPath $changelogPath -PathType Leaf) {
+    $original = [IO.File]::ReadAllText($changelogPath)
+    $crlf = $original.Contains("`r`n")
+    $text = $original.Replace("`r`n", "`n")
+    if ($text -match '(?m)^## \[Unreleased\][ \t]*$' -and $text -match '(?m)^## \[\d+\.\d+\.\d+[^\]]*\] - ') {
+        $entry = "- Package validation compares each package with the published $target package."
+        $unreleased = [regex]::Match($text, '(?s)## \[Unreleased\]\n(.*?)(?=\n## \[|\n\[unreleased\]:)')
+        if ($unreleased.Success) {
+            $body = $unreleased.Groups[1].Value
+            if ($body -match '(?m)^### Changed\n') {
+                $newBody = [regex]::Replace($body, '(?m)^### Changed\n\n?', "### Changed`n`n$entry`n", 1)
+            }
+            elseif (($later = [regex]::Match($body, '(?m)^### (Deprecated|Removed|Fixed|Security)\n')).Success) {
+                $newBody = $body.Insert($later.Index, "### Changed`n`n$entry`n`n")
+            }
+            else {
+                $newBody = "`n" + ($body.Trim("`n") + "`n`n### Changed`n`n$entry").TrimStart("`n") + "`n"
+            }
+            $group = $unreleased.Groups[1]
+            $newText = $text.Substring(0, $group.Index) + $newBody + $text.Substring($group.Index + $group.Length)
+            if ($crlf) { $newText = $newText.Replace("`n", "`r`n") }
+            $bytes = [IO.File]::ReadAllBytes($changelogPath)
+            $hadBom = $bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
+            [IO.File]::WriteAllText($changelogPath, $newText, [Text.UTF8Encoding]::new($hadBom))
+        }
+    }
+    else {
+        Write-Host "Left $changelog as it is: it has no [Unreleased] and release sections to add the entry to."
+    }
 }
-$text = $text.Substring(0, $unreleased.Groups[1].Index) + $newBody + $text.Substring($unreleased.Groups[1].Index + $body.Length)
-[IO.File]::WriteAllText($changelog, $text, $utf8)
-$version
+
+$target

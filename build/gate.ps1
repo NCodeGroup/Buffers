@@ -36,9 +36,6 @@ try {
     # each must still name what it names (ADR-1010).
     ./build/Test-SiteEvidence.ps1
     if ($LASTEXITCODE) { exit $LASTEXITCODE }
-    # The baseline script edits files in an automated pull request, so its branches are tested offline (ADR-1007).
-    ./build/Test-UpdateBaseline.ps1
-    if ($LASTEXITCODE) { exit $LASTEXITCODE }
     $dod = @{}
     if ($Fast) { $dod.Fast = $true }
     if ($Filter) { $dod.Filter = $Filter }

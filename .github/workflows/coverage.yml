@@ -1,0 +1,72 @@
+name: Coverage
+
+# Publishes the coverage report to Codecov, whose badge the READMEs show, from each push to the default branch. A
+# workflow of its own, not a job of ci.yml: tag-release.yml calls ci.yml with only contents: read, and GitHub refuses
+# to start a run whose called workflow has a job that asks for more, such as id-token: write, even when that job's
+# if: is false. The coverage job runs the tests with no credential; only the codecov job holds an OIDC token, which
+# Codecov takes instead of a stored CODECOV_TOKEN. Set up once: the Codecov GitHub App installed for the NCodeGroup
+# organization. A failed upload doesn't fail the run: CI's coverage gate is the verdict.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    name: Measure coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Nerdbank.GitVersioning computes the version from the history and fails on a shallow clone.
+          fetch-depth: 0
+          persist-credentials: false
+      # The SDK global.json selects and the runtime of each older .NET a test project targets.
+      - uses: ./.github/actions/install-dotnet
+      # No lock file is committed, so setup-dotnet's own cache has no key: this one keys on the restore's inputs.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('Directory.Packages.props', 'global.json', '.config/dotnet-tools.json', '**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+      - name: Code coverage
+        run: ./build/Test-Coverage.ps1 -ReportDirectory artifacts/coverage
+      - name: Upload coverage report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage
+          path: artifacts/coverage/
+          retention-days: 1
+          if-no-files-found: error
+
+  codecov:
+    name: Publish coverage
+    needs: coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      # The Codecov CLI lists the repository's files to match the report's paths to them.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: coverage
+          path: artifacts/coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          directory: artifacts/coverage
+          use_oidc: true
+          fail_ci_if_error: false

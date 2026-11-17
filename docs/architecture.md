@@ -47,8 +47,12 @@ Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers return.
 ## Build and Release
 
 `ci.yml` builds, tests and packs every pull request and runs CodeQL. Merging a release's pull request makes
-`tag-release.yml` tag it and publish the GitHub release, then start `publish.yml`, which tests and packs the tagged
-commit, pushes to nuget.org through trusted publishing after a maintainer approves, and then attaches provenance and
-opens the baseline pull request ([ADR-1008](decisions/1008-release-follow-ups-are-jobs-publish-calls.md)).
+`tag-release.yml` run `ci.yml` again on the merged commit and, once it passes, tag that commit, signed with gitsign,
+and publish the GitHub release, then start `publish.yml`, which tests and packs the tagged commit, pushes to nuget.org
+through trusted publishing after a maintainer approves, and then attaches provenance and opens the baseline pull
+request (project-template
+[ADR-0026](decisions/project-template/0026-tests-gate-coverage-at-the-gold-thresholds-and-a-release-waits-for-them.md),
+[ADR-0028](decisions/project-template/0028-github-releases-are-immutable-and-their-tags-signed.md) and
+[ADR-0151](decisions/project-template/0151-release-follow-ups-are-jobs-publish-calls.md)).
 
 [assurance-case.md](assurance-case.md) explains why this design meets the library's security requirements.

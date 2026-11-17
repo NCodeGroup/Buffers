@@ -17,7 +17,7 @@ The lowest accepted branch coverage, from 0.0 to 1.0. The default is 0.98.
 
 .PARAMETER ReportDirectory
 A folder to copy each Cobertura report into, as <ReportDirectory>/<run folder>/coverage.cobertura.xml, such as
-artifacts/coverage, which CI uploads to Codecov. Run folders an earlier run kept there are removed first. By default,
+artifacts/coverage, which .github/workflows/coverage.yml uploads to Codecov. Run folders an earlier run kept there are removed first. By default,
 no report is kept.
 
 .EXAMPLE

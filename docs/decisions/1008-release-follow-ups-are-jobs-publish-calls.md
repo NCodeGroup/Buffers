@@ -1,6 +1,6 @@
 # 1008. Release follow-ups are jobs that publish.yml calls
 
-- **Status:** Accepted
+- **Status:** Superseded by 0151, [the project template's record](project-template/0151-release-follow-ups-are-jobs-publish-calls.md)
 - **Date:** 2026-11-15
 - **Deciders:** NCode Group
 - **Amends:** ADR-1007, items 1 and 5; project-template ADR-0139, for this repository until
