@@ -80,3 +80,4 @@ override in `AGENTS.md`.
 | [ADR-1015](1015-the-secure-pools-cache-has-no-size-limit-and-is-dropped-under-memory-pressure.md) | The secure pool's cache has no size limit and is dropped under memory pressure | Accepted |
 | [ADR-1016](1016-zeroing-and-fixed-time-comparison-call-cryptographicoperations.md) | Zeroing and fixed-time comparison call CryptographicOperations | Accepted |
 | [ADR-1017](1017-the-pooled-buffer-writers-return-nerdbank-streams-sequence.md) | The pooled buffer writers return Nerdbank.Streams' Sequence&lt;T&gt; | Accepted |
+| [ADR-1018](1018-the-library-neither-locks-nor-encrypts-memory.md) | The library neither locks nor encrypts memory | Accepted |
