@@ -8,6 +8,14 @@
 // counts them in words.
 //
 // No props. Usage: <FixedBufferBars />
+import { inline } from '@site/components/lib/evidence';
+
+interface LegendItem {
+  kind: string;
+  spoken: string;
+  text: string;
+}
+
 interface Bar {
   id: string;
   title: string;
@@ -16,11 +24,15 @@ interface Bar {
   written: number;
   zeroed: number;
   returned: number;
-  legend: { kind: string; spoken: string; text: string }[];
+  /** The legend, written from the bar's own numbers, so no count is typed twice. */
+  legend: (bar: Bar) => LegendItem[];
   note?: string;
 }
 
 const size = 64;
+
+/** The cells of a bar that none of the other kinds claims. */
+const free = (bar: Bar) => size - bar.written - bar.zeroed - bar.returned;
 
 const bars: Bar[] = [
   {
@@ -30,7 +42,9 @@ const bars: Bar[] = [
     written: 0,
     zeroed: 0,
     returned: 64,
-    legend: [{ kind: 'returned', spoken: 'returned', text: '64 cells are free, and `GetSpan` returns all 64.' }],
+    legend: (bar) => [
+      { kind: 'returned', spoken: 'returned', text: `${bar.returned} cells are free, and \`GetSpan\` returns all ${bar.returned}.` },
+    ],
     note: 'The hint of 4 does not limit the span.',
   },
   {
@@ -40,9 +54,9 @@ const bars: Bar[] = [
     written: 20,
     zeroed: 0,
     returned: 44,
-    legend: [
-      { kind: 'written', spoken: 'written', text: '20 cells are written.' },
-      { kind: 'returned', spoken: 'returned', text: '44 cells are free, and `GetSpan` returns all 44.' },
+    legend: (bar) => [
+      { kind: 'written', spoken: 'written', text: `${bar.written} cells are written.` },
+      { kind: 'returned', spoken: 'returned', text: `${bar.returned} cells are free, and \`GetSpan\` returns all ${bar.returned}.` },
     ],
   },
   {
@@ -52,9 +66,9 @@ const bars: Bar[] = [
     written: 0,
     zeroed: 20,
     returned: 0,
-    legend: [
-      { kind: 'zero', spoken: 'zeros', text: '20 cells were written and are now zeros.' },
-      { kind: 'free', spoken: 'free', text: '44 cells were never written.' },
+    legend: (bar) => [
+      { kind: 'zero', spoken: 'zeros', text: `${bar.zeroed} cells were written and are now zeros.` },
+      { kind: 'free', spoken: 'free', text: `${free(bar)} cells were never written.` },
     ],
     note: '`Clear()` also sets the count to 0, and leaves the 20 cells as they were.',
   },
@@ -76,11 +90,6 @@ function cells(bar: Bar) {
   });
 }
 
-/** A short title or note with `code` spans, as HTML. */
-function inline(text: string) {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/`([^`]+)`/g, '<code>$1</code>');
-}
-
 const plain = (text: string) => text.replace(/`/g, '');
 ---
 
@@ -96,7 +105,7 @@ const plain = (text: string) => text.replace(/`/g, '');
           ))}
         </div>
         <ul class="bar__legend" aria-label="What the cells mean">
-          {bar.legend.map((item) => (
+          {bar.legend(bar).map((item) => (
             <li>
               <span class:list={['cell', 'cell--key', `cell--${item.kind}`]} aria-hidden="true">{kinds[item.kind].label}</span>
               <span><span class="bar__spoken">{item.spoken[0].toUpperCase() + item.spoken.slice(1)}:</span> <span set:html={inline(item.text)} /></span>
