@@ -74,3 +74,4 @@ override in `AGENTS.md`.
 | [ADR-1009](1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md) | The documentation site is narrative guides, built by a shared toolchain outside this repository | Accepted |
 | [ADR-1010](1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md) | Site samples are compiled tests in a project of their own, included by key when the site is built (amends 1005) | Accepted |
 | [ADR-1011](1011-buffers-have-no-finalizer-and-are-zeroed-only-by-dispose.md) | Buffers have no finalizer and are zeroed only by Dispose | Accepted |
+| [ADR-1012](1012-the-secure-pool-caches-buffers-of-one-4096-byte-page.md) | The secure pool caches buffers of one 4096-byte page | Accepted |
