@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Thirteen pages of the documentation site: guides to reject malformed UTF-8 and ASCII, serialize into a buffer that must not grow, split delimited text without copying substrings, ban the leaky APIs at build time, test that your code zeroes its secrets, review a change that touches secrets, and give pipes and stream readers a pool that cleans up; concepts on how the buffers work and why the library is built this way; objections and alternatives, and the package's versions, support and verification; and references for buffer behavior, sizes and pooling, and every public member ([#68](https://github.com/NCodeGroup/Buffers/issues/68)).
+- Decision records ADR-1011 to ADR-1018 for the design rules the code keeps: no finalizer, the 4096-byte page, allocation without clearing, `SecureSpanLifetime<T>` not pinning, the secure pool's cache and when it is dropped, zeroing and comparison through `CryptographicOperations`, Nerdbank.Streams' `Sequence<T>`, and neither locking nor encrypting memory ([#68](https://github.com/NCodeGroup/Buffers/issues/68)).
+
 ### Changed
 
 - Package validation compares each package with the published 5.1.1 package.
+- `./build/gate.ps1` runs `build/Test-AssertApiMap.ps1`; `build/Test-SiteEvidence.ps1` fails when the site's API map and `PublicAPI.Shipped.txt` differ; and `build/Update-ReviewChecklist.ps1 -Check` fails when the review checklist is out of step with the guides' Checklist sections ([#68](https://github.com/NCodeGroup/Buffers/issues/68)).
 
 ## [5.1.2] - 2026-11-17
 
