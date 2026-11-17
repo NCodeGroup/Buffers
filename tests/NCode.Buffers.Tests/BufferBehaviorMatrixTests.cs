@@ -7,6 +7,10 @@ using System.Text.Json.Nodes;
 
 namespace NCode.Buffers.Tests;
 
+// The class checks the site's buffers.json against the public API of several types, so it
+// mirrors no single type and groups its tests by check.
+[CollectionDefinition(nameof(BufferBehaviorMatrixTests), DisableParallelization = true)]
+[Collection(nameof(BufferBehaviorMatrixTests))]
 public class BufferBehaviorMatrixTests
 {
     private const int Size = 32;
@@ -134,7 +138,8 @@ public class BufferBehaviorMatrixTests
     private static void CheckPooledWriter(bool pinned, bool zeroedOnDispose)
     {
         var writer = BufferFactory.CreatePooledBufferWriter(isSensitive: true);
-        writer.GetSpan(Size)[..Size].Fill(Fill);
+        var span = writer.GetSpan(Size);
+        span[..Size].Fill(Fill);
         writer.Advance(Size);
         var view = writer.AsReadOnlySequence.First;
 
@@ -184,52 +189,67 @@ public class BufferBehaviorMatrixTests
     private static void CheckArrayWriter(bool pinned, bool zeroedOnDispose)
     {
         var writer = BufferFactory.CreateArrayBufferWriter();
-        writer.GetSpan(Size)[..Size].Fill(Fill);
+        var span = writer.GetSpan(Size);
+        span[..Size].Fill(Fill);
         writer.Advance(Size);
 
         AssertPinned(pinned, writer.WrittenMemory);
 
+        var writerType = writer.GetType();
+        var isDisposable = typeof(IDisposable).IsAssignableFrom(writerType);
+
         Assert.False(zeroedOnDispose);
-        Assert.False(typeof(IDisposable).IsAssignableFrom(writer.GetType()));
+        Assert.False(isDisposable);
     }
 
     private static void CheckFixedSpanWriter(bool pinned, bool zeroedOnDispose)
     {
         var array = new byte[Size];
         var writer = new FixedSpanBufferWriter<byte>(array);
-        writer.GetSpan(Size)[..Size].Fill(Fill);
+        var span = writer.GetSpan(Size);
+        span[..Size].Fill(Fill);
         writer.Advance(Size);
 
         AssertPinned(pinned, array);
 
+        var writerType = typeof(FixedSpanBufferWriter<byte>);
+        var isDisposable = typeof(IDisposable).IsAssignableFrom(writerType);
+
         Assert.False(zeroedOnDispose);
-        Assert.False(typeof(IDisposable).IsAssignableFrom(typeof(FixedSpanBufferWriter<byte>)));
+        Assert.False(isDisposable);
     }
 
     private static void CheckFixedMemoryWriter(bool pinned, bool zeroedOnDispose)
     {
         var array = new byte[Size];
         var writer = new FixedMemoryBufferWriter<byte>(array);
-        writer.GetSpan(Size)[..Size].Fill(Fill);
+        var span = writer.GetSpan(Size);
+        span[..Size].Fill(Fill);
         writer.Advance(Size);
 
         AssertPinned(pinned, array);
 
+        var writerType = writer.GetType();
+        var isDisposable = typeof(IDisposable).IsAssignableFrom(writerType);
+
         Assert.False(zeroedOnDispose);
-        Assert.False(typeof(IDisposable).IsAssignableFrom(writer.GetType()));
+        Assert.False(isDisposable);
     }
 
     #endregion
 
     #region Helper Methods
 
+    // The runtime offers no way to show that an array is not pinned (GC.GetGeneration of an
+    // ordinary array can also be GC.MaxGeneration), so a `pinned: false` row is not asserted.
     private static void AssertPinned(bool pinned, byte[] array)
     {
         if (!pinned)
             return;
 
         // The GC reports pinned-object-heap objects as its oldest generation.
-        Assert.Equal(GC.MaxGeneration, GC.GetGeneration(array));
+        var generation = GC.GetGeneration(array);
+        Assert.Equal(GC.MaxGeneration, generation);
     }
 
     private static void AssertPinned(bool pinned, ReadOnlyMemory<byte> memory)
@@ -237,7 +257,8 @@ public class BufferBehaviorMatrixTests
         if (!pinned)
             return;
 
-        Assert.True(MemoryMarshal.TryGetArray(memory, out var segment));
+        var hasArray = MemoryMarshal.TryGetArray(memory, out var segment);
+        Assert.True(hasArray);
         Assert.NotNull(segment.Array);
         AssertPinned(pinned, segment.Array);
     }
@@ -247,7 +268,8 @@ public class BufferBehaviorMatrixTests
         Assert.Equal(Size, view.Length);
 
         var expected = zeroedOnDispose ? (byte)0 : Fill;
-        Assert.All(view.ToArray(), value => Assert.Equal(expected, value));
+        var contents = view.ToArray();
+        Assert.All(contents, value => Assert.Equal(expected, value));
     }
 
     private static bool ReadFlag(JsonNode outcome, string name)
@@ -261,7 +283,8 @@ public class BufferBehaviorMatrixTests
     private static JsonNode[] ReadOutcomes()
     {
         var path = FindBuffersJson();
-        var root = JsonNode.Parse(File.ReadAllText(path));
+        var json = File.ReadAllText(path);
+        var root = JsonNode.Parse(json);
 
         var outcomes = root?["outcomes"]?.AsArray();
         Assert.NotNull(outcomes);
