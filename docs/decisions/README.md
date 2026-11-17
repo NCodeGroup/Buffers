@@ -76,3 +76,4 @@ override in `AGENTS.md`.
 | [ADR-1011](1011-buffers-have-no-finalizer-and-are-zeroed-only-by-dispose.md) | Buffers have no finalizer and are zeroed only by Dispose | Accepted |
 | [ADR-1012](1012-the-secure-pool-caches-buffers-of-one-4096-byte-page.md) | The secure pool caches buffers of one 4096-byte page | Accepted |
 | [ADR-1013](1013-pinned-buffers-are-allocated-without-being-cleared.md) | Pinned buffers are allocated without being cleared | Accepted |
+| [ADR-1014](1014-securespanlifetime-zeroes-the-callers-span-and-does-not-pin-it.md) | SecureSpanLifetime zeroes the caller's span and does not pin it | Accepted |
