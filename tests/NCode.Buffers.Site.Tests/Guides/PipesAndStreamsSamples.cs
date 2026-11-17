@@ -59,7 +59,8 @@ public class PipesAndStreamsSamples
         byte[] readBack = result.Buffer.ToArray();
         pipe.Reader.AdvanceTo(result.Buffer.End);
 
-        // Completing both ends returns the pipe's buffers to the pool, which zeroes them.
+        // Completing both ends returns any buffer the pipe still holds to the pool, which
+        // zeroes it.
         await pipe.Writer.CompleteAsync();
         await pipe.Reader.CompleteAsync();
         // end-snippet
@@ -69,6 +70,38 @@ public class PipesAndStreamsSamples
         Assert.False(memory.Span.ContainsAnyExcept((byte)0));
         using IMemoryOwner<byte> next = pool.Rent(1);
         Assert.NotNull(next);
+    }
+
+    [Fact]
+    public async Task SitePipelinesUnconsumedSample_Runs()
+    {
+        byte[] secret = new byte[32];
+        secret.AsSpan().Fill(0x5A);
+
+        // begin-snippet: SitePipelinesUnconsumed
+        // The pool belongs to the application, so the application disposes it.
+        using var pool = new SecureMemoryPool<byte>();
+        var pipe = new Pipe(new PipeOptions(pool: pool));
+
+        Memory<byte> memory = pipe.Writer.GetMemory(32);
+        secret.CopyTo(memory);
+        pipe.Writer.Advance(secret.Length);
+        await pipe.Writer.FlushAsync();
+
+        // The reader looks at the bytes and consumes none of them.
+        ReadResult result = await pipe.Reader.ReadAsync();
+        pipe.Reader.AdvanceTo(result.Buffer.Start);
+
+        // With one end complete, the pipe still holds the buffer, and the bytes are in it.
+        await pipe.Reader.CompleteAsync();
+        bool heldWithOneEnd = memory.Span.ContainsAnyExcept((byte)0);
+
+        // Completing both ends returns the buffer to the pool, which zeroes it.
+        await pipe.Writer.CompleteAsync();
+        // end-snippet
+
+        Assert.True(heldWithOneEnd);
+        Assert.False(memory.Span.ContainsAnyExcept((byte)0));
     }
 
     [Fact]
@@ -90,7 +123,8 @@ public class PipesAndStreamsSamples
         using var destination = new MemoryStream();
         await reader.CopyToAsync(destination);
 
-        // Completing the reader returns its buffers to the pool, which zeroes them.
+        // The reader returned each buffer it consumed to the pool, which zeroed it.
+        // Completing the reader returns any it still holds.
         await reader.CompleteAsync();
         // end-snippet
 

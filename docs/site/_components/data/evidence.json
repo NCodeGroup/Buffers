@@ -552,6 +552,9 @@
     },
     "SitePipelinesStreamReader": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/PipesAndStreamsSamples.cs"
+    },
+    "SitePipelinesUnconsumed": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/PipesAndStreamsSamples.cs"
     }
   },
   "sources": {
