@@ -270,6 +270,18 @@
     "SecureEncodingTests.ASCII_HasNoPreamble": {
       "file": "tests/NCode.Buffers.Tests/SecureEncodingTests.cs",
       "line": 21
+    },
+    "FixedSpanBufferWriterTests.GetMemory_ThrowsNotSupportedException": {
+      "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterTests.cs",
+      "line": 496
+    },
+    "FixedSpanBufferWriterTests.Reset_OnlyClearsWrittenPortion": {
+      "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterTests.cs",
+      "line": 230
+    },
+    "FixedSpanBufferWriterTests.Clear_DoesNotClearBufferContents": {
+      "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterTests.cs",
+      "line": 174
     }
   },
   "samples": {
@@ -455,6 +467,21 @@
     },
     "SiteStrictExamplesTable": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/StrictDecodingSamples.cs"
+    },
+    "SiteFixedBufferUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/FixedSizeBufferSamples.cs"
+    },
+    "SiteFixedBufferFrame": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/FixedSizeBufferSamples.cs"
+    },
+    "SiteFixedBufferOverSensitiveRental": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/FixedSizeBufferSamples.cs"
+    },
+    "SiteFixedBufferTooSmallForJson": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/FixedSizeBufferSamples.cs"
+    },
+    "SiteFixedBufferPartialWrite": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/FixedSizeBufferSamples.cs"
     }
   },
   "sources": {
@@ -999,6 +1026,22 @@
       "branch": "main",
       "kind": "asserted",
       "label": "BufferBehaviorMatrixTests"
+    },
+    "FixedSpanBufferWriter.GetMemory": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        203,
+        208
+      ],
+      "match": "public Memory<T> GetMemory(int sizeHint = 0)"
+    },
+    "FixedSpanBufferWriter.Clear": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        95,
+        99
+      ],
+      "match": "public void Clear()"
     }
   },
   "external": {
