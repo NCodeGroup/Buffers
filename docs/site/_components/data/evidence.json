@@ -534,6 +534,15 @@
     },
     "SiteAlternativeStackByHand": {
       "file": "tests/NCode.Buffers.Site.Tests/Evidence/ObjectionsAndAlternativesSamples.cs"
+    },
+    "SiteTestZeroingThroughAPinnedArray": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/TestZeroingSamples.cs"
+    },
+    "SiteTestZeroingOnTheStack": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/TestZeroingSamples.cs"
+    },
+    "SiteTestZeroingWithAPoolOfYourOwn": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/TestZeroingSamples.cs"
     }
   },
   "sources": {
