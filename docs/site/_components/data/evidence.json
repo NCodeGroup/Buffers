@@ -1635,6 +1635,126 @@
         98
       ],
       "match": "public FixedSpanBufferWriter<T> GetFixedBufferWriter()"
+    },
+    "Api.MemorySegment": {
+      "file": "src/NCode.Buffers/MemorySegment.cs",
+      "lines": [
+        27,
+        27
+      ],
+      "match": "public class MemorySegment<T> : ReadOnlySequenceSegment<T>"
+    },
+    "Api.MemorySegment.Constructor": {
+      "file": "src/NCode.Buffers/MemorySegment.cs",
+      "lines": [
+        37,
+        37
+      ],
+      "match": "public MemorySegment(ReadOnlyMemory<T> memory)"
+    },
+    "Api.MemorySegment.Append": {
+      "file": "src/NCode.Buffers/MemorySegment.cs",
+      "lines": [
+        53,
+        53
+      ],
+      "match": "public MemorySegment<T> Append(ReadOnlyMemory<T> memory)"
+    },
+    "Api.SequenceExtensions": {
+      "file": "src/NCode.Buffers/SequenceExtensions.cs",
+      "lines": [
+        29,
+        29
+      ],
+      "match": "public static class SequenceExtensions"
+    },
+    "Api.SequenceExtensions.GetSpanLease": {
+      "file": "src/NCode.Buffers/SequenceExtensions.cs",
+      "lines": [
+        73,
+        73
+      ],
+      "match": "public RefSpanLease<T> GetSpanLease(bool isSensitive)"
+    },
+    "Api.SequenceExtensions.ConsumeAsContiguousSpan": {
+      "file": "src/NCode.Buffers/SequenceExtensions.cs",
+      "lines": [
+        138,
+        138
+      ],
+      "match": "public IDisposable ConsumeAsContiguousSpan(bool isSensitive, out ReadOnlySpan<T> span)"
+    },
+    "Api.RefSpanLease": {
+      "file": "src/NCode.Buffers/RefSpanLease.cs",
+      "lines": [
+        42,
+        42
+      ],
+      "match": "public readonly ref struct RefSpanLease<T>(IDisposable? owner, ReadOnlySpan<T> span) : IDisposable"
+    },
+    "Api.RefSpanLease.Constructor": {
+      "file": "src/NCode.Buffers/RefSpanLease.cs",
+      "lines": [
+        42,
+        42
+      ],
+      "match": "public readonly ref struct RefSpanLease<T>(IDisposable? owner, ReadOnlySpan<T> span) : IDisposable"
+    },
+    "Api.RefSpanLease.Span": {
+      "file": "src/NCode.Buffers/RefSpanLease.cs",
+      "lines": [
+        57,
+        57
+      ],
+      "match": "public ReadOnlySpan<T> Span { get; } = span;"
+    },
+    "Api.RefSpanLease.Dispose": {
+      "file": "src/NCode.Buffers/RefSpanLease.cs",
+      "lines": [
+        71,
+        71
+      ],
+      "match": "public void Dispose()"
+    },
+    "Api.EmptyMemory": {
+      "file": "src/NCode.Buffers/EmptyMemory.cs",
+      "lines": [
+        33,
+        33
+      ],
+      "match": "public sealed class EmptyMemory<T> : IMemoryOwner<T>"
+    },
+    "Api.EmptyMemory.Constructor": {
+      "file": "src/NCode.Buffers/EmptyMemory.cs",
+      "lines": [
+        33,
+        33
+      ],
+      "match": "public sealed class EmptyMemory<T> : IMemoryOwner<T>"
+    },
+    "Api.EmptyMemory.Singleton": {
+      "file": "src/NCode.Buffers/EmptyMemory.cs",
+      "lines": [
+        50,
+        50
+      ],
+      "match": "public static EmptyMemory<T> Singleton { get; } = new();"
+    },
+    "Api.EmptyMemory.Memory": {
+      "file": "src/NCode.Buffers/EmptyMemory.cs",
+      "lines": [
+        56,
+        56
+      ],
+      "match": "public Memory<T> Memory { get; } = Memory<T>.Empty;"
+    },
+    "Api.EmptyMemory.Dispose": {
+      "file": "src/NCode.Buffers/EmptyMemory.cs",
+      "lines": [
+        63,
+        63
+      ],
+      "match": "public void Dispose()"
     }
   },
   "external": {

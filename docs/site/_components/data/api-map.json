@@ -947,6 +947,269 @@
         "static NCode.Buffers.BufferExtensions.GetFixedBufferWriter<T>(this System.Memory<T> memory) -> NCode.Buffers.FixedMemoryBufferWriter<T>!",
         "static NCode.Buffers.BufferExtensions.GetFixedBufferWriter<T>(this System.Span<T> span) -> NCode.Buffers.FixedSpanBufferWriter<T>"
       ]
+    },
+    {
+      "id": "memory-segment",
+      "group": "sequences",
+      "type": "MemorySegment<T>",
+      "member": null,
+      "signatures": [
+        "public class MemorySegment<T> : ReadOnlySequenceSegment<T>"
+      ],
+      "summary": "A `ReadOnlySequenceSegment<T>` over a block of memory, linked to the next segment so that the blocks form a `ReadOnlySequence<T>`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.MemorySegment",
+      "api": [
+        "NCode.Buffers.MemorySegment<T>"
+      ]
+    },
+    {
+      "id": "memory-segment-constructor",
+      "group": "sequences",
+      "type": "MemorySegment<T>",
+      "member": "constructor",
+      "signatures": [
+        "public MemorySegment(ReadOnlyMemory<T> memory)"
+      ],
+      "summary": "Creates a standalone head segment over `memory`, with a running index of zero.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.MemorySegment.Constructor",
+      "api": [
+        "NCode.Buffers.MemorySegment<T>.MemorySegment(System.ReadOnlyMemory<T> memory) -> void"
+      ]
+    },
+    {
+      "id": "memory-segment-append",
+      "group": "sequences",
+      "type": "MemorySegment<T>",
+      "member": "Append",
+      "signatures": [
+        "public MemorySegment<T> Append(ReadOnlyMemory<T> memory)"
+      ],
+      "summary": "Links a new segment over `memory` after this one and returns it.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.MemorySegment.Append",
+      "api": [
+        "NCode.Buffers.MemorySegment<T>.Append(System.ReadOnlyMemory<T> memory) -> NCode.Buffers.MemorySegment<T>!"
+      ]
+    },
+    {
+      "id": "sequence-extensions",
+      "group": "sequences",
+      "type": "SequenceExtensions",
+      "member": null,
+      "signatures": [
+        "public static class SequenceExtensions",
+        "extension<T>(Sequence<T> buffer) where T : unmanaged"
+      ],
+      "summary": "Extension members on `Sequence<T>` that give its contents as one contiguous `ReadOnlySpan<T>`.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.SequenceExtensions",
+      "api": [
+        "NCode.Buffers.SequenceExtensions",
+        "NCode.Buffers.SequenceExtensions.extension<T>(Nerdbank.Streams.Sequence<T>!)"
+      ]
+    },
+    {
+      "id": "sequence-extensions-get-span-lease",
+      "group": "sequences",
+      "type": "SequenceExtensions",
+      "member": "GetSpanLease",
+      "signatures": [
+        "extension<T>(Sequence<T> buffer) where T : unmanaged",
+        "public RefSpanLease<T> GetSpanLease(bool isSensitive)"
+      ],
+      "summary": "Returns a `RefSpanLease<T>` over the contents as one `ReadOnlySpan<T>`: the sequence's own span when it has one segment, a copy in a rented buffer when it has more. The sequence stays valid.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.SequenceExtensions.GetSpanLease",
+      "api": [
+        "NCode.Buffers.SequenceExtensions.extension<T>(Nerdbank.Streams.Sequence<T>!).GetSpanLease(bool isSensitive) -> NCode.Buffers.RefSpanLease<T>",
+        "static NCode.Buffers.SequenceExtensions.GetSpanLease<T>(this Nerdbank.Streams.Sequence<T>! buffer, bool isSensitive) -> NCode.Buffers.RefSpanLease<T>"
+      ]
+    },
+    {
+      "id": "sequence-extensions-consume-as-contiguous-span",
+      "group": "sequences",
+      "type": "SequenceExtensions",
+      "member": "ConsumeAsContiguousSpan",
+      "signatures": [
+        "extension<T>(Sequence<T> buffer) where T : unmanaged",
+        "public IDisposable ConsumeAsContiguousSpan(bool isSensitive, out ReadOnlySpan<T> span)"
+      ],
+      "summary": "Returns the contents as one `ReadOnlySpan<T>` and the owner that releases it: the sequence itself when it has one segment, a rented buffer when it has more, in which case the sequence is disposed.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.SequenceExtensions.ConsumeAsContiguousSpan",
+      "api": [
+        "NCode.Buffers.SequenceExtensions.extension<T>(Nerdbank.Streams.Sequence<T>!).ConsumeAsContiguousSpan(bool isSensitive, out System.ReadOnlySpan<T> span) -> System.IDisposable!",
+        "static NCode.Buffers.SequenceExtensions.ConsumeAsContiguousSpan<T>(this Nerdbank.Streams.Sequence<T>! buffer, bool isSensitive, out System.ReadOnlySpan<T> span) -> System.IDisposable!"
+      ]
+    },
+    {
+      "id": "ref-span-lease",
+      "group": "sequences",
+      "type": "RefSpanLease<T>",
+      "member": null,
+      "signatures": [
+        "public readonly ref struct RefSpanLease<T>(IDisposable? owner, ReadOnlySpan<T> span) : IDisposable"
+      ],
+      "summary": "A `ref struct` that pairs a `ReadOnlySpan<T>` with the owner that releases its memory on dispose.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.RefSpanLease",
+      "api": [
+        "NCode.Buffers.RefSpanLease<T>"
+      ]
+    },
+    {
+      "id": "ref-span-lease-constructor",
+      "group": "sequences",
+      "type": "RefSpanLease<T>",
+      "member": "constructor",
+      "signatures": [
+        "public RefSpanLease(IDisposable? owner, ReadOnlySpan<T> span)",
+        "public RefSpanLease()"
+      ],
+      "summary": "Pairs `span` with `owner`, which may be null when nothing needs releasing.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.RefSpanLease.Constructor",
+      "api": [
+        "NCode.Buffers.RefSpanLease<T>.RefSpanLease() -> void",
+        "NCode.Buffers.RefSpanLease<T>.RefSpanLease(System.IDisposable? owner, System.ReadOnlySpan<T> span) -> void"
+      ]
+    },
+    {
+      "id": "ref-span-lease-span",
+      "group": "sequences",
+      "type": "RefSpanLease<T>",
+      "member": "Span",
+      "signatures": [
+        "public ReadOnlySpan<T> Span { get; } = span;"
+      ],
+      "summary": "The leased span, valid until the lease is disposed.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.RefSpanLease.Span",
+      "api": [
+        "NCode.Buffers.RefSpanLease<T>.Span.get -> System.ReadOnlySpan<T>"
+      ]
+    },
+    {
+      "id": "ref-span-lease-dispose",
+      "group": "sequences",
+      "type": "RefSpanLease<T>",
+      "member": "Dispose",
+      "signatures": [
+        "public void Dispose()"
+      ],
+      "summary": "Disposes the owner, which releases the leased memory; does nothing when the owner is null.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.RefSpanLease.Dispose",
+      "api": [
+        "NCode.Buffers.RefSpanLease<T>.Dispose() -> void"
+      ]
+    },
+    {
+      "id": "empty-memory",
+      "group": "sequences",
+      "type": "EmptyMemory<T>",
+      "member": null,
+      "signatures": [
+        "public sealed class EmptyMemory<T> : IMemoryOwner<T>"
+      ],
+      "summary": "An `IMemoryOwner<T>` that owns no memory: its `Memory` is always empty and its `Dispose` does nothing.",
+      "constraint": null,
+      "throws": null,
+      "page": "/reference/buffer-behavior/",
+      "source": "Api.EmptyMemory",
+      "api": [
+        "NCode.Buffers.EmptyMemory<T>"
+      ]
+    },
+    {
+      "id": "empty-memory-constructor",
+      "group": "sequences",
+      "type": "EmptyMemory<T>",
+      "member": "constructor",
+      "signatures": [
+        "public EmptyMemory()"
+      ],
+      "summary": "Creates an empty owner. `Singleton` is the shared instance.",
+      "constraint": null,
+      "throws": null,
+      "page": "/reference/buffer-behavior/",
+      "source": "Api.EmptyMemory.Constructor",
+      "api": [
+        "NCode.Buffers.EmptyMemory<T>.EmptyMemory() -> void"
+      ]
+    },
+    {
+      "id": "empty-memory-singleton",
+      "group": "sequences",
+      "type": "EmptyMemory<T>",
+      "member": "Singleton",
+      "signatures": [
+        "public static EmptyMemory<T> Singleton { get; } = new();"
+      ],
+      "summary": "The shared instance, which is safe to use across threads.",
+      "constraint": null,
+      "throws": null,
+      "page": "/reference/buffer-behavior/",
+      "source": "Api.EmptyMemory.Singleton",
+      "api": [
+        "static NCode.Buffers.EmptyMemory<T>.Singleton.get -> NCode.Buffers.EmptyMemory<T>!"
+      ]
+    },
+    {
+      "id": "empty-memory-memory",
+      "group": "sequences",
+      "type": "EmptyMemory<T>",
+      "member": "Memory",
+      "signatures": [
+        "public Memory<T> Memory { get; } = Memory<T>.Empty;"
+      ],
+      "summary": "Always `Memory<T>.Empty`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/reference/buffer-behavior/",
+      "source": "Api.EmptyMemory.Memory",
+      "api": [
+        "NCode.Buffers.EmptyMemory<T>.Memory.get -> System.Memory<T>"
+      ]
+    },
+    {
+      "id": "empty-memory-dispose",
+      "group": "sequences",
+      "type": "EmptyMemory<T>",
+      "member": "Dispose",
+      "signatures": [
+        "public void Dispose()"
+      ],
+      "summary": "Does nothing; safe to call any number of times.",
+      "constraint": null,
+      "throws": null,
+      "page": "/reference/buffer-behavior/",
+      "source": "Api.EmptyMemory.Dispose",
+      "api": [
+        "NCode.Buffers.EmptyMemory<T>.Dispose() -> void"
+      ]
     }
   ]
 }
