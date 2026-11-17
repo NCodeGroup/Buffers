@@ -36,10 +36,10 @@ Microsoft describes the API behind it: pin an object "at the allocation time". <
 
 ### What it does not do
 
-`GetSecureLifetime()` pins nothing. It zeroes the span you give it, wherever that span is, and a copy the collector
-made before the lifetime existed stays where it was. <Proof source="Adr1014" /> Pinned memory is also not locked into
-RAM: the operating system can still write it to a page file. <Proof source="Roadmap.NotPlanned" /> [What it protects, and what it does not](/start/limits/)
-has the limit.
+`GetSecureLifetime()` pins nothing. It zeroes the span you give it, wherever that span is, and a copy the collector made
+before the lifetime existed stays where it was. <Proof source="Adr1014" /> Pinned memory is also not locked into RAM:
+the operating system can still write it to a page file. <Proof source="Roadmap.NotPlanned" /> [What it protects, and
+what it does not](/start/limits/) has the limit.
 
 ### How we know
 
@@ -133,7 +133,8 @@ A pool of your own, and what disposing it does:
 
 ## What it costs
 
-- **A whole page zeroed per rental.** Asking for 32 bytes zeroes 4096 on `Dispose`. <Proof sample="SiteDisposeZeroesWholePage" />
+- **A whole page zeroed per rental.** Asking for 32 bytes zeroes 4096 on `Dispose`.
+  <Proof sample="SiteDisposeZeroesWholePage" />
 - **A new pinned array per call above a page, or from `CreatePinnedArray`.** Nothing caches them.
   <Proof test="SecureMemoryPoolTests.Rent_LargeBuffer_IsNotPooled" /> <Proof source="SecureArrayLifetime.Allocate" />
 - **A cache with no size limit of its own.** <Proof source="Adr1015" />

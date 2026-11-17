@@ -25,8 +25,8 @@ code.
 `Encoding.UTF8`, whose fallback silently replaces invalid bytes, or `MemoryPool<T>.Shared`, which offers no sensitivity
 choice, undermines both.
 
-**What lost.** No project bans, rejected because review misses a lenient encoding. Bans in tests too, rejected because
-tests use the standard encodings and pools as oracles.
+**What lost.** Relying on review instead of bans, rejected because review misses a lenient encoding. Bans in tests too,
+rejected because tests use the standard encodings and pools as oracles.
 
 **What it costs you.** A library file that needs a buffer or an encoding uses the wrappers, `BufferFactory` and
 `SecureEncoding`. The ban lists come from the identity repository and stay in step with it by hand.
