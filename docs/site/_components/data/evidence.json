@@ -1084,6 +1084,51 @@
       ],
       "match": "The XML documentation of",
       "kind": "documented"
+    },
+    "DirectoryBuildProps.BannedFiles": {
+      "file": "Directory.Build.props",
+      "lines": [
+        7,
+        10
+      ],
+      "match": "<ItemGroup Condition=",
+      "kind": "process"
+    },
+    "BufferFactory.Rs0030": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        4,
+        4
+      ],
+      "match": "#pragma warning disable RS0030",
+      "kind": "process"
+    },
+    "SecureEncoding.Rs0030": {
+      "file": "src/NCode.Buffers/SecureEncoding.cs",
+      "lines": [
+        4,
+        4
+      ],
+      "match": "#pragma warning disable RS0030",
+      "kind": "process"
+    },
+    "BannedEncoding.Utf8": {
+      "file": "BannedSymbols.Encoding.txt",
+      "lines": [
+        3,
+        3
+      ],
+      "match": "P:System.Text.Encoding.UTF8;",
+      "kind": "process"
+    },
+    "BannedApiAnalyzersPackage": {
+      "file": "Directory.Packages.props",
+      "lines": [
+        9,
+        9
+      ],
+      "match": "Microsoft.CodeAnalysis.BannedApiAnalyzers",
+      "kind": "process"
     }
   },
   "external": {
@@ -1238,6 +1283,14 @@
       "read": "2026-11-17",
       "quote": "Parses the source ReadOnlySpan<T> for the specified separator, populating the destination span with Range instances representing the regions between the separators.",
       "kind": "documented"
+    },
+    "BannedApiAnalyzersHelp": {
+      "title": "How to use Microsoft.CodeAnalysis.BannedApiAnalyzers",
+      "url": "https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.BannedApiAnalyzers/BannedApiAnalyzers.Help.md",
+      "read": "2026-11-17",
+      "quote": "The following file or files have to be added to any project referencing this package to enable analysis:",
+      "kind": "documented",
+      "site": "GitHub"
     }
   },
   "claims": [

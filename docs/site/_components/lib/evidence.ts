@@ -97,13 +97,13 @@ export function sourceLink(id: string): Link {
 }
 
 export function externalLink(id: string): Link {
-  const page = (evidence.external as Record<string, { title: string; url: string; read: string; quote?: string; kind?: Kind }>)[id];
+  const page = (evidence.external as Record<string, { title: string; url: string; read: string; quote?: string; kind?: Kind; site?: string }>)[id];
   if (!page) fail(`no external page "${id}" in docs/site/_components/data/evidence.json`);
   return {
     // By construction when the library delegates to what the page documents; Documented when it states .NET's behavior.
     kind: page.kind ?? 'construction',
     label: page.title,
-    context: 'Microsoft Learn',
+    context: page.site ?? 'Microsoft Learn',
     href: page.url,
     code: false,
     what: 'Documentation',
