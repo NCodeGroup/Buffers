@@ -1,0 +1,191 @@
+---
+title: Why it is built this way
+description: The design decisions you feel when you use NCode.Buffers, what each one gave up and what each costs you, with the record behind each.
+---
+
+import KindLabel from '@site/components/KindLabel.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+
+<KindLabel kind="explanation" />
+
+## In short
+
+- **Every decision is a record.** Each one below is a decision record in the repository's `docs/decisions/` folder.
+- **This page gives the decision and its cost.** The record has the reasoning, the options it weighed and the facts
+  it rests on.
+- **No reason is invented.** Where a record says no reason is recorded, this page says so.
+
+## Sensitivity is stated at every rental
+
+**The decision.** Every rental states `isSensitive`, and the library bans the other buffer and encoding APIs in its own
+code.
+
+**Why.** The library exists to make sensitivity explicit at every rental and to give strict encodings, and
+`Encoding.UTF8`, whose fallback silently replaces invalid bytes, or `MemoryPool<T>.Shared`, which offers no sensitivity
+choice, undermines both.
+
+**What lost.** No project bans, rejected because review misses a lenient encoding. Bans in tests too, rejected because
+tests use the standard encodings and pools as oracles.
+
+**What it costs you.** A library file that needs a buffer or an encoding uses the wrappers, `BufferFactory` and
+`SecureEncoding`. The ban lists come from the identity repository and stay in step with it by hand.
+
+<Proof source="Adr1003" />
+
+## Only unmanaged element types
+
+**The decision.** Every public generic API that pins, zeroes or compares its elements as bytes, or can rent from
+`SecureMemoryPool<T>`, declares `where T : unmanaged`.
+
+**Why.** Pinning, zeroing and comparing as bytes throw `ArgumentException` for a `T` that is or contains a reference,
+and under `where T : struct` such a `T` compiles and the call fails at run time.
+
+**What lost.** Keeping `struct` and documenting the exception. Keeping `struct` and checking
+`RuntimeHelpers.IsReferenceOrContainsReferences<T>()` for a clearer exception. `unmanaged` on every generic API of
+`BufferFactory` and `BufferExtensions`, which breaks callers of APIs that never pin or zero.
+
+**What it costs you.** A `T` with references fails to compile (CS8377) instead of throwing. A caller that passed such a
+`T` with `isSensitive: false`, which worked, no longer compiles; it uses `MemoryPool<T>.Shared` or `new Sequence<T>()`
+directly.
+
+<Proof source="Adr1006" />
+
+## Samples are compiled tests
+
+**The decision.** Every C# sample on the site, and every README sample, is a region of a compiled, passing test.
+
+**Why.** A sample typed into a page drifts from the API it shows, and nothing notices.
+
+**What lost.** Hand-copied samples. A test that compares README code blocks with source. MarkdownSnippets copying the
+samples into the pages, because MDX rejects its markers. A folder of samples in the library's own test project, because
+a separate project gets the check from the compiler: a sample that uses an internal member fails to build.
+
+**What it costs you.** The samples show CSharpier's formatting, so a long line wraps. The gate does not build the site:
+a page that names a key no sample defines stops the site's build, not the gate. A README sample's key cannot start with
+`Site`.
+
+<Proof source="Adr1005" /> <Proof source="SiteSamplesDecision" />
+
+## Long-term-support runtimes only
+
+**The decision.** The package targets only the Long Term Support runtimes that Microsoft supports, and builds for one
+target framework.
+
+**Why.** A target framework that Microsoft no longer supports gets no security fixes, and its dependencies stop testing
+for it.
+
+**What lost.** Keeping an older target and pinning a `System.IO.Hashing` version that supports it. Keeping it on an
+older `Nerdbank.Streams`.
+
+**What it costs you.** Applications on a runtime the package no longer targets stay on NCode.Buffers 4.x. Dropping the
+supported target once it leaves support is another major version.
+
+<Proof source="Adr1004" />
+
+## Design rules
+
+Eight rules the code keeps, each recorded so that a change to it is decided in the record. Each gives the rule, its
+reason, what it costs you and its record.
+
+### No finalizer; memory is zeroed only by `Dispose`
+
+**The rule.** Memory is zeroed only by `Dispose`, and no buffer type has a finalizer.
+
+**Reason.** No reason is recorded.
+
+**What it costs you.** Every owner is disposed, with `using`. An owner dropped without `Dispose` keeps its contents. A
+pooled buffer that is never disposed never returns to the pool.
+
+<Proof source="Adr1011" /> <Proof sample="SiteNoFinalizer" />
+
+### One page size: 4096 bytes
+
+**The rule.** Pooled buffers are one size, 4096 bytes, and a larger request gets a pinned array of its own.
+
+**Reason.** The page matches the page size on most operating systems; why there is one size is not recorded.
+
+**What it costs you.** A 32-byte secret holds a 4096-byte pinned buffer, and `Dispose` zeroes all of it. Every request
+above a page allocates. `owner.Memory` is 4096 bytes for a small request.
+
+<Proof source="Adr1012" /> <Proof source="SecureMemoryPool.PageSize" />
+<Proof test="SecureMemoryPoolTests.Rent_SizeLessThanPage_ReturnsPageSizeBuffer" />
+<Proof test="SecureMemoryPoolTests.Rent_SizeMoreThanPage_ReturnsExactSizeBuffer" />
+
+### Pinned memory is allocated uninitialized
+
+**The rule.** The library allocates pinned memory uninitialized and clears it only on `Dispose`.
+
+**Reason.** No reason is recorded.
+
+**What it costs you.** Read only what you wrote. The length `Rent` returns says nothing about the contents.
+
+<Proof source="Adr1013" /> <Proof sample="SiteDisposeZeroesWholePage" />
+
+### `SecureSpanLifetime<T>` zeroes the span and does not pin it
+
+**The rule.** `SecureSpanLifetime<T>` zeroes the memory it is given, wherever it is, and pins nothing.
+
+**Reason.** No reason is recorded.
+
+**What it costs you.** Use it over `stackalloc` memory or memory from `Rent` or `CreatePinnedArray`. It cannot reach a
+copy made before it.
+
+<Proof source="Adr1014" /> <Proof sample="SiteCopiesAreNotCleared" />
+
+### The cache has no size limit and is dropped under memory pressure
+
+**The rule.** The cache of `SecureMemoryPool<T>` keeps every returned buffer until a Gen2 collection finds memory
+pressure or the pool is disposed, and then drops all of them.
+
+**Reason.** No reason is recorded.
+
+**What it costs you.** The cache grows to the largest number of buffers rented at once and keeps them. The library emits
+no metrics, so measure in your workload.
+
+<Proof source="Adr1015" /> <Proof source="Metrics.None" />
+<Proof test="SecureMemoryPoolTests.TrimMemory_WhenHighPressure_ClearsQueue" />
+<Proof test="SecureMemoryPoolTests.Dispose_ClearsMemoryQueue" />
+
+### Zeroing and comparison call `CryptographicOperations`
+
+**The rule.** The `Dispose` of `SecureMemory<T>`, `SecureArrayLifetime<T>` and `SecureSpanLifetime<T>`,
+`ZeroMemory<T>` and `FixedTimeEquals<T>` zero and compare memory only through `CryptographicOperations`.
+
+**Reason.** No reason is recorded.
+
+**What it costs you.** The zeroing and timing guarantees are the ones Microsoft documents for those two methods.
+`FixedTimeEquals<T>` compares bytes, so values with more than one encoding (a `double`, a struct with padding) can
+compare unequal. The rule does not cover the fixed writers' `Reset()`: it clears with `Span<T>.Clear()`, which carries
+no such guarantee, and moving it to `CryptographicOperations` is decided by a change to the record.
+
+<Proof source="Adr1016" />
+
+### The pooled writers return `Sequence<T>`
+
+**The rule.** The pooled buffer writer is Nerdbank.Streams' `Sequence<T>`, and the package depends on Nerdbank.Streams.
+
+**Reason.** No reason is recorded.
+
+**What it costs you.** Nerdbank.Streams is part of the public API. Replacing it changes the public API, which package
+validation reports and which Semantic Versioning makes a major version. Every consumer takes the dependency.
+
+<Proof source="Adr1017" />
+
+### No locking, no encryption
+
+**The rule.** The library does not lock pages into RAM, hide memory from a debugger or a dump, or encrypt memory.
+
+**Reason.** Locking is an operating system call, and suspend saves locked pages too. Encrypting buffers would make the
+key one more secret in memory.
+
+**What it costs you.** A page file, swap or a hibernation file can hold a secret. A debugger or a dump reads memory
+while a secret is there. A secret that must not be readable in use belongs outside the process: see [What it protects,
+and what it does not](/start/limits/).
+
+<Proof source="Adr1018" /> <Proof source="Roadmap.NotPlanned" />
+
+<Related>
+- **Understand** [How the buffers work](/concepts/how-the-buffers-work/)
+- **Look up** [Guarantees and their tests](/evidence/guarantees/)
+</Related>
