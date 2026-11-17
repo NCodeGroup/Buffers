@@ -39,7 +39,7 @@
     },
     { "label": "Concepts", "items": ["concepts/how-secrets-leak", "concepts/ownership"] },
     { "label": "Evidence", "items": ["evidence/guarantees"] },
-    { "label": "Reference", "items": ["reference/pitfalls"] }
+    { "label": "Reference", "items": ["reference/pitfalls", "reference/buffer-behavior"] }
   ],
   "social": [
     { "label": "GitHub", "href": "https://github.com/NCodeGroup/Buffers" },

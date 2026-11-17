@@ -130,6 +130,8 @@ Nothing here is pinned or zeroed. Never put a secret in one of these.
 - A length counts elements, and the 4096 counts bytes: a pooled buffer of `int` holds 1024 of them.
   <Proof source="SecureMemoryPool.Rent" />
 
+Every buffer, side by side: [Buffer behavior, sizes and pooling](/reference/buffer-behavior/).
+
 ## Stack or rent
 
 - Stack memory is not collected and needs no pinning, so it leaves no copy at an earlier address.
