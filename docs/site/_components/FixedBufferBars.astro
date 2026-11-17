@@ -1,0 +1,191 @@
+---
+// The fixed-buffer bars: a 64-byte fixed buffer drawn three times, as a grid of 64 cells each, to show which cells
+// GetSpan returns and what Reset() does to the cells that were written. A drawing, not a trace: it shows the rules the
+// guide states, from no run of code.
+//
+// Without JavaScript and in print it renders completely: it has no script, and nothing moves. Every bar carries a text
+// legend, so nothing depends on colour: the cells differ by the letter in them, by an outline or a fill, and the legend
+// counts them in words.
+//
+// No props. Usage: <FixedBufferBars />
+interface Bar {
+  id: string;
+  title: string;
+  count: string;
+  /** The cell kinds from the first cell: how many written, zeroed, returned and free; the rest of the 64 are free. */
+  written: number;
+  zeroed: number;
+  returned: number;
+  legend: { kind: string; spoken: string; text: string }[];
+  note?: string;
+}
+
+const size = 64;
+
+const bars: Bar[] = [
+  {
+    id: 'empty',
+    title: '`GetSpan(4)` on an empty writer',
+    count: 'Count is 0',
+    written: 0,
+    zeroed: 0,
+    returned: 64,
+    legend: [{ kind: 'returned', spoken: 'returned', text: '64 cells are free, and `GetSpan` returns all 64.' }],
+    note: 'The hint of 4 does not limit the span.',
+  },
+  {
+    id: 'advanced',
+    title: 'After `Advance(20)`',
+    count: 'Count is 20',
+    written: 20,
+    zeroed: 0,
+    returned: 44,
+    legend: [
+      { kind: 'written', spoken: 'written', text: '20 cells are written.' },
+      { kind: 'returned', spoken: 'returned', text: '44 cells are free, and `GetSpan` returns all 44.' },
+    ],
+  },
+  {
+    id: 'reset',
+    title: 'After `Reset()`',
+    count: 'Count is back at 0',
+    written: 0,
+    zeroed: 20,
+    returned: 0,
+    legend: [
+      { kind: 'zero', spoken: 'zeros', text: '20 cells were written and are now zeros.' },
+      { kind: 'free', spoken: 'free', text: '44 cells were never written.' },
+    ],
+    note: '`Clear()` also sets the count to 0, and leaves the 20 cells as they were.',
+  },
+];
+
+const kinds: Record<string, { label: string }> = {
+  written: { label: 'W' },
+  zero: { label: '00' },
+  returned: { label: 'R' },
+  free: { label: '' },
+};
+
+/** The 64 cells of a bar, from the first: written, then zeroed, then returned, then free. */
+function cells(bar: Bar) {
+  return Array.from({ length: size }, (_, index) => {
+    const kind =
+      index < bar.written ? 'written' : index < bar.written + bar.zeroed ? 'zero' : index < bar.written + bar.zeroed + bar.returned ? 'returned' : 'free';
+    return { kind, text: kinds[kind].label };
+  });
+}
+
+/** A short title or note with `code` spans, as HTML. */
+function inline(text: string) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/`([^`]+)`/g, '<code>$1</code>');
+}
+
+const plain = (text: string) => text.replace(/`/g, '');
+---
+
+<figure class="bars not-content" aria-labelledby="fixed-buffer-bars-caption">
+  <div class="bars__row">
+    {bars.map((bar) => (
+      <section class="bar" aria-label={`${plain(bar.title)}: ${bar.count}`}>
+        <p class="bar__title" set:html={inline(bar.title)} />
+        <p class="bar__count">{bar.count}</p>
+        <div class="bar__cells" aria-hidden="true">
+          {cells(bar).map((cell) => (
+            <span class:list={['cell', `cell--${cell.kind}`]}>{cell.text}</span>
+          ))}
+        </div>
+        <ul class="bar__legend" aria-label="What the cells mean">
+          {bar.legend.map((item) => (
+            <li>
+              <span class:list={['cell', 'cell--key', `cell--${item.kind}`]} aria-hidden="true">{kinds[item.kind].label}</span>
+              <span><span class="bar__spoken">{item.spoken[0].toUpperCase() + item.spoken.slice(1)}:</span> <span set:html={inline(item.text)} /></span>
+            </li>
+          ))}
+        </ul>
+        {bar.note && <p class="bar__note" set:html={inline(bar.note)} />}
+      </section>
+    ))}
+  </div>
+  <figcaption class="bars__caption" id="fixed-buffer-bars-caption">
+    A 64-byte fixed buffer, three times. <span set:html={inline('`GetSpan` returns every free cell, whatever the hint.')} />
+    <span set:html={inline('`Reset()` zeros the cells written since the last `Clear()` and sets the count to 0.')} />
+  </figcaption>
+</figure>
+
+<style>
+  /* Nothing here moves, so there is no motion to switch off under prefers-reduced-motion. */
+  .bars {
+    margin: var(--space-6) 0;
+    padding: var(--space-5);
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-module);
+    background: var(--color-surface);
+    box-shadow: var(--elevation-flush);
+    color: var(--color-text);
+  }
+  .bars p,
+  .bars ul { margin: 0; }
+  .bars__row { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: var(--space-5); }
+  .bar { display: grid; align-content: start; gap: var(--space-3); }
+  .bar__title { font-size: var(--text-md); font-weight: var(--weight-semibold); }
+  .bar__title :global(code),
+  .bar__legend :global(code),
+  .bar__note :global(code),
+  .bars__caption :global(code) { font-family: var(--font-mono); font-stretch: var(--width-code); font-size: 0.92em; }
+  .bar__count {
+    font-size: var(--text-2xs);
+    font-stretch: var(--width-label);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .bar__cells {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 3px;
+    padding: var(--space-3);
+    border-radius: var(--radius-panel);
+    background: var(--color-screen);
+  }
+
+  .cell {
+    display: grid;
+    place-items: center;
+    height: 1.625rem;
+    border-radius: var(--radius-cell);
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    line-height: 1;
+    font-feature-settings: 'zero' 1;
+  }
+  .cell--key { flex: none; width: 1.625rem; height: 1.25rem; }
+  .cell--written {
+    background: color-mix(in srgb, var(--color-screen-hot) 16%, var(--color-screen-raised));
+    color: var(--color-screen-hot);
+  }
+  .cell--returned {
+    background: var(--color-screen-raised);
+    box-shadow: inset 0 0 0 1px var(--color-screen-lit);
+    color: var(--color-screen-lit);
+  }
+  .cell--zero {
+    box-shadow: inset 0 0 0 1px var(--color-screen-border);
+    color: var(--color-on-screen-muted);
+  }
+  .cell--free { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-screen-border) 60%, transparent); }
+
+  .bar__legend { display: grid; gap: var(--space-2); padding: 0; list-style: none; font-size: var(--text-sm); line-height: var(--leading-snug); }
+  .bar__legend li { display: flex; align-items: baseline; gap: var(--space-3); }
+  .bar__spoken { font-weight: var(--weight-semibold); }
+  .bar__note { font-size: var(--text-sm); line-height: var(--leading-snug); color: var(--color-text-secondary); }
+  .bars__caption {
+    margin-top: var(--space-5);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--color-text-secondary);
+  }
+</style>
