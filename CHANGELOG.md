@@ -7,9 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.1] - 2026-11-17
+
 ### Changed
 
 - Package validation compares each package with the published 5.1.0 package.
+
+### Fixed
+
+- A culture-aware `StringSegments.Split` or `SplitSegments` cuts out exactly the text the separator matched, whose length can differ from the separator's, such as the precomposed `é` matched by `e` and a combining acute accent: it no longer drops or keeps characters next to the match, or throws `ArgumentOutOfRangeException` when the match ends the value ([ADR-1019](docs/decisions/1019-a-string-separator-that-matches-no-text-leaves-the-value-whole.md)).
+
+### Security
+
+- A pooled sensitive buffer is zeroed and returned to the pool every time its owner is disposed. A buffer of 4096 bytes or less rented with `isSensitive: true`, through `BufferFactory.Rent`, `SecureMemoryPool<T>`, a sensitive `CreatePooledBufferWriter`, `GetSpanLease` or `ConsumeAsContiguousSpan`, was zeroed and returned only the first time: from its second rental on, `Dispose` left its contents in memory and dropped the buffer. Every rental gets an owner of its own, so a second `Dispose` of an earlier rental never touches a later one ([GHSA-7mw4-65fw-m3xr](https://github.com/NCodeGroup/Buffers/security/advisories/GHSA-7mw4-65fw-m3xr)).
+- `StringSegments.Split` and the `SplitSegments` extensions with a `ReadOnlySpan<char>` separator return one segment holding the whole value when the separator matches no text, such as an empty separator, as `string.Split(string)` does, instead of looping until the process runs out of memory ([GHSA-pmgm-gmr9-6v3g](https://github.com/NCodeGroup/Buffers/security/advisories/GHSA-pmgm-gmr9-6v3g), [ADR-1019](docs/decisions/1019-a-string-separator-that-matches-no-text-leaves-the-value-whole.md)).
 
 ## [5.1.0] - 2026-11-16
 
@@ -129,7 +140,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.1.0...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.1.1...HEAD
+[5.1.1]: https://github.com/NCodeGroup/Buffers/compare/v5.1.0...v5.1.1
 [5.1.0]: https://github.com/NCodeGroup/Buffers/compare/v5.0.3...v5.1.0
 [5.0.3]: https://github.com/NCodeGroup/Buffers/compare/v5.0.2...v5.0.3
 [5.0.2]: https://github.com/NCodeGroup/Buffers/compare/v5.0.1...v5.0.2
