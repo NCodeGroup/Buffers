@@ -519,7 +519,52 @@ public class SecureMemoryPoolTests
         lease2.Dispose();
     }
 
+    [Fact]
+    public void Dispose_AfterReuse_ZeroesMemoryAndReturnsIt()
+    {
+        using var pool = new SecureMemoryPool<byte>();
+
+        var first = pool.Rent(16);
+        first.Dispose();
+
+        var second = pool.Rent(16);
+        Assert.Same(GetArray(first), GetArray(second));
+
+        var memory = second.Memory;
+        memory.Span.Fill(0xAA);
+
+        second.Dispose();
+
+        Assert.Equal(-1, memory.Span.IndexOfAnyExcept((byte)0));
+        Assert.Single(pool.MemoryQueue);
+    }
+
+    [Fact]
+    public void Dispose_AfterReuseWhenPreviousRenterDisposesAgain_LeavesNextRenterUntouched()
+    {
+        using var pool = new SecureMemoryPool<byte>();
+
+        var first = pool.Rent(16);
+        first.Dispose();
+
+        using var second = pool.Rent(16);
+        second.Memory.Span.Fill(0xAA);
+
+        first.Dispose();
+
+        Assert.NotSame(first, second);
+        Assert.False(second.Memory.Span.ContainsAnyExcept((byte)0xAA));
+        Assert.Empty(pool.MemoryQueue);
+    }
+
     #endregion
+
+    internal static byte[] GetArray(IMemoryOwner<byte> owner)
+    {
+        Assert.True(MemoryMarshal.TryGetArray<byte>(owner.Memory, out var segment));
+        Assert.NotNull(segment.Array);
+        return segment.Array;
+    }
 
     [StructLayout(LayoutKind.Sequential, Size = 8192)]
     private struct LargeValue { }
