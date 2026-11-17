@@ -32,7 +32,8 @@
             "guides/byte-array-apis",
             "guides/secret-of-unknown-length",
             "guides/read-a-secret-without-a-string",
-            "guides/secrets-across-await"
+            "guides/secrets-across-await",
+            "guides/test-zeroing"
           ]
         },
         {

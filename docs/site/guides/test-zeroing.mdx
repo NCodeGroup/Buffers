@@ -1,0 +1,90 @@
+---
+title: Test that your code zeroes its secrets
+description: Write a unit test that fails when your code leaves a key or a password in memory after it is done with it.
+numbered: true
+---
+
+import KindLabel from '@site/components/KindLabel.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+
+<KindLabel kind="how-to" />
+
+This is your situation when your code holds a key, a password or a token in a buffer, and you want a test that fails
+when that buffer is not cleared. A buffer that NCode.Buffers owns is overwritten with zeros when it is disposed. The
+test hands the code a buffer it can read afterwards, runs the code, and checks that every byte is zero.
+
+You'll use `BufferFactory.CreatePinnedArray` · `GetSecureLifetime()` · `SecureMemoryPool<T>` · `ContainsAnyExcept`
+
+## Give the test a buffer it can see
+
+The code under test needs a place to put its secret that the test can look at afterwards. There are two ways to give
+it one:
+
+- The code takes the buffer as a parameter, such as a `Span<byte>` or a `MemoryPool<byte>`. The test passes its own,
+  and keeps a reference to it.
+- The code takes no parameter. Then the test cannot see inside it, and the way to test it is to change the code so
+  that it does take one.
+
+For a span, the test needs memory that outlives the call and that the garbage collector does not move.
+`BufferFactory.CreatePinnedArray` returns a lifetime over a pinned array, and the lifetime converts to the array
+itself, so the test keeps a reference to what the code wrote.
+
+## Fill it with a non-zero value first
+
+A new array is all zeros. A test that checks for zeros on a buffer that was never written passes whether or not the
+code cleared anything. Fill the buffer with a value that is not zero before the code runs, so that zeros afterwards
+mean the code cleared it.
+
+## Run the code, dispose, and assert all zeros
+
+The code under test puts its key under a lifetime, so the key is zeroed on the way out. The test calls it, then
+asserts that no byte is left that is not zero.
+
+```cs snippet=SiteTestZeroingThroughAPinnedArray title="KeyTests.cs"
+```
+
+The lifetime of the code under test overwrites the span with zeros when it is disposed, on every way out of the
+method. <Proof claim="R1" /> The test's own lifetime is disposed at the end of the test, and it zeroes the array
+again; the assertion has already run by then. <Proof sample="SiteTestZeroingThroughAPinnedArray" />
+
+## For a secret on the stack, read the span after the `using` block
+
+A `stackalloc` span lives in the method that made it, so the test can read it as long as it is still in scope. Put
+the lifetime and the work in a block of their own. The lifetime is disposed where the block ends, and the span is
+read after it.
+
+```cs snippet=SiteTestZeroingOnTheStack title="KeyTests.cs"
+```
+
+<Proof sample="SiteTestZeroingOnTheStack" />
+
+## For code that takes a `MemoryPool<T>`, pass a `SecureMemoryPool<T>` the test created
+
+Code that rents its buffer from a pool disposes the owner it gets, and the pool zeroes the buffer before it can be
+handed out again. <Proof claim="R2" /> The test passes a pool of its own, runs the code, and rents again from that
+pool. The pool hands the same buffer out again, and the test asserts that it holds only zeros.
+
+```cs snippet=SiteTestZeroingWithAPoolOfYourOwn title="ProcessTests.cs"
+```
+
+<Proof sample="SiteTestZeroingWithAPoolOfYourOwn" />
+
+:::caution[Never read a buffer from the shared pool after disposing it]
+Another caller may hold it. `SecureMemoryPool<T>.Shared` serves every caller in the process, so a buffer that your
+test returned to it can be in use by someone else a moment later. Create a pool in the test, as the sample does.
+:::
+
+## Check your work
+
+Delete the `using` from the code under test and run the test again. It fails, because nothing zeroes the buffer: the
+lifetime clears it when it is disposed, and a lifetime that is never disposed does nothing. No finalizer clears it
+later. <Proof claim="R1" /> <Proof sample="SiteNoFinalizer" />
+
+A test that passes both with and without the `using` does not test zeroing. Check that the buffer is filled before
+the code runs.
+
+<Related>
+- **Do** [Verify a MAC without leaking timing](/guides/verify-a-mac/)
+- **Look up** [Guarantees and their tests](/evidence/guarantees/)
+</Related>
