@@ -10,7 +10,7 @@
 #     key through nuget.org trusted publishing, and pushes them. A rerun skips the packages already pushed;
 #   - provenance calls release-provenance.yml, which attests the packages and attaches them, the provenance and an SBOM
 #     to the release, and baseline calls raise-baseline.yml, which opens the pull request that raises the package
-#     validation baseline (ADR-1008).
+#     validation baseline, for a stable version only (the template's ADR-0151).
 #
 # A release made with a workflow's GITHUB_TOKEN, as tag-release.yml makes it, starts no workflow, so tag-release.yml
 # starts this one through workflow_dispatch, on the tag and with the tag as input. To publish a release by hand:
@@ -152,7 +152,7 @@ jobs:
 
   # Attests the packages this run published and attaches them, the provenance and an SBOM to the release. It is a job
   # of this run, not a workflow_run of its own, because tag-release.yml starts this run with GITHUB_TOKEN, and such a
-  # run fires no workflow_run event (ADR-1008). Only this job holds the write permissions it needs.
+  # run fires no workflow_run event (the template's ADR-0151). Only this job holds the write permissions it needs.
   provenance:
     name: Attach release provenance
     needs: [pack, publish]
@@ -165,8 +165,9 @@ jobs:
     with:
       tag: v${{ needs.pack.outputs.version }}
 
-  # Opens the draft pull request that raises the package validation baseline to this version (ADR-1007), for a stable
-  # version only: a pre-release is never a baseline. A job of this run for the same reason as provenance (ADR-1008).
+  # Opens the draft pull request that raises the package validation baseline to this version (the template's ADR-0150),
+  # for a stable version only: a pre-release is never a baseline. A job of this run for the same reason as provenance
+  # (the template's ADR-0151).
   baseline:
     name: Raise the package validation baseline
     needs: [pack, publish]
