@@ -1385,9 +1385,11 @@
       "type": "StringExtensions",
       "member": "SplitSegments",
       "signatures": [
+        "extension(string value)",
         "public StringSegments SplitSegments(char separator)",
         "public StringSegments SplitSegments(ReadOnlySpan<char> separator)",
         "public StringSegments SplitSegments(ReadOnlySpan<char> separator, StringComparison comparisonType)",
+        "extension(ReadOnlyMemory<char> value)",
         "public StringSegments SplitSegments(char separator)",
         "public StringSegments SplitSegments(ReadOnlySpan<char> separator)",
         "public StringSegments SplitSegments(ReadOnlySpan<char> separator, StringComparison comparisonType)"
