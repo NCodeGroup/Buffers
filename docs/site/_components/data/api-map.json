@@ -1,0 +1,537 @@
+{
+  "$comment": "The API map on /reference/api-map/, drawn by `ApiMap.astro`. Every line of `PublicAPI.Shipped.txt` is in exactly one entry's `api`, which `build/Assert-ApiMap.ps1` checks. Text fields take `code` and [links](/x/).",
+  "groups": [
+    {
+      "id": "secure-memory",
+      "title": "Secure memory"
+    },
+    {
+      "id": "buffer-writers",
+      "title": "Buffer writers"
+    },
+    {
+      "id": "sequences",
+      "title": "Sequences"
+    },
+    {
+      "id": "string-splitting",
+      "title": "String splitting"
+    },
+    {
+      "id": "secure-encoding",
+      "title": "Secure encoding"
+    },
+    {
+      "id": "cryptographic-operations",
+      "title": "`CryptographicOperations` extensions"
+    }
+  ],
+  "entries": [
+    {
+      "id": "buffer-factory",
+      "group": "secure-memory",
+      "type": "BufferFactory",
+      "member": null,
+      "signatures": [
+        "public static class BufferFactory"
+      ],
+      "summary": "Rents buffers, creates pinned arrays and creates buffer writers, with the pinning and zeroing chosen by `isSensitive` where it applies.",
+      "constraint": null,
+      "throws": null,
+      "page": "/start/which-buffer/",
+      "source": "Api.BufferFactory",
+      "api": [
+        "NCode.Buffers.BufferFactory"
+      ]
+    },
+    {
+      "id": "buffer-factory-rent",
+      "group": "secure-memory",
+      "type": "BufferFactory",
+      "member": "Rent",
+      "signatures": [
+        "public static IMemoryOwner<T> Rent<T>(int minBufferSize, bool isSensitive, out Span<T> buffer)",
+        "public static IMemoryOwner<byte> Rent(int minBufferSize, bool isSensitive, out Span<byte> buffer)",
+        "public static IMemoryOwner<T> Rent<T>(int minBufferSize, bool isSensitive, out Memory<T> buffer)",
+        "public static IMemoryOwner<byte> Rent(int minBufferSize, bool isSensitive, out Memory<byte> buffer)"
+      ],
+      "summary": "Rents a buffer of at least `minBufferSize` elements from `SecureMemoryPool<T>` when `isSensitive` is true, and from `MemoryPool<T>.Shared` when it is false. Returns the owner and the buffer as a `Span<T>` or `Memory<T>` cut to the requested size.",
+      "constraint": "unmanaged",
+      "throws": "`ArgumentOutOfRangeException` when `minBufferSize` is negative.",
+      "page": "/start/which-buffer/",
+      "source": "Api.BufferFactory.Rent",
+      "api": [
+        "static NCode.Buffers.BufferFactory.Rent(int minBufferSize, bool isSensitive, out System.Memory<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!",
+        "static NCode.Buffers.BufferFactory.Rent(int minBufferSize, bool isSensitive, out System.Span<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!",
+        "static NCode.Buffers.BufferFactory.Rent<T>(int minBufferSize, bool isSensitive, out System.Memory<T> buffer) -> System.Buffers.IMemoryOwner<T>!",
+        "static NCode.Buffers.BufferFactory.Rent<T>(int minBufferSize, bool isSensitive, out System.Span<T> buffer) -> System.Buffers.IMemoryOwner<T>!"
+      ]
+    },
+    {
+      "id": "buffer-factory-create-pinned-array",
+      "group": "secure-memory",
+      "type": "BufferFactory",
+      "member": "CreatePinnedArray",
+      "signatures": [
+        "public static SecureArrayLifetime<T> CreatePinnedArray<T>(int length)",
+        "public static SecureArrayLifetime<byte> CreatePinnedArray(int length)"
+      ],
+      "summary": "Allocates a pinned array of `length` elements and returns the `SecureArrayLifetime<T>` that zeroes it on dispose.",
+      "constraint": "unmanaged",
+      "throws": "`ArgumentOutOfRangeException` when `length` is negative.",
+      "page": "/start/which-buffer/",
+      "source": "Api.BufferFactory.CreatePinnedArray",
+      "api": [
+        "static NCode.Buffers.BufferFactory.CreatePinnedArray(int length) -> NCode.Buffers.SecureArrayLifetime<byte>",
+        "static NCode.Buffers.BufferFactory.CreatePinnedArray<T>(int length) -> NCode.Buffers.SecureArrayLifetime<T>"
+      ]
+    },
+    {
+      "id": "buffer-factory-create-pooled-buffer-writer",
+      "group": "secure-memory",
+      "type": "BufferFactory",
+      "member": "CreatePooledBufferWriter",
+      "signatures": [
+        "public static Sequence<T> CreatePooledBufferWriter<T>(bool isSensitive, int minimumSpanLength = 0)",
+        "public static Sequence<byte> CreatePooledBufferWriter(bool isSensitive, int minimumSpanLength = 0)"
+      ],
+      "summary": "Creates a `Sequence<T>` that grows by renting segments from `SecureMemoryPool<T>` when `isSensitive` is true, and from `MemoryPool<T>.Shared` when it is false.",
+      "constraint": "unmanaged",
+      "throws": "`ArgumentOutOfRangeException` when `minimumSpanLength` is negative.",
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.BufferFactory.CreatePooledBufferWriter",
+      "api": [
+        "static NCode.Buffers.BufferFactory.CreatePooledBufferWriter(bool isSensitive, int minimumSpanLength = 0) -> Nerdbank.Streams.Sequence<byte>!",
+        "static NCode.Buffers.BufferFactory.CreatePooledBufferWriter<T>(bool isSensitive, int minimumSpanLength = 0) -> Nerdbank.Streams.Sequence<T>!"
+      ]
+    },
+    {
+      "id": "buffer-factory-create-array-buffer-writer",
+      "group": "secure-memory",
+      "type": "BufferFactory",
+      "member": "CreateArrayBufferWriter",
+      "signatures": [
+        "public static ArrayBufferWriter<T> CreateArrayBufferWriter<T>()",
+        "public static ArrayBufferWriter<T> CreateArrayBufferWriter<T>(int initialCapacity)",
+        "public static ArrayBufferWriter<byte> CreateArrayBufferWriter()",
+        "public static ArrayBufferWriter<byte> CreateArrayBufferWriter(int initialCapacity)"
+      ],
+      "summary": "Creates an `ArrayBufferWriter<T>` for data that is not sensitive: one contiguous array that grows as needed, with no pinning and no zeroing.",
+      "constraint": "struct",
+      "throws": "`ArgumentOutOfRangeException` when `initialCapacity` is not positive.",
+      "page": "/start/which-buffer/",
+      "source": "Api.BufferFactory.CreateArrayBufferWriter",
+      "api": [
+        "static NCode.Buffers.BufferFactory.CreateArrayBufferWriter() -> System.Buffers.ArrayBufferWriter<byte>!",
+        "static NCode.Buffers.BufferFactory.CreateArrayBufferWriter(int initialCapacity) -> System.Buffers.ArrayBufferWriter<byte>!",
+        "static NCode.Buffers.BufferFactory.CreateArrayBufferWriter<T>() -> System.Buffers.ArrayBufferWriter<T>!",
+        "static NCode.Buffers.BufferFactory.CreateArrayBufferWriter<T>(int initialCapacity) -> System.Buffers.ArrayBufferWriter<T>!"
+      ]
+    },
+    {
+      "id": "secure-memory-pool",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": null,
+      "signatures": [
+        "public class SecureMemoryPool<T> : MemoryPool<T> where T : unmanaged"
+      ],
+      "summary": "A pool of pinned buffers that are zeroed when returned and kept for reuse.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool",
+      "api": [
+        "NCode.Buffers.SecureMemoryPool<T>"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-default-high-pressure-threshold",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "DefaultHighPressureThreshold",
+      "signatures": [
+        "public const double DefaultHighPressureThreshold = 0.90;"
+      ],
+      "summary": "The default value of `HighPressureThreshold`: 0.9.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool.DefaultHighPressureThreshold",
+      "api": [
+        "const NCode.Buffers.SecureMemoryPool<T>.DefaultHighPressureThreshold = 0.9 -> double"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-page-size",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "PageSize",
+      "signatures": [
+        "public const int PageSize = 4096;"
+      ],
+      "summary": "The size of a pooled buffer in bytes: 4096.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool.PageSize",
+      "api": [
+        "const NCode.Buffers.SecureMemoryPool<T>.PageSize = 4096 -> int"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-shared",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "Shared",
+      "signatures": [
+        "public static new SecureMemoryPool<T> Shared { get; } = new();"
+      ],
+      "summary": "The shared instance of the pool. `BufferFactory` rents from it when `isSensitive` is true.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool.Shared",
+      "api": [
+        "static NCode.Buffers.SecureMemoryPool<T>.Shared.get -> NCode.Buffers.SecureMemoryPool<T>!"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-high-pressure-threshold",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "HighPressureThreshold",
+      "signatures": [
+        "public double HighPressureThreshold { get; set; } = DefaultHighPressureThreshold;"
+      ],
+      "summary": "The share of the system's high memory load above which the pool drops its cached buffers at the next generation 2 collection.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool.HighPressureThreshold",
+      "api": [
+        "NCode.Buffers.SecureMemoryPool<T>.HighPressureThreshold.get -> double",
+        "NCode.Buffers.SecureMemoryPool<T>.HighPressureThreshold.set -> void"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-max-buffer-size",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "MaxBufferSize",
+      "signatures": [
+        "public override int MaxBufferSize => Array.MaxLength;"
+      ],
+      "summary": "The largest buffer the pool rents: `Array.MaxLength` elements.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool.MaxBufferSize",
+      "api": [
+        "override NCode.Buffers.SecureMemoryPool<T>.MaxBufferSize.get -> int"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-constructor",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "constructor",
+      "signatures": [
+        "public SecureMemoryPool()"
+      ],
+      "summary": "Creates a pool and registers a callback that drops the cached buffers under memory pressure after a generation 2 collection.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool.Constructor",
+      "api": [
+        "NCode.Buffers.SecureMemoryPool<T>.SecureMemoryPool() -> void"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-dispose",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "Dispose",
+      "signatures": [
+        "protected override void Dispose(bool disposing)"
+      ],
+      "summary": "Drops the cached buffers. Buffers already rented stay valid and are not returned to the pool.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool.Dispose",
+      "api": [
+        "override NCode.Buffers.SecureMemoryPool<T>.Dispose(bool disposing) -> void"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-rent",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "Rent",
+      "signatures": [
+        "public override IMemoryOwner<T> Rent(int minBufferSize = -1)"
+      ],
+      "summary": "Rents a buffer: `EmptyMemory<T>.Singleton` for 0, a pooled page for a size up to `PageSize` bytes, and a non-pooled buffer, still zeroed on dispose, above that.",
+      "constraint": "unmanaged",
+      "throws": "`ObjectDisposedException` when the pool is disposed; `ArgumentOutOfRangeException` when `minBufferSize` is less than -1.",
+      "page": "/reference/buffer-behavior/",
+      "source": "Api.SecureMemoryPool.Rent",
+      "api": [
+        "override NCode.Buffers.SecureMemoryPool<T>.Rent(int minBufferSize = -1) -> System.Buffers.IMemoryOwner<T>!"
+      ]
+    },
+    {
+      "id": "secure-array-lifetime",
+      "group": "secure-memory",
+      "type": "SecureArrayLifetime<T>",
+      "member": null,
+      "signatures": [
+        "public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable where T : unmanaged"
+      ],
+      "summary": "A `ref struct` that owns a pinned array and zeroes it on dispose.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureArrayLifetime",
+      "api": [
+        "NCode.Buffers.SecureArrayLifetime<T>"
+      ]
+    },
+    {
+      "id": "secure-array-lifetime-constructor",
+      "group": "secure-memory",
+      "type": "SecureArrayLifetime<T>",
+      "member": "constructor",
+      "signatures": [
+        "public SecureArrayLifetime(int length)",
+        "public SecureArrayLifetime()"
+      ],
+      "summary": "Allocates a pinned array of `length` elements.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureArrayLifetime.Constructor",
+      "api": [
+        "NCode.Buffers.SecureArrayLifetime<T>.SecureArrayLifetime() -> void",
+        "NCode.Buffers.SecureArrayLifetime<T>.SecureArrayLifetime(int length) -> void"
+      ]
+    },
+    {
+      "id": "secure-array-lifetime-create",
+      "group": "secure-memory",
+      "type": "SecureArrayLifetime<T>",
+      "member": "Create",
+      "signatures": [
+        "public static SecureArrayLifetime<T> Create(int length) => new(length);"
+      ],
+      "summary": "Creates a lifetime that owns a pinned array of `length` elements.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureArrayLifetime.Create",
+      "api": [
+        "static NCode.Buffers.SecureArrayLifetime<T>.Create(int length) -> NCode.Buffers.SecureArrayLifetime<T>"
+      ]
+    },
+    {
+      "id": "secure-array-lifetime-pinned-array",
+      "group": "secure-memory",
+      "type": "SecureArrayLifetime<T>",
+      "member": "PinnedArray",
+      "signatures": [
+        "public T[] PinnedArray { get; } = GC.AllocateUninitializedArray<T>(length, pinned: true);"
+      ],
+      "summary": "The pinned array the lifetime owns.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureArrayLifetime.PinnedArray",
+      "api": [
+        "NCode.Buffers.SecureArrayLifetime<T>.PinnedArray.get -> T[]!"
+      ]
+    },
+    {
+      "id": "secure-array-lifetime-length",
+      "group": "secure-memory",
+      "type": "SecureArrayLifetime<T>",
+      "member": "Length",
+      "signatures": [
+        "public int Length => PinnedArray.Length;"
+      ],
+      "summary": "The length of the pinned array.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureArrayLifetime.Length",
+      "api": [
+        "NCode.Buffers.SecureArrayLifetime<T>.Length.get -> int"
+      ]
+    },
+    {
+      "id": "secure-array-lifetime-implicit-operator",
+      "group": "secure-memory",
+      "type": "SecureArrayLifetime<T>",
+      "member": "implicit operator",
+      "signatures": [
+        "public static implicit operator T[](SecureArrayLifetime<T> lifetime) => lifetime.PinnedArray;",
+        "public static implicit operator Span<T>(SecureArrayLifetime<T> lifetime) => lifetime.PinnedArray.AsSpan();"
+      ],
+      "summary": "Converts the lifetime to its array or to a `Span<T>` over it.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureArrayLifetime.ImplicitOperator",
+      "api": [
+        "static NCode.Buffers.SecureArrayLifetime<T>.implicit operator System.Span<T>(NCode.Buffers.SecureArrayLifetime<T> lifetime) -> System.Span<T>",
+        "static NCode.Buffers.SecureArrayLifetime<T>.implicit operator T[]!(NCode.Buffers.SecureArrayLifetime<T> lifetime) -> T[]!"
+      ]
+    },
+    {
+      "id": "secure-array-lifetime-dispose",
+      "group": "secure-memory",
+      "type": "SecureArrayLifetime<T>",
+      "member": "Dispose",
+      "signatures": [
+        "public void Dispose()"
+      ],
+      "summary": "Zeroes the array with `CryptographicOperations.ZeroMemory`. Calling it again zeroes it again.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureArrayLifetime.Dispose",
+      "api": [
+        "NCode.Buffers.SecureArrayLifetime<T>.Dispose() -> void"
+      ]
+    },
+    {
+      "id": "secure-span-lifetime",
+      "group": "secure-memory",
+      "type": "SecureSpanLifetime<T>",
+      "member": null,
+      "signatures": [
+        "public readonly ref struct SecureSpanLifetime<T>(Span<T> span) : IDisposable where T : unmanaged"
+      ],
+      "summary": "A `ref struct` that wraps an existing span and zeroes it on dispose.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureSpanLifetime",
+      "api": [
+        "NCode.Buffers.SecureSpanLifetime<T>"
+      ]
+    },
+    {
+      "id": "secure-span-lifetime-constructor",
+      "group": "secure-memory",
+      "type": "SecureSpanLifetime<T>",
+      "member": "constructor",
+      "signatures": [
+        "public SecureSpanLifetime(Span<T> span)",
+        "public SecureSpanLifetime()"
+      ],
+      "summary": "Wraps `span` so that `Dispose` zeroes it.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureSpanLifetime.Constructor",
+      "api": [
+        "NCode.Buffers.SecureSpanLifetime<T>.SecureSpanLifetime() -> void",
+        "NCode.Buffers.SecureSpanLifetime<T>.SecureSpanLifetime(System.Span<T> span) -> void"
+      ]
+    },
+    {
+      "id": "secure-span-lifetime-span",
+      "group": "secure-memory",
+      "type": "SecureSpanLifetime<T>",
+      "member": "Span",
+      "signatures": [
+        "public Span<T> Span { get; } = span;"
+      ],
+      "summary": "The span the lifetime wraps.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureSpanLifetime.Span",
+      "api": [
+        "NCode.Buffers.SecureSpanLifetime<T>.Span.get -> System.Span<T>"
+      ]
+    },
+    {
+      "id": "secure-span-lifetime-implicit-operator",
+      "group": "secure-memory",
+      "type": "SecureSpanLifetime<T>",
+      "member": "implicit operator",
+      "signatures": [
+        "public static implicit operator Span<T>(SecureSpanLifetime<T> lifetime) => lifetime.Span;"
+      ],
+      "summary": "Converts the lifetime to the `Span<T>` it wraps.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureSpanLifetime.ImplicitOperator",
+      "api": [
+        "static NCode.Buffers.SecureSpanLifetime<T>.implicit operator System.Span<T>(NCode.Buffers.SecureSpanLifetime<T> lifetime) -> System.Span<T>"
+      ]
+    },
+    {
+      "id": "secure-span-lifetime-dispose",
+      "group": "secure-memory",
+      "type": "SecureSpanLifetime<T>",
+      "member": "Dispose",
+      "signatures": [
+        "public void Dispose()"
+      ],
+      "summary": "Zeroes the span with `CryptographicOperations.ZeroMemory`.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureSpanLifetime.Dispose",
+      "api": [
+        "NCode.Buffers.SecureSpanLifetime<T>.Dispose() -> void"
+      ]
+    },
+    {
+      "id": "buffer-extensions",
+      "group": "secure-memory",
+      "type": "BufferExtensions",
+      "member": null,
+      "signatures": [
+        "public static class BufferExtensions",
+        "extension<T>(Span<T> span) where T : unmanaged",
+        "extension<T>(Span<T> span) where T : struct",
+        "extension<T>(Memory<T> memory)"
+      ],
+      "summary": "Extension members on `Span<T>` and `Memory<T>`: a lifetime that zeroes a span, and fixed-size buffer writers.",
+      "constraint": null,
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.BufferExtensions",
+      "api": [
+        "NCode.Buffers.BufferExtensions",
+        "NCode.Buffers.BufferExtensions.extension<T>(System.Memory<T>)",
+        "NCode.Buffers.BufferExtensions.extension<T>(System.Span<T>)"
+      ]
+    },
+    {
+      "id": "buffer-extensions-get-secure-lifetime",
+      "group": "secure-memory",
+      "type": "BufferExtensions",
+      "member": "GetSecureLifetime",
+      "signatures": [
+        "extension<T>(Span<T> span) where T : unmanaged",
+        "public SecureSpanLifetime<T> GetSecureLifetime()"
+      ],
+      "summary": "Wraps the span in a `SecureSpanLifetime<T>` that zeroes it on dispose.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.BufferExtensions.GetSecureLifetime",
+      "api": [
+        "NCode.Buffers.BufferExtensions.extension<T>(System.Span<T>).GetSecureLifetime() -> NCode.Buffers.SecureSpanLifetime<T>",
+        "static NCode.Buffers.BufferExtensions.GetSecureLifetime<T>(this System.Span<T> span) -> NCode.Buffers.SecureSpanLifetime<T>"
+      ]
+    }
+  ]
+}

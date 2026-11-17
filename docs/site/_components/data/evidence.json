@@ -1219,6 +1219,230 @@
       "branch": "main",
       "kind": "process",
       "label": "ci.yml"
+    },
+    "Api.BufferFactory": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        51,
+        51
+      ],
+      "match": "public static class BufferFactory"
+    },
+    "Api.BufferFactory.Rent": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        76,
+        76
+      ],
+      "match": "public static IMemoryOwner<T> Rent<T>(int minBufferSize, bool isSensitive, out Span<T> buffer)"
+    },
+    "Api.BufferFactory.CreatePinnedArray": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        200,
+        200
+      ],
+      "match": "public static SecureArrayLifetime<T> CreatePinnedArray<T>(int length)"
+    },
+    "Api.BufferFactory.CreatePooledBufferWriter": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        278,
+        278
+      ],
+      "match": "public static Sequence<T> CreatePooledBufferWriter<T>("
+    },
+    "Api.BufferFactory.CreateArrayBufferWriter": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        354,
+        354
+      ],
+      "match": "public static ArrayBufferWriter<T> CreateArrayBufferWriter<T>()"
+    },
+    "Api.SecureMemoryPool": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        44,
+        44
+      ],
+      "match": "public class SecureMemoryPool<T> : MemoryPool<T>"
+    },
+    "Api.SecureMemoryPool.DefaultHighPressureThreshold": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        51,
+        51
+      ],
+      "match": "public const double DefaultHighPressureThreshold = 0.90;"
+    },
+    "Api.SecureMemoryPool.PageSize": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        61,
+        61
+      ],
+      "match": "public const int PageSize = 4096;"
+    },
+    "Api.SecureMemoryPool.Shared": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        76,
+        76
+      ],
+      "match": "public static new SecureMemoryPool<T> Shared { get; } = new();"
+    },
+    "Api.SecureMemoryPool.HighPressureThreshold": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        104,
+        104
+      ],
+      "match": "public double HighPressureThreshold { get; set; } = DefaultHighPressureThreshold;"
+    },
+    "Api.SecureMemoryPool.MaxBufferSize": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        108,
+        108
+      ],
+      "match": "public override int MaxBufferSize => Array.MaxLength;"
+    },
+    "Api.SecureMemoryPool.Constructor": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        117,
+        117
+      ],
+      "match": "public SecureMemoryPool()"
+    },
+    "Api.SecureMemoryPool.Dispose": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        127,
+        127
+      ],
+      "match": "protected override void Dispose(bool disposing)"
+    },
+    "Api.SecureMemoryPool.Rent": {
+      "file": "src/NCode.Buffers/SecureMemoryPool.cs",
+      "lines": [
+        151,
+        151
+      ],
+      "match": "public override IMemoryOwner<T> Rent(int minBufferSize = -1)"
+    },
+    "Api.SecureArrayLifetime": {
+      "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
+      "lines": [
+        36,
+        36
+      ],
+      "match": "public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable"
+    },
+    "Api.SecureArrayLifetime.Constructor": {
+      "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
+      "lines": [
+        36,
+        36
+      ],
+      "match": "public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable"
+    },
+    "Api.SecureArrayLifetime.Create": {
+      "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
+      "lines": [
+        49,
+        49
+      ],
+      "match": "public static SecureArrayLifetime<T> Create(int length) => new(length);"
+    },
+    "Api.SecureArrayLifetime.PinnedArray": {
+      "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
+      "lines": [
+        62,
+        62
+      ],
+      "match": "public T[] PinnedArray { get; } = GC.AllocateUninitializedArray<T>(length, pinned: true);"
+    },
+    "Api.SecureArrayLifetime.Length": {
+      "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
+      "lines": [
+        70,
+        70
+      ],
+      "match": "public int Length => PinnedArray.Length;"
+    },
+    "Api.SecureArrayLifetime.ImplicitOperator": {
+      "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
+      "lines": [
+        81,
+        81
+      ],
+      "match": "public static implicit operator T[](SecureArrayLifetime<T> lifetime) => lifetime.PinnedArray;"
+    },
+    "Api.SecureArrayLifetime.Dispose": {
+      "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
+      "lines": [
+        108,
+        108
+      ],
+      "match": "public void Dispose()"
+    },
+    "Api.SecureSpanLifetime": {
+      "file": "src/NCode.Buffers/SecureSpanLifetime.cs",
+      "lines": [
+        35,
+        35
+      ],
+      "match": "public readonly ref struct SecureSpanLifetime<T>(Span<T> span) : IDisposable"
+    },
+    "Api.SecureSpanLifetime.Constructor": {
+      "file": "src/NCode.Buffers/SecureSpanLifetime.cs",
+      "lines": [
+        35,
+        35
+      ],
+      "match": "public readonly ref struct SecureSpanLifetime<T>(Span<T> span) : IDisposable"
+    },
+    "Api.SecureSpanLifetime.Span": {
+      "file": "src/NCode.Buffers/SecureSpanLifetime.cs",
+      "lines": [
+        48,
+        48
+      ],
+      "match": "public Span<T> Span { get; } = span;"
+    },
+    "Api.SecureSpanLifetime.ImplicitOperator": {
+      "file": "src/NCode.Buffers/SecureSpanLifetime.cs",
+      "lines": [
+        59,
+        59
+      ],
+      "match": "public static implicit operator Span<T>(SecureSpanLifetime<T> lifetime) => lifetime.Span;"
+    },
+    "Api.SecureSpanLifetime.Dispose": {
+      "file": "src/NCode.Buffers/SecureSpanLifetime.cs",
+      "lines": [
+        73,
+        73
+      ],
+      "match": "public void Dispose()"
+    },
+    "Api.BufferExtensions": {
+      "file": "src/NCode.Buffers/BufferExtensions.cs",
+      "lines": [
+        23,
+        23
+      ],
+      "match": "public static class BufferExtensions"
+    },
+    "Api.BufferExtensions.GetSecureLifetime": {
+      "file": "src/NCode.Buffers/BufferExtensions.cs",
+      "lines": [
+        61,
+        61
+      ],
+      "match": "public SecureSpanLifetime<T> GetSecureLifetime()"
     }
   },
   "external": {

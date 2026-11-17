@@ -103,6 +103,10 @@ try {
     }
     foreach ($leak in $leaks.leaks) { foreach ($ref in $leak.evidence) { Test-Ref "leak card $($leak.id)" $ref } }
     foreach ($outcome in $buffers.outcomes) { foreach ($t in $outcome.evidence) { Test-Ref "buffer $($outcome.id)" @{ test = $t } } }
+    if (Test-Path -LiteralPath "$data/api-map.json") {
+        $apiMap = Get-Content -Raw "$data/api-map.json" | ConvertFrom-Json -AsHashtable
+        foreach ($entry in $apiMap.entries) { Test-Ref "API map entry $($entry.id)" @{ source = $entry.source } }
+    }
 
     # Pins: each quoted text in a sample block's info string matches exactly one line of the sample.
     $regions = @{}
