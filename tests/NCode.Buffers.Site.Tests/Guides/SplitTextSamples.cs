@@ -15,7 +15,7 @@ public class SplitTextSamples
     public void SiteSplitTextUsualSample_Runs()
     {
         // begin-snippet: SiteSplitTextUsual
-        string header = "theme=dark;lang=en;id=42";
+        const string header = "theme=dark;lang=en;id=42";
 
         // Each Split allocates an array and a string per piece.
         string[] parts = header.Split(';');
@@ -129,7 +129,7 @@ public class SplitTextSamples
     public void SiteSplitTextSpanSplitSample_Runs()
     {
         // begin-snippet: SiteSplitTextSpanSplit
-        var line = "a,b,,c";
+        const string line = "a,b,,c";
         var nonEmpty = 0;
 
         // One synchronous pass over ranges of the line: no segment objects.
