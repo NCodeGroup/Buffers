@@ -37,7 +37,7 @@
         },
         {
           "label": "Text and buffers",
-          "items": ["guides/strict-decoding", "guides/fixed-size-buffer"]
+          "items": ["guides/strict-decoding", "guides/fixed-size-buffer", "guides/split-text"]
         }
       ]
     },
