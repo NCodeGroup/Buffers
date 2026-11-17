@@ -6,12 +6,13 @@
 
 ## Context
 
-The cache of `SecureMemoryPool<T>` is a `ConcurrentQueue<SecureMemory<T>>` (`SecureMemoryPool.cs` line 91) with no count
-or byte limit. A buffer enters it when a pooled owner is disposed, after `Dispose` zeroed it, unless the pool is disposed
-(`Return`, lines 181–187).
+The cache of `SecureMemoryPool<T>` is a `ConcurrentQueue<T[]>` of zeroed pinned arrays (`SecureMemoryPool.cs` line 92)
+with no count or byte limit. The first `Dispose` of a pooled owner zeroes its memory and passes the owner's pinned array
+to the pool, which enqueues it unless the pool is disposed (`Return`, lines 186–192). A later `Dispose` of the same
+owner does nothing. `Rent` wraps a dequeued array in an owner of its own.
 
-The constructor registers `Gen2GcCallback` (line 119), a file copied as-is from dotnet/runtime (`Gen2GcCallback.cs`
-lines 10–12). On roughly every Gen2 collection it calls `TrimMemory` (lines 198–212). `TrimMemory` empties the whole
+The constructor registers `Gen2GcCallback` (line 120), a file copied as-is from dotnet/runtime (`Gen2GcCallback.cs`
+lines 10–12). On roughly every Gen2 collection it calls `TrimMemory` (lines 203–217). `TrimMemory` empties the whole
 cache when `GC.GetGCMemoryInfo().MemoryLoadBytes` is at least `HighMemoryLoadThresholdBytes * HighPressureThreshold`.
 `HighPressureThreshold` defaults to 0.90, and each pool can set it.
 

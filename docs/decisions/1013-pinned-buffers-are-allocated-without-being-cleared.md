@@ -7,7 +7,7 @@
 ## Context
 
 `SecureMemory<T>` and `SecureArrayLifetime<T>` allocate with `GC.AllocateUninitializedArray<T>(length, pinned: true)`
-(`SecureMemory.cs` lines 24–25, `SecureArrayLifetime.cs` line 62). Microsoft's documentation of that method says "The
+(`SecureMemory.cs` line 22, `SecureArrayLifetime.cs` line 62). Microsoft's documentation of that method says "The
 uninitialized array can contain invalid valuetype instances or sensitive information created by other parts of the
 application." ([GC.AllocateUninitializedArray](https://learn.microsoft.com/dotnet/api/system.gc.allocateuninitializedarray),
 read 2026-11-16).

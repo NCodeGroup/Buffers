@@ -6,7 +6,7 @@
 
 ## Context
 
-The `Dispose` of `SecureMemory<T>` (`SecureMemory.cs` line 34), `SecureArrayLifetime<T>` (`SecureArrayLifetime.cs`
+The `Dispose` of `SecureMemory<T>` (`SecureMemory.cs` line 42), `SecureArrayLifetime<T>` (`SecureArrayLifetime.cs`
 line 110) and `SecureSpanLifetime<T>` (`SecureSpanLifetime.cs` line 75) calls `CryptographicOperations.ZeroMemory`.
 `CryptographicOperationsExtensions.ZeroMemory<T>` and `FixedTimeEquals<T>` view their spans as bytes with
 `MemoryMarshal.AsBytes` and call `CryptographicOperations.ZeroMemory` and `CryptographicOperations.FixedTimeEquals`.
