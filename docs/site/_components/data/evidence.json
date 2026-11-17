@@ -1168,6 +1168,57 @@
       "branch": "main",
       "kind": "process",
       "label": "GOVERNANCE.md"
+    },
+    "TagReleaseWorkflow": {
+      "file": ".github/workflows/tag-release.yml",
+      "branch": "main",
+      "kind": "process",
+      "label": "tag-release.yml"
+    },
+    "RaiseBaselineWorkflow": {
+      "file": ".github/workflows/raise-baseline.yml",
+      "branch": "main",
+      "kind": "process",
+      "label": "raise-baseline.yml"
+    },
+    "ScorecardWorkflow": {
+      "file": ".github/workflows/scorecard.yml",
+      "branch": "main",
+      "kind": "process",
+      "label": "scorecard.yml"
+    },
+    "Security.VerifyARelease": {
+      "file": "SECURITY.md",
+      "branch": "main",
+      "anchor": "verify-a-release",
+      "kind": "process",
+      "label": "SECURITY.md: Verify a Release"
+    },
+    "Security.SupportedVersions": {
+      "file": "SECURITY.md",
+      "branch": "main",
+      "anchor": "supported-versions",
+      "kind": "process",
+      "label": "SECURITY.md: Supported Versions"
+    },
+    "Architecture.BuildAndRelease": {
+      "file": "docs/architecture.md",
+      "branch": "main",
+      "anchor": "build-and-release",
+      "kind": "documented",
+      "label": "docs/architecture.md: Build and Release"
+    },
+    "PackageValidationBaseline": {
+      "file": "src/NCode.Buffers/NCode.Buffers.csproj",
+      "branch": "main",
+      "kind": "process",
+      "label": "NCode.Buffers.csproj"
+    },
+    "CiWorkflow": {
+      "file": ".github/workflows/ci.yml",
+      "branch": "main",
+      "kind": "process",
+      "label": "ci.yml"
     }
   },
   "external": {

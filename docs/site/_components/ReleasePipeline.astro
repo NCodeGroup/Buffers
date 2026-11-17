@@ -1,0 +1,135 @@
+---
+// The release process of /evidence/package/: five stages from a pull request to the pull request that raises the
+// package validation baseline, each with the workflow file that does it. The stages follow the workflows in
+// .github/workflows/: ci.yml, tag-release.yml, publish.yml (which calls release-provenance.yml and raise-baseline.yml).
+// A static drawing: no script, the same in print.
+// Usage: <ReleasePipeline />, after the table of checks it supports.
+import KindMark from '@site/components/KindMark.astro';
+
+const stages = [
+  {
+    title: 'A pull request',
+    files: ['ci.yml'],
+    note: 'Runs the gate and the coverage check.',
+  },
+  {
+    title: 'Merge',
+    files: ['tag-release.yml', 'ci.yml'],
+    note: 'Runs ci.yml again on the merged commit, then tags it, signed with gitsign, and publishes the GitHub release.',
+  },
+  {
+    title: 'Publish',
+    files: ['publish.yml'],
+    note: 'Tests and packs the tagged commit, and pushes to nuget.org through trusted publishing after a maintainer approves.',
+  },
+  {
+    title: 'Provenance and SBOM',
+    files: ['release-provenance.yml'],
+    note: 'Attaches the provenance and an SBOM to the release.',
+  },
+  {
+    title: 'Baseline',
+    files: ['raise-baseline.yml'],
+    note: 'Opens the pull request that raises the package validation baseline.',
+  },
+];
+---
+
+<figure class="pipeline not-content" aria-labelledby="release-pipeline-title">
+  <p class="pipeline__title" id="release-pipeline-title">From a pull request to a published package</p>
+  <ol class="pipeline__stages">
+    {stages.map((stage) => (
+      <li class="stage">
+        <span class="stage__title">{stage.title}</span>
+        <span class="stage__files">
+          {stage.files.map((file) => <code>{file}</code>)}
+        </span>
+        <span class="stage__note">{stage.note}</span>
+      </li>
+    ))}
+  </ol>
+  <figcaption class="pipeline__note">
+    <KindMark kind="illustration" />
+    <span>A drawing of the release process</span>
+  </figcaption>
+</figure>
+
+<style>
+  .pipeline {
+    display: grid;
+    gap: var(--space-4);
+    margin-block: var(--space-6);
+    padding: var(--space-5);
+    border: var(--border-hair) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    box-shadow: var(--elevation-flush);
+    color: var(--color-text);
+  }
+  .pipeline p { margin: 0; }
+  .pipeline__title {
+    font-size: var(--text-lg);
+    font-stretch: var(--width-display);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-snug);
+  }
+  .pipeline__stages { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; counter-reset: stage; }
+  .stage {
+    position: relative;
+    display: grid;
+    gap: var(--space-1);
+    margin: 0;
+    padding: var(--space-3) var(--space-3) var(--space-3) var(--space-7);
+    counter-increment: stage;
+  }
+  .stage::before {
+    content: counter(stage);
+    position: absolute;
+    inset-block-start: var(--space-3);
+    inset-inline-start: 0;
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--radius-plate);
+    background: var(--color-screen);
+    box-shadow: inset 0 0 0 1px var(--color-screen-border);
+    color: var(--color-on-screen);
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+  }
+  .stage:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    inset-block: calc(var(--space-3) + 1.5rem) 0;
+    inset-inline-start: 0.7rem;
+    width: 0.1rem;
+    background: var(--color-border-strong);
+  }
+  .stage__title { font-size: var(--text-md); font-weight: var(--weight-semibold); }
+  .stage__files { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .stage__files code {
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-plate);
+    background: var(--color-surface-sunken);
+    box-shadow: inset 0 0 0 1px var(--color-border-strong);
+    font-family: var(--font-mono);
+    font-stretch: var(--width-code);
+    font-size: var(--text-sm);
+  }
+  .stage__note { color: var(--color-text-secondary); font-size: var(--text-sm); line-height: var(--leading-normal); }
+  .pipeline__note {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+  }
+
+  @media (max-width: 48rem) {
+    .pipeline { padding: var(--space-4); }
+  }
+</style>
