@@ -1,6 +1,7 @@
 // Copyright © NCode Group
 // SPDX-License-Identifier: Apache-2.0
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using JetBrains.Annotations;
@@ -25,6 +26,48 @@ namespace NCode.Buffers;
 [PublicAPI]
 public static class CryptographicOperationsExtensions
 {
+    /// <summary>
+    /// Zeroes the span with <see cref="CryptographicOperations.ZeroMemory(Span{byte})"/>, or, for a
+    /// <typeparamref name="T"/> that is or contains a reference, sets it to default with <see cref="Span{T}.Clear"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the span elements.</typeparam>
+    /// <param name="buffer">The span to zero.</param>
+    internal static void ZeroMemoryOrClear<T>(Span<T> buffer)
+    {
+        var maxElementsPerChunk = int.MaxValue / Unsafe.SizeOf<T>();
+        ZeroMemoryOrClear(buffer, maxElementsPerChunk);
+    }
+
+    /// <summary>
+    /// Zeroes the span as <see cref="ZeroMemoryOrClear{T}(Span{T})"/> does, at most
+    /// <paramref name="maxElementsPerChunk"/> elements per call to
+    /// <see cref="CryptographicOperations.ZeroMemory(Span{byte})"/>, so no call covers more than
+    /// <see cref="int.MaxValue"/> bytes.
+    /// </summary>
+    /// <typeparam name="T">The type of the span elements.</typeparam>
+    /// <param name="buffer">The span to zero.</param>
+    /// <param name="maxElementsPerChunk">The most elements one call zeroes; at least 1.</param>
+    internal static void ZeroMemoryOrClear<T>(Span<T> buffer, int maxElementsPerChunk)
+    {
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+        {
+            buffer.Clear();
+            return;
+        }
+
+        var elementSize = Unsafe.SizeOf<T>();
+        var remaining = buffer;
+        while (!remaining.IsEmpty)
+        {
+            var count = Math.Min(remaining.Length, maxElementsPerChunk);
+            ref var first = ref MemoryMarshal.GetReference(remaining);
+            ref var firstByte = ref Unsafe.As<T, byte>(ref first);
+            var bytes = MemoryMarshal.CreateSpan(ref firstByte, count * elementSize);
+            CryptographicOperations.ZeroMemory(bytes);
+            remaining = remaining[count..];
+        }
+    }
+
     extension(CryptographicOperations)
     {
         /// <summary>

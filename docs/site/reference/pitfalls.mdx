@@ -325,8 +325,9 @@ wrote. <Proof sample="SitePitfallAdvanceBySpanLength" />
 ```cs snippet=SitePitfallResetAfterClear
 ```
 
-**What happens** `Clear()` sets the position to 0 and touches nothing. `Reset()` sets the elements written since the
-last `Clear()` to their default with `Span<T>.Clear()`, and nothing past them. After `Clear()`, that is nothing.
+**What happens** `Clear()` sets the position to 0 and touches nothing. `Reset()` zeroes the elements written since the
+last `Clear()` with `CryptographicOperations.ZeroMemory`, or sets them to their default with `Span<T>.Clear()` when the
+element type holds references, and nothing past them. After `Clear()`, that is nothing.
 <Proof sample="SitePitfallResetAfterClear" /> <Proof source="FixedSpanBufferWriter.Reset" />
 
 **Write instead** To remove a secret, zero the memory you gave the writer: put that memory under a lifetime, or call

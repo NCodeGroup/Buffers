@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.2] - 2026-11-17
+
+### Fixed
+
+- `FixedSpanBufferWriter<T>.Reset()` and `FixedMemoryBufferWriter<T>.Reset()` zero the written part with `CryptographicOperations.ZeroMemory`, which the runtime does not optimize away, instead of `Span<T>.Clear()`; an element type that is or contains a reference is still set to its default with `Span<T>.Clear()` ([#74](https://github.com/NCodeGroup/Buffers/issues/74)).
+
 ## [5.1.1] - 2026-11-17
 
 ### Changed
@@ -140,7 +146,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.1.1...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.1.2...HEAD
+[5.1.2]: https://github.com/NCodeGroup/Buffers/compare/v5.1.1...v5.1.2
 [5.1.1]: https://github.com/NCodeGroup/Buffers/compare/v5.1.0...v5.1.1
 [5.1.0]: https://github.com/NCodeGroup/Buffers/compare/v5.0.3...v5.1.0
 [5.0.3]: https://github.com/NCodeGroup/Buffers/compare/v5.0.2...v5.0.3
