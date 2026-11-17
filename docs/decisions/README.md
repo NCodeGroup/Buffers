@@ -73,3 +73,4 @@ override in `AGENTS.md`.
 | [ADR-1008](1008-release-follow-ups-are-jobs-publish-calls.md) | Release follow-ups are jobs that publish.yml calls | Superseded by 0151 |
 | [ADR-1009](1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md) | The documentation site is narrative guides, built by a shared toolchain outside this repository | Accepted |
 | [ADR-1010](1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md) | Site samples are compiled tests in a project of their own, included by key when the site is built (amends 1005) | Accepted |
+| [ADR-1011](1011-buffers-have-no-finalizer-and-are-zeroed-only-by-dispose.md) | Buffers have no finalizer and are zeroed only by Dispose | Accepted |
