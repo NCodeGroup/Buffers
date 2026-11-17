@@ -42,7 +42,7 @@
         { "label": "Your build", "items": ["guides/ban-leaky-apis"] }
       ]
     },
-    { "label": "Concepts", "items": ["concepts/how-secrets-leak", "concepts/ownership"] },
+    { "label": "Concepts", "items": ["concepts/how-secrets-leak", "concepts/ownership", "concepts/how-the-buffers-work"] },
     { "label": "Evidence", "items": ["evidence/guarantees"] },
     { "label": "Reference", "items": ["reference/pitfalls", "reference/buffer-behavior"] }
   ],
