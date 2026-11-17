@@ -40,12 +40,12 @@ public static class CryptographicOperationsExtensions
             return;
         }
 
-        CryptographicOperations.ZeroMemory(
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<T, byte>(ref MemoryMarshal.GetReference(buffer)),
-                checked(buffer.Length * Unsafe.SizeOf<T>())
-            )
-        );
+        ref var first = ref MemoryMarshal.GetReference(buffer);
+        ref var firstByte = ref Unsafe.As<T, byte>(ref first);
+        var elementSize = Unsafe.SizeOf<T>();
+        var byteCount = checked(buffer.Length * elementSize);
+        var bytes = MemoryMarshal.CreateSpan(ref firstByte, byteCount);
+        CryptographicOperations.ZeroMemory(bytes);
     }
 
     extension(CryptographicOperations)
