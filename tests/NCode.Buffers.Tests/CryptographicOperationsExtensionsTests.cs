@@ -52,6 +52,32 @@ public class CryptographicOperationsExtensionsTests
 
     #endregion
 
+    #region ZeroMemoryOrClear Tests
+
+    [Fact]
+    public void ZeroMemoryOrClear_WithSeveralChunks_ZeroesEveryElement()
+    {
+        long[] buffer = [-1, -1, -1, -1, -1, -1];
+        var firstFive = buffer.AsSpan(0, 5);
+
+        CryptographicOperationsExtensions.ZeroMemoryOrClear(firstFive, maxElementsPerChunk: 2);
+
+        Assert.Equal<long>([0, 0, 0, 0, 0, -1], buffer);
+    }
+
+    [Fact]
+    public void ZeroMemoryOrClear_WithEmptySpan_DoesNothing()
+    {
+        long[] buffer = [-1];
+        var empty = buffer.AsSpan(0, 0);
+
+        CryptographicOperationsExtensions.ZeroMemoryOrClear(empty, maxElementsPerChunk: 2);
+
+        Assert.Equal<long>([-1], buffer);
+    }
+
+    #endregion
+
     #region FixedTimeEquals Tests
 
     [Fact]
