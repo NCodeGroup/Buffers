@@ -543,6 +543,15 @@
     },
     "SiteTestZeroingWithAPoolOfYourOwn": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/TestZeroingSamples.cs"
+    },
+    "SitePipelinesUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/PipesAndStreamsSamples.cs"
+    },
+    "SitePipelinesSecurePool": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/PipesAndStreamsSamples.cs"
+    },
+    "SitePipelinesStreamReader": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/PipesAndStreamsSamples.cs"
     }
   },
   "sources": {
