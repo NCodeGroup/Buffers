@@ -532,6 +532,421 @@
         "NCode.Buffers.BufferExtensions.extension<T>(System.Span<T>).GetSecureLifetime() -> NCode.Buffers.SecureSpanLifetime<T>",
         "static NCode.Buffers.BufferExtensions.GetSecureLifetime<T>(this System.Span<T> span) -> NCode.Buffers.SecureSpanLifetime<T>"
       ]
+    },
+    {
+      "id": "fixed-span-buffer-writer",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": null,
+      "signatures": [
+        "public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>"
+      ],
+      "summary": "A buffer writer over a fixed `Span<T>`. It is a `ref struct`, so it stays on the stack, and it cannot grow.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-constructor",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "constructor",
+      "signatures": [
+        "public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>"
+      ],
+      "summary": "Wraps `buffer` as the fixed buffer to write to. The writer starts empty.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.Constructor",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.FixedSpanBufferWriter() -> void",
+        "NCode.Buffers.FixedSpanBufferWriter<T>.FixedSpanBufferWriter(System.Span<T> buffer) -> void"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-capacity",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "Capacity",
+      "signatures": [
+        "public readonly int Capacity => Buffer.Length;"
+      ],
+      "summary": "The length of the fixed buffer.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.Capacity",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.Capacity.get -> int"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-written-count",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "WrittenCount",
+      "signatures": [
+        "public int WrittenCount { get; private set; }"
+      ],
+      "summary": "The number of elements written so far.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.WrittenCount",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.WrittenCount.get -> int"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-free-capacity",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "FreeCapacity",
+      "signatures": [
+        "public readonly int FreeCapacity => Buffer.Length - WrittenCount;"
+      ],
+      "summary": "The number of elements that still fit in the buffer.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.FreeCapacity",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.FreeCapacity.get -> int"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-written-span",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "WrittenSpan",
+      "signatures": [
+        "public readonly ReadOnlySpan<T> WrittenSpan { get; }"
+      ],
+      "summary": "The written part of the buffer, as a `ReadOnlySpan<T>`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.WrittenSpan",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.WrittenSpan.get -> System.ReadOnlySpan<T>"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-clear",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "Clear",
+      "signatures": [
+        "public void Clear()"
+      ],
+      "summary": "Sets `WrittenCount` to zero. It does not clear the buffer; use `Reset` for that.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.Clear",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.Clear() -> void"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-reset",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "Reset",
+      "signatures": [
+        "public void Reset()"
+      ],
+      "summary": "Zeroes the written elements, then sets `WrittenCount` to zero.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.Reset",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.Reset() -> void"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-advance",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "Advance",
+      "signatures": [
+        "public void Advance(int count)"
+      ],
+      "summary": "Moves the write position forward by `count` elements, which the caller has written to the span or memory it got from the writer.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `count` is negative. `InvalidOperationException` when the advance would pass the end of the buffer.",
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.Advance",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.Advance(int count) -> void"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-get-span",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "GetSpan",
+      "signatures": [
+        "public Span<T> GetSpan(int sizeHint = 0)"
+      ],
+      "summary": "Returns all the free space as a `Span<T>`, which is never shorter than `sizeHint`. Call `Advance` after writing to it.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `sizeHint` is negative. `InvalidOperationException` when `sizeHint` is more than the free capacity.",
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.GetSpan",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.GetSpan(int sizeHint = 0) -> System.Span<T>"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-get-memory",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "GetMemory",
+      "signatures": [
+        "public Memory<T> GetMemory(int sizeHint = 0)"
+      ],
+      "summary": "Is not supported: a `Span<T>` cannot give a `Memory<T>`. Use `GetSpan`.",
+      "constraint": null,
+      "throws": "`NotSupportedException`, always.",
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.GetMemory",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.GetMemory(int sizeHint = 0) -> System.Memory<T>"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": null,
+      "signatures": [
+        "public class FixedMemoryBufferWriter<T> : IBufferWriter<T>"
+      ],
+      "summary": "A buffer writer over a fixed `Memory<T>`. It is a class, so it can sit in a field or cross an `await`, and it cannot grow.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-constructor",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "constructor",
+      "signatures": [
+        "public FixedMemoryBufferWriter(Memory<T> buffer)"
+      ],
+      "summary": "Wraps `buffer` as the fixed buffer to write to. The writer starts empty.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.Constructor",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.FixedMemoryBufferWriter(System.Memory<T> buffer) -> void"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-capacity",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "Capacity",
+      "signatures": [
+        "public int Capacity => Buffer.Length;"
+      ],
+      "summary": "The length of the fixed buffer.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.Capacity",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.Capacity.get -> int"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-written-count",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "WrittenCount",
+      "signatures": [
+        "public int WrittenCount { get; private set; }"
+      ],
+      "summary": "The number of elements written so far.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.WrittenCount",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.WrittenCount.get -> int"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-free-capacity",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "FreeCapacity",
+      "signatures": [
+        "public int FreeCapacity => Buffer.Length - WrittenCount;"
+      ],
+      "summary": "The number of elements that still fit in the buffer.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.FreeCapacity",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.FreeCapacity.get -> int"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-written-memory",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "WrittenMemory",
+      "signatures": [
+        "public ReadOnlyMemory<T> WrittenMemory { get; }"
+      ],
+      "summary": "The written part of the buffer, as a `ReadOnlyMemory<T>`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.WrittenMemory",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.WrittenMemory.get -> System.ReadOnlyMemory<T>"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-written-span",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "WrittenSpan",
+      "signatures": [
+        "public ReadOnlySpan<T> WrittenSpan { get; }"
+      ],
+      "summary": "The written part of the buffer, as a `ReadOnlySpan<T>`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.WrittenSpan",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.WrittenSpan.get -> System.ReadOnlySpan<T>"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-clear",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "Clear",
+      "signatures": [
+        "public void Clear()"
+      ],
+      "summary": "Sets `WrittenCount` to zero. It does not clear the buffer; use `Reset` for that.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.Clear",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.Clear() -> void"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-reset",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "Reset",
+      "signatures": [
+        "public void Reset()"
+      ],
+      "summary": "Zeroes the written elements, then sets `WrittenCount` to zero.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.Reset",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.Reset() -> void"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-advance",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "Advance",
+      "signatures": [
+        "public void Advance(int count)"
+      ],
+      "summary": "Moves the write position forward by `count` elements, which the caller has written to the span or memory it got from the writer.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `count` is negative. `InvalidOperationException` when the advance would pass the end of the buffer.",
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.Advance",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.Advance(int count) -> void"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-get-memory",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "GetMemory",
+      "signatures": [
+        "public Memory<T> GetMemory(int sizeHint = 0)"
+      ],
+      "summary": "Returns all the free space as a `Memory<T>`, which is never shorter than `sizeHint`. Call `Advance` after writing to it.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `sizeHint` is negative. `InvalidOperationException` when `sizeHint` is more than the free capacity.",
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.GetMemory",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.GetMemory(int sizeHint = 0) -> System.Memory<T>"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-get-span",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "GetSpan",
+      "signatures": [
+        "public Span<T> GetSpan(int sizeHint = 0)"
+      ],
+      "summary": "Returns all the free space as a `Span<T>`, which is never shorter than `sizeHint`. Call `Advance` after writing to it.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `sizeHint` is negative. `InvalidOperationException` when `sizeHint` is more than the free capacity.",
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.GetSpan",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.GetSpan(int sizeHint = 0) -> System.Span<T>"
+      ]
+    },
+    {
+      "id": "buffer-extensions-get-fixed-buffer-writer",
+      "group": "buffer-writers",
+      "type": "BufferExtensions",
+      "member": "GetFixedBufferWriter",
+      "signatures": [
+        "extension<T>(Span<T> span) where T : struct",
+        "public FixedSpanBufferWriter<T> GetFixedBufferWriter()",
+        "extension<T>(Memory<T> memory)",
+        "public FixedMemoryBufferWriter<T> GetFixedBufferWriter()"
+      ],
+      "summary": "Creates a fixed-size buffer writer over the span or the memory: a `FixedSpanBufferWriter<T>` for a `Span<T>`, a `FixedMemoryBufferWriter<T>` for a `Memory<T>`.",
+      "constraint": "struct",
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.BufferExtensions.GetFixedBufferWriter",
+      "api": [
+        "NCode.Buffers.BufferExtensions.extension<T>(System.Memory<T>).GetFixedBufferWriter() -> NCode.Buffers.FixedMemoryBufferWriter<T>!",
+        "NCode.Buffers.BufferExtensions.extension<T>(System.Span<T>).GetFixedBufferWriter() -> NCode.Buffers.FixedSpanBufferWriter<T>",
+        "static NCode.Buffers.BufferExtensions.GetFixedBufferWriter<T>(this System.Memory<T> memory) -> NCode.Buffers.FixedMemoryBufferWriter<T>!",
+        "static NCode.Buffers.BufferExtensions.GetFixedBufferWriter<T>(this System.Span<T> span) -> NCode.Buffers.FixedSpanBufferWriter<T>"
+      ]
     }
   ]
 }

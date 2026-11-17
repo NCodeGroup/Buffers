@@ -1443,6 +1443,198 @@
         61
       ],
       "match": "public SecureSpanLifetime<T> GetSecureLifetime()"
+    },
+    "Api.FixedSpanBufferWriter": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        46,
+        46
+      ],
+      "match": "public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>"
+    },
+    "Api.FixedSpanBufferWriter.Constructor": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        46,
+        46
+      ],
+      "match": "public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>"
+    },
+    "Api.FixedSpanBufferWriter.Capacity": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        57,
+        57
+      ],
+      "match": "public readonly int Capacity => Buffer.Length;"
+    },
+    "Api.FixedSpanBufferWriter.WrittenCount": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        63,
+        63
+      ],
+      "match": "public int WrittenCount { get; private set; }"
+    },
+    "Api.FixedSpanBufferWriter.FreeCapacity": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        69,
+        69
+      ],
+      "match": "public readonly int FreeCapacity => Buffer.Length - WrittenCount;"
+    },
+    "Api.FixedSpanBufferWriter.WrittenSpan": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        79,
+        79
+      ],
+      "match": "public readonly ReadOnlySpan<T> WrittenSpan"
+    },
+    "Api.FixedSpanBufferWriter.Clear": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        95,
+        95
+      ],
+      "match": "public void Clear()"
+    },
+    "Api.FixedSpanBufferWriter.Reset": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        107,
+        107
+      ],
+      "match": "public void Reset()"
+    },
+    "Api.FixedSpanBufferWriter.Advance": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        129,
+        129
+      ],
+      "match": "public void Advance(int count)"
+    },
+    "Api.FixedSpanBufferWriter.GetSpan": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        172,
+        172
+      ],
+      "match": "public Span<T> GetSpan(int sizeHint = 0)"
+    },
+    "Api.FixedSpanBufferWriter.GetMemory": {
+      "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
+      "lines": [
+        203,
+        203
+      ],
+      "match": "public Memory<T> GetMemory(int sizeHint = 0)"
+    },
+    "Api.FixedMemoryBufferWriter": {
+      "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
+      "lines": [
+        46,
+        46
+      ],
+      "match": "public class FixedMemoryBufferWriter<T> : IBufferWriter<T>"
+    },
+    "Api.FixedMemoryBufferWriter.Constructor": {
+      "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
+      "lines": [
+        57,
+        57
+      ],
+      "match": "public FixedMemoryBufferWriter(Memory<T> buffer)"
+    },
+    "Api.FixedMemoryBufferWriter.Capacity": {
+      "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
+      "lines": [
+        66,
+        66
+      ],
+      "match": "public int Capacity => Buffer.Length;"
+    },
+    "Api.FixedMemoryBufferWriter.WrittenCount": {
+      "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
+      "lines": [
+        72,
+        72
+      ],
+      "match": "public int WrittenCount { get; private set; }"
+    },
+    "Api.FixedMemoryBufferWriter.FreeCapacity": {
+      "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
+      "lines": [
+        78,
+        78
+      ],
+      "match": "public int FreeCapacity => Buffer.Length - WrittenCount;"
+    },
+    "Api.FixedMemoryBufferWriter.WrittenMemory": {
+      "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
+      "lines": [
+        89,
+        89
+      ],
+      "match": "public ReadOnlyMemory<T> WrittenMemory"
+    },
+    "Api.FixedMemoryBufferWriter.WrittenSpan": {
+      "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
+      "lines": [
+        106,
+        106
+      ],
+      "match": "public ReadOnlySpan<T> WrittenSpan"
+    },
+    "Api.FixedMemoryBufferWriter.Clear": {
+      "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
+      "lines": [
+        122,
+        122
+      ],
+      "match": "public void Clear()"
+    },
+    "Api.FixedMemoryBufferWriter.Reset": {
+      "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
+      "lines": [
+        134,
+        134
+      ],
+      "match": "public void Reset()"
+    },
+    "Api.FixedMemoryBufferWriter.Advance": {
+      "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
+      "lines": [
+        156,
+        156
+      ],
+      "match": "public void Advance(int count)"
+    },
+    "Api.FixedMemoryBufferWriter.GetMemory": {
+      "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
+      "lines": [
+        200,
+        200
+      ],
+      "match": "public Memory<T> GetMemory(int sizeHint = 0)"
+    },
+    "Api.FixedMemoryBufferWriter.GetSpan": {
+      "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
+      "lines": [
+        245,
+        245
+      ],
+      "match": "public Span<T> GetSpan(int sizeHint = 0)"
+    },
+    "Api.BufferExtensions.GetFixedBufferWriter": {
+      "file": "src/NCode.Buffers/BufferExtensions.cs",
+      "lines": [
+        98,
+        98
+      ],
+      "match": "public FixedSpanBufferWriter<T> GetFixedBufferWriter()"
     }
   },
   "external": {
