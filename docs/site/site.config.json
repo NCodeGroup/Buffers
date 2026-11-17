@@ -38,7 +38,8 @@
         {
           "label": "Text and buffers",
           "items": ["guides/strict-decoding", "guides/fixed-size-buffer", "guides/split-text"]
-        }
+        },
+        { "label": "Your build", "items": ["guides/ban-leaky-apis"] }
       ]
     },
     { "label": "Concepts", "items": ["concepts/how-secrets-leak", "concepts/ownership"] },

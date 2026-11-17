@@ -1,0 +1,86 @@
+---
+title: Ban the leaky APIs at build time
+description: Make the build fail on a call to a lenient encoding or a bare buffer pool, so a leak is caught when it is written and not when it is found.
+numbered: true
+---
+
+import KindLabel from '@site/components/KindLabel.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+
+<KindLabel kind="how-to" />
+
+This is your situation when you want the build, and not a reviewer's memory, to keep leaky APIs out of your code. A
+banned-API analyzer turns a call to a banned API into a build error. This repository bans the lenient encodings and
+the bare pools in its own shipping code, and the steps below copy that setup. <Proof source="Adr1003" />
+
+You'll use `Microsoft.CodeAnalysis.BannedApiAnalyzers` · `BannedSymbols.txt` · `AdditionalFiles` · `RS0030`
+
+## Reference the analyzer
+
+Add the package to your project.
+
+```shell
+dotnet add package Microsoft.CodeAnalysis.BannedApiAnalyzers
+```
+
+This repository references it for every project. <Proof source="BannedApiAnalyzersPackage" />
+
+## Copy the two lists
+
+NCode.Buffers keeps two lists of banned symbols. Copy them into your repository's root from a tagged commit, so that
+the lists do not move under you:
+
+- [`BannedSymbols.Buffers.txt`](https://github.com/NCodeGroup/Buffers/blob/v5.1.0/BannedSymbols.Buffers.txt) bans the
+  bare pools and writers: `ArrayPool<T>.Shared`, `MemoryPool<T>.Shared`, `SecureMemoryPool<T>.Shared` and the
+  constructors of `ArrayBufferWriter<T>` and `Sequence<T>`. Each entry names the `BufferFactory` call to use instead.
+  <Proof source="BannedBuffers" />
+- [`BannedSymbols.Encoding.txt`](https://github.com/NCodeGroup/Buffers/blob/v5.1.0/BannedSymbols.Encoding.txt) bans the
+  lenient encodings, such as `Encoding.UTF8`, and the file and stream APIs that default to them. Each entry names
+  `SecureEncoding`, or the constructor argument that makes the encoding strict. <Proof source="BannedEncoding" />
+
+## Bind them to shipping projects only
+
+Tell the analyzer where the lists are. Put the items in `Directory.Build.props`, so that every project has them, and
+leave your test projects out:
+
+```xml title="Directory.Build.props"
+<ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
+  <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.Encoding.txt" />
+  <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.Buffers.txt" />
+</ItemGroup>
+```
+
+The analyzer's help says the files have to be added to any project that references the package.
+<Proof external="BannedApiAnalyzersHelp" /> This repository binds its two files the same way.
+<Proof source="DirectoryBuildProps.BannedFiles" />
+
+Test projects keep the standard APIs, so that a test can compare the library's output against them.
+
+## Make RS0030 an error
+
+A banned call reports diagnostic `RS0030`. Make it an error in the same file:
+
+```xml title="Directory.Build.props"
+<PropertyGroup>
+  <WarningsAsErrors>$(WarningsAsErrors);RS0030</WarningsAsErrors>
+</PropertyGroup>
+```
+
+Or treat every warning as an error, as this repository does. <Proof source="WarningsAsErrors" />
+
+## Allow the one wrapper
+
+Somewhere a banned API has to be called: the wrapper that every other file calls instead. That file suppresses
+`RS0030` with a reason, and no other file does. This repository's two wrappers, `BufferFactory` and `SecureEncoding`,
+each start with one. <Proof source="BufferFactory.Rs0030" /> <Proof source="SecureEncoding.Rs0030" />
+
+## Check your work
+
+Write `Encoding.UTF8` in a shipping project and build. The build fails with `RS0030` and the message the list gives for
+that symbol: use `NCode.Buffers.SecureEncoding.UTF8`. <Proof source="BannedEncoding.Utf8" />
+
+<Related>
+- **Do** [Reject malformed UTF-8 and ASCII](/guides/strict-decoding/)
+- **Understand** [How secrets leak in managed code](/concepts/how-secrets-leak/)
+</Related>
