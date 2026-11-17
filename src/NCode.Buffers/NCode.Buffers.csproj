@@ -5,7 +5,7 @@
     <PackageTags>crypto secure buffer pin zero poh encoding</PackageTags>
     <!-- Every pack is checked for compatibility with the last package on nuget.org (ADR-1001); raise-baseline.yml raises it after each release (project-template ADR-0150). -->
     <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>5.0.3</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>5.1.0</PackageValidationBaselineVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" />
