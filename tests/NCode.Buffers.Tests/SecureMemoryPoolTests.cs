@@ -109,7 +109,7 @@ public class SecureMemoryPoolTests
     {
         var pool = new SecureMemoryPool<byte>();
 
-        pool.MemoryQueue.Enqueue(new SecureMemory<byte>(pool, 1024));
+        pool.MemoryQueue.Enqueue(GC.AllocateArray<byte>(1024, pinned: true));
         Assert.NotEmpty(pool.MemoryQueue);
 
         pool.Dispose();
@@ -222,11 +222,13 @@ public class SecureMemoryPoolTests
 
         const int requestedSize = SecureMemoryPool<byte>.PageSize - 1;
         var lease1 = pool.Rent(requestedSize);
+        var array1 = GetArray(lease1);
         lease1.Dispose();
 
         using var lease2 = pool.Rent(requestedSize);
 
-        Assert.Same(lease1, lease2);
+        Assert.NotSame(lease1, lease2);
+        Assert.Same(array1, GetArray(lease2));
     }
 
     [Fact]
@@ -236,11 +238,13 @@ public class SecureMemoryPoolTests
 
         const int requestedSize = SecureMemoryPool<byte>.PageSize + 1;
         var lease1 = pool.Rent(requestedSize);
+        var array1 = GetArray(lease1);
         lease1.Dispose();
 
         using var lease2 = pool.Rent(requestedSize);
 
         Assert.NotSame(lease1, lease2);
+        Assert.NotSame(array1, GetArray(lease2));
     }
 
     [Fact]
@@ -341,11 +345,11 @@ public class SecureMemoryPoolTests
         using var pool = new SecureMemoryPool<byte>();
         Assert.Empty(pool.MemoryQueue);
 
-        using var lease = new SecureMemory<byte>(null, 1024);
+        var array = GC.AllocateArray<byte>(1024, pinned: true);
 
-        pool.Return(lease);
+        pool.Return(array);
 
-        Assert.Single(pool.MemoryQueue, lease);
+        Assert.Same(array, Assert.Single(pool.MemoryQueue));
     }
 
     [Fact]
@@ -356,9 +360,9 @@ public class SecureMemoryPoolTests
 
         pool.Dispose();
 
-        using var lease = new SecureMemory<byte>(null, 1024);
+        var array = GC.AllocateArray<byte>(1024, pinned: true);
 
-        pool.Return(lease);
+        pool.Return(array);
 
         Assert.Empty(pool.MemoryQueue);
     }
@@ -368,13 +372,13 @@ public class SecureMemoryPoolTests
     {
         using var pool = new SecureMemoryPool<byte>();
 
-        using var lease1 = new SecureMemory<byte>(null, 1024);
-        using var lease2 = new SecureMemory<byte>(null, 1024);
-        using var lease3 = new SecureMemory<byte>(null, 1024);
+        var array1 = GC.AllocateArray<byte>(1024, pinned: true);
+        var array2 = GC.AllocateArray<byte>(1024, pinned: true);
+        var array3 = GC.AllocateArray<byte>(1024, pinned: true);
 
-        pool.Return(lease1);
-        pool.Return(lease2);
-        pool.Return(lease3);
+        pool.Return(array1);
+        pool.Return(array2);
+        pool.Return(array3);
 
         Assert.Equal(3, pool.MemoryQueue.Count);
     }
@@ -388,7 +392,7 @@ public class SecureMemoryPoolTests
     {
         using var pool = new SecureMemoryPool<byte>();
 
-        pool.MemoryQueue.Enqueue(new SecureMemory<byte>(pool, 1024));
+        pool.MemoryQueue.Enqueue(GC.AllocateArray<byte>(1024, pinned: true));
         Assert.NotEmpty(pool.MemoryQueue);
 
         pool.HighPressureThreshold = 0.0;
@@ -412,7 +416,7 @@ public class SecureMemoryPoolTests
     {
         using var pool = new SecureMemoryPool<byte>();
 
-        pool.MemoryQueue.Enqueue(new SecureMemory<byte>(pool, 1024));
+        pool.MemoryQueue.Enqueue(GC.AllocateArray<byte>(1024, pinned: true));
         Assert.NotEmpty(pool.MemoryQueue);
 
         pool.HighPressureThreshold = 1.1;
@@ -490,13 +494,15 @@ public class SecureMemoryPoolTests
         using var pool = new SecureMemoryPool<byte>();
 
         var lease1 = pool.Rent(100);
+        var array1 = GetArray(lease1);
         var memory1 = lease1.Memory;
         lease1.Dispose();
 
         var lease2 = pool.Rent(100);
         var memory2 = lease2.Memory;
 
-        Assert.Same(lease1, lease2);
+        Assert.NotSame(lease1, lease2);
+        Assert.Same(array1, GetArray(lease2));
         Assert.Equal(memory1.Length, memory2.Length);
 
         lease2.Dispose();
