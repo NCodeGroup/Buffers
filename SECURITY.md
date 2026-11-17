@@ -17,7 +17,7 @@ Include:
 
 ## What to Expect
 
-- An acknowledgement of the report, then whether it is confirmed.
+- An acknowledgement of the report within 14 days, then whether it is confirmed.
 - A fix developed in private and released as soon as it is ready, with an entry under `### Security` in the changelog.
 - Disclosure coordinated with you: the security advisory is published once the fix is released. Keep the details private until then.
 - Credit for the report in the advisory, unless you'd rather not be named.
@@ -39,6 +39,14 @@ The packages are built in CI from a tagged commit of this repository, determinis
 - nuget.org signs every package it accepts: `dotnet nuget verify --all <package>.nupkg` checks that signature.
 - Each release carries build provenance: `gh attestation verify <package>.nupkg --repo NCodeGroup/Buffers` checks that a package was built by this repository's workflows from the tagged commit.
 - [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/NCodeGroup/Buffers) scores this repository's supply-chain practices, such as pinned dependencies, token permissions and branch protection, on each push to `main` and every week: `.github/workflows/scorecard.yml` runs it and publishes the score.
+
+## Verify a Release
+
+While the repository is public, the Tag and publish release workflow signs each release tag with [gitsign](https://github.com/sigstore/gitsign), through Sigstore's keyless signing, so no signing key exists to leak. Tags from v5.1.0 on are signed. With gitsign installed, check a tag in a clone of the repository:
+
+```shell
+gitsign verify-tag --certificate-identity https://github.com/NCodeGroup/Buffers/.github/workflows/tag-release.yml@refs/heads/main --certificate-oidc-issuer https://token.actions.githubusercontent.com <tag>
+```
 
 ## Scope
 
