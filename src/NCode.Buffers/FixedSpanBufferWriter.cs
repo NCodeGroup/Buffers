@@ -99,15 +99,18 @@ public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>
     }
 
     /// <summary>
-    /// Resets the buffer writer by clearing all written data and zeroing out the underlying buffer.
+    /// Resets the buffer writer by zeroing the written part of the buffer and setting the write position to zero.
     /// </summary>
     /// <remarks>
     /// Use this method when the buffer may contain sensitive data that should be securely cleared.
+    /// The written elements are zeroed with <see cref="System.Security.Cryptography.CryptographicOperations.ZeroMemory(Span{byte})"/>, which the compiler and runtime do not optimize away.
+    /// When <typeparamref name="T"/> is or contains a reference, they are set to their default with <see cref="Span{T}.Clear"/>.
+    /// Elements past the written part are not touched.
     /// </remarks>
     public void Reset()
     {
         Debug.Assert(WrittenCount >= 0);
-        Buffer[..WrittenCount].Clear();
+        CryptographicOperationsExtensions.ZeroMemoryOrClear(Buffer[..WrittenCount]);
         WrittenCount = 0;
     }
 

@@ -1,6 +1,7 @@
 // Copyright © NCode Group
 // SPDX-License-Identifier: Apache-2.0
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using JetBrains.Annotations;
@@ -25,6 +26,28 @@ namespace NCode.Buffers;
 [PublicAPI]
 public static class CryptographicOperationsExtensions
 {
+    /// <summary>
+    /// Zeroes the span with <see cref="CryptographicOperations.ZeroMemory(Span{byte})"/>, or, for a
+    /// <typeparamref name="T"/> that is or contains a reference, sets it to default with <see cref="Span{T}.Clear"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the span elements.</typeparam>
+    /// <param name="buffer">The span to zero.</param>
+    internal static void ZeroMemoryOrClear<T>(Span<T> buffer)
+    {
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+        {
+            buffer.Clear();
+            return;
+        }
+
+        CryptographicOperations.ZeroMemory(
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<T, byte>(ref MemoryMarshal.GetReference(buffer)),
+                checked(buffer.Length * Unsafe.SizeOf<T>())
+            )
+        );
+    }
+
     extension(CryptographicOperations)
     {
         /// <summary>
