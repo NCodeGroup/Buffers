@@ -528,6 +528,12 @@
     },
     "SiteOwnPool": {
       "file": "tests/NCode.Buffers.Site.Tests/Concepts/HowTheBuffersWorkSamples.cs"
+    },
+    "SiteAlternativePinnedArrayByHand": {
+      "file": "tests/NCode.Buffers.Site.Tests/Evidence/ObjectionsAndAlternativesSamples.cs"
+    },
+    "SiteAlternativeStackByHand": {
+      "file": "tests/NCode.Buffers.Site.Tests/Evidence/ObjectionsAndAlternativesSamples.cs"
     }
   },
   "sources": {
@@ -1151,6 +1157,17 @@
       ],
       "match": "NCode.Buffers defines no meters",
       "kind": "documented"
+    },
+    "Governance.Continuity": {
+      "file": "GOVERNANCE.md",
+      "anchor": "continuity",
+      "kind": "process"
+    },
+    "Governance": {
+      "file": "GOVERNANCE.md",
+      "branch": "main",
+      "kind": "process",
+      "label": "GOVERNANCE.md"
     }
   },
   "external": {
