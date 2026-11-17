@@ -1,0 +1,112 @@
+---
+title: Give pipes and stream readers a pool that cleans up
+description: Make a Pipe, or a PipeReader over a stream, take its buffers from a pool that pins them and zeroes them when the pipe returns them.
+---
+
+import KindLabel from '@site/components/KindLabel.astro';
+import LeakCard from '@site/components/LeakCard.astro';
+import Pinned from '@site/components/Pinned.astro';
+import PinNotes from '@site/components/PinNotes.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+
+<KindLabel kind="how-to" />
+
+This is your situation when a secret passes through a `Pipe`, or a `PipeReader` reads it from a stream, such as a
+request body that carries a token or a key. The pipe keeps the bytes in buffers it rents from a pool. The examples give
+it a pool that zeroes them.
+
+You'll use `SecureMemoryPool<byte>` · `PipeOptions` · `StreamPipeReaderOptions`
+
+## The usual code
+
+A pipe made without options. The writer copies the secret in, the reader reads it back.
+
+<Pinned tone="usual">
+```cs snippet=SitePipelinesUsual title="Pipelines.cs" "new Pipe()"
+```
+</Pinned>
+
+**Leaves behind**
+
+<PinNotes tone="usual">
+
+1. A pipe whose buffers come from the shared pool, which hands them out as they are: not pinned, and not zeroed when
+   the pipe returns them. <Proof sample="SitePipelinesUsual" /> <LeakCard leak="L3" />
+
+</PinNotes>
+
+## With NCode.Buffers
+
+The same pipe, with a pool of your own. The pipe rents its buffers from it, and the pool zeroes each one when the pipe
+returns it.
+
+<Pinned tone="fix">
+```cs snippet=SitePipelinesSecurePool title="Pipelines.cs" "new SecureMemoryPool<byte>()" "new PipeOptions(pool: pool)"
+```
+</Pinned>
+
+**What changed**
+
+<PinNotes tone="fix">
+
+1. The pool is yours: your application creates it and disposes it, and the pipe never does. <Proof sample="SitePipelinesSecurePool" />
+2. The pipe's buffers are pinned pages from `SecureMemoryPool<byte>`, and each is zeroed when the pipe returns it.
+   <Proof claim="R1" /> <Proof sample="SitePipelinesSecurePool" />
+   <Proof test="SecureMemoryPoolTests.CanBeUsedAsMemoryPool" /> The pipe asks for one 4096-byte buffer, and the
+   pool is still usable after both ends complete. <Proof sample="SitePipelinesSecurePool" />
+
+</PinNotes>
+
+Complete both ends, as the sample does, so the pipe returns its buffers.
+
+### Reading a stream
+
+A `PipeReader` made over a stream rents its buffers the same way, and takes the pool through
+`StreamPipeReaderOptions`.
+
+```cs snippet=SitePipelinesStreamReader title="StreamReader.cs"
+```
+
+<Proof sample="SitePipelinesStreamReader" /> Completing the reader returns its buffers to the pool, which zeroes
+them. The pool is yours to dispose, as before.
+
+## Pitfalls
+
+[Ways to get it wrong](/reference/pitfalls/) has more, each with its evidence.
+
+- **A minimum segment size above 4096 bytes.** *You write* `new PipeOptions(pool: pool, minimumSegmentSize: 8192)`.
+  *What happens:* the pool rents a buffer larger than a page as a pinned array of its own, which it does not keep for
+  reuse. Every segment of the pipe is one of those.
+  <Proof test="SecureMemoryPoolTests.Rent_LargeBuffer_IsNotPooled" /> *Write instead:* a minimum segment size of 4096
+  bytes or less, so the pipe's buffers are the pool's pages.
+- **Copying out of the pipe.** *You write* `result.Buffer.ToArray()`, as the samples do to check what was read.
+  *What happens:* the pool covers the pipe's buffers only. The copy is an ordinary array that nothing zeroes.
+  <LeakCard leak="L9" /> *Write instead:* read the sequence in place, or copy into a sensitive buffer, such as one
+  from `BufferFactory.Rent` with `isSensitive: true`.
+- **Leaving an end of the pipe open.** *You write* code that completes the reader, or the writer, and not the other.
+  *What happens:* the pipe does not return its buffers, so the pool does not zero them.
+  <Proof sample="SitePipelinesSecurePool" /> *Write instead:* complete both ends on every path, such as in a
+  `finally` block.
+
+## What this does not fix
+
+:::caution[Outside this guide]
+- **Sockets, TLS and the web server.** They buffer with pools of their own, and a pipe you make does not change them.
+- **Copies your code makes** of what it reads from the pipe, as the pitfall above says.
+- **Readers outside your code,** such as a debugger, a crash dump or the page file:
+  [what it protects, and what it does not](/start/limits/).
+:::
+
+## Checklist
+
+- Every `new Pipe(` and every `PipeReader.Create(` that carries a secret is given a pool of `SecureMemoryPool<byte>`.
+- The pool is owned by the application, and disposed once, at shutdown.
+- The minimum segment size is 4096 bytes or less.
+- Both ends of the pipe are completed on every path.
+- Nothing copies the pipe's bytes into an ordinary array.
+
+<Related>
+- **Do** [Keep a secret across an await, or in a field](/guides/secrets-across-await/)
+- **Look up** [Buffer behavior, sizes and pooling](/reference/buffer-behavior/)
+</Related>

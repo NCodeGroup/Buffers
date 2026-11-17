@@ -33,6 +33,7 @@ write instead.
 | `==` or `SequenceEqual(` on a MAC or a key | The comparison stops at the first difference, and its time tells where that was. <LeakCard leak="L7" /> | [Verify a MAC without leaking timing](/guides/verify-a-mac/) |
 | `new ArrayBufferWriter` | Each time it grows, the smaller array is dropped with part of the secret in it. <LeakCard leak="L4" /> | [Build a secret of unknown length, and read it as one span](/guides/secret-of-unknown-length/) |
 | `Rent(` without `using` | An exception, or an early return, skips the cleanup. <LeakCard leak="L6" /> | [Ownership: who zeroes what, and when](/concepts/ownership/) |
+| `new Pipe(`, `PipeReader.Create(` without a pool | The pipe's buffers come from the shared pool, which neither pins nor zeroes them. <LeakCard leak="L3" /> | [Give pipes and stream readers a pool that cleans up](/guides/pipes-and-streams/) |
 | `Advance(span.Length)` | `GetSpan` returns all the free space, so the writer commits elements you never wrote. <Proof sample="SitePitfallAdvanceBySpanLength" /> | [Serialize into a buffer that must not grow](/guides/fixed-size-buffer/) |
 
 A checklist finds the common leaks. It is not an audit.

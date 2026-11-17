@@ -71,6 +71,17 @@
       ]
     },
     {
+      "slug": "guides/pipes-and-streams",
+      "title": "Give pipes and stream readers a pool that cleans up",
+      "items": [
+        "Every `new Pipe(` and every `PipeReader.Create(` that carries a secret is given a pool of `SecureMemoryPool<byte>`.",
+        "The pool is owned by the application, and disposed once, at shutdown.",
+        "The minimum segment size is 4096 bytes or less.",
+        "Both ends of the pipe are completed on every path.",
+        "Nothing copies the pipe's bytes into an ordinary array."
+      ]
+    },
+    {
       "slug": "guides/strict-decoding",
       "title": "Reject malformed UTF-8 and ASCII",
       "items": [

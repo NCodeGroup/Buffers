@@ -33,6 +33,7 @@
             "guides/secret-of-unknown-length",
             "guides/read-a-secret-without-a-string",
             "guides/secrets-across-await",
+            "guides/pipes-and-streams",
             "guides/test-zeroing",
             "guides/review-checklist"
           ]
