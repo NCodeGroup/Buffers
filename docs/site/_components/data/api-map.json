@@ -926,26 +926,41 @@
       ]
     },
     {
-      "id": "buffer-extensions-get-fixed-buffer-writer",
+      "id": "buffer-extensions-get-fixed-buffer-writer-span",
       "group": "buffer-writers",
       "type": "BufferExtensions",
       "member": "GetFixedBufferWriter",
       "signatures": [
         "extension<T>(Span<T> span) where T : struct",
-        "public FixedSpanBufferWriter<T> GetFixedBufferWriter()",
-        "extension<T>(Memory<T> memory)",
-        "public FixedMemoryBufferWriter<T> GetFixedBufferWriter()"
+        "public FixedSpanBufferWriter<T> GetFixedBufferWriter()"
       ],
       "summary": "Creates a fixed-size buffer writer over the span or the memory: a `FixedSpanBufferWriter<T>` for a `Span<T>`, a `FixedMemoryBufferWriter<T>` for a `Memory<T>`.",
       "constraint": "struct",
       "throws": null,
       "page": "/guides/fixed-size-buffer/",
-      "source": "Api.BufferExtensions.GetFixedBufferWriter",
+      "source": "Api.BufferExtensions.GetFixedBufferWriter.Span",
+      "api": [
+        "NCode.Buffers.BufferExtensions.extension<T>(System.Span<T>).GetFixedBufferWriter() -> NCode.Buffers.FixedSpanBufferWriter<T>",
+        "static NCode.Buffers.BufferExtensions.GetFixedBufferWriter<T>(this System.Span<T> span) -> NCode.Buffers.FixedSpanBufferWriter<T>"
+      ]
+    },
+    {
+      "id": "buffer-extensions-get-fixed-buffer-writer-memory",
+      "group": "buffer-writers",
+      "type": "BufferExtensions",
+      "member": "GetFixedBufferWriter",
+      "signatures": [
+        "extension<T>(Memory<T> memory)",
+        "public FixedMemoryBufferWriter<T> GetFixedBufferWriter()"
+      ],
+      "summary": "Creates a fixed-size buffer writer over the span or the memory: a `FixedSpanBufferWriter<T>` for a `Span<T>`, a `FixedMemoryBufferWriter<T>` for a `Memory<T>`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.BufferExtensions.GetFixedBufferWriter.Memory",
       "api": [
         "NCode.Buffers.BufferExtensions.extension<T>(System.Memory<T>).GetFixedBufferWriter() -> NCode.Buffers.FixedMemoryBufferWriter<T>!",
-        "NCode.Buffers.BufferExtensions.extension<T>(System.Span<T>).GetFixedBufferWriter() -> NCode.Buffers.FixedSpanBufferWriter<T>",
-        "static NCode.Buffers.BufferExtensions.GetFixedBufferWriter<T>(this System.Memory<T> memory) -> NCode.Buffers.FixedMemoryBufferWriter<T>!",
-        "static NCode.Buffers.BufferExtensions.GetFixedBufferWriter<T>(this System.Span<T> span) -> NCode.Buffers.FixedSpanBufferWriter<T>"
+        "static NCode.Buffers.BufferExtensions.GetFixedBufferWriter<T>(this System.Memory<T> memory) -> NCode.Buffers.FixedMemoryBufferWriter<T>!"
       ]
     },
     {

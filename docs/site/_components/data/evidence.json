@@ -1649,13 +1649,21 @@
       ],
       "match": "public Span<T> GetSpan(int sizeHint = 0)"
     },
-    "Api.BufferExtensions.GetFixedBufferWriter": {
+    "Api.BufferExtensions.GetFixedBufferWriter.Span": {
       "file": "src/NCode.Buffers/BufferExtensions.cs",
       "lines": [
         98,
         98
       ],
       "match": "public FixedSpanBufferWriter<T> GetFixedBufferWriter()"
+    },
+    "Api.BufferExtensions.GetFixedBufferWriter.Memory": {
+      "file": "src/NCode.Buffers/BufferExtensions.cs",
+      "lines": [
+        134,
+        134
+      ],
+      "match": "public FixedMemoryBufferWriter<T> GetFixedBufferWriter()"
     },
     "Api.MemorySegment": {
       "file": "src/NCode.Buffers/MemorySegment.cs",
