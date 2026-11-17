@@ -244,7 +244,7 @@ IMemoryOwner<byte> empty = EmptyMemory<byte>.Singleton;
 
 ### String splitting
 
-`StringSegments.Split` and the `SplitSegments` extension split a `string` or `ReadOnlyMemory<char>` on a `char` or a string separator, optionally with a `StringComparison`, without copying substrings: each segment's `Memory` is a slice of the original, and the result is an `IReadOnlyCollection<ReadOnlySequenceSegment<char>>`. It isn't zero-allocation: it allocates one small segment object per piece.
+`StringSegments.Split` and the `SplitSegments` extension split a `string` or `ReadOnlyMemory<char>` on a `char` or a string separator, optionally with a `StringComparison`, without copying substrings: each segment's `Memory` is a slice of the original, and the result is an `IReadOnlyCollection<ReadOnlySequenceSegment<char>>`. It isn't zero-allocation: it allocates one small segment object per piece. A separator that matches no text, such as an empty one, returns one segment that holds the whole value, as `string.Split(string)` does.
 
 <!-- snippet: StringSegments -->
 ```cs

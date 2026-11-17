@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 using System.Buffers;
+using System.Runtime.InteropServices;
 
 namespace NCode.Buffers.Tests;
 
@@ -149,6 +150,22 @@ public class BufferFactoryTests
         );
     }
 
+    [Fact]
+    public void Rent_WhenSensitive_AfterReuse_DisposeZeroesWholeBuffer()
+    {
+        // uint because no other test rents it from the shared pool, so the second rental reuses the first one's buffer.
+        for (var i = 0; i < 3; i++)
+        {
+            var owner = BufferFactory.Rent<uint>(4, isSensitive: true, out Memory<uint> _);
+            owner.Memory.Span.Fill(0xAAAAAAAA);
+            var memory = owner.Memory;
+
+            owner.Dispose();
+
+            Assert.False(memory.Span.ContainsAnyExcept(0u));
+        }
+    }
+
     #endregion
 
     #region CreatePinnedArray Tests
@@ -252,6 +269,28 @@ public class BufferFactoryTests
         );
 
         Assert.Equal("minimumSpanLength", exception.ParamName);
+    }
+
+    [Fact]
+    public void CreatePooledBufferWriter_WhenSensitive_AfterReuse_DisposeZeroesEverySegment()
+    {
+        // ushort because no other test rents it from the shared pool, so the second rental reuses the first one's buffer.
+        for (var i = 0; i < 3; i++)
+        {
+            var writer = BufferFactory.CreatePooledBufferWriter<ushort>(isSensitive: true);
+            writer.GetSpan(16).Fill(0xAAAA);
+            writer.Advance(16);
+
+            Assert.True(
+                MemoryMarshal.TryGetArray(writer.AsReadOnlySequence.First, out var segment)
+            );
+            Assert.NotNull(segment.Array);
+            var array = segment.Array;
+
+            writer.Dispose();
+
+            Assert.False(array.AsSpan().ContainsAnyExcept((ushort)0));
+        }
     }
 
     #endregion

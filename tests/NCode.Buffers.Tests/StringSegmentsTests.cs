@@ -338,6 +338,98 @@ public class StringSegmentsTests
         Assert.Equal("C", list[2].Memory.ToString());
     }
 
+    [Fact]
+    public void Split_String_EmptySeparator_ReturnsWholeValue()
+    {
+        var segments = StringSegments.Split("abc", "");
+
+        Assert.Equal("abc", Assert.Single(segments).Memory.ToString());
+    }
+
+    [Fact]
+    public void Split_String_EmptySeparatorWithComparison_ReturnsWholeValue()
+    {
+        var segments = StringSegments.Split("abc", "", StringComparison.Ordinal);
+
+        Assert.Equal("abc", Assert.Single(segments).Memory.ToString());
+    }
+
+    [Fact]
+    public void Split_ReadOnlyMemory_EmptySeparator_ReturnsWholeValue()
+    {
+        var segments = StringSegments.Split("abc".AsMemory(), "");
+
+        Assert.Equal("abc", Assert.Single(segments).Memory.ToString());
+    }
+
+    [Fact]
+    public void Split_ReadOnlyMemory_EmptySeparatorWithComparison_ReturnsWholeValue()
+    {
+        var segments = StringSegments.Split(
+            "abc".AsMemory(),
+            "",
+            StringComparison.OrdinalIgnoreCase
+        );
+
+        Assert.Equal("abc", Assert.Single(segments).Memory.ToString());
+    }
+
+    [Fact]
+    public void Split_EmptyValue_EmptySeparator_ReturnsOneEmptySegment()
+    {
+        var segments = StringSegments.Split("", "");
+
+        Assert.Equal("", Assert.Single(segments).Memory.ToString());
+    }
+
+    [Theory]
+    [InlineData(StringComparison.CurrentCulture)]
+    [InlineData(StringComparison.CurrentCultureIgnoreCase)]
+    [InlineData(StringComparison.InvariantCulture)]
+    [InlineData(StringComparison.InvariantCultureIgnoreCase)]
+    public void Split_CultureAwareSeparatorMatchingShorterText_CutsOutTheMatchedText(
+        StringComparison comparisonType
+    )
+    {
+        string[] expected = ["caf", "xyz"];
+
+        var segments = StringSegments.Split("caf\u00E9xyz", "e\u0301", comparisonType);
+
+        Assert.Equal(expected, segments.Select(segment => segment.Memory.ToString()));
+    }
+
+    [Theory]
+    [InlineData(StringComparison.CurrentCulture)]
+    [InlineData(StringComparison.CurrentCultureIgnoreCase)]
+    [InlineData(StringComparison.InvariantCulture)]
+    [InlineData(StringComparison.InvariantCultureIgnoreCase)]
+    public void Split_CultureAwareSeparatorMatchingShorterTextAtTheEnd_ReturnsEmptyLastSegment(
+        StringComparison comparisonType
+    )
+    {
+        string[] expected = ["caf", ""];
+
+        var segments = StringSegments.Split("caf\u00E9", "e\u0301", comparisonType);
+
+        Assert.Equal(expected, segments.Select(segment => segment.Memory.ToString()));
+    }
+
+    [Theory]
+    [InlineData(StringComparison.CurrentCulture)]
+    [InlineData(StringComparison.CurrentCultureIgnoreCase)]
+    [InlineData(StringComparison.InvariantCulture)]
+    [InlineData(StringComparison.InvariantCultureIgnoreCase)]
+    public void Split_CultureAwareIgnorableSeparator_ReturnsWholeValue(
+        StringComparison comparisonType
+    )
+    {
+        string[] expected = ["abc"];
+
+        var segments = StringSegments.Split("abc", "\u00AD", comparisonType);
+
+        Assert.Equal(expected, segments.Select(segment => segment.Memory.ToString()));
+    }
+
     #endregion
 
     #region Edge Case Tests
