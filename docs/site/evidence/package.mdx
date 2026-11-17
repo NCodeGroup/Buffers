@@ -1,0 +1,95 @@
+---
+title: "The package: versions, support and verification"
+description: Which versions get fixes, what a version number promises, what CI tests, and the checks that show a package came from this repository.
+---
+
+import KindLabel from '@site/components/KindLabel.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+import ReleasePipeline from '@site/components/ReleasePipeline.astro';
+
+<KindLabel kind="reference" />
+
+This page is about the NCode.Buffers package as a thing you install: the frameworks it targets, how its versions
+change, which versions get fixes, what CI tests before a release, and how to check that a package you downloaded was
+built from this repository. Each command on the page is copied from
+[`SECURITY.md`](https://github.com/NCodeGroup/Buffers/blob/main/SECURITY.md).
+
+## Frameworks
+
+The package targets the frameworks its project file declares. The badge reads them from that file, and [nuget.org's
+Frameworks tab](https://www.nuget.org/packages/NCode.Buffers#supportedframeworks-body-tab) lists them for the version
+you pick.
+
+[![Target framework](https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fraw.githubusercontent.com%2FNCodeGroup%2FBuffers%2Fmain%2Fsrc%2FNCode.Buffers%2FNCode.Buffers.csproj&query=%2F%2FTargetFramework%20%7C%20%2F%2FTargetFrameworks&label=target&logo=dotnet&color=512BD4)](https://www.nuget.org/packages/NCode.Buffers#supportedframeworks-body-tab)
+
+## Versions
+
+The package follows Semantic Versioning. The assembly version moves only with the major version, so a minor or patch
+release replaces the file without changing the assembly's identity. <Proof source="Adr1001" />
+
+The public API is tracked in `PublicAPI.Shipped.txt`, and every pack is validated against the last release on nuget.org:
+a change that breaks a consumer of that release fails the pack. <Proof source="Adr1001" />
+<Proof source="PackageValidationBaseline" />
+
+## What changed in 5.0
+
+The secure APIs constrain their element type to `unmanaged`. A type with reference fields, which failed at run time
+before, no longer compiles. [CHANGELOG.md](https://github.com/NCodeGroup/Buffers/blob/main/CHANGELOG.md) lists the
+members and what to use instead. <Proof source="Adr1006" />
+
+## Extension members
+
+The members on `Span<T>`, `Memory<T>`, `string` and `CryptographicOperations` are C# 14 extension members. A project
+on an earlier language version calls the static form instead, such as `BufferExtensions.GetSecureLifetime(span)`.
+<Proof source="BufferExtensions.GetSecureLifetime" />
+
+## Dependencies
+
+The package depends on JetBrains.Annotations and Nerdbank.Streams. Nerdbank.Streams supplies the `Sequence<T>` that the
+pooled buffer writers return. <Proof source="PackageDependencies" />
+
+## Supported versions
+
+Fixes ship as a patch of the latest minor version of the current major version. Before 1.0.0, only the latest release
+gets fixes. Every older version gets none. <Proof source="Security.SupportedVersions" />
+
+Published advisories are on the repository's [security advisories](https://github.com/NCodeGroup/Buffers/security/advisories)
+page.
+
+## What CI tests
+
+`ci.yml` runs on every pull request. It checks the decision index, then runs the gate: the sample keys, the README
+samples, the site evidence, and then the build, the tests and the pack. It also requires at least 98% line and branch
+coverage. <Proof source="CiWorkflow" /> <Proof source="CiGateAndCoverage" /> <Proof source="CoverageMinimums" />
+
+## Verify the package
+
+Run these checks on a package you downloaded. Each row says what the check shows and what it leaves open.
+
+| Check | Command | What it proves | What it does not |
+| --- | --- | --- | --- |
+| <span id="nuget-signature"></span>nuget.org signature | `dotnet nuget verify --all <package>.nupkg` | nuget.org signed the package it accepted. <Proof source="VerifyAPackage" /> | Who built the package, or from which commit. |
+| <span id="build-provenance"></span>Build provenance | `gh attestation verify <package>.nupkg --repo NCodeGroup/Buffers` | This repository's workflows built the package from the tagged commit. <Proof source="VerifyAPackage" /> | That the tagged commit's code has no defects. |
+| <span id="signed-tag"></span>Signed tag | `gitsign verify-tag --certificate-identity https://github.com/NCodeGroup/Buffers/.github/workflows/tag-release.yml@refs/heads/main --certificate-oidc-issuer https://token.actions.githubusercontent.com <tag>` | The tag was signed by the Tag and publish release workflow, through Sigstore's keyless signing. Tags from v5.1.0 on are signed. <Proof source="Security.VerifyARelease" /> | That the package on nuget.org was built from the tag. The provenance check shows that. |
+| <span id="source-link"></span>Source Link | None. Open the package in NuGet Package Explorer. | Whether the package's Source Link and deterministic build are valid, and so which commit each source file maps to. <Proof source="VerifyAPackage" /> | That the source at that commit was reviewed. |
+
+The signed-tag check runs in a clone of the repository with gitsign installed.
+
+Releases v5.0.0 to v5.1.0 carry a provenance file, `<tag>.intoto.jsonl`, and an SBOM, `<tag>.spdx.json`. Releases
+v4.0.0 and v4.1.0 carry neither. <Proof source="ProvenanceWorkflow" />
+
+<ReleasePipeline />
+
+## Scorecard and Best Practices
+
+[OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/NCodeGroup/Buffers) scores the repository's
+supply-chain practices on each push to `main` and every week. `scorecard.yml` runs it and publishes the score.
+<Proof source="ScorecardWorkflow" />
+
+The project also holds an [OpenSSF Best Practices](https://www.bestpractices.dev/projects/16727) entry, number 16727.
+
+<Related>
+- **Learn** [Quick start](/start/quick-start/)
+- **Look up** [Guarantees and their tests](/evidence/guarantees/)
+</Related>
