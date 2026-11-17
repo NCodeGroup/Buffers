@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.0] - 2026-11-16
+
 ### Added
 
 - The content of a documentation site, in `docs/site/`, which the shared Astro Starlight toolchain in [NCodeGroup/docs](https://github.com/NCodeGroup/docs) builds, so this repository holds no npm manifest or lockfile. A workflow builds the site on every pull request, and nothing publishes it yet ([#56](https://github.com/NCodeGroup/Buffers/issues/56), [ADR-1009](docs/decisions/1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md)). The site holds:
@@ -17,12 +19,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Evidence: each requirement the library accepts, with the tests that fail when it stops being true, the source lines behind it and what that evidence does not show.
   - Reference: the ways to get it wrong, by symptom, with the compiler errors and what to write instead.
 - `tests/NCode.Buffers.Site.Tests`, a test project for the site's samples that cannot see the library's internal members; a page includes a sample by its key when the site is built ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)).
+- Each release tag from 5.1.0 on is signed with gitsign through Sigstore's keyless signing, and `SECURITY.md`'s Verify a Release section shows how to check one with `gitsign verify-tag` ([#69](https://github.com/NCodeGroup/Buffers/issues/69), [ADR-0028](docs/decisions/project-template/0028-github-releases-are-immutable-and-their-tags-signed.md)).
 
 ### Changed
 
 - Package validation compares every package with the published 5.0.3 package ([ADR-1001](docs/decisions/1001-each-package-is-validated-against-the-last-released-package.md)).
 - `./build/gate.ps1` fails on a line that MarkdownSnippets or the site's build takes for a sample marker unless it is `// begin-snippet: <Key>` alone on its line, on a sample key that is not PascalCase letters and digits, on one defined twice, on a site sample's key that does not start with `Site`, on any other key that does, and when `dotnet mdsnippets` changes an `.mdx` file; `mdsnippets.json` keeps MarkdownSnippets off `.mdx` pages and `.astro` components ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)).
 - `./build/gate.ps1` runs `build/Test-SiteEvidence.ps1`, which fails when a test, sample or source line the site cites is gone or has moved, and when a line a page marks on a sample does not match exactly one line of it.
+- A release is tagged only once CI passes again on the commit its pull request merged ([#69](https://github.com/NCodeGroup/Buffers/issues/69), [ADR-0026](docs/decisions/project-template/0026-tests-gate-coverage-at-the-gold-thresholds-and-a-release-waits-for-them.md)).
+- A pull request merges once NCode Review approves it, or a maintainer approves one a bot opened, and `CONTRIBUTING.md` lists the review requirements ([#69](https://github.com/NCodeGroup/Buffers/issues/69), [ADR-0022](docs/decisions/project-template/0022-ncode-reviews-approval-gates-the-merge.md)).
+- `SECURITY.md` promises an acknowledgement of a vulnerability report within 14 days ([#69](https://github.com/NCodeGroup/Buffers/issues/69)).
+- The workflow and script that raise the package validation baseline after each release are the project template's ([#69](https://github.com/NCodeGroup/Buffers/issues/69), [ADR-0150](docs/decisions/project-template/0150-a-workflow-raises-the-package-validation-baseline-after-each-release.md), [ADR-0151](docs/decisions/project-template/0151-release-follow-ups-are-jobs-publish-calls.md)).
 
 ## [5.0.3] - 2026-11-15
 
@@ -118,7 +125,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.0.3...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.1.0...HEAD
+[5.1.0]: https://github.com/NCodeGroup/Buffers/compare/v5.0.3...v5.1.0
 [5.0.3]: https://github.com/NCodeGroup/Buffers/compare/v5.0.2...v5.0.3
 [5.0.2]: https://github.com/NCodeGroup/Buffers/compare/v5.0.1...v5.0.2
 [5.0.1]: https://github.com/NCodeGroup/Buffers/compare/v5.0.0...v5.0.1
