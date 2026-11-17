@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Package validation compares each package with the published 5.1.1 package.
+- Package validation compares each package with the published 5.1.2 package.
 - `./build/gate.ps1` runs `build/Test-AssertApiMap.ps1`; `build/Test-SiteEvidence.ps1` fails when the site's API map and `PublicAPI.Shipped.txt` differ; and `build/Update-ReviewChecklist.ps1 -Check` fails when the review checklist is out of step with the guides' Checklist sections ([#68](https://github.com/NCodeGroup/Buffers/issues/68)).
 
 ## [5.1.2] - 2026-11-17
