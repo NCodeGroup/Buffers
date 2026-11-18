@@ -55,9 +55,10 @@ public class SecureArrayLifetimeTests
     {
         using var lifetime = new SecureArrayLifetime<byte>(128);
 
-        Assert.NotNull(lifetime.PinnedArray);
         Assert.Equal(128, lifetime.PinnedArray.Length);
         Assert.Equal(128, lifetime.Length);
+        // The GC reports pinned-object-heap objects as its oldest generation; a new 128-byte array on the normal heap starts in generation 0.
+        Assert.Equal(GC.MaxGeneration, GC.GetGeneration(lifetime.PinnedArray));
     }
 
     [Theory]
