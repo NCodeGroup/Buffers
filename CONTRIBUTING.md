@@ -90,6 +90,8 @@ To write a page:
    ```
    ````
 
+6. Keep a guide's headings in the order the `requiredHeadings` rules of `docs/site/site.config.json` list; the site's build names a guide that does not. A guide that is a numbered procedure ends with `## Check your work` instead: add it to the first rule's `except` and the second rule's `pages`.
+
 To write a sample ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)):
 
 1. Add a fact to the page's class in `tests/NCode.Buffers.Site.Tests`, a test project that cannot see the library's internal members, so a sample is code a user of the package can write. The class is named for the page's file, in a folder named for the page's folder: `docs/site/guides/verify-a-mac.mdx` has `Guides/VerifyAMacSamples.cs`, class `VerifyAMacSamples` in namespace `SiteSamples.Guides`. That file shows the form.
