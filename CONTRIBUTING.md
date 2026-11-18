@@ -28,7 +28,7 @@ Then run `dotnet tool restore`, which installs the CSharpier and MarkdownSnippet
 | Only the tests a filter matches | `./build/gate.ps1 -Fast -Filter 'FullyQualifiedName~OrderStore'` |
 | Code coverage: lists every line no test runs, and fails below 98% line or branch coverage, as CI does; `-ReportDirectory artifacts/coverage` also keeps the Cobertura report | `./build/Test-Coverage.ps1` |
 
-The gate checks that every sample key is defined once and that the READMEs' C# samples match the tests they are copied from, then runs the Definition of Done, `./build/dod.ps1`, which checks the formatting with CSharpier and the decision index, builds in Release with warnings as errors, runs the tests, packs, validates the package against the last release and ends with `Definition of Done: PASSED`. CI runs `./build/gate.ps1` on every pull request. On each push to the default branch, `.github/workflows/coverage.yml` publishes the coverage report to [Codecov](https://codecov.io/gh/NCodeGroup/Buffers), whose badge the README shows.
+The gate checks that every sample key is defined once and that the READMEs' C# samples match the tests they are copied from, compiles every example in the XML documentation (`build/Test-XmlDocExamples.ps1`), then runs the Definition of Done, `./build/dod.ps1`, which checks the formatting with CSharpier and the decision index, builds in Release with warnings as errors, runs the tests, packs, validates the package against the last release and ends with `Definition of Done: PASSED`. CI runs `./build/gate.ps1` on every pull request. On each push to the default branch, `.github/workflows/coverage.yml` publishes the coverage report to [Codecov](https://codecov.io/gh/NCodeGroup/Buffers), whose badge the README shows.
 
 ## Make a Change
 
