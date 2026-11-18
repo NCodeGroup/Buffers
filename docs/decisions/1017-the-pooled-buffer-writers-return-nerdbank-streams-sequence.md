@@ -1,6 +1,6 @@
 # 1017. The pooled buffer writers return Nerdbank.Streams' `Sequence<T>`
 
-- **Status:** Accepted
+- **Status:** Accepted (amended by 1022)
 - **Date:** 2026-11-17
 - **Deciders:** NCode Group
 

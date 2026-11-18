@@ -79,9 +79,10 @@ override in `AGENTS.md`.
 | [ADR-1014](1014-securespanlifetime-zeroes-the-callers-span-and-does-not-pin-it.md) | SecureSpanLifetime zeroes the caller's span and does not pin it | Accepted |
 | [ADR-1015](1015-the-secure-pools-cache-has-no-size-limit-and-is-dropped-under-memory-pressure.md) | The secure pool's cache has no size limit and is dropped under memory pressure | Accepted (amended by 1023) |
 | [ADR-1016](1016-zeroing-and-fixed-time-comparison-call-cryptographicoperations.md) | Zeroing and fixed-time comparison call CryptographicOperations | Accepted |
-| [ADR-1017](1017-the-pooled-buffer-writers-return-nerdbank-streams-sequence.md) | The pooled buffer writers return Nerdbank.Streams' `Sequence<T>` | Accepted |
+| [ADR-1017](1017-the-pooled-buffer-writers-return-nerdbank-streams-sequence.md) | The pooled buffer writers return Nerdbank.Streams' `Sequence<T>` | Accepted (amended by 1022) |
 | [ADR-1018](1018-the-library-neither-locks-nor-encrypts-memory.md) | The library neither locks nor encrypts memory | Accepted |
 | [ADR-1019](1019-a-string-separator-that-matches-no-text-leaves-the-value-whole.md) | A string separator that matches no text leaves the value whole | Accepted |
 | [ADR-1020](1020-the-unmanaged-constraint-rests-on-byte-views-and-zeroing-not-on-pinned-allocation.md) | The unmanaged constraint rests on byte views and zeroing, not on pinned allocation (amends 1006) | Accepted |
 | [ADR-1021](1021-a-negative-length-or-size-throws-argumentoutofrangeexception-before-anything-is-allocated.md) | A negative length or size throws ArgumentOutOfRangeException before anything is allocated | Accepted |
+| [ADR-1022](1022-jetbrains-annotations-is-a-build-time-reference-not-a-package-dependency.md) | JetBrains.Annotations is a build-time reference, not a package dependency (amends 1017) | Accepted |
 | [ADR-1023](1023-the-shared-secure-pool-ignores-dispose.md) | The shared secure pool ignores Dispose (amends 1015) | Accepted |
