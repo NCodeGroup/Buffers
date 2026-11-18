@@ -42,8 +42,10 @@ public readonly ref struct SecureSpanLifetime<T>(Span<T> span) : IDisposable
     /// The <see cref="Span{T}"/> that will be securely zeroed when this lifetime is disposed.
     /// </value>
     /// <remarks>
-    /// Use this property to read from or write to the underlying memory. The span remains valid
-    /// until this <see cref="SecureSpanLifetime{T}"/> is disposed.
+    /// Use this property to read from or write to the underlying memory. <see cref="Dispose"/> zeroes that memory and
+    /// does not invalidate the span or release the memory, which belongs to whoever supplied the span: after it, the span
+    /// still reads and writes the same memory, which holds zeros until something writes to it. Stop using the span when
+    /// you dispose the lifetime.
     /// </remarks>
     public Span<T> Span { get; } = span;
 

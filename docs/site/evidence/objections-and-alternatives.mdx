@@ -85,7 +85,8 @@ evidence.
 
 ## "Another dependency"
 
-Right. The package has two: JetBrains.Annotations and Nerdbank.Streams. <Proof source="PackageDependencies" />
+Right. The package has one: Nerdbank.Streams. JetBrains.Annotations, whose attributes mark the public API for the
+IDE, is a build-time reference the package does not list. <Proof source="PackageDependencies" /> <Proof source="Adr1022" />
 Nerdbank.Streams is part of the public API, because the pooled buffer writers return its `Sequence<T>`, so every
 consumer takes it. The repository records no reason for that choice, and says so. <Proof source="Adr1017" />
 

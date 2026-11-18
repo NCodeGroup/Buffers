@@ -257,7 +257,7 @@ Not sure which type you need? [Which buffer?](/start/which-buffer/) asks at most
 
 - One assembly. It has no runtime state beyond the memory pools it creates, starts no threads and performs no I/O.
   <Proof source="Architecture.Scope" />
-- It depends on Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers return, and on JetBrains.Annotations.
+- It depends on Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers return.
   <Proof source="PackageDependencies" />
 - The target frameworks are the ones the package's project file declares. The badge above shows them,
   [nuget.org](https://www.nuget.org/packages/NCode.Buffers#supportedframeworks-body-tab) lists them, and the

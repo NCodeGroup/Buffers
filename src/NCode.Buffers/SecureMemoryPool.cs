@@ -28,8 +28,10 @@ namespace NCode.Buffers;
 /// Requests for larger buffers are fulfilled with non-pooled allocations that are still securely zeroed on return.
 /// </para>
 /// <para>
-/// The pool automatically trims cached memory when system memory pressure exceeds <see cref="HighPressureThreshold"/>
-/// during Gen2 garbage collections.
+/// After a garbage collection, on the finalizer thread, the pool drops every cached buffer when
+/// <see cref="GCMemoryInfo.MemoryLoadBytes"/> is at or above <see cref="HighPressureThreshold"/> times
+/// <see cref="GCMemoryInfo.HighMemoryLoadThresholdBytes"/>. The check runs after every generation 2 collection; the first
+/// one or two checks after the pool is created can also follow a generation 0 or generation 1 collection.
 /// </para>
 /// </remarks>
 /// <example>
@@ -101,12 +103,15 @@ public class SecureMemoryPool<T> : MemoryPool<T>
     /// Gets or sets the high pressure threshold when the memory pool should trim cached memory.
     /// </summary>
     /// <value>
-    /// A value between 0.0 and 1.0 representing the percentage of the high memory load threshold.
-    /// The default value is <see cref="DefaultHighPressureThreshold"/>.
+    /// The fraction of <see cref="GCMemoryInfo.HighMemoryLoadThresholdBytes"/> at which the pool drops its cache,
+    /// usually between 0.0 and 1.0. The default value is <see cref="DefaultHighPressureThreshold"/>.
     /// </value>
     /// <remarks>
-    /// When the system's memory load exceeds this threshold multiplied by the high memory load threshold,
-    /// the pool will clear all cached buffers during the next Gen2 garbage collection.
+    /// After a garbage collection, on the finalizer thread, the pool drops all cached buffers when
+    /// <see cref="GCMemoryInfo.MemoryLoadBytes"/> is at or above this value multiplied by
+    /// <see cref="GCMemoryInfo.HighMemoryLoadThresholdBytes"/>. The check runs after the collection, not during it: after
+    /// every generation 2 collection, and the first one or two checks after the pool is created can also follow a
+    /// generation 0 or generation 1 collection.
     /// </remarks>
     public double HighPressureThreshold { get; set; } = DefaultHighPressureThreshold;
 
@@ -122,8 +127,8 @@ public class SecureMemoryPool<T> : MemoryPool<T>
     /// Initializes a new instance of the <see cref="SecureMemoryPool{T}"/> class.
     /// </summary>
     /// <remarks>
-    /// The constructor registers a callback for Gen2 garbage collections to automatically
-    /// trim cached memory when system memory pressure is high.
+    /// The constructor registers a callback that runs on the finalizer thread after garbage collections, as
+    /// <see cref="HighPressureThreshold"/> describes, and drops the cached buffers when the memory load is high.
     /// </remarks>
     public SecureMemoryPool()
     {
@@ -210,9 +215,11 @@ public class SecureMemoryPool<T> : MemoryPool<T>
     /// </summary>
     /// <returns>Always returns <see langword="true"/> to keep the callback registered.</returns>
     /// <remarks>
-    /// This method is called automatically during Gen2 garbage collections.
-    /// If the system's memory load exceeds <see cref="HighPressureThreshold"/> multiplied by
-    /// the high memory load threshold, all cached buffers are cleared.
+    /// The callback the constructor registers calls this method on the finalizer thread after a garbage collection:
+    /// after every generation 2 collection, and the first one or two times after the pool is created also after a
+    /// generation 0 or generation 1 collection. When <see cref="GCMemoryInfo.MemoryLoadBytes"/> is at or above
+    /// <see cref="HighPressureThreshold"/> multiplied by <see cref="GCMemoryInfo.HighMemoryLoadThresholdBytes"/>, all
+    /// cached buffers are dropped.
     /// </remarks>
     internal bool TrimMemory()
     {

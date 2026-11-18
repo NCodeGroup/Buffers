@@ -41,12 +41,15 @@ attack surface is its public API.
 
 ## Secure Design Principles Applied
 
-- **Economy of mechanism:** one assembly, one small dependency, no I/O, no native code.
+- **Economy of mechanism:** one assembly, one package dependency, Nerdbank.Streams, which brings dependencies of its
+  own; no I/O, no native code.
 - **Fail-safe defaults:** analyzers ban raw `ArrayPool`, `MemoryPool` and `Encoding` use in shipping code, so buffers and
   encodings come from the secure entry points (ADR-1003); encodings throw rather than guess.
-- **Complete mediation of ownership:** memory is returned only through its owner's `Dispose`, which zeroes it; double
-  dispose is a no-op. Every rental gets an owner of its own, so a second `Dispose` of an earlier rental can't zero or
-  return a buffer another caller has rented since.
+- **Complete mediation of ownership:** memory is returned only through its owner's `Dispose`, which zeroes it. A
+  second `Dispose` of one of the library's owners never throws, and what it does depends on the owner. A pooled
+  owner's does nothing: every rental gets an owner of its own, so a second `Dispose` of an earlier rental can't zero or
+  return a buffer another caller has rented since. The two secure lifetimes zero their memory again. A
+  `RefSpanLease<T>` disposes its owner again, so it does what that owner's second `Dispose` does.
 - **Least common mechanism:** secret-holding types accept only unmanaged element types, so they never hold object
   references the zeroing can't clear (ADR-1006).
 - **Open design:** the code, the tests, the decision records and this case are public.
@@ -64,7 +67,11 @@ attack surface is its public API.
 - **Tests:** unit and FsCheck property tests cover zeroing, including of a buffer the pool hands out again, pool
   reuse, writer bounds and encodings; the gate fails under 98% line or branch coverage (`./build/Test-Coverage.ps1`).
 - **Static analysis:** the .NET analyzers at `latest-recommended` with warnings as errors, banned-API analyzers, and
-  CodeQL on every pull request, which the `main` ruleset requires.
+  CodeQL through GitHub's code scanning default setup, for C# and GitHub Actions with the extended query suite, on
+  every pull request into `main`, every push to `main` and weekly. The `main` ruleset blocks a pull request that adds a
+  CodeQL security alert of any severity or a CodeQL error or warning. Default setup is a repository setting, not a
+  workflow file: read with `gh api repos/NCodeGroup/Buffers/code-scanning/default-setup` and
+  `gh api repos/NCodeGroup/Buffers/rulesets/26229931` on 2026-11-17.
 - **Review:** every change reaches `main` through a pull request with required CI, resolved review threads and an
   approval, which NCode Review gives a clean pull request and a maintainer gives a bot's; force pushes and deletion
   are blocked.

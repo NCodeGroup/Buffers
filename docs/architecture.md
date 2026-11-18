@@ -25,7 +25,7 @@ Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers return.
 | --- | --- |
 | `BufferFactory` | Rents buffers and creates writers; `isSensitive` chooses the secure pool or the shared pool |
 | `SecureMemoryPool<T>`, `SecureMemory<T>` | A `MemoryPool<T>` of pinned arrays from the Pinned Object Heap, each zeroed with `CryptographicOperations.ZeroMemory` before it is reused or released; buffers up to `PageSize` (4096 bytes) are cached, larger ones are allocated per rent; every rent returns a new `SecureMemory<T>`, whose first `Dispose` zeroes its array and returns it to the pool |
-| `Gen2GcCallback` | Calls the pool on each Gen2 collection, so it drops cached buffers when memory load passes `HighPressureThreshold` |
+| `Gen2GcCallback` | Calls the pool on the finalizer thread after each generation 2 collection, and after the first one or two collections of any generation once the pool is created, so it drops its cached buffers when the memory load is at or above `HighPressureThreshold` times the GC's high memory load threshold |
 | `SecureArrayLifetime<T>`, `SecureSpanLifetime<T>` | `ref struct`s that zero an array they allocate pinned, or a span the caller has, on `Dispose` |
 | `FixedSpanBufferWriter<T>`, `FixedMemoryBufferWriter<T>` | `IBufferWriter<T>` over a fixed span or `Memory<T>`, throwing when it would pass its capacity |
 | `MemorySegment<T>`, `SequenceExtensions`, `RefSpanLease<T>`, `EmptyMemory<T>` | Build a `ReadOnlySequence<T>` from blocks, and read a sequence as one span, copying into a rented buffer only when it spans several segments |

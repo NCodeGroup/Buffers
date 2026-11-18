@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace NCode.Buffers.Tests;
@@ -130,9 +131,11 @@ public class BufferFactoryTests
         bool isSensitive
     )
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             BufferFactory.Rent(size, isSensitive, out Span<byte> _)
         );
+
+        Assert.Equal("minBufferSize", exception.ParamName);
     }
 
     [Theory]
@@ -145,9 +148,11 @@ public class BufferFactoryTests
         bool isSensitive
     )
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             BufferFactory.Rent(size, isSensitive, out Memory<byte> _)
         );
+
+        Assert.Equal("minBufferSize", exception.ParamName);
     }
 
     [Fact]
@@ -162,7 +167,8 @@ public class BufferFactoryTests
 
             owner.Dispose();
 
-            Assert.False(memory.Span.ContainsAnyExcept(0u));
+            var hasNonZero = memory.Span.ContainsAnyExcept(0u);
+            Assert.False(hasNonZero);
         }
     }
 
@@ -179,6 +185,42 @@ public class BufferFactoryTests
         );
 
         Assert.Equal(16, buffer.Length);
+    }
+
+    [Fact]
+    public void Rent_Span_WhenSensitive_DisposeZeroesTheWholeBuffer()
+    {
+        var filler = new RentSpanElement(-1, -1);
+        var owner = BufferFactory.Rent<RentSpanElement>(
+            10,
+            isSensitive: true,
+            out Span<RentSpanElement> buffer
+        );
+        var memory = owner.Memory;
+        memory.Span.Fill(filler);
+        Assert.Equal(10, buffer.Length);
+        Assert.True(memory.Length > buffer.Length);
+
+        owner.Dispose();
+
+        var contents = memory.ToArray();
+        Assert.All(contents, element => Assert.Equal(default, element));
+    }
+
+    [Fact]
+    public void Rent_Span_WhenSensitiveAndLargerThanAPage_DisposeZeroesTheBuffer()
+    {
+        const byte filler = 0xA5;
+        const int size = SecureMemoryPool<byte>.PageSize + 1;
+        var owner = BufferFactory.Rent(size, isSensitive: true, out Span<byte> buffer);
+        var memory = owner.Memory;
+        memory.Span.Fill(filler);
+        Assert.Equal(size, buffer.Length);
+
+        owner.Dispose();
+
+        var hasNonZero = memory.Span.ContainsAnyExcept((byte)0);
+        Assert.False(hasNonZero);
     }
 
     #endregion
@@ -223,6 +265,17 @@ public class BufferFactoryTests
         Assert.Equal("length", exception.ParamName);
     }
 
+    [Fact]
+    public void CreatePinnedArray_Generic_WhenLengthIsNegative_ThrowsArgumentOutOfRangeException()
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            using var lifetime = BufferFactory.CreatePinnedArray<int>(int.MinValue);
+        });
+
+        Assert.Equal("length", exception.ParamName);
+    }
+
     #endregion
 
     #region CreatePooledBufferWriter Tests
@@ -234,6 +287,32 @@ public class BufferFactoryTests
 
         // The secure pool hands out whole pages; the shared pool returns a far smaller array for a 1-element request.
         Assert.Equal(SecureMemoryPool<byte>.PageSize, writer.GetMemory(1).Length);
+    }
+
+    [Fact]
+    public void CreatePooledBufferWriter_WhenSensitive_DisposeZeroesEverySegment()
+    {
+        var filler = new WriterElement(-1, -1);
+        var elementsPerPage =
+            SecureMemoryPool<WriterElement>.PageSize / Unsafe.SizeOf<WriterElement>();
+        var writer = BufferFactory.CreatePooledBufferWriter<WriterElement>(isSensitive: true);
+        writer.GetSpan(elementsPerPage)[..elementsPerPage].Fill(filler);
+        writer.Advance(elementsPerPage);
+        writer.GetSpan(1)[..1].Fill(filler);
+        writer.Advance(1);
+        List<WriterElement[]> segments = [];
+        foreach (var memory in writer.AsReadOnlySequence)
+        {
+            var hasArray = MemoryMarshal.TryGetArray(memory, out var segment);
+            Assert.True(hasArray);
+            Assert.NotNull(segment.Array);
+            segments.Add(segment.Array);
+        }
+        Assert.Equal(2, segments.Count);
+
+        writer.Dispose();
+
+        Assert.All(segments, array => Assert.All(array, element => Assert.Equal(default, element)));
     }
 
     [Fact]
@@ -390,4 +469,11 @@ public class BufferFactoryTests
     // It disposes this type's Shared pool, so no other test's pool is affected.
     [StructLayout(LayoutKind.Sequential, Size = 8)]
     private struct SharedDisposeProbe { }
+
+    // Rent_Span_WhenSensitive_DisposeZeroesTheWholeBuffer and the pooled writer's zeroing test rent these element
+    // types, one each, so no other test's rentals reach their SecureMemoryPool<T>.Shared. The larger-than-a-page test
+    // rents byte: a buffer larger than a page is allocated for that one rental and never cached.
+    private readonly record struct RentSpanElement(long First, long Second);
+
+    private readonly record struct WriterElement(long First, long Second);
 }

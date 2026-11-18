@@ -33,6 +33,19 @@ public class SecureArrayLifetimeTests
         Assert.Equal(length, lifetime.Length);
     }
 
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(int.MinValue)]
+    public void Create_WhenLengthIsNegative_ThrowsArgumentOutOfRangeException(int length)
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            using var lifetime = SecureArrayLifetime<long>.Create(length);
+        });
+
+        Assert.Equal("length", exception.ParamName);
+    }
+
     #endregion
 
     #region Constructor Tests
@@ -42,9 +55,25 @@ public class SecureArrayLifetimeTests
     {
         using var lifetime = new SecureArrayLifetime<byte>(128);
 
-        Assert.NotNull(lifetime.PinnedArray);
         Assert.Equal(128, lifetime.PinnedArray.Length);
         Assert.Equal(128, lifetime.Length);
+        // The GC reports pinned-object-heap objects as its oldest generation; a new 128-byte array on the normal heap
+        // starts in generation 0.
+        var generation = GC.GetGeneration(lifetime.PinnedArray);
+        Assert.Equal(GC.MaxGeneration, generation);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(int.MinValue)]
+    public void Constructor_WhenLengthIsNegative_ThrowsArgumentOutOfRangeException(int length)
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            using var lifetime = new SecureArrayLifetime<byte>(length);
+        });
+
+        Assert.Equal("length", exception.ParamName);
     }
 
     [Fact]

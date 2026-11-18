@@ -46,8 +46,9 @@ on an earlier language version calls the static form instead, such as `BufferExt
 
 ## Dependencies
 
-The package depends on JetBrains.Annotations and Nerdbank.Streams. Nerdbank.Streams supplies the `Sequence<T>` that the
-pooled buffer writers return. <Proof source="PackageDependencies" />
+The package depends on Nerdbank.Streams, which supplies the `Sequence<T>` that the pooled buffer writers return.
+JetBrains.Annotations is a build-time reference that the package does not list. <Proof source="PackageDependencies" />
+<Proof source="Adr1022" />
 
 ## Supported versions
 

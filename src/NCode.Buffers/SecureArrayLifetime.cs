@@ -13,6 +13,7 @@ namespace NCode.Buffers;
 /// </summary>
 /// <typeparam name="T">The type of elements in the array. Must be an unmanaged value type.</typeparam>
 /// <param name="length">The length of the array to allocate.</param>
+/// <exception cref="ArgumentOutOfRangeException"><paramref name="length"/> is negative.</exception>
 /// <remarks>
 /// <para>
 /// This struct allocates a pinned array using <see cref="GC.AllocateUninitializedArray{T}(int, bool)"/>
@@ -41,6 +42,7 @@ public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable
     /// </summary>
     /// <param name="length">The length of the array to allocate.</param>
     /// <returns>A new <see cref="SecureArrayLifetime{T}"/> instance.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="length"/> is negative.</exception>
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Design",
         "CA1000:Do not declare static members on generic types",
@@ -59,7 +61,13 @@ public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable
     /// with pinned set to true, ensuring it will not be moved by the garbage collector.
     /// The array contents are uninitialized and may contain arbitrary data until explicitly written.
     /// </remarks>
-    public T[] PinnedArray { get; } = GC.AllocateUninitializedArray<T>(length, pinned: true);
+    public T[] PinnedArray { get; } = AllocatePinned(length);
+
+    private static T[] AllocatePinned(int length)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
+        return GC.AllocateUninitializedArray<T>(length, pinned: true);
+    }
 
     /// <summary>
     /// Gets the length of the pinned array.
@@ -87,8 +95,9 @@ public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable
     /// <returns>A span over the pinned array.</returns>
     /// <remarks>
     /// This conversion allows <see cref="SecureArrayLifetime{T}"/> to be used directly in APIs
-    /// that expect a <see cref="Span{T}"/> without explicit conversion. The span remains valid
-    /// until this lifetime is disposed.
+    /// that expect a <see cref="Span{T}"/> without explicit conversion. The span is over the pinned array itself.
+    /// <see cref="Dispose"/> zeroes the array and does not invalidate the span: after it, the span still reads and
+    /// writes the same array, which holds zeros. Stop using the span when you dispose the lifetime.
     /// </remarks>
     public static implicit operator Span<T>(SecureArrayLifetime<T> lifetime) =>
         lifetime.PinnedArray.AsSpan();

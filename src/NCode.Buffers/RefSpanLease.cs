@@ -23,7 +23,8 @@ namespace NCode.Buffers;
 /// in fields of reference types, boxed, or used in async methods.
 /// </para>
 /// <para>
-/// This struct is safe to dispose multiple times; subsequent disposals after the first are no-ops.
+/// Every call to <see cref="Dispose"/> calls the owner's <see cref="IDisposable.Dispose"/>, so disposing a lease twice
+/// does what disposing its owner twice does. A lease without an owner does nothing when disposed.
 /// </para>
 /// </remarks>
 /// <example>
@@ -34,8 +35,8 @@ namespace NCode.Buffers;
 /// // Memory is returned to pool when lease is disposed
 ///
 /// // Using with non-owned memory (no disposal needed)
-/// var lease = new RefSpanLease&lt;byte&gt;(null, stackalloc byte[256]);
-/// ProcessData(lease.Span);
+/// var stackLease = new RefSpanLease&lt;byte&gt;(null, stackalloc byte[256]);
+/// ProcessData(stackLease.Span);
 /// </code>
 /// </example>
 [PublicAPI]
