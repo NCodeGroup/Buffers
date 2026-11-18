@@ -503,12 +503,15 @@ public class SequenceExtensionsTests
         var lease = writer.GetSpanLease(isSensitive: true);
         var copy = lease.Span;
         Assert.Equal(elementsPerPage + 1, copy.Length);
-        Assert.All(copy.ToArray(), element => Assert.Equal(filler, element));
+        var copiedBefore = copy.ToArray();
+        Assert.All(copiedBefore, element => Assert.Equal(filler, element));
 
         lease.Dispose();
 
-        Assert.All(copy.ToArray(), element => Assert.Equal(default, element));
-        Assert.All(writer.AsReadOnlySequence.ToArray(), element => Assert.Equal(filler, element));
+        var copiedAfter = copy.ToArray();
+        var written = writer.AsReadOnlySequence.ToArray();
+        Assert.All(copiedAfter, element => Assert.Equal(default, element));
+        Assert.All(written, element => Assert.Equal(filler, element));
     }
 
     #endregion

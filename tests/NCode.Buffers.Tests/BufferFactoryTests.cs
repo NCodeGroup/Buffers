@@ -167,7 +167,8 @@ public class BufferFactoryTests
 
             owner.Dispose();
 
-            Assert.False(memory.Span.ContainsAnyExcept(0u));
+            var hasNonZero = memory.Span.ContainsAnyExcept(0u);
+            Assert.False(hasNonZero);
         }
     }
 
@@ -202,7 +203,8 @@ public class BufferFactoryTests
 
         owner.Dispose();
 
-        Assert.All(memory.ToArray(), element => Assert.Equal(default, element));
+        var contents = memory.ToArray();
+        Assert.All(contents, element => Assert.Equal(default, element));
     }
 
     [Fact]
@@ -217,7 +219,8 @@ public class BufferFactoryTests
 
         owner.Dispose();
 
-        Assert.False(memory.Span.ContainsAnyExcept((byte)0));
+        var hasNonZero = memory.Span.ContainsAnyExcept((byte)0);
+        Assert.False(hasNonZero);
     }
 
     #endregion
@@ -300,7 +303,8 @@ public class BufferFactoryTests
         List<WriterElement[]> segments = [];
         foreach (var memory in writer.AsReadOnlySequence)
         {
-            Assert.True(MemoryMarshal.TryGetArray(memory, out var segment));
+            var hasArray = MemoryMarshal.TryGetArray(memory, out var segment);
+            Assert.True(hasArray);
             Assert.NotNull(segment.Array);
             segments.Add(segment.Array);
         }
