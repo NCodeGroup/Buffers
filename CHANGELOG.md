@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Package validation compares each package with the published 5.2.1 package.
 - The site's proof of fixed-time comparison (R4) cites the test that compares spans whose only difference is in the first chunk, the buffer behavior reference cites the test that rents from `SecureMemoryPool<T>.Shared` after disposing it, and the proof that a fixed buffer writer never writes past its memory (R6) covers `Advance`, with the tests of counts near `int.MaxValue` and both writers' `Advance` ([#93](https://github.com/NCodeGroup/Buffers/issues/93), [#94](https://github.com/NCodeGroup/Buffers/issues/94)).
 
 ### Fixed
