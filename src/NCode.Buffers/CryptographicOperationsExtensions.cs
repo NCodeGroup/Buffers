@@ -68,6 +68,43 @@ public static class CryptographicOperationsExtensions
         }
     }
 
+    /// <summary>
+    /// Compares two spans as <see cref="CryptographicOperations.FixedTimeEquals(ReadOnlySpan{byte}, ReadOnlySpan{byte})"/>
+    /// does, at most <paramref name="maxElementsPerChunk"/> elements per call, so no call covers more than
+    /// <see cref="int.MaxValue"/> bytes.
+    /// </summary>
+    /// <typeparam name="T">The unmanaged value type of the span elements.</typeparam>
+    /// <param name="left">The first span to compare.</param>
+    /// <param name="right">The second span to compare.</param>
+    /// <param name="maxElementsPerChunk">The most elements one call compares; at least 1.</param>
+    /// <returns><see langword="true"/> when the spans have the same length and bytes.</returns>
+    internal static bool FixedTimeEqualsInChunks<T>(
+        ReadOnlySpan<T> left,
+        ReadOnlySpan<T> right,
+        int maxElementsPerChunk
+    )
+        where T : unmanaged
+    {
+        // The length is not secret: CryptographicOperations.FixedTimeEquals also returns false at once when it differs.
+        if (left.Length != right.Length)
+            return false;
+
+        // Every chunk is compared, whatever an earlier one returned, so the time depends only on the length.
+        var equal = true;
+        while (!left.IsEmpty)
+        {
+            var count = Math.Min(left.Length, maxElementsPerChunk);
+            equal &= CryptographicOperations.FixedTimeEquals(
+                MemoryMarshal.AsBytes(left[..count]),
+                MemoryMarshal.AsBytes(right[..count])
+            );
+            left = left[count..];
+            right = right[count..];
+        }
+
+        return equal;
+    }
+
     extension(CryptographicOperations)
     {
         /// <summary>
@@ -99,7 +136,7 @@ public static class CryptographicOperationsExtensions
         public static void ZeroMemory<T>(Span<T> buffer)
             where T : unmanaged
         {
-            CryptographicOperations.ZeroMemory(MemoryMarshal.AsBytes(buffer));
+            ZeroMemoryOrClear(buffer);
         }
 
         /// <summary>
@@ -137,10 +174,8 @@ public static class CryptographicOperationsExtensions
         public static bool FixedTimeEquals<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right)
             where T : unmanaged
         {
-            return CryptographicOperations.FixedTimeEquals(
-                MemoryMarshal.AsBytes(left),
-                MemoryMarshal.AsBytes(right)
-            );
+            var maxElementsPerChunk = int.MaxValue / Unsafe.SizeOf<T>();
+            return FixedTimeEqualsInChunks(left, right, maxElementsPerChunk);
         }
     }
 }
