@@ -38,8 +38,11 @@ rejected because tests use the standard encodings and pools as oracles.
 **The decision.** Every public generic API that pins, zeroes or compares its elements as bytes, or can rent from
 `SecureMemoryPool<T>`, declares `where T : unmanaged`.
 
-**Why.** Pinning, zeroing and comparing as bytes throw `ArgumentException` for a `T` that is or contains a reference,
-and under `where T : struct` such a `T` compiles and the call fails at run time.
+**Why.** Comparing as bytes views the elements through `MemoryMarshal.AsBytes<T>`, which throws `ArgumentException`
+for a `T` that is or contains a reference, so under `where T : struct` such a `T` compiles and the call fails at run
+time. A reference in a buffer points at an object outside it: zeroing the buffer clears the reference and leaves the
+object, where a secret would be, as it is. Pinned allocation is not a reason: on the targeted runtime it accepts any
+`T`.
 
 **What lost.** Keeping `struct` and documenting the exception. Keeping `struct` and checking
 `RuntimeHelpers.IsReferenceOrContainsReferences<T>()` for a clearer exception. `unmanaged` on every generic API of
@@ -49,7 +52,7 @@ and under `where T : struct` such a `T` compiles and the call fails at run time.
 `T` with `isSensitive: false`, which worked, no longer compiles; it uses `MemoryPool<T>.Shared` or `new Sequence<T>()`
 directly.
 
-<Proof source="Adr1006" />
+<Proof source="Adr1006" /> <Proof source="Adr1020" />
 
 ## Samples are compiled tests
 
