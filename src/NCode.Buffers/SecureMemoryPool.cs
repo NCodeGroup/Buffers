@@ -67,18 +67,24 @@ public class SecureMemoryPool<T> : MemoryPool<T>
     /// <remarks>
     /// Use this property to access a global instance of the pool without creating your own.
     /// The shared instance is suitable for most applications.
+    /// Its <c>Dispose</c> does nothing, as the <c>Dispose</c> of <c>MemoryPool&lt;T&gt;.Shared</c> does:
+    /// the instance serves every caller in the process, so no caller can end it for the others.
+    /// Dispose only a pool you create.
     /// </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Design",
         "CA1000:Do not declare static members on generic types",
         Justification = "Shipped public API; renaming or moving it would be a breaking change."
     )]
-    public static new SecureMemoryPool<T> Shared { get; } = new();
+    public static new SecureMemoryPool<T> Shared { get; } = new() { IsShared = true };
 
     // The number of elements in one pooled buffer of PageSize bytes, and at least one for an element larger than a page.
     private static readonly int ElementsPerPage = Math.Max(1, PageSize / Unsafe.SizeOf<T>());
 
     private int _disposed;
+
+    // Shared serves every caller in the process, so its Dispose does nothing, as MemoryPool<T>.Shared's does.
+    private bool IsShared { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether this pool has been disposed.
@@ -106,6 +112,10 @@ public class SecureMemoryPool<T> : MemoryPool<T>
 
     /// <inheritdoc />
     /// <value>Returns <see cref="Array.MaxLength"/>, the maximum length of an array.</value>
+    /// <remarks>
+    /// A buffer of up to this many elements is zeroed when its owner is disposed, whatever the element type.
+    /// Whether the runtime can allocate it depends on the memory available.
+    /// </remarks>
     public override int MaxBufferSize => Array.MaxLength;
 
     /// <summary>
@@ -122,11 +132,15 @@ public class SecureMemoryPool<T> : MemoryPool<T>
 
     /// <inheritdoc />
     /// <remarks>
-    /// Disposing the pool clears all cached memory buffers. Any buffers currently rented
-    /// will still be valid but will not be returned to the pool when disposed.
+    /// Disposing a pool you create clears its cached buffers and makes <see cref="Rent"/> throw
+    /// <see cref="ObjectDisposedException"/>. Buffers currently rented stay valid and are zeroed when their owners are
+    /// disposed, but are not returned to the pool. Disposing <c>Shared</c> does nothing.
     /// </remarks>
     protected override void Dispose(bool disposing)
     {
+        if (IsShared)
+            return;
+
         if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0 || !disposing)
             return;
 
@@ -151,7 +165,7 @@ public class SecureMemoryPool<T> : MemoryPool<T>
     /// a later <c>Dispose</c> of the same owner does nothing, so it never affects a later renter of the buffer.
     /// </para>
     /// </remarks>
-    /// <exception cref="ObjectDisposedException">The pool has been disposed.</exception>
+    /// <exception cref="ObjectDisposedException">The pool has been disposed. <c>Shared</c> never is.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="minBufferSize"/> is less than -1.</exception>
     public override IMemoryOwner<T> Rent(int minBufferSize = -1)
     {

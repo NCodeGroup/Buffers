@@ -85,7 +85,7 @@ supported target once it leaves support is another major version.
 
 ## Design rules
 
-Eight rules the code keeps, each recorded so that a change to it is decided in the record. Each gives the rule, its
+Nine rules the code keeps, each recorded so that a change to it is decided in the record. Each gives the rule, its
 reason, what it costs you and its record.
 
 ### No finalizer; memory is zeroed only by `Dispose`
@@ -146,6 +146,18 @@ no metrics, so measure in your workload.
 <Proof source="Adr1015" /> <Proof source="Metrics.None" />
 <Proof test="SecureMemoryPoolTests.TrimMemory_WhenHighPressure_ClearsQueue" />
 <Proof test="SecureMemoryPoolTests.Dispose_ClearsMemoryQueue" />
+
+### The shared pool ignores `Dispose`
+
+**The rule.** `SecureMemoryPool<T>.Shared` ignores `Dispose`, as `MemoryPool<T>.Shared` does. A pool you create keeps
+its rule: disposing it drops its cache and makes `Rent` throw `ObjectDisposedException`.
+
+**Reason.** `Shared` serves every caller in the process, so no caller can know that no other caller still needs it.
+
+**What it costs you.** You cannot drop `Shared`'s cache or stop its rentals. To control a pool's life, create your own
+and dispose it.
+
+<Proof source="Adr1023" />
 
 ### Zeroing and comparison call `CryptographicOperations`
 

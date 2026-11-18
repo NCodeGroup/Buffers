@@ -124,7 +124,7 @@ public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>
     /// <paramref name="count"/> is negative.
     /// </exception>
     /// <exception cref="InvalidOperationException">
-    /// Advancing by <paramref name="count"/> would exceed the buffer capacity.
+    /// <paramref name="count"/> is greater than <see cref="FreeCapacity"/>. The writer is left as it was.
     /// </exception>
     /// <remarks>
     /// Call this method after writing data to the span returned by <see cref="GetSpan"/> to update the write position.
@@ -144,7 +144,7 @@ public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>
             );
         }
 
-        if (WrittenCount + count > Buffer.Length)
+        if (count > Buffer.Length - WrittenCount)
         {
             throw new InvalidOperationException(
                 $"Cannot advance past the end of the buffer. Current position: {WrittenCount}, Capacity: {Buffer.Length}, Requested advance: {count}."

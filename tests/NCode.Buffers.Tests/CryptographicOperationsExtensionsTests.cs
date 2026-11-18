@@ -1,6 +1,8 @@
 // Copyright © NCode Group
 // SPDX-License-Identifier: Apache-2.0
 
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace NCode.Buffers.Tests;
@@ -125,6 +127,20 @@ public class CryptographicOperationsExtensionsTests
         Assert.False(result);
     }
 
+    // 536,870,912 ints are 2,147,483,648 bytes, one more than int.MaxValue. The span points at no memory:
+    // spans of different lengths are unequal before any element is read, so the test allocates nothing.
+    [Fact]
+    public void FixedTimeEquals_WhenOneSpanHoldsMoreThanInt32MaxValueBytes_ReturnsFalse()
+    {
+        const int length = 536_870_912;
+        ref var noElement = ref Unsafe.NullRef<int>();
+        var longer = MemoryMarshal.CreateReadOnlySpan(ref noElement, length);
+
+        var result = CryptographicOperations.FixedTimeEquals<int>(longer, ReadOnlySpan<int>.Empty);
+
+        Assert.False(result);
+    }
+
     [Fact]
     public void FixedTimeEquals_BothEmpty_ReturnsTrue()
     {
@@ -146,6 +162,125 @@ public class CryptographicOperationsExtensionsTests
         var result = CryptographicOperations.FixedTimeEquals<Guid>(left, right);
 
         Assert.True(result);
+    }
+
+    #endregion
+
+    #region FixedTimeEqualsInChunks Tests
+
+    [Fact]
+    public void FixedTimeEqualsInChunks_WhenEveryChunkMatches_ReturnsTrue()
+    {
+        int[] left = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        int[] right = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+        var result = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            left,
+            right,
+            maxElementsPerChunk: 3
+        );
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void FixedTimeEqualsInChunks_WhenOnlyTheFirstChunkDiffers_ReturnsFalse()
+    {
+        int[] left = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        int[] right = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+        var result = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            left,
+            right,
+            maxElementsPerChunk: 3
+        );
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void FixedTimeEqualsInChunks_WhenOnlyTheLastChunkDiffers_ReturnsFalse()
+    {
+        int[] left = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        int[] right = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+
+        var result = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            left,
+            right,
+            maxElementsPerChunk: 3
+        );
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void FixedTimeEqualsInChunks_WhenLengthsDiffer_ReturnsFalse()
+    {
+        int[] left = [1, 2, 3, 4];
+        int[] right = [1, 2, 3];
+
+        var result = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            left,
+            right,
+            maxElementsPerChunk: 2
+        );
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void FixedTimeEqualsInChunks_WhenBothAreEmpty_ReturnsTrue()
+    {
+        var result = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            ReadOnlySpan<int>.Empty,
+            ReadOnlySpan<int>.Empty,
+            maxElementsPerChunk: 2
+        );
+
+        Assert.True(result);
+    }
+
+    [Theory]
+    [InlineData(4, 4)]
+    [InlineData(6, 3)]
+    [InlineData(5, 1)]
+    public void FixedTimeEqualsInChunks_WhenEveryElementMatchesAtAChunkBoundary_ReturnsTrue(
+        int length,
+        int maxElementsPerChunk
+    )
+    {
+        var left = new int[length];
+        var right = new int[length];
+
+        var result = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            left,
+            right,
+            maxElementsPerChunk
+        );
+
+        Assert.True(result);
+    }
+
+    [Theory]
+    [InlineData(4, 4)]
+    [InlineData(6, 3)]
+    [InlineData(5, 1)]
+    public void FixedTimeEqualsInChunks_WhenOnlyTheLastElementDiffersAtAChunkBoundary_ReturnsFalse(
+        int length,
+        int maxElementsPerChunk
+    )
+    {
+        var left = new int[length];
+        var right = new int[length];
+        right[^1] = 1;
+
+        var result = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            left,
+            right,
+            maxElementsPerChunk
+        );
+
+        Assert.False(result);
     }
 
     #endregion

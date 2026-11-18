@@ -57,6 +57,53 @@ public class SecureMemoryPoolTests
         Assert.NotNull(intPool);
     }
 
+    [Fact]
+    public void Shared_WhenDisposed_RentStillReturnsABuffer()
+    {
+        var shared = SecureMemoryPool<SharedDisposeRentProbe>.Shared;
+        shared.Dispose();
+
+        using var owner = shared.Rent(16);
+
+        var memory = owner.Memory;
+        Assert.True(memory.Length >= 16);
+    }
+
+    [Fact]
+    public void Shared_WhenDisposed_IsNotDisposed()
+    {
+        var shared = SecureMemoryPool<SharedDisposeStateProbe>.Shared;
+
+        shared.Dispose();
+
+        Assert.False(shared.IsDisposed);
+    }
+
+    [Fact]
+    public void Shared_WhenDisposed_KeepsItsCachedBuffers()
+    {
+        var shared = SecureMemoryPool<SharedDisposeCacheProbe>.Shared;
+        var owner = shared.Rent(1);
+        owner.Dispose();
+        Assert.Single(shared.MemoryQueue);
+
+        shared.Dispose();
+
+        Assert.Single(shared.MemoryQueue);
+    }
+
+    [Fact]
+    public void Shared_WhenDisposed_TakesBackTheBuffersItRents()
+    {
+        var shared = SecureMemoryPool<SharedDisposeReturnProbe>.Shared;
+        shared.Dispose();
+        var owner = shared.Rent(1);
+
+        owner.Dispose();
+
+        Assert.Single(shared.MemoryQueue);
+    }
+
     #endregion
 
     #region Property Tests
@@ -574,4 +621,17 @@ public class SecureMemoryPoolTests
 
     [StructLayout(LayoutKind.Sequential, Size = 8192)]
     private struct LargeValue { }
+
+    // Each test that disposes a Shared pool uses an element type of its own, so no other test's pool is affected.
+    [StructLayout(LayoutKind.Sequential, Size = 8)]
+    private struct SharedDisposeRentProbe { }
+
+    [StructLayout(LayoutKind.Sequential, Size = 8)]
+    private struct SharedDisposeStateProbe { }
+
+    [StructLayout(LayoutKind.Sequential, Size = 8)]
+    private struct SharedDisposeCacheProbe { }
+
+    [StructLayout(LayoutKind.Sequential, Size = 8)]
+    private struct SharedDisposeReturnProbe { }
 }

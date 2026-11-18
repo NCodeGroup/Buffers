@@ -1,6 +1,6 @@
 # 1015. The secure pool's cache has no size limit and is dropped under memory pressure
 
-- **Status:** Accepted
+- **Status:** Accepted (amended by 1023)
 - **Date:** 2026-11-17
 - **Deciders:** NCode Group
 

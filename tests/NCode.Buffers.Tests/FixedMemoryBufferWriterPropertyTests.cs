@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 using FsCheck;
+using FsCheck.Fluent;
 using FsCheck.Xunit;
 
 namespace NCode.Buffers.Tests;
@@ -68,6 +69,44 @@ public class FixedMemoryBufferWriterPropertyTests
         return true;
     }
 
+    [Property(Replay = Seed, Arbitrary = [typeof(CountsNearInt32Limits)])]
+    public bool Advance_GivenCountsNearInt32Limits_OnlyThrowsDocumentedExceptionsAndKeepsTheInvariant(
+        byte[] buffer,
+        int[] counts
+    )
+    {
+        var writer = new FixedMemoryBufferWriter<byte>(buffer);
+
+        foreach (var count in counts)
+        {
+            var before = writer.WrittenCount;
+
+            try
+            {
+                writer.Advance(count);
+            }
+            catch (Exception ex)
+                when (ex is ArgumentOutOfRangeException or InvalidOperationException)
+            {
+                if (writer.WrittenCount != before)
+                {
+                    return false;
+                }
+            }
+
+            if (
+                writer.WrittenCount < 0
+                || writer.WrittenCount > writer.Capacity
+                || writer.WrittenCount + writer.FreeCapacity != writer.Capacity
+            )
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     #endregion
 
     #region GetMemory Tests
@@ -113,4 +152,21 @@ public class FixedMemoryBufferWriterPropertyTests
     }
 
     #endregion
+
+    // Mixes small counts with counts at the ends of int, so that a sequence of counts passes int.MaxValue.
+    private static class CountsNearInt32Limits
+    {
+        public static Arbitrary<int> Int32()
+        {
+            var small = Gen.Choose(-2, 32);
+            var nearLimits = Gen.Elements(
+                int.MaxValue,
+                int.MaxValue - 1,
+                int.MaxValue - 15,
+                int.MinValue
+            );
+            var mixed = Gen.Frequency((3, small), (1, nearLimits));
+            return Arb.From(mixed);
+        }
+    }
 }
