@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Tests that a buffer `BufferFactory.Rent` returns into a `Span<T>` with `isSensitive: true` is all zeros after its owner is disposed, past the requested length too, and that a sensitive buffer larger than one page is all zeros after its owner is disposed; that every segment of a sensitive `CreatePooledBufferWriter` with two segments is all zeros after the writer is disposed; and that the copy `GetSpanLease` makes of a sensitive writer with two segments is all zeros after the lease is disposed, while the writer keeps its data. `SecureArrayLifetimeTests.Constructor_AllocatesPinnedArray` asserts that the array is on the Pinned Object Heap ([#87](https://github.com/NCodeGroup/Buffers/issues/87)).
-- `./build/gate.ps1` runs `build/Test-XmlDocExamples.ps1`, which compiles every example in the XML documentation and fails on one that does not compile ([#83](https://github.com/NCodeGroup/Buffers/issues/83)).
+- `./build/gate.ps1` runs `build/Test-XmlDocExamples.ps1`, which compiles every example in the XML documentation and fails on one that does not compile or whose `<code>` tag is not alone on its line ([#83](https://github.com/NCodeGroup/Buffers/issues/83)).
 
 ### Changed
 

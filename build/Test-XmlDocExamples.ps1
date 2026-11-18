@@ -5,9 +5,9 @@
     IntelliSense compiles as written.
 .DESCRIPTION
     Each <code> block of a /// comment becomes a method body in artifacts/xml-examples/Examples.cs, with #line
-    directives that point each error at its source line, and the script builds that file against the library. An
-    example may call ProcessData(ReadOnlySpan<byte>) and read memoryOwner, an IMemoryOwner<byte>; the script declares
-    both.
+    directives that point each error at its source line, and the script builds that file against the library. A
+    <code> tag that is not alone on its /// line fails the check, so no example is skipped. An example may call
+    ProcessData(ReadOnlySpan<byte>) and read memoryOwner, an IMemoryOwner<byte>; the script declares both.
 #>
 [CmdletBinding()]
 param()
@@ -50,6 +50,13 @@ foreach ($file in Get-ChildItem -LiteralPath $source -Filter *.cs -Recurse | Sor
 }
 [void]$code.AppendLine('}')
 if (-not $count) { throw "XML examples: $source has no <code> block; the extraction is broken." }
+# The loop above takes only a <code> tag alone on its /// line; fail on any other instead of dropping its example.
+$tags = @(Get-ChildItem -LiteralPath $source -Filter *.cs -Recurse | Select-String -Pattern '^\s*///.*<code\b' -CaseSensitive)
+if ($tags.Count -ne $count) {
+    "XML examples: FAILED. $($tags.Count) <code> tags in $source, but $count examples extracted; put each <code> and </code> alone on its /// line:"
+    $tags | Where-Object { $_.Line.Trim() -cne '/// <code>' } | ForEach-Object { "  $([IO.Path]::GetRelativePath($root, $_.Path) -replace '\\', '/'):$($_.LineNumber)" }
+    exit 1
+}
 
 $utf8 = [Text.UTF8Encoding]::new($false)
 [IO.File]::WriteAllText((Join-Path $out 'Examples.cs'), $code.ToString(), $utf8)
