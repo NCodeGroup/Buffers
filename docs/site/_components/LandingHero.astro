@@ -39,7 +39,8 @@
   .hero .tagline p + p { margin-top: var(--nc-space-4); }
   .hero .tagline .landing-limit { color: var(--nc-color-text); }
 
-  /* Below 50rem the drawing follows the copy, at the copy's width; above, it stands in the hero's second column. */
+  /* Below 72rem, where the sidebar leaves the hero too narrow for two columns, the drawing follows the copy, at
+     the copy's width; from 72rem it stands in the hero's second column. */
   .hero > .hero-html {
     order: 2;
     width: 100%;
@@ -48,6 +49,10 @@
   }
   @media (min-width: 50rem) {
     .hero > .hero-html { width: 100%; max-width: 26rem; justify-self: end; }
+  }
+  @media (min-width: 50rem) and (max-width: 71.99rem) {
+    .hero:has(.landing-eyebrow) { grid-template-columns: minmax(0, 1fr); }
+    .hero:has(.landing-eyebrow) > .hero-html { justify-self: start; }
   }
 
   .landing-monitor {

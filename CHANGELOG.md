@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.3] - 2026-11-18
+
 ### Changed
 
 - Package validation compares each package with the published 5.2.2 package.
+- The documentation site's home page shows the sidebar, as every other page does, so the navigation stays in place when you choose Overview, and on a phone the home page has the menu button.
+- The site's API map and buffer behavior matrix draw each entry as a card, so every field shows at any window width, where they hid columns behind a sideways scroll.
+- A card on the documentation site that holds an evidence link fits its column, so the home page and the quick start no longer scroll sideways beside the sidebar.
+- The package's project website, the link nuget.org shows as "Project website", is the documentation site, https://ncodegroup.github.io/Buffers/; the source repository link opens GitHub.
 
 ## [5.2.2] - 2026-11-18
 
@@ -211,7 +217,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.2.2...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.2.3...HEAD
+[5.2.3]: https://github.com/NCodeGroup/Buffers/compare/v5.2.2...v5.2.3
 [5.2.2]: https://github.com/NCodeGroup/Buffers/compare/v5.2.1...v5.2.2
 [5.2.1]: https://github.com/NCodeGroup/Buffers/compare/v5.2.0...v5.2.1
 [5.2.0]: https://github.com/NCodeGroup/Buffers/compare/v5.1.3...v5.2.0

@@ -1,7 +1,7 @@
 ---
 // One group of the API map on /reference/api-map/: the entries of api-map.json that name the group, in file order, as one
-// table. Each row has the entry's id as its anchor. Below 40rem each row is a card. The text fields take `code` and
-// links. Usage:
+// table whose rows are drawn as cards, so no field is hidden at any width. Each row has the entry's id as its anchor.
+// The text fields take `code` and links. Usage:
 // <ApiMap group="secure-memory" />
 import apiMap from '@site/components/data/api-map.json';
 import { inline, sitePath, sourceLink } from '@site/components/lib/evidence';
@@ -34,56 +34,63 @@ const headings = ['Member', 'Signature', 'What it does', '`T`', 'Throws', 'Expla
 ---
 
 <div class="api-map not-content">
-  <div class="api-map__scroll" role="region" aria-label={`API map: ${known.title.replace(/`/g, '')}`} tabindex="0">
-    <table class="api-map__table">
-      <thead>
-        <tr>
-          {headings.map((heading) => (
-            <th scope="col" set:html={inline(heading)} />
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => (
-          <tr id={row.id} class="api-map__row">
-            <th scope="row" data-label="Member">
-              <code>{row.member ? `${row.type}.${row.member}` : row.type}</code>
-            </th>
-            <td data-label="Signature">
-              {row.signatures.map((signature) => (
-                <code class="api-map__signature">{signature}</code>
-              ))}
-            </td>
-            <td data-label="What it does" set:html={inline(row.summary)} />
-            <td data-label="T">{row.constraint === 'Any' ? 'Any' : <code>{row.constraint}</code>}</td>
-            <td data-label="Throws" set:html={inline(row.throws)} />
-            <td data-label="Explained on">
-              <a href={row.href}>{row.page}</a>
-            </td>
-            <td data-label="Source">
-              <a href={row.source.href} rel="noopener">{row.source.label}</a>
-            </td>
-          </tr>
+  <table class="api-map__table" aria-label={`API map: ${known.title.replace(/`/g, '')}`}>
+    <thead>
+      <tr>
+        {headings.map((heading) => (
+          <th scope="col" set:html={inline(heading)} />
         ))}
-      </tbody>
-    </table>
-  </div>
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((row) => (
+        <tr id={row.id} class="api-map__row">
+          <th scope="row" data-label="Member">
+            <code>{row.member ? `${row.type}.${row.member}` : row.type}</code>
+          </th>
+          <td data-label="Signature">
+            {row.signatures.map((signature) => (
+              <code class="api-map__signature">{signature}</code>
+            ))}
+          </td>
+          <td data-label="What it does" set:html={inline(row.summary)} />
+          <td data-label="T">{row.constraint === 'Any' ? 'Any' : <code>{row.constraint}</code>}</td>
+          <td data-label="Throws" set:html={inline(row.throws)} />
+          <td data-label="Explained on">
+            <a href={row.href}>{row.page}</a>
+          </td>
+          <td data-label="Source">
+            <a href={row.source.href} rel="noopener">{row.source.label}</a>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
 </div>
 
 <style>
   .api-map { margin-block: var(--nc-space-5); color: var(--nc-color-text); }
-  .api-map__scroll { overflow-x: auto; }
-  .api-map__scroll:focus-visible { outline: var(--nc-focus-width) solid var(--nc-color-focus); outline-offset: var(--nc-focus-gap); }
-  .api-map__table {
-    width: 100%;
-    min-width: 64rem;
-    border-collapse: collapse;
-    font-size: var(--sl-text-sm);
-    line-height: 1.3;
+  .api-map__table { display: block; width: 100%; font-size: var(--sl-text-sm); line-height: 1.45; }
+  .api-map__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .api-map__table tbody { display: grid; gap: var(--nc-space-4); }
+  .api-map__row {
+    scroll-margin-top: calc(var(--sl-nav-height) + var(--nc-space-5));
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    gap: var(--nc-space-3) var(--nc-space-5);
+    padding: var(--nc-space-4) var(--nc-space-5);
+    border: var(--nc-border-hair) solid var(--nc-color-border);
+    border-radius: var(--nc-radius-panel);
+    background: var(--nc-color-surface);
   }
-  .api-map__table th,
-  .api-map__table td { padding: var(--nc-space-3); border-bottom: var(--nc-border-hair) solid var(--nc-color-border); text-align: start; vertical-align: top; }
-  .api-map__table thead th {
+  .api-map__row:target { border-color: var(--nc-color-primary-text); box-shadow: 0 0 0 1px var(--nc-color-primary-text); }
+  .api-map__row > :is(th, td) { display: block; padding: 0; border: 0; text-align: start; }
+  .api-map__row > :is(th, [data-label='Signature'], [data-label='What it does']) { grid-column: 1 / -1; }
+  .api-map__row > th { font-size: var(--sl-text-base); font-weight: 600; }
+  .api-map__row > td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: var(--nc-space-1);
     font-size: 0.6875rem;
     font-stretch: var(--nc-type-label-stretch);
     font-weight: 600;
@@ -91,42 +98,9 @@ const headings = ['Member', 'Signature', 'What it does', '`T`', 'Throws', 'Expla
     text-transform: uppercase;
     color: var(--nc-color-text-muted);
   }
-  .api-map__table tbody th { font-weight: 600; }
-  .api-map__row { scroll-margin-top: calc(var(--sl-nav-height) + var(--nc-space-5)); }
-  .api-map__row:target { background: var(--nc-color-surface-sunken); }
   .api-map__table a { color: var(--nc-color-text); text-decoration-color: var(--nc-color-border-strong); text-underline-offset: 0.2em; overflow-wrap: anywhere; }
   .api-map__table a:hover { color: var(--nc-color-primary-text); }
   .api-map__table a:focus-visible { outline: var(--nc-focus-width) solid var(--nc-color-focus); outline-offset: var(--nc-focus-gap); }
-  .api-map :global(code) { font-family: var(--nc-font-mono); font-stretch: var(--nc-type-code-stretch); font-size: 0.88em; overflow-wrap: anywhere; }
+  .api-map :global(code) { font-family: var(--nc-font-mono); font-stretch: var(--nc-type-code-stretch); font-size: 0.88em; overflow-wrap: break-word; }
   .api-map__signature { display: block; margin-bottom: var(--nc-space-1); }
-
-  @media (max-width: 40rem) {
-    .api-map__table { min-width: 0; }
-    .api-map__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-    .api-map__table,
-    .api-map__table tbody,
-    .api-map__table th,
-    .api-map__table td { display: block; }
-    .api-map__table .api-map__row {
-      display: block;
-      margin-bottom: var(--nc-space-4);
-      padding: var(--nc-space-4);
-      border: var(--nc-border-hair) solid var(--nc-color-border);
-      border-radius: var(--nc-radius-panel);
-      background: var(--nc-color-surface);
-    }
-    .api-map__table th,
-    .api-map__table td { padding: var(--nc-space-1) 0; border: 0; }
-    .api-map__table td::before,
-    .api-map__table th[data-label]::before {
-      content: attr(data-label);
-      display: block;
-      font-size: 0.6875rem;
-      font-stretch: var(--nc-type-label-stretch);
-      font-weight: 600;
-      letter-spacing: var(--nc-type-label-tracking);
-      text-transform: uppercase;
-      color: var(--nc-color-text-muted);
-    }
-  }
 </style>
