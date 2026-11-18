@@ -2,7 +2,8 @@
 // The matrix on /reference/buffer-behavior/: every way of getting memory against what it is, what it does and what you
 // hold. It renders the `outcomes` of buffers.json, in file order, the same data "Which buffer?" draws its cards from,
 // so the two cannot disagree; BufferBehaviorMatrixTests asserts the same file. Three radio inputs filter the rows with
-// CSS `:has()` only: where a browser lacks it, every row shows. Below 40rem each row is a card. Usage:
+// CSS `:has()` only: where a browser lacks it, every row shows. Each row is a card, its yes-or-no facts side by side
+// where they fit, so no column is hidden at any width. Usage:
 // <BufferBehaviorMatrix />
 import { Status } from '@ncodegroup/docs/components';
 import buffers from '@site/components/data/buffers.json';
@@ -60,48 +61,46 @@ const headings = [
     <input class="behavior-matrix__radio behavior-matrix__radio--other" type="radio" name="behavior-matrix-filter" id="behavior-matrix-other" />
     <label class="behavior-matrix__chip" for="behavior-matrix-other">For other data</label>
   </fieldset>
-  <div class="behavior-matrix__scroll" role="region" aria-label="Buffer behavior matrix" tabindex="0">
-    <table class="behavior-matrix__table">
-      <thead>
-        <tr>
-          {headings.map((heading) => (
-            <th scope="col" set:html={inline(heading)} />
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => (
-          <tr id={`behavior-${row.id}`} class="behavior-matrix__row" data-secret={row.secret ? 'true' : 'false'}>
-            <th scope="row" data-label="Buffer">
-              <a href={sitePath(`/start/which-buffer/#${row.anchor}`)} set:html={inline(row.name)} />
-            </th>
-            {row.flags.map((flag) => (
-              <td data-label={flag.label}>
-                {flag.value === true && <Status state="success">Yes</Status>}
-                {flag.value === false && <Status state="off">No</Status>}
-                {flag.value === null || flag.value === undefined ? <span class="behavior-matrix__na">Does not apply</span> : null}
-              </td>
-            ))}
-            {row.texts.map((cell) => (
-              <td data-label={cell.label} set:html={inline(cell.value)} />
-            ))}
-            <td data-label="Evidence">
-              <ul class="behavior-matrix__evidence">
-                {row.tests.map((test) => (
-                  <li>
-                    <a href={test.href} rel="noopener"><span class="behavior-matrix__context">{test.context}.</span>{test.label}</a>
-                  </li>
-                ))}
-                <li>
-                  <a href={matrixTests.href} rel="noopener">{matrixTests.label}</a>
-                </li>
-              </ul>
-            </td>
-          </tr>
+  <table class="behavior-matrix__table" aria-label="Buffer behavior matrix">
+    <thead>
+      <tr>
+        {headings.map((heading) => (
+          <th scope="col" set:html={inline(heading)} />
         ))}
-      </tbody>
-    </table>
-  </div>
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((row) => (
+        <tr id={`behavior-${row.id}`} class="behavior-matrix__row" data-secret={row.secret ? 'true' : 'false'}>
+          <th scope="row" data-label="Buffer">
+            <a href={sitePath(`/start/which-buffer/#${row.anchor}`)} set:html={inline(row.name)} />
+          </th>
+          {row.flags.map((flag) => (
+            <td data-label={flag.label}>
+              {flag.value === true && <Status state="success">Yes</Status>}
+              {flag.value === false && <Status state="off">No</Status>}
+              {flag.value === null || flag.value === undefined ? <span class="behavior-matrix__na">Does not apply</span> : null}
+            </td>
+          ))}
+          {row.texts.map((cell) => (
+            <td class="behavior-matrix__text" data-label={cell.label} set:html={inline(cell.value)} />
+          ))}
+          <td class="behavior-matrix__proof" data-label="Evidence">
+            <ul class="behavior-matrix__evidence">
+              {row.tests.map((test) => (
+                <li>
+                  <a href={test.href} rel="noopener"><span class="behavior-matrix__context">{test.context}.</span>{test.label}</a>
+                </li>
+              ))}
+              <li>
+                <a href={matrixTests.href} rel="noopener">{matrixTests.label}</a>
+              </li>
+            </ul>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
 </div>
 
 <style>
