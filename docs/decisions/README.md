@@ -83,4 +83,5 @@ override in `AGENTS.md`.
 | [ADR-1018](1018-the-library-neither-locks-nor-encrypts-memory.md) | The library neither locks nor encrypts memory | Accepted |
 | [ADR-1019](1019-a-string-separator-that-matches-no-text-leaves-the-value-whole.md) | A string separator that matches no text leaves the value whole | Accepted |
 | [ADR-1020](1020-the-unmanaged-constraint-rests-on-byte-views-and-zeroing-not-on-pinned-allocation.md) | The unmanaged constraint rests on byte views and zeroing, not on pinned allocation (amends 1006) | Accepted |
+| [ADR-1021](1021-a-negative-length-or-size-throws-argumentoutofrangeexception-before-anything-is-allocated.md) | A negative length or size throws ArgumentOutOfRangeException before anything is allocated | Accepted |
 | [ADR-1023](1023-the-shared-secure-pool-ignores-dispose.md) | The shared secure pool ignores Dispose (amends 1015) | Accepted |
