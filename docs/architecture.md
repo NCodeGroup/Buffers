@@ -40,17 +40,32 @@ Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers return.
 - Shipping code takes buffers only from `BufferFactory` and encodings only from `SecureEncoding`; analyzers ban the
   alternatives ([ADR-1003](decisions/1003-shipping-code-takes-buffers-and-encodings-through-bufferfactory-and-secureencoding.md)).
 - Ownership is explicit: whatever rents memory returns an `IDisposable` owner, and the memory is zeroed and returned only
-  through `Dispose`. There are no finalizers on buffers.
+  through `Dispose`. There are no finalizers on buffers
+  ([ADR-1011](decisions/1011-buffers-have-no-finalizer-and-are-zeroed-only-by-dispose.md)).
+- Pooled secure buffers are one page, 4096 bytes; a larger request gets a pinned array of its own
+  ([ADR-1012](decisions/1012-the-secure-pool-caches-buffers-of-one-4096-byte-page.md)).
+- Pinned buffers are allocated without being cleared
+  ([ADR-1013](decisions/1013-pinned-buffers-are-allocated-without-being-cleared.md)).
+- `SecureSpanLifetime<T>` zeroes the caller's span and does not pin it
+  ([ADR-1014](decisions/1014-securespanlifetime-zeroes-the-callers-span-and-does-not-pin-it.md)).
+- The secure pool's cache has no size limit, and a Gen2 collection under memory pressure drops it
+  ([ADR-1015](decisions/1015-the-secure-pools-cache-has-no-size-limit-and-is-dropped-under-memory-pressure.md)).
+- Zeroing and fixed-time comparison call `CryptographicOperations`
+  ([ADR-1016](decisions/1016-zeroing-and-fixed-time-comparison-call-cryptographicoperations.md)).
+- The pooled buffer writers return Nerdbank.Streams' `Sequence<T>`
+  ([ADR-1017](decisions/1017-the-pooled-buffer-writers-return-nerdbank-streams-sequence.md)).
+- The library neither locks nor encrypts memory
+  ([ADR-1018](decisions/1018-the-library-neither-locks-nor-encrypts-memory.md)).
 - The public API is tracked in `PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt`, and each pack is validated against
   the last release ([ADR-1001](decisions/1001-each-package-is-validated-against-the-last-released-package.md)).
 
 ## Build and Release
 
-`ci.yml` builds, tests and packs every pull request and runs CodeQL. Merging a release's pull request makes
-`tag-release.yml` run `ci.yml` again on the merged commit and, once it passes, tag that commit, signed with gitsign,
-and publish the GitHub release, then start `publish.yml`, which tests and packs the tagged commit, pushes to nuget.org
-through trusted publishing after a maintainer approves, and then attaches provenance and opens the baseline pull
-request (project-template
+`ci.yml` builds, tests and packs every pull request. CodeQL scans the C# code and the workflows through GitHub's code
+scanning default setup. Merging a release's pull request makes `tag-release.yml` run `ci.yml` again on the merged
+commit and, once it passes, tag that commit, signed with gitsign, and publish the GitHub release, then start
+`publish.yml`, which tests and packs the tagged commit, pushes to nuget.org through trusted publishing after a
+maintainer approves, and then attaches provenance and opens the baseline pull request (project-template
 [ADR-0026](decisions/project-template/0026-tests-gate-coverage-at-the-gold-thresholds-and-a-release-waits-for-them.md),
 [ADR-0028](decisions/project-template/0028-github-releases-are-immutable-and-their-tags-signed.md) and
 [ADR-0151](decisions/project-template/0151-release-follow-ups-are-jobs-publish-calls.md)).

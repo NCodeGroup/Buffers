@@ -1,0 +1,44 @@
+---
+title: Review a change that touches secrets
+description: One checklist per guide, and the text to search a diff for, so a review of code that holds keys or passwords finds the common leaks.
+---
+
+import KindLabel from '@site/components/KindLabel.astro';
+import LeakCard from '@site/components/LeakCard.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+import ReviewChecklist from '@site/components/ReviewChecklist.astro';
+
+<KindLabel kind="how-to" />
+
+This is your situation when you review a change that holds a key, a password or a token. Each guide on this site ends
+with a checklist. This page gathers them: one checklist per guide, and each line links to the guide that explains it.
+
+## The checklist
+
+<ReviewChecklist />
+
+## Search the diff for
+
+Each of these is a sign of a leak. Search the diff for the text, and read the guide in the last column for what to
+write instead.
+
+| Search for | Why | Guide |
+| --- | --- | --- |
+| `Encoding.UTF8`, `Encoding.ASCII`, `new UTF8Encoding(` | A lenient decoder replaces bad bytes with characters nobody sent. <LeakCard leak="L8" /> | [Reject malformed UTF-8 and ASCII](/guides/strict-decoding/) |
+| `ArrayPool<byte>.Shared`, `MemoryPool<byte>.Shared` | The shared pools do not pin or zero what they hand out. <LeakCard leak="L3" /> | [Which buffer?](/start/which-buffer/) |
+| `isSensitive: false` | The buffer comes from the shared pool, on a path that holds a secret. <LeakCard leak="L3" /> | [Which buffer?](/start/which-buffer/) |
+| `.ToArray()` | The copy is on its own: nothing zeroes it. <LeakCard leak="L9" /> | [Work with an API that takes or returns byte[]](/guides/byte-array-apis/) |
+| `ToString()`, `GetString(`, `Convert.ToBase64String(` | A string cannot be erased. <LeakCard leak="L5" /> | [Read a secret without leaving a string behind](/guides/read-a-secret-without-a-string/) |
+| `==` or `SequenceEqual(` on a MAC or a key | The comparison stops at the first difference, and its time tells where that was. <LeakCard leak="L7" /> | [Verify a MAC without leaking timing](/guides/verify-a-mac/) |
+| `new ArrayBufferWriter` | Each time it grows, the smaller array is dropped with part of the secret in it. <LeakCard leak="L4" /> | [Build a secret of unknown length, and read it as one span](/guides/secret-of-unknown-length/) |
+| `Rent(` without `using` | An exception, or an early return, skips the cleanup. <LeakCard leak="L6" /> | [Ownership: who zeroes what, and when](/concepts/ownership/) |
+| `new Pipe(`, `PipeReader.Create(` without a pool | The pipe's buffers come from the shared pool, which neither pins nor zeroes them. <LeakCard leak="L3" /> | [Give pipes and stream readers a pool that cleans up](/guides/pipes-and-streams/) |
+| `Advance(span.Length)` | `GetSpan` returns all the free space, so the writer commits elements you never wrote. <Proof sample="SitePitfallAdvanceBySpanLength" /> | [Serialize into a buffer that must not grow](/guides/fixed-size-buffer/) |
+
+A checklist finds the common leaks. It is not an audit.
+
+<Related>
+- **Do** [Test that your code zeroes its secrets](/guides/test-zeroing/)
+- **Look up** [Ways to get it wrong](/reference/pitfalls/)
+</Related>

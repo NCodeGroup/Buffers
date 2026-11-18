@@ -311,5 +311,100 @@
         }
       }
     ]
+  },
+  "pool-loop": {
+    "title": "The pool's loop",
+    "summary": "One page of the secure pool through Rent, use, Dispose and the cache, beside a request larger than a page. Each cell is 512 bytes.",
+    "key": ["9E", "21", "D4", "07", "6B", "F0", "33", "A8"],
+    "tracks": [
+      { "id": "page", "label": "A request of 32 bytes", "code": "Rent(32, isSensitive: true, out Span<byte> key)" },
+      { "id": "large", "label": "A request of 8192 bytes", "code": "Rent(8192, isSensitive: true, out Span<byte> data)" }
+    ],
+    "regions": {
+      "page": [{ "id": "pinned", "label": "Pinned heap" }],
+      "large": [{ "id": "pinned", "label": "Pinned heap" }]
+    },
+    "frames": [
+      {
+        "title": "Rent",
+        "tracks": {
+          "page": {
+            "cells": { "pinned": "????????" },
+            "count": 0,
+            "caption": "`Rent` takes a page from the cache, or allocates one. The span is 32 bytes; the page behind it is 4096."
+          },
+          "large": {
+            "cells": { "pinned": "???????? ????????" },
+            "count": 0,
+            "caption": "Above a page, `Rent` allocates a pinned array of exactly 8192 bytes."
+          }
+        }
+      },
+      {
+        "title": "In use",
+        "tracks": {
+          "page": {
+            "cells": { "pinned": "s???????" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "Your code writes the key into the first 32 bytes."
+          },
+          "large": {
+            "cells": { "pinned": "ssssssss ssssssss" },
+            "count": 1,
+            "scope": "pinned",
+            "caption": "Your code fills the array."
+          }
+        }
+      },
+      {
+        "title": "Dispose",
+        "tracks": {
+          "page": {
+            "cells": { "pinned": "00000000" },
+            "count": 0,
+            "caption": "`Dispose` writes zeros over the whole page, then puts it in the cache.",
+            "refs": ["R1"]
+          },
+          "large": {
+            "cells": { "pinned": "00000000 00000000" },
+            "count": 0,
+            "caption": "`Dispose` writes zeros over the array. No cache keeps it; the collector frees it.",
+            "refs": ["R1"]
+          }
+        }
+      },
+      {
+        "title": "Rent again",
+        "tracks": {
+          "page": {
+            "cells": { "pinned": "00000000" },
+            "count": 0,
+            "caption": "The next `Rent` of a page or less gets this page back, still zeros.",
+            "refs": ["R2"]
+          },
+          "large": {
+            "cells": { "pinned": "........ ........" },
+            "count": 0,
+            "caption": "Another request above a page allocates another array."
+          }
+        }
+      },
+      {
+        "title": "Memory pressure",
+        "tracks": {
+          "page": {
+            "cells": { "pinned": "........" },
+            "count": 0,
+            "caption": "At a Gen2 collection under memory pressure, the pool drops its whole cache; the collector frees the zeroed pages."
+          },
+          "large": {
+            "cells": { "pinned": "........ ........" },
+            "count": 0,
+            "caption": "Nothing to drop: no cache held it."
+          }
+        }
+      }
+    ]
   }
 }

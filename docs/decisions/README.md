@@ -73,4 +73,12 @@ override in `AGENTS.md`.
 | [ADR-1008](1008-release-follow-ups-are-jobs-publish-calls.md) | Release follow-ups are jobs that publish.yml calls | Superseded by 0151 |
 | [ADR-1009](1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md) | The documentation site is narrative guides, built by a shared toolchain outside this repository | Accepted |
 | [ADR-1010](1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md) | Site samples are compiled tests in a project of their own, included by key when the site is built (amends 1005) | Accepted |
+| [ADR-1011](1011-buffers-have-no-finalizer-and-are-zeroed-only-by-dispose.md) | Buffers have no finalizer and are zeroed only by Dispose | Accepted |
+| [ADR-1012](1012-the-secure-pool-caches-buffers-of-one-4096-byte-page.md) | The secure pool caches buffers of one 4096-byte page | Accepted |
+| [ADR-1013](1013-pinned-buffers-are-allocated-without-being-cleared.md) | Pinned buffers are allocated without being cleared | Accepted |
+| [ADR-1014](1014-securespanlifetime-zeroes-the-callers-span-and-does-not-pin-it.md) | SecureSpanLifetime zeroes the caller's span and does not pin it | Accepted |
+| [ADR-1015](1015-the-secure-pools-cache-has-no-size-limit-and-is-dropped-under-memory-pressure.md) | The secure pool's cache has no size limit and is dropped under memory pressure | Accepted |
+| [ADR-1016](1016-zeroing-and-fixed-time-comparison-call-cryptographicoperations.md) | Zeroing and fixed-time comparison call CryptographicOperations | Accepted |
+| [ADR-1017](1017-the-pooled-buffer-writers-return-nerdbank-streams-sequence.md) | The pooled buffer writers return Nerdbank.Streams' `Sequence<T>` | Accepted |
+| [ADR-1018](1018-the-library-neither-locks-nor-encrypts-memory.md) | The library neither locks nor encrypts memory | Accepted |
 | [ADR-1019](1019-a-string-separator-that-matches-no-text-leaves-the-value-whole.md) | A string separator that matches no text leaves the value whole | Accepted |

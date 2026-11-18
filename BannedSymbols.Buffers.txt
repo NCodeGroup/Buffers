@@ -1,4 +1,4 @@
-# Buffers come from BufferFactory so sensitivity is stated at every rental; the bare sources are banned outside test projects (RS0030, ADR-1003).
+// Buffers come from BufferFactory so sensitivity is stated at every rental; the bare sources are banned outside test projects (RS0030, ADR-1003).
 P:System.Buffers.ArrayPool`1.Shared;Rent with BufferFactory.Rent(..., isSensitive: ..., out ...) (ADR-1003).
 M:System.Buffers.ArrayPool`1.Create;Rent with BufferFactory.Rent(..., isSensitive: ..., out ...) (ADR-1003).
 M:System.Buffers.ArrayPool`1.Create(System.Int32,System.Int32);Rent with BufferFactory.Rent(..., isSensitive: ..., out ...) (ADR-1003).

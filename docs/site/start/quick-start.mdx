@@ -33,6 +33,8 @@ from the project file:
 It brings two dependencies: Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers return, and
 JetBrains.Annotations. <Proof source="PackageDependencies" />
 
+Versions, support and how to verify the package: [The package](/evidence/package/).
+
 ## Watch a key disappear
 
 Derive a 32-byte key into memory on the stack, inside a `using` block that owns its lifetime. Print the key inside
@@ -145,6 +147,8 @@ behind](/guides/read-a-secret-without-a-string/) shows.
    as [Keep a secret across an await, or in a field](/guides/secrets-across-await/) shows.
 3. **Do not copy the secret out.** `ToArray()`, `Convert.ToHexString` and a `string` each make ordinary memory that
    `Dispose` never reaches. <LeakCard leak="L9" />
+
+To have the build hold you to them, see [Ban the leaky APIs at build time](/guides/ban-leaky-apis/).
 
 ## Where next
 

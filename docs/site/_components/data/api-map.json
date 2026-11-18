@@ -1,0 +1,1541 @@
+{
+  "$comment": "The API map on /reference/api-map/, drawn by `ApiMap.astro`. Every line of `PublicAPI.Shipped.txt` is in exactly one entry's `api`, which `build/Assert-ApiMap.ps1` checks. Text fields take `code` and [links](/x/).",
+  "groups": [
+    {
+      "id": "secure-memory",
+      "title": "Secure memory"
+    },
+    {
+      "id": "buffer-writers",
+      "title": "Buffer writers"
+    },
+    {
+      "id": "sequences",
+      "title": "Sequences"
+    },
+    {
+      "id": "string-splitting",
+      "title": "String splitting"
+    },
+    {
+      "id": "secure-encoding",
+      "title": "Secure encoding"
+    },
+    {
+      "id": "cryptographic-operations",
+      "title": "`CryptographicOperations` extensions"
+    }
+  ],
+  "entries": [
+    {
+      "id": "buffer-factory",
+      "group": "secure-memory",
+      "type": "BufferFactory",
+      "member": null,
+      "signatures": [
+        "public static class BufferFactory"
+      ],
+      "summary": "Rents buffers, creates pinned arrays and creates buffer writers, with the pinning and zeroing chosen by `isSensitive` where it applies.",
+      "constraint": null,
+      "throws": null,
+      "page": "/start/which-buffer/",
+      "source": "Api.BufferFactory",
+      "api": [
+        "NCode.Buffers.BufferFactory"
+      ]
+    },
+    {
+      "id": "buffer-factory-rent",
+      "group": "secure-memory",
+      "type": "BufferFactory",
+      "member": "Rent",
+      "signatures": [
+        "public static IMemoryOwner<T> Rent<T>(int minBufferSize, bool isSensitive, out Span<T> buffer)",
+        "public static IMemoryOwner<byte> Rent(int minBufferSize, bool isSensitive, out Span<byte> buffer)",
+        "public static IMemoryOwner<T> Rent<T>(int minBufferSize, bool isSensitive, out Memory<T> buffer)",
+        "public static IMemoryOwner<byte> Rent(int minBufferSize, bool isSensitive, out Memory<byte> buffer)"
+      ],
+      "summary": "Rents a buffer of at least `minBufferSize` elements from `SecureMemoryPool<T>` when `isSensitive` is true, and from `MemoryPool<T>.Shared` when it is false. Returns the owner and the buffer as a `Span<T>` or `Memory<T>` cut to the requested size.",
+      "constraint": "unmanaged",
+      "throws": "`ArgumentOutOfRangeException` when `minBufferSize` is negative.",
+      "page": "/start/which-buffer/",
+      "source": "Api.BufferFactory.Rent",
+      "api": [
+        "static NCode.Buffers.BufferFactory.Rent(int minBufferSize, bool isSensitive, out System.Memory<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!",
+        "static NCode.Buffers.BufferFactory.Rent(int minBufferSize, bool isSensitive, out System.Span<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!",
+        "static NCode.Buffers.BufferFactory.Rent<T>(int minBufferSize, bool isSensitive, out System.Memory<T> buffer) -> System.Buffers.IMemoryOwner<T>!",
+        "static NCode.Buffers.BufferFactory.Rent<T>(int minBufferSize, bool isSensitive, out System.Span<T> buffer) -> System.Buffers.IMemoryOwner<T>!"
+      ]
+    },
+    {
+      "id": "buffer-factory-create-pinned-array",
+      "group": "secure-memory",
+      "type": "BufferFactory",
+      "member": "CreatePinnedArray",
+      "signatures": [
+        "public static SecureArrayLifetime<T> CreatePinnedArray<T>(int length)",
+        "public static SecureArrayLifetime<byte> CreatePinnedArray(int length)"
+      ],
+      "summary": "Allocates a pinned array of `length` elements and returns the `SecureArrayLifetime<T>` that zeroes it on dispose.",
+      "constraint": "unmanaged",
+      "throws": "`ArgumentOutOfRangeException` when `length` is negative.",
+      "page": "/start/which-buffer/",
+      "source": "Api.BufferFactory.CreatePinnedArray",
+      "api": [
+        "static NCode.Buffers.BufferFactory.CreatePinnedArray(int length) -> NCode.Buffers.SecureArrayLifetime<byte>",
+        "static NCode.Buffers.BufferFactory.CreatePinnedArray<T>(int length) -> NCode.Buffers.SecureArrayLifetime<T>"
+      ]
+    },
+    {
+      "id": "buffer-factory-create-pooled-buffer-writer",
+      "group": "secure-memory",
+      "type": "BufferFactory",
+      "member": "CreatePooledBufferWriter",
+      "signatures": [
+        "public static Sequence<T> CreatePooledBufferWriter<T>(bool isSensitive, int minimumSpanLength = 0)",
+        "public static Sequence<byte> CreatePooledBufferWriter(bool isSensitive, int minimumSpanLength = 0)"
+      ],
+      "summary": "Creates a `Sequence<T>` that grows by renting segments from `SecureMemoryPool<T>` when `isSensitive` is true, and from `MemoryPool<T>.Shared` when it is false.",
+      "constraint": "unmanaged",
+      "throws": "`ArgumentOutOfRangeException` when `minimumSpanLength` is negative.",
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.BufferFactory.CreatePooledBufferWriter",
+      "api": [
+        "static NCode.Buffers.BufferFactory.CreatePooledBufferWriter(bool isSensitive, int minimumSpanLength = 0) -> Nerdbank.Streams.Sequence<byte>!",
+        "static NCode.Buffers.BufferFactory.CreatePooledBufferWriter<T>(bool isSensitive, int minimumSpanLength = 0) -> Nerdbank.Streams.Sequence<T>!"
+      ]
+    },
+    {
+      "id": "buffer-factory-create-array-buffer-writer",
+      "group": "secure-memory",
+      "type": "BufferFactory",
+      "member": "CreateArrayBufferWriter",
+      "signatures": [
+        "public static ArrayBufferWriter<T> CreateArrayBufferWriter<T>()",
+        "public static ArrayBufferWriter<T> CreateArrayBufferWriter<T>(int initialCapacity)",
+        "public static ArrayBufferWriter<byte> CreateArrayBufferWriter()",
+        "public static ArrayBufferWriter<byte> CreateArrayBufferWriter(int initialCapacity)"
+      ],
+      "summary": "Creates an `ArrayBufferWriter<T>` for data that is not sensitive: one contiguous array that grows as needed, with no pinning and no zeroing.",
+      "constraint": "struct",
+      "throws": "`ArgumentOutOfRangeException` when `initialCapacity` is not positive.",
+      "page": "/start/which-buffer/",
+      "source": "Api.BufferFactory.CreateArrayBufferWriter",
+      "api": [
+        "static NCode.Buffers.BufferFactory.CreateArrayBufferWriter() -> System.Buffers.ArrayBufferWriter<byte>!",
+        "static NCode.Buffers.BufferFactory.CreateArrayBufferWriter(int initialCapacity) -> System.Buffers.ArrayBufferWriter<byte>!",
+        "static NCode.Buffers.BufferFactory.CreateArrayBufferWriter<T>() -> System.Buffers.ArrayBufferWriter<T>!",
+        "static NCode.Buffers.BufferFactory.CreateArrayBufferWriter<T>(int initialCapacity) -> System.Buffers.ArrayBufferWriter<T>!"
+      ]
+    },
+    {
+      "id": "secure-memory-pool",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": null,
+      "signatures": [
+        "public class SecureMemoryPool<T> : MemoryPool<T> where T : unmanaged"
+      ],
+      "summary": "A pool of pinned buffers that are zeroed when returned and kept for reuse.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool",
+      "api": [
+        "NCode.Buffers.SecureMemoryPool<T>"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-default-high-pressure-threshold",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "DefaultHighPressureThreshold",
+      "signatures": [
+        "public const double DefaultHighPressureThreshold = 0.90;"
+      ],
+      "summary": "The default value of `HighPressureThreshold`: 0.9.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool.DefaultHighPressureThreshold",
+      "api": [
+        "const NCode.Buffers.SecureMemoryPool<T>.DefaultHighPressureThreshold = 0.9 -> double"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-page-size",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "PageSize",
+      "signatures": [
+        "public const int PageSize = 4096;"
+      ],
+      "summary": "The size of a pooled buffer in bytes: 4096.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool.PageSize",
+      "api": [
+        "const NCode.Buffers.SecureMemoryPool<T>.PageSize = 4096 -> int"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-shared",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "Shared",
+      "signatures": [
+        "public static new SecureMemoryPool<T> Shared { get; } = new();"
+      ],
+      "summary": "The shared instance of the pool. `BufferFactory` rents from it when `isSensitive` is true.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool.Shared",
+      "api": [
+        "static NCode.Buffers.SecureMemoryPool<T>.Shared.get -> NCode.Buffers.SecureMemoryPool<T>!"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-high-pressure-threshold",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "HighPressureThreshold",
+      "signatures": [
+        "public double HighPressureThreshold { get; set; } = DefaultHighPressureThreshold;"
+      ],
+      "summary": "The share of the system's high memory load above which the pool drops its cached buffers at the next generation 2 collection.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool.HighPressureThreshold",
+      "api": [
+        "NCode.Buffers.SecureMemoryPool<T>.HighPressureThreshold.get -> double",
+        "NCode.Buffers.SecureMemoryPool<T>.HighPressureThreshold.set -> void"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-max-buffer-size",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "MaxBufferSize",
+      "signatures": [
+        "public override int MaxBufferSize => Array.MaxLength;"
+      ],
+      "summary": "The largest buffer the pool rents: `Array.MaxLength` elements.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool.MaxBufferSize",
+      "api": [
+        "override NCode.Buffers.SecureMemoryPool<T>.MaxBufferSize.get -> int"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-constructor",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "constructor",
+      "signatures": [
+        "public SecureMemoryPool()"
+      ],
+      "summary": "Creates a pool and registers a callback that drops the cached buffers under memory pressure after a generation 2 collection.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool.Constructor",
+      "api": [
+        "NCode.Buffers.SecureMemoryPool<T>.SecureMemoryPool() -> void"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-dispose",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "Dispose",
+      "signatures": [
+        "protected override void Dispose(bool disposing)"
+      ],
+      "summary": "Drops the cached buffers. Buffers already rented stay valid and are not returned to the pool.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.SecureMemoryPool.Dispose",
+      "api": [
+        "override NCode.Buffers.SecureMemoryPool<T>.Dispose(bool disposing) -> void"
+      ]
+    },
+    {
+      "id": "secure-memory-pool-rent",
+      "group": "secure-memory",
+      "type": "SecureMemoryPool<T>",
+      "member": "Rent",
+      "signatures": [
+        "public override IMemoryOwner<T> Rent(int minBufferSize = -1)"
+      ],
+      "summary": "Rents a buffer: `EmptyMemory<T>.Singleton` for 0, a pooled page for a size up to `PageSize` bytes, and a non-pooled buffer, still zeroed on dispose, above that.",
+      "constraint": "unmanaged",
+      "throws": "`ObjectDisposedException` when the pool is disposed; `ArgumentOutOfRangeException` when `minBufferSize` is less than -1.",
+      "page": "/reference/buffer-behavior/",
+      "source": "Api.SecureMemoryPool.Rent",
+      "api": [
+        "override NCode.Buffers.SecureMemoryPool<T>.Rent(int minBufferSize = -1) -> System.Buffers.IMemoryOwner<T>!"
+      ]
+    },
+    {
+      "id": "secure-array-lifetime",
+      "group": "secure-memory",
+      "type": "SecureArrayLifetime<T>",
+      "member": null,
+      "signatures": [
+        "public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable where T : unmanaged"
+      ],
+      "summary": "A `ref struct` that owns a pinned array and zeroes it on dispose.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureArrayLifetime",
+      "api": [
+        "NCode.Buffers.SecureArrayLifetime<T>"
+      ]
+    },
+    {
+      "id": "secure-array-lifetime-constructor",
+      "group": "secure-memory",
+      "type": "SecureArrayLifetime<T>",
+      "member": "constructor",
+      "signatures": [
+        "public SecureArrayLifetime(int length)",
+        "public SecureArrayLifetime()"
+      ],
+      "summary": "Allocates a pinned array of `length` elements.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureArrayLifetime.Constructor",
+      "api": [
+        "NCode.Buffers.SecureArrayLifetime<T>.SecureArrayLifetime() -> void",
+        "NCode.Buffers.SecureArrayLifetime<T>.SecureArrayLifetime(int length) -> void"
+      ]
+    },
+    {
+      "id": "secure-array-lifetime-create",
+      "group": "secure-memory",
+      "type": "SecureArrayLifetime<T>",
+      "member": "Create",
+      "signatures": [
+        "public static SecureArrayLifetime<T> Create(int length) => new(length);"
+      ],
+      "summary": "Creates a lifetime that owns a pinned array of `length` elements.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureArrayLifetime.Create",
+      "api": [
+        "static NCode.Buffers.SecureArrayLifetime<T>.Create(int length) -> NCode.Buffers.SecureArrayLifetime<T>"
+      ]
+    },
+    {
+      "id": "secure-array-lifetime-pinned-array",
+      "group": "secure-memory",
+      "type": "SecureArrayLifetime<T>",
+      "member": "PinnedArray",
+      "signatures": [
+        "public T[] PinnedArray { get; } = GC.AllocateUninitializedArray<T>(length, pinned: true);"
+      ],
+      "summary": "The pinned array the lifetime owns.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureArrayLifetime.PinnedArray",
+      "api": [
+        "NCode.Buffers.SecureArrayLifetime<T>.PinnedArray.get -> T[]!"
+      ]
+    },
+    {
+      "id": "secure-array-lifetime-length",
+      "group": "secure-memory",
+      "type": "SecureArrayLifetime<T>",
+      "member": "Length",
+      "signatures": [
+        "public int Length => PinnedArray.Length;"
+      ],
+      "summary": "The length of the pinned array.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureArrayLifetime.Length",
+      "api": [
+        "NCode.Buffers.SecureArrayLifetime<T>.Length.get -> int"
+      ]
+    },
+    {
+      "id": "secure-array-lifetime-implicit-operator",
+      "group": "secure-memory",
+      "type": "SecureArrayLifetime<T>",
+      "member": "implicit operator",
+      "signatures": [
+        "public static implicit operator T[](SecureArrayLifetime<T> lifetime) => lifetime.PinnedArray;",
+        "public static implicit operator Span<T>(SecureArrayLifetime<T> lifetime) => lifetime.PinnedArray.AsSpan();"
+      ],
+      "summary": "Converts the lifetime to its array or to a `Span<T>` over it.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureArrayLifetime.ImplicitOperator",
+      "api": [
+        "static NCode.Buffers.SecureArrayLifetime<T>.implicit operator System.Span<T>(NCode.Buffers.SecureArrayLifetime<T> lifetime) -> System.Span<T>",
+        "static NCode.Buffers.SecureArrayLifetime<T>.implicit operator T[]!(NCode.Buffers.SecureArrayLifetime<T> lifetime) -> T[]!"
+      ]
+    },
+    {
+      "id": "secure-array-lifetime-dispose",
+      "group": "secure-memory",
+      "type": "SecureArrayLifetime<T>",
+      "member": "Dispose",
+      "signatures": [
+        "public void Dispose()"
+      ],
+      "summary": "Zeroes the array with `CryptographicOperations.ZeroMemory`. Calling it again zeroes it again.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureArrayLifetime.Dispose",
+      "api": [
+        "NCode.Buffers.SecureArrayLifetime<T>.Dispose() -> void"
+      ]
+    },
+    {
+      "id": "secure-span-lifetime",
+      "group": "secure-memory",
+      "type": "SecureSpanLifetime<T>",
+      "member": null,
+      "signatures": [
+        "public readonly ref struct SecureSpanLifetime<T>(Span<T> span) : IDisposable where T : unmanaged"
+      ],
+      "summary": "A `ref struct` that wraps an existing span and zeroes it on dispose.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureSpanLifetime",
+      "api": [
+        "NCode.Buffers.SecureSpanLifetime<T>"
+      ]
+    },
+    {
+      "id": "secure-span-lifetime-constructor",
+      "group": "secure-memory",
+      "type": "SecureSpanLifetime<T>",
+      "member": "constructor",
+      "signatures": [
+        "public SecureSpanLifetime(Span<T> span)",
+        "public SecureSpanLifetime()"
+      ],
+      "summary": "Wraps `span` so that `Dispose` zeroes it.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureSpanLifetime.Constructor",
+      "api": [
+        "NCode.Buffers.SecureSpanLifetime<T>.SecureSpanLifetime() -> void",
+        "NCode.Buffers.SecureSpanLifetime<T>.SecureSpanLifetime(System.Span<T> span) -> void"
+      ]
+    },
+    {
+      "id": "secure-span-lifetime-span",
+      "group": "secure-memory",
+      "type": "SecureSpanLifetime<T>",
+      "member": "Span",
+      "signatures": [
+        "public Span<T> Span { get; } = span;"
+      ],
+      "summary": "The span the lifetime wraps.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureSpanLifetime.Span",
+      "api": [
+        "NCode.Buffers.SecureSpanLifetime<T>.Span.get -> System.Span<T>"
+      ]
+    },
+    {
+      "id": "secure-span-lifetime-implicit-operator",
+      "group": "secure-memory",
+      "type": "SecureSpanLifetime<T>",
+      "member": "implicit operator",
+      "signatures": [
+        "public static implicit operator Span<T>(SecureSpanLifetime<T> lifetime) => lifetime.Span;"
+      ],
+      "summary": "Converts the lifetime to the `Span<T>` it wraps.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureSpanLifetime.ImplicitOperator",
+      "api": [
+        "static NCode.Buffers.SecureSpanLifetime<T>.implicit operator System.Span<T>(NCode.Buffers.SecureSpanLifetime<T> lifetime) -> System.Span<T>"
+      ]
+    },
+    {
+      "id": "secure-span-lifetime-dispose",
+      "group": "secure-memory",
+      "type": "SecureSpanLifetime<T>",
+      "member": "Dispose",
+      "signatures": [
+        "public void Dispose()"
+      ],
+      "summary": "Zeroes the span with `CryptographicOperations.ZeroMemory`.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.SecureSpanLifetime.Dispose",
+      "api": [
+        "NCode.Buffers.SecureSpanLifetime<T>.Dispose() -> void"
+      ]
+    },
+    {
+      "id": "buffer-extensions",
+      "group": "secure-memory",
+      "type": "BufferExtensions",
+      "member": null,
+      "signatures": [
+        "public static class BufferExtensions",
+        "extension<T>(Span<T> span) where T : unmanaged",
+        "extension<T>(Span<T> span) where T : struct",
+        "extension<T>(Memory<T> memory)"
+      ],
+      "summary": "Extension members on `Span<T>` and `Memory<T>`: a lifetime that zeroes a span, and fixed-size buffer writers.",
+      "constraint": null,
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.BufferExtensions",
+      "api": [
+        "NCode.Buffers.BufferExtensions",
+        "NCode.Buffers.BufferExtensions.extension<T>(System.Memory<T>)",
+        "NCode.Buffers.BufferExtensions.extension<T>(System.Span<T>)"
+      ]
+    },
+    {
+      "id": "buffer-extensions-get-secure-lifetime",
+      "group": "secure-memory",
+      "type": "BufferExtensions",
+      "member": "GetSecureLifetime",
+      "signatures": [
+        "extension<T>(Span<T> span) where T : unmanaged",
+        "public SecureSpanLifetime<T> GetSecureLifetime()"
+      ],
+      "summary": "Wraps the span in a `SecureSpanLifetime<T>` that zeroes it on dispose.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/ownership/",
+      "source": "Api.BufferExtensions.GetSecureLifetime",
+      "api": [
+        "NCode.Buffers.BufferExtensions.extension<T>(System.Span<T>).GetSecureLifetime() -> NCode.Buffers.SecureSpanLifetime<T>",
+        "static NCode.Buffers.BufferExtensions.GetSecureLifetime<T>(this System.Span<T> span) -> NCode.Buffers.SecureSpanLifetime<T>"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": null,
+      "signatures": [
+        "public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>"
+      ],
+      "summary": "A buffer writer over a fixed `Span<T>`. It is a `ref struct`, so it stays on the stack, and it cannot grow.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-constructor",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "constructor",
+      "signatures": [
+        "public ref struct FixedSpanBufferWriter<T>(Span<T> buffer) : IBufferWriter<T>"
+      ],
+      "summary": "Wraps `buffer` as the fixed buffer to write to. The writer starts empty.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.Constructor",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.FixedSpanBufferWriter() -> void",
+        "NCode.Buffers.FixedSpanBufferWriter<T>.FixedSpanBufferWriter(System.Span<T> buffer) -> void"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-capacity",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "Capacity",
+      "signatures": [
+        "public readonly int Capacity => Buffer.Length;"
+      ],
+      "summary": "The length of the fixed buffer.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.Capacity",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.Capacity.get -> int"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-written-count",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "WrittenCount",
+      "signatures": [
+        "public int WrittenCount { get; private set; }"
+      ],
+      "summary": "The number of elements written so far.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.WrittenCount",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.WrittenCount.get -> int"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-free-capacity",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "FreeCapacity",
+      "signatures": [
+        "public readonly int FreeCapacity => Buffer.Length - WrittenCount;"
+      ],
+      "summary": "The number of elements that still fit in the buffer.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.FreeCapacity",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.FreeCapacity.get -> int"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-written-span",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "WrittenSpan",
+      "signatures": [
+        "public readonly ReadOnlySpan<T> WrittenSpan { get; }"
+      ],
+      "summary": "The written part of the buffer, as a `ReadOnlySpan<T>`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.WrittenSpan",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.WrittenSpan.get -> System.ReadOnlySpan<T>"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-clear",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "Clear",
+      "signatures": [
+        "public void Clear()"
+      ],
+      "summary": "Sets `WrittenCount` to zero. It does not clear the buffer; use `Reset` for that.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.Clear",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.Clear() -> void"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-reset",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "Reset",
+      "signatures": [
+        "public void Reset()"
+      ],
+      "summary": "Zeroes the written elements with `CryptographicOperations.ZeroMemory`, or sets them to default with `Span<T>.Clear()` when `T` holds references, then sets `WrittenCount` to zero.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.Reset",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.Reset() -> void"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-advance",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "Advance",
+      "signatures": [
+        "public void Advance(int count)"
+      ],
+      "summary": "Moves the write position forward by `count` elements, which the caller has written to the span or memory it got from the writer.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `count` is negative. `InvalidOperationException` when the advance would pass the end of the buffer.",
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.Advance",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.Advance(int count) -> void"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-get-span",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "GetSpan",
+      "signatures": [
+        "public Span<T> GetSpan(int sizeHint = 0)"
+      ],
+      "summary": "Returns all the free space as a `Span<T>`, which is never shorter than `sizeHint`. Call `Advance` after writing to it.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `sizeHint` is negative. `InvalidOperationException` when `sizeHint` is more than the free capacity.",
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.GetSpan",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.GetSpan(int sizeHint = 0) -> System.Span<T>"
+      ]
+    },
+    {
+      "id": "fixed-span-buffer-writer-get-memory",
+      "group": "buffer-writers",
+      "type": "FixedSpanBufferWriter<T>",
+      "member": "GetMemory",
+      "signatures": [
+        "public Memory<T> GetMemory(int sizeHint = 0)"
+      ],
+      "summary": "Is not supported: a `Span<T>` cannot give a `Memory<T>`. Use `GetSpan`.",
+      "constraint": null,
+      "throws": "`NotSupportedException`, always.",
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedSpanBufferWriter.GetMemory",
+      "api": [
+        "NCode.Buffers.FixedSpanBufferWriter<T>.GetMemory(int sizeHint = 0) -> System.Memory<T>"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": null,
+      "signatures": [
+        "public class FixedMemoryBufferWriter<T> : IBufferWriter<T>"
+      ],
+      "summary": "A buffer writer over a fixed `Memory<T>`. It is a class, so it can sit in a field or cross an `await`, and it cannot grow.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-constructor",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "constructor",
+      "signatures": [
+        "public FixedMemoryBufferWriter(Memory<T> buffer)"
+      ],
+      "summary": "Wraps `buffer` as the fixed buffer to write to. The writer starts empty.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.Constructor",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.FixedMemoryBufferWriter(System.Memory<T> buffer) -> void"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-capacity",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "Capacity",
+      "signatures": [
+        "public int Capacity => Buffer.Length;"
+      ],
+      "summary": "The length of the fixed buffer.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.Capacity",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.Capacity.get -> int"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-written-count",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "WrittenCount",
+      "signatures": [
+        "public int WrittenCount { get; private set; }"
+      ],
+      "summary": "The number of elements written so far.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.WrittenCount",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.WrittenCount.get -> int"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-free-capacity",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "FreeCapacity",
+      "signatures": [
+        "public int FreeCapacity => Buffer.Length - WrittenCount;"
+      ],
+      "summary": "The number of elements that still fit in the buffer.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.FreeCapacity",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.FreeCapacity.get -> int"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-written-memory",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "WrittenMemory",
+      "signatures": [
+        "public ReadOnlyMemory<T> WrittenMemory { get; }"
+      ],
+      "summary": "The written part of the buffer, as a `ReadOnlyMemory<T>`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.WrittenMemory",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.WrittenMemory.get -> System.ReadOnlyMemory<T>"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-written-span",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "WrittenSpan",
+      "signatures": [
+        "public ReadOnlySpan<T> WrittenSpan { get; }"
+      ],
+      "summary": "The written part of the buffer, as a `ReadOnlySpan<T>`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.WrittenSpan",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.WrittenSpan.get -> System.ReadOnlySpan<T>"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-clear",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "Clear",
+      "signatures": [
+        "public void Clear()"
+      ],
+      "summary": "Sets `WrittenCount` to zero. It does not clear the buffer; use `Reset` for that.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.Clear",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.Clear() -> void"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-reset",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "Reset",
+      "signatures": [
+        "public void Reset()"
+      ],
+      "summary": "Zeroes the written elements with `CryptographicOperations.ZeroMemory`, or sets them to default with `Span<T>.Clear()` when `T` holds references, then sets `WrittenCount` to zero.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.Reset",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.Reset() -> void"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-advance",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "Advance",
+      "signatures": [
+        "public void Advance(int count)"
+      ],
+      "summary": "Moves the write position forward by `count` elements, which the caller has written to the span or memory it got from the writer.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `count` is negative. `InvalidOperationException` when the advance would pass the end of the buffer.",
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.Advance",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.Advance(int count) -> void"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-get-memory",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "GetMemory",
+      "signatures": [
+        "public Memory<T> GetMemory(int sizeHint = 0)"
+      ],
+      "summary": "Returns all the free space as a `Memory<T>`, which is never shorter than `sizeHint`. Call `Advance` after writing to it.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `sizeHint` is negative. `InvalidOperationException` when `sizeHint` is more than the free capacity.",
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.GetMemory",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.GetMemory(int sizeHint = 0) -> System.Memory<T>"
+      ]
+    },
+    {
+      "id": "fixed-memory-buffer-writer-get-span",
+      "group": "buffer-writers",
+      "type": "FixedMemoryBufferWriter<T>",
+      "member": "GetSpan",
+      "signatures": [
+        "public Span<T> GetSpan(int sizeHint = 0)"
+      ],
+      "summary": "Returns all the free space as a `Span<T>`, which is never shorter than `sizeHint`. Call `Advance` after writing to it.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `sizeHint` is negative. `InvalidOperationException` when `sizeHint` is more than the free capacity.",
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.FixedMemoryBufferWriter.GetSpan",
+      "api": [
+        "NCode.Buffers.FixedMemoryBufferWriter<T>.GetSpan(int sizeHint = 0) -> System.Span<T>"
+      ]
+    },
+    {
+      "id": "buffer-extensions-get-fixed-buffer-writer-span",
+      "group": "buffer-writers",
+      "type": "BufferExtensions",
+      "member": "GetFixedBufferWriter",
+      "signatures": [
+        "extension<T>(Span<T> span) where T : struct",
+        "public FixedSpanBufferWriter<T> GetFixedBufferWriter()"
+      ],
+      "summary": "Creates a fixed-size buffer writer over the span or the memory: a `FixedSpanBufferWriter<T>` for a `Span<T>`, a `FixedMemoryBufferWriter<T>` for a `Memory<T>`.",
+      "constraint": "struct",
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.BufferExtensions.GetFixedBufferWriter.Span",
+      "api": [
+        "NCode.Buffers.BufferExtensions.extension<T>(System.Span<T>).GetFixedBufferWriter() -> NCode.Buffers.FixedSpanBufferWriter<T>",
+        "static NCode.Buffers.BufferExtensions.GetFixedBufferWriter<T>(this System.Span<T> span) -> NCode.Buffers.FixedSpanBufferWriter<T>"
+      ]
+    },
+    {
+      "id": "buffer-extensions-get-fixed-buffer-writer-memory",
+      "group": "buffer-writers",
+      "type": "BufferExtensions",
+      "member": "GetFixedBufferWriter",
+      "signatures": [
+        "extension<T>(Memory<T> memory)",
+        "public FixedMemoryBufferWriter<T> GetFixedBufferWriter()"
+      ],
+      "summary": "Creates a fixed-size buffer writer over the span or the memory: a `FixedSpanBufferWriter<T>` for a `Span<T>`, a `FixedMemoryBufferWriter<T>` for a `Memory<T>`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/fixed-size-buffer/",
+      "source": "Api.BufferExtensions.GetFixedBufferWriter.Memory",
+      "api": [
+        "NCode.Buffers.BufferExtensions.extension<T>(System.Memory<T>).GetFixedBufferWriter() -> NCode.Buffers.FixedMemoryBufferWriter<T>!",
+        "static NCode.Buffers.BufferExtensions.GetFixedBufferWriter<T>(this System.Memory<T> memory) -> NCode.Buffers.FixedMemoryBufferWriter<T>!"
+      ]
+    },
+    {
+      "id": "memory-segment",
+      "group": "sequences",
+      "type": "MemorySegment<T>",
+      "member": null,
+      "signatures": [
+        "public class MemorySegment<T> : ReadOnlySequenceSegment<T>"
+      ],
+      "summary": "A `ReadOnlySequenceSegment<T>` over a block of memory, linked to the next segment so that the blocks form a `ReadOnlySequence<T>`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.MemorySegment",
+      "api": [
+        "NCode.Buffers.MemorySegment<T>"
+      ]
+    },
+    {
+      "id": "memory-segment-constructor",
+      "group": "sequences",
+      "type": "MemorySegment<T>",
+      "member": "constructor",
+      "signatures": [
+        "public MemorySegment(ReadOnlyMemory<T> memory)"
+      ],
+      "summary": "Creates a standalone head segment over `memory`, with a running index of zero.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.MemorySegment.Constructor",
+      "api": [
+        "NCode.Buffers.MemorySegment<T>.MemorySegment(System.ReadOnlyMemory<T> memory) -> void"
+      ]
+    },
+    {
+      "id": "memory-segment-append",
+      "group": "sequences",
+      "type": "MemorySegment<T>",
+      "member": "Append",
+      "signatures": [
+        "public MemorySegment<T> Append(ReadOnlyMemory<T> memory)"
+      ],
+      "summary": "Links a new segment over `memory` after this one and returns it.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.MemorySegment.Append",
+      "api": [
+        "NCode.Buffers.MemorySegment<T>.Append(System.ReadOnlyMemory<T> memory) -> NCode.Buffers.MemorySegment<T>!"
+      ]
+    },
+    {
+      "id": "sequence-extensions",
+      "group": "sequences",
+      "type": "SequenceExtensions",
+      "member": null,
+      "signatures": [
+        "public static class SequenceExtensions",
+        "extension<T>(Sequence<T> buffer) where T : unmanaged"
+      ],
+      "summary": "Extension members on `Sequence<T>` that give its contents as one contiguous `ReadOnlySpan<T>`.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.SequenceExtensions",
+      "api": [
+        "NCode.Buffers.SequenceExtensions",
+        "NCode.Buffers.SequenceExtensions.extension<T>(Nerdbank.Streams.Sequence<T>!)"
+      ]
+    },
+    {
+      "id": "sequence-extensions-get-span-lease",
+      "group": "sequences",
+      "type": "SequenceExtensions",
+      "member": "GetSpanLease",
+      "signatures": [
+        "extension<T>(Sequence<T> buffer) where T : unmanaged",
+        "public RefSpanLease<T> GetSpanLease(bool isSensitive)"
+      ],
+      "summary": "Returns a `RefSpanLease<T>` over the contents as one `ReadOnlySpan<T>`: the sequence's own span when it has one segment, a copy in a rented buffer when it has more. The sequence stays valid.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.SequenceExtensions.GetSpanLease",
+      "api": [
+        "NCode.Buffers.SequenceExtensions.extension<T>(Nerdbank.Streams.Sequence<T>!).GetSpanLease(bool isSensitive) -> NCode.Buffers.RefSpanLease<T>",
+        "static NCode.Buffers.SequenceExtensions.GetSpanLease<T>(this Nerdbank.Streams.Sequence<T>! buffer, bool isSensitive) -> NCode.Buffers.RefSpanLease<T>"
+      ]
+    },
+    {
+      "id": "sequence-extensions-consume-as-contiguous-span",
+      "group": "sequences",
+      "type": "SequenceExtensions",
+      "member": "ConsumeAsContiguousSpan",
+      "signatures": [
+        "extension<T>(Sequence<T> buffer) where T : unmanaged",
+        "public IDisposable ConsumeAsContiguousSpan(bool isSensitive, out ReadOnlySpan<T> span)"
+      ],
+      "summary": "Returns the contents as one `ReadOnlySpan<T>` and the owner that releases it: the sequence itself when it has one segment, a rented buffer when it has more, in which case the sequence is disposed.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.SequenceExtensions.ConsumeAsContiguousSpan",
+      "api": [
+        "NCode.Buffers.SequenceExtensions.extension<T>(Nerdbank.Streams.Sequence<T>!).ConsumeAsContiguousSpan(bool isSensitive, out System.ReadOnlySpan<T> span) -> System.IDisposable!",
+        "static NCode.Buffers.SequenceExtensions.ConsumeAsContiguousSpan<T>(this Nerdbank.Streams.Sequence<T>! buffer, bool isSensitive, out System.ReadOnlySpan<T> span) -> System.IDisposable!"
+      ]
+    },
+    {
+      "id": "ref-span-lease",
+      "group": "sequences",
+      "type": "RefSpanLease<T>",
+      "member": null,
+      "signatures": [
+        "public readonly ref struct RefSpanLease<T>(IDisposable? owner, ReadOnlySpan<T> span) : IDisposable"
+      ],
+      "summary": "A `ref struct` that pairs a `ReadOnlySpan<T>` with the owner that releases its memory on dispose.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.RefSpanLease",
+      "api": [
+        "NCode.Buffers.RefSpanLease<T>"
+      ]
+    },
+    {
+      "id": "ref-span-lease-constructor",
+      "group": "sequences",
+      "type": "RefSpanLease<T>",
+      "member": "constructor",
+      "signatures": [
+        "public RefSpanLease(IDisposable? owner, ReadOnlySpan<T> span)",
+        "public RefSpanLease()"
+      ],
+      "summary": "Pairs `span` with `owner`, which may be null when nothing needs releasing.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.RefSpanLease.Constructor",
+      "api": [
+        "NCode.Buffers.RefSpanLease<T>.RefSpanLease() -> void",
+        "NCode.Buffers.RefSpanLease<T>.RefSpanLease(System.IDisposable? owner, System.ReadOnlySpan<T> span) -> void"
+      ]
+    },
+    {
+      "id": "ref-span-lease-span",
+      "group": "sequences",
+      "type": "RefSpanLease<T>",
+      "member": "Span",
+      "signatures": [
+        "public ReadOnlySpan<T> Span { get; } = span;"
+      ],
+      "summary": "The leased span, valid until the lease is disposed.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.RefSpanLease.Span",
+      "api": [
+        "NCode.Buffers.RefSpanLease<T>.Span.get -> System.ReadOnlySpan<T>"
+      ]
+    },
+    {
+      "id": "ref-span-lease-dispose",
+      "group": "sequences",
+      "type": "RefSpanLease<T>",
+      "member": "Dispose",
+      "signatures": [
+        "public void Dispose()"
+      ],
+      "summary": "Disposes the owner, which releases the leased memory; does nothing when the owner is null.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/secret-of-unknown-length/",
+      "source": "Api.RefSpanLease.Dispose",
+      "api": [
+        "NCode.Buffers.RefSpanLease<T>.Dispose() -> void"
+      ]
+    },
+    {
+      "id": "empty-memory",
+      "group": "sequences",
+      "type": "EmptyMemory<T>",
+      "member": null,
+      "signatures": [
+        "public sealed class EmptyMemory<T> : IMemoryOwner<T>"
+      ],
+      "summary": "An `IMemoryOwner<T>` that owns no memory: its `Memory` is always empty and its `Dispose` does nothing.",
+      "constraint": null,
+      "throws": null,
+      "page": "/reference/buffer-behavior/",
+      "source": "Api.EmptyMemory",
+      "api": [
+        "NCode.Buffers.EmptyMemory<T>"
+      ]
+    },
+    {
+      "id": "empty-memory-constructor",
+      "group": "sequences",
+      "type": "EmptyMemory<T>",
+      "member": "constructor",
+      "signatures": [
+        "public EmptyMemory()"
+      ],
+      "summary": "Creates an empty owner. `Singleton` is the shared instance.",
+      "constraint": null,
+      "throws": null,
+      "page": "/reference/buffer-behavior/",
+      "source": "Api.EmptyMemory.Constructor",
+      "api": [
+        "NCode.Buffers.EmptyMemory<T>.EmptyMemory() -> void"
+      ]
+    },
+    {
+      "id": "empty-memory-singleton",
+      "group": "sequences",
+      "type": "EmptyMemory<T>",
+      "member": "Singleton",
+      "signatures": [
+        "public static EmptyMemory<T> Singleton { get; } = new();"
+      ],
+      "summary": "The shared instance, which is safe to use across threads.",
+      "constraint": null,
+      "throws": null,
+      "page": "/reference/buffer-behavior/",
+      "source": "Api.EmptyMemory.Singleton",
+      "api": [
+        "static NCode.Buffers.EmptyMemory<T>.Singleton.get -> NCode.Buffers.EmptyMemory<T>!"
+      ]
+    },
+    {
+      "id": "empty-memory-memory",
+      "group": "sequences",
+      "type": "EmptyMemory<T>",
+      "member": "Memory",
+      "signatures": [
+        "public Memory<T> Memory { get; } = Memory<T>.Empty;"
+      ],
+      "summary": "Always `Memory<T>.Empty`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/reference/buffer-behavior/",
+      "source": "Api.EmptyMemory.Memory",
+      "api": [
+        "NCode.Buffers.EmptyMemory<T>.Memory.get -> System.Memory<T>"
+      ]
+    },
+    {
+      "id": "empty-memory-dispose",
+      "group": "sequences",
+      "type": "EmptyMemory<T>",
+      "member": "Dispose",
+      "signatures": [
+        "public void Dispose()"
+      ],
+      "summary": "Does nothing; safe to call any number of times.",
+      "constraint": null,
+      "throws": null,
+      "page": "/reference/buffer-behavior/",
+      "source": "Api.EmptyMemory.Dispose",
+      "api": [
+        "NCode.Buffers.EmptyMemory<T>.Dispose() -> void"
+      ]
+    },
+    {
+      "id": "string-segments",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": null,
+      "signatures": [
+        "public readonly struct StringSegments : IReadOnlyCollection<ReadOnlySequenceSegment<char>>"
+      ],
+      "summary": "The result of a split: a read-only collection of segments that are slices of the original text. Splitting copies no substring; it allocates one segment object per substring.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments",
+      "api": [
+        "NCode.Buffers.StringSegments"
+      ]
+    },
+    {
+      "id": "string-segments-constructor",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": "constructor",
+      "signatures": [
+        "public StringSegments(ReadOnlyMemory<char> original, int count, ReadOnlySequenceSegment<char> first)"
+      ],
+      "summary": "Creates the result from `original`, `count` and `first`; `default` is empty. `Split` is the usual way to make one.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments.Constructor",
+      "api": [
+        "NCode.Buffers.StringSegments.StringSegments() -> void",
+        "NCode.Buffers.StringSegments.StringSegments(System.ReadOnlyMemory<char> original, int count, System.Buffers.ReadOnlySequenceSegment<char>! first) -> void"
+      ]
+    },
+    {
+      "id": "string-segments-is-empty",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": "IsEmpty",
+      "signatures": [
+        "public bool IsEmpty => FirstOrDefault is null;"
+      ],
+      "summary": "`true` when the result has no segments, as `default` has none.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments.IsEmpty",
+      "api": [
+        "NCode.Buffers.StringSegments.IsEmpty.get -> bool"
+      ]
+    },
+    {
+      "id": "string-segments-original",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": "Original",
+      "signatures": [
+        "public ReadOnlyMemory<char> Original { get; }"
+      ],
+      "summary": "The text that was split.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments.Original",
+      "api": [
+        "NCode.Buffers.StringSegments.Original.get -> System.ReadOnlyMemory<char>"
+      ]
+    },
+    {
+      "id": "string-segments-count",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": "Count",
+      "signatures": [
+        "public int Count { get; }"
+      ],
+      "summary": "The number of substrings: at least 1 for a result from `Split`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments.Count",
+      "api": [
+        "NCode.Buffers.StringSegments.Count.get -> int"
+      ]
+    },
+    {
+      "id": "string-segments-first",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": "First",
+      "signatures": [
+        "public ReadOnlySequenceSegment<char> First => FirstOrDefault ?? throw new InvalidOperationException(\"No segments found.\");"
+      ],
+      "summary": "The first segment. Follow `Next` to walk the rest without an enumerator.",
+      "constraint": null,
+      "throws": "`InvalidOperationException` when the result is empty.",
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments.First",
+      "api": [
+        "NCode.Buffers.StringSegments.First.get -> System.Buffers.ReadOnlySequenceSegment<char>!"
+      ]
+    },
+    {
+      "id": "string-segments-get-enumerator",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": "GetEnumerator",
+      "signatures": [
+        "public IEnumerator<ReadOnlySequenceSegment<char>> GetEnumerator()"
+      ],
+      "summary": "Enumerates the segments in order. It allocates an enumerator object; walking `First` and `Next` does not.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments.GetEnumerator",
+      "api": [
+        "NCode.Buffers.StringSegments.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Buffers.ReadOnlySequenceSegment<char>!>!"
+      ]
+    },
+    {
+      "id": "string-segments-split",
+      "group": "string-splitting",
+      "type": "StringSegments",
+      "member": "Split",
+      "signatures": [
+        "public static StringSegments Split(string value, char separator)",
+        "public static StringSegments Split(ReadOnlyMemory<char> value, char separator)",
+        "public static StringSegments Split(string value, ReadOnlySpan<char> separator)",
+        "public static StringSegments Split(string value, ReadOnlySpan<char> separator, StringComparison comparisonType)",
+        "public static StringSegments Split(ReadOnlyMemory<char> value, ReadOnlySpan<char> separator)",
+        "public static StringSegments Split(ReadOnlyMemory<char> value, ReadOnlySpan<char> separator, StringComparison comparisonType)"
+      ],
+      "summary": "Splits `value` at each `separator` into segments that are slices of `value`. Empty segments are kept. A character separator compares ordinally, and so does a string separator unless `comparisonType` says otherwise.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringSegments.Split",
+      "api": [
+        "static NCode.Buffers.StringSegments.Split(string! value, char separator) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringSegments.Split(string! value, System.ReadOnlySpan<char> separator, System.StringComparison comparisonType) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringSegments.Split(string! value, System.ReadOnlySpan<char> separator) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringSegments.Split(System.ReadOnlyMemory<char> value, char separator) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringSegments.Split(System.ReadOnlyMemory<char> value, System.ReadOnlySpan<char> separator, System.StringComparison comparisonType) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringSegments.Split(System.ReadOnlyMemory<char> value, System.ReadOnlySpan<char> separator) -> NCode.Buffers.StringSegments"
+      ]
+    },
+    {
+      "id": "string-extensions",
+      "group": "string-splitting",
+      "type": "StringExtensions",
+      "member": null,
+      "signatures": [
+        "public static class StringExtensions",
+        "extension(string value)",
+        "extension(ReadOnlyMemory<char> value)"
+      ],
+      "summary": "Extension members on `string` and `ReadOnlyMemory<char>` that split text into `StringSegments`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringExtensions",
+      "api": [
+        "NCode.Buffers.StringExtensions",
+        "NCode.Buffers.StringExtensions.extension(string!)",
+        "NCode.Buffers.StringExtensions.extension(System.ReadOnlyMemory<char>)"
+      ]
+    },
+    {
+      "id": "string-extensions-split-segments",
+      "group": "string-splitting",
+      "type": "StringExtensions",
+      "member": "SplitSegments",
+      "signatures": [
+        "extension(string value)",
+        "public StringSegments SplitSegments(char separator)",
+        "public StringSegments SplitSegments(ReadOnlySpan<char> separator)",
+        "public StringSegments SplitSegments(ReadOnlySpan<char> separator, StringComparison comparisonType)",
+        "extension(ReadOnlyMemory<char> value)",
+        "public StringSegments SplitSegments(char separator)",
+        "public StringSegments SplitSegments(ReadOnlySpan<char> separator)",
+        "public StringSegments SplitSegments(ReadOnlySpan<char> separator, StringComparison comparisonType)"
+      ],
+      "summary": "Splits a `string` or a `ReadOnlyMemory<char>` as `StringSegments.Split` does. The overloads take a character, a string separator, or a string separator with a `StringComparison`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/split-text/",
+      "source": "Api.StringExtensions.SplitSegments",
+      "api": [
+        "NCode.Buffers.StringExtensions.extension(string!).SplitSegments(char separator) -> NCode.Buffers.StringSegments",
+        "NCode.Buffers.StringExtensions.extension(string!).SplitSegments(System.ReadOnlySpan<char> separator, System.StringComparison comparisonType) -> NCode.Buffers.StringSegments",
+        "NCode.Buffers.StringExtensions.extension(string!).SplitSegments(System.ReadOnlySpan<char> separator) -> NCode.Buffers.StringSegments",
+        "NCode.Buffers.StringExtensions.extension(System.ReadOnlyMemory<char>).SplitSegments(char separator) -> NCode.Buffers.StringSegments",
+        "NCode.Buffers.StringExtensions.extension(System.ReadOnlyMemory<char>).SplitSegments(System.ReadOnlySpan<char> separator, System.StringComparison comparisonType) -> NCode.Buffers.StringSegments",
+        "NCode.Buffers.StringExtensions.extension(System.ReadOnlyMemory<char>).SplitSegments(System.ReadOnlySpan<char> separator) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringExtensions.SplitSegments(this string! value, char separator) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringExtensions.SplitSegments(this string! value, System.ReadOnlySpan<char> separator, System.StringComparison comparisonType) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringExtensions.SplitSegments(this string! value, System.ReadOnlySpan<char> separator) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringExtensions.SplitSegments(this System.ReadOnlyMemory<char> value, char separator) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringExtensions.SplitSegments(this System.ReadOnlyMemory<char> value, System.ReadOnlySpan<char> separator, System.StringComparison comparisonType) -> NCode.Buffers.StringSegments",
+        "static NCode.Buffers.StringExtensions.SplitSegments(this System.ReadOnlyMemory<char> value, System.ReadOnlySpan<char> separator) -> NCode.Buffers.StringSegments"
+      ]
+    },
+    {
+      "id": "secure-encoding",
+      "group": "secure-encoding",
+      "type": "SecureEncoding",
+      "member": null,
+      "signatures": [
+        "public static class SecureEncoding"
+      ],
+      "summary": "Encodings that throw on invalid input instead of substituting a replacement character.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/strict-decoding/",
+      "source": "Api.SecureEncoding",
+      "api": [
+        "NCode.Buffers.SecureEncoding"
+      ]
+    },
+    {
+      "id": "secure-encoding-ascii",
+      "group": "secure-encoding",
+      "type": "SecureEncoding",
+      "member": "ASCII",
+      "signatures": [
+        "public static ASCIIEncoding ASCII { get; } = CreateSecureAsciiEncoding();"
+      ],
+      "summary": "An ASCII encoding with exception fallbacks: a character above 0x7F fails to encode and a byte above 0x7F fails to decode.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/strict-decoding/",
+      "source": "Api.SecureEncoding.ASCII",
+      "api": [
+        "static NCode.Buffers.SecureEncoding.ASCII.get -> System.Text.ASCIIEncoding!"
+      ]
+    },
+    {
+      "id": "secure-encoding-utf8",
+      "group": "secure-encoding",
+      "type": "SecureEncoding",
+      "member": "UTF8",
+      "signatures": [
+        "public static UTF8Encoding UTF8 { get; } = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);"
+      ],
+      "summary": "A UTF-8 encoding with exception fallbacks that writes no byte order mark.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/strict-decoding/",
+      "source": "Api.SecureEncoding.UTF8",
+      "api": [
+        "static NCode.Buffers.SecureEncoding.UTF8.get -> System.Text.UTF8Encoding!"
+      ]
+    },
+    {
+      "id": "cryptographic-operations-extensions",
+      "group": "cryptographic-operations",
+      "type": "CryptographicOperationsExtensions",
+      "member": null,
+      "signatures": [
+        "public static class CryptographicOperationsExtensions",
+        "extension(CryptographicOperations)"
+      ],
+      "summary": "Extension members on `CryptographicOperations` that work on spans of any unmanaged element type, not only bytes.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/verify-a-mac/",
+      "source": "Api.CryptographicOperationsExtensions",
+      "api": [
+        "NCode.Buffers.CryptographicOperationsExtensions",
+        "NCode.Buffers.CryptographicOperationsExtensions.extension(System.Security.Cryptography.CryptographicOperations!)"
+      ]
+    },
+    {
+      "id": "cryptographic-operations-extensions-zero-memory",
+      "group": "cryptographic-operations",
+      "type": "CryptographicOperationsExtensions",
+      "member": "ZeroMemory",
+      "signatures": [
+        "extension(CryptographicOperations)",
+        "public static void ZeroMemory<T>(Span<T> buffer) where T : unmanaged"
+      ],
+      "summary": "Fills the span with zeros through `CryptographicOperations.ZeroMemory`, so the compiler and runtime do not remove the write. The elements may be of any unmanaged type.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/concepts/how-the-buffers-work/",
+      "source": "Api.CryptographicOperationsExtensions.ZeroMemory",
+      "api": [
+        "static NCode.Buffers.CryptographicOperationsExtensions.extension(System.Security.Cryptography.CryptographicOperations!).ZeroMemory<T>(System.Span<T> buffer) -> void",
+        "static NCode.Buffers.CryptographicOperationsExtensions.ZeroMemory<T>(System.Span<T> buffer) -> void"
+      ]
+    },
+    {
+      "id": "cryptographic-operations-extensions-fixed-time-equals",
+      "group": "cryptographic-operations",
+      "type": "CryptographicOperationsExtensions",
+      "member": "FixedTimeEquals",
+      "signatures": [
+        "extension(CryptographicOperations)",
+        "public static bool FixedTimeEquals<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right) where T : unmanaged"
+      ],
+      "summary": "Compares two spans of any unmanaged element type in time that does not depend on where they first differ. It returns `true` only when the lengths and the contents match.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/verify-a-mac/",
+      "source": "Api.CryptographicOperationsExtensions.FixedTimeEquals",
+      "api": [
+        "static NCode.Buffers.CryptographicOperationsExtensions.extension(System.Security.Cryptography.CryptographicOperations!).FixedTimeEquals<T>(System.ReadOnlySpan<T> left, System.ReadOnlySpan<T> right) -> bool",
+        "static NCode.Buffers.CryptographicOperationsExtensions.FixedTimeEquals<T>(System.ReadOnlySpan<T> left, System.ReadOnlySpan<T> right) -> bool"
+      ]
+    }
+  ]
+}

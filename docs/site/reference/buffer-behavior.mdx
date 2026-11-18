@@ -1,0 +1,73 @@
+---
+title: Buffer behavior, sizes and pooling
+description: For each way of getting memory, whether it is pinned, zeroed and pooled, what you hold, how long it is, and how the secure pool sizes and caches its buffers.
+---
+
+import BufferBehaviorMatrix from '@site/components/BufferBehaviorMatrix.astro';
+import KindLabel from '@site/components/KindLabel.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+
+<KindLabel kind="reference" />
+
+For each way of getting memory, this page says whether it is pinned, zeroed and pooled, and what you hold. It then
+lists what `SecureMemoryPool<T>` hands out for each request, and how it caches the buffers it takes back.
+
+## The matrix
+
+<BufferBehaviorMatrix />
+
+The rows are the data that "Which buffer?" draws its cards from, and a test reads the same data and builds each
+buffer to check it. <Proof source="BufferBehaviorMatrixTests" />
+
+## Sizes in `SecureMemoryPool<T>`
+
+A pooled buffer is one page, 4096 bytes. <Proof source="SecureMemoryPool.PageSize" /> The pool serves a request
+from a page when the request fits in one, and allocates an array of its own when it does not.
+
+| Request | What you get | Evidence |
+| --- | --- | --- |
+| <span id="size-zero"></span>`Rent(0)` | No memory: `EmptyMemory<T>.Singleton`, which is empty | <Proof test="SecureMemoryPoolTests.Rent_SizeZero_ReturnsEmptyMemorySingleton" /> |
+| <span id="size-default"></span>`Rent()` or `Rent(-1)` | One page | <Proof test="SecureMemoryPoolTests.Rent_SizeNegativeOne_ReturnsPageSizeBuffer" /> |
+| <span id="size-page"></span>1 to 4096 bytes | One page, `max(1, 4096 / sizeof(T))` elements, however few you ask for | <Proof test="SecureMemoryPoolTests.Rent_SizeLessThanPage_ReturnsPageSizeBuffer" /> <Proof source="SecureMemoryPool.ElementsPerPage" /> |
+| <span id="size-large"></span>More than 4096 bytes | Exactly the elements you ask for, in an array of its own that the pool never caches | <Proof test="SecureMemoryPoolTests.Rent_SizeMoreThanPage_ReturnsExactSizeBuffer" /> <Proof test="SecureMemoryPoolTests.Rent_LargeBuffer_IsNotPooled" /> |
+| <span id="size-invalid"></span>Below -1 | `ArgumentOutOfRangeException` | <Proof test="SecureMemoryPoolTests.Rent_SizeLessThanNegativeOne_ThrowsArgumentOutOfRangeException" /> |
+
+The request counts elements, and the page counts bytes, so the number of elements in a page depends on the element
+type.
+
+| Element | Elements per buffer | Evidence |
+| --- | --- | --- |
+| <span id="per-page-byte"></span>`byte` | 4096 | <Proof source="SecureMemoryPool.ElementsPerPage" /> |
+| <span id="per-page-char"></span>`char` | 2048 | <Proof test="SecureMemoryPoolTests.Rent_CharPool_ReturnsOnePageOfBytes" /> |
+| <span id="per-page-int"></span>`int` | 1024 | <Proof test="SecureMemoryPoolTests.Rent_Int32Pool_ReturnsOnePageOfBytes" /> |
+| <span id="per-page-larger"></span>A type larger than a page | 1 | <Proof test="SecureMemoryPoolTests.Rent_ElementLargerThanPage_ReturnsOneElement" /> |
+
+Each request, with the pool it is made on:
+
+```cs snippet=SitePoolPageSizes title="PoolSizes.cs"
+```
+
+<Proof sample="SitePoolPageSizes" />
+
+## The cache
+
+The pool keeps the pages it takes back, so the next `Rent` does not allocate.
+
+- A page enters the cache when its owner is disposed, after the owner zeroes it, unless the pool is disposed.
+  <Proof test="SecureMemoryPoolTests.Return_AddsToMemoryQueue" />
+- The cache has no size limit of its own. <Proof source="SecureMemoryPool.MemoryQueue" /> <Proof source="Adr1015" />
+- `Rent` takes a page from the cache first, and allocates a new one when the cache is empty.
+  <Proof test="SecureMemoryPoolTests.RentDisposeRent_ReusesBuffer" />
+- A Gen2 collection drops the whole cache when the system's memory load reaches 90% of the high-load threshold.
+  `HighPressureThreshold` sets the 90%. Below it, the cache stays.
+  <Proof source="SecureMemoryPool.TrimMemory" /> <Proof test="SecureMemoryPoolTests.TrimMemory_WhenHighPressure_ClearsQueue" />
+  <Proof test="SecureMemoryPoolTests.TrimMemory_WhenLowPressure_KeepsQueue" />
+- The callback for that collection is code copied from the .NET runtime. <Proof source="Gen2GcCallback.CopiedFrom" />
+- Disposing the pool clears the cache. <Proof test="SecureMemoryPoolTests.Dispose_ClearsMemoryQueue" />
+
+<Related>
+- **Do** [Which buffer?](/start/which-buffer/)
+- **Understand** [Ownership: who zeroes what, and when](/concepts/ownership/)
+- **Look up** [Ways to get it wrong](/reference/pitfalls/)
+</Related>

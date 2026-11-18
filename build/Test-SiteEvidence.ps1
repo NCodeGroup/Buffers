@@ -14,7 +14,9 @@
     - a claim, a leak card (leaks.json) or a buffer (buffers.json) names evidence that evidence.json does not list;
     - a source, an outside page or a leak card's reference names a kind that evidence.json's kinds do not list;
     - a pin on a page, a quoted text in the info string of a `cs snippet=<Key>` block, does not match exactly one line
-      of that sample.
+      of that sample;
+    - an API map entry names a line PublicAPI.Shipped.txt lacks, a shipped line has no entry, or a line is listed
+      twice (build/Assert-ApiMap.ps1).
     When the clone lacks the pinned commit, as a shallow clone does, the checks at that commit are skipped with a
     warning; CI fetches the full history.
 #>
@@ -103,6 +105,10 @@ try {
     }
     foreach ($leak in $leaks.leaks) { foreach ($ref in $leak.evidence) { Test-Ref "leak card $($leak.id)" $ref } }
     foreach ($outcome in $buffers.outcomes) { foreach ($t in $outcome.evidence) { Test-Ref "buffer $($outcome.id)" @{ test = $t } } }
+    if (Test-Path -LiteralPath "$data/api-map.json") {
+        $apiMap = Get-Content -Raw "$data/api-map.json" | ConvertFrom-Json -AsHashtable
+        foreach ($entry in $apiMap.entries) { Test-Ref "API map entry $($entry.id)" @{ source = $entry.source } }
+    }
 
     # Pins: each quoted text in a sample block's info string matches exactly one line of the sample.
     $regions = @{}
@@ -128,6 +134,12 @@ try {
             }
         }
     }
+
+    # The API map covers every line of PublicAPI.Shipped.txt once. The check sets no exit code when it passes, so start
+    # from a clean one; it prints 'API map: FAILED.' first, then one line per problem.
+    $global:LASTEXITCODE = 0
+    $apiMapProblems = @(& (Join-Path $PSScriptRoot 'Assert-ApiMap.ps1'))
+    if ($LASTEXITCODE) { foreach ($line in $apiMapProblems | Select-Object -Skip 1) { $problems.Add($line) } }
 
     if ($problems.Count) { 'Site evidence: FAILED.'; $problems; exit 1 }
     'Site evidence: passed.'

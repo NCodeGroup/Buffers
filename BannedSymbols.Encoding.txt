@@ -1,4 +1,4 @@
-# Lenient text encodings, and the file and stream APIs that default to them, are banned outside test projects (RS0030, ADR-1003). Use NCode.Buffers.SecureEncoding.
+// Lenient text encodings, and the file and stream APIs that default to them, are banned outside test projects (RS0030, ADR-1003). Use NCode.Buffers.SecureEncoding.
 P:System.Text.Encoding.ASCII;Use NCode.Buffers.SecureEncoding.ASCII (ADR-1003).
 P:System.Text.Encoding.UTF8;Use NCode.Buffers.SecureEncoding.UTF8 (ADR-1003).
 P:System.Text.Encoding.Unicode;Use new UnicodeEncoding(bigEndian: false, byteOrderMark: true, throwOnInvalidBytes: true) (ADR-1003).

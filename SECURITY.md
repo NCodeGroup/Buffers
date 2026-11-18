@@ -24,7 +24,7 @@ Include:
 
 ## Supported Versions
 
-Fixes ship as a patch of the latest minor version of the current major version. Before 1.0.0, only the latest release gets fixes.
+Fixes ship as a patch of the latest minor version of the current major version.
 
 | Version | Fixes |
 | --- | --- |

@@ -1,0 +1,148 @@
+---
+title: "How the buffers work: pinned, zeroed, pooled"
+description: Where a sensitive buffer lives, when its bytes are overwritten and what the pool does with it, with the cost of each.
+---
+
+import KindLabel from '@site/components/KindLabel.astro';
+import LeakCard from '@site/components/LeakCard.astro';
+import MemoryStrip from '@site/components/MemoryStrip.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+
+<KindLabel kind="explanation" />
+
+## In short
+
+- **Pinned.** A sensitive buffer is allocated on the pinned object heap, so the collector never moves it and never
+  leaves a copy of it at an earlier address.
+- **Zeroed.** `Dispose` writes zeros over the whole buffer, and nothing else does: no finalizer, and no clearing when
+  the buffer is allocated.
+- **Pooled.** Buffers up to one page of 4096 bytes come from a cache of zeroed pages, so the next renter gets zeros.
+  Larger buffers are allocated for you and are not cached.
+
+## Pinned
+
+### The problem
+
+The collector compacts memory, and an array it moves leaves its bytes at the old address until something writes over
+them. <LeakCard leak="L1" /> A key in an ordinary array can end up in two places, and your code knows about one.
+
+### What the library does
+
+A sensitive buffer is allocated on the pinned object heap, which the collector does not compact. The memory is pinned
+from the moment it exists, so no copy is ever made at an earlier address. <Proof source="SecureMemory.Allocate" />
+Microsoft describes the API behind it: pin an object "at the allocation time". <Proof external="PohInternals" />
+<Proof claim="R3" /> The same holds for the array of a `SecureArrayLifetime<T>`, which `CreatePinnedArray` returns.
+
+### What it does not do
+
+`GetSecureLifetime()` pins nothing. It zeroes the span you give it, wherever that span is, and a copy the collector made
+before the lifetime existed stays where it was. <Proof source="Adr1014" /> Pinned memory is also not locked into RAM:
+the operating system can still write it to a page file. <Proof source="Roadmap.NotPlanned" /> [What it protects, and
+what it does not](/start/limits/) has the limit.
+
+### How we know
+
+No test can watch the collector move an array, so none does. The tests assert where the library's buffers are
+allocated, through the generation the collector reports. <Proof claim="R3" />
+
+### In code
+
+```cs snippet=SiteGuaranteesPinnedGeneration title="What a test can see"
+```
+
+<Proof sample="SiteGuaranteesPinnedGeneration" />
+
+## Zeroed
+
+### The problem
+
+Memory the collector frees is not erased. The bytes stay until something else is written over them, and anything that
+later reads that memory reads the key. <LeakCard leak="L2" />
+
+### What the library does
+
+`Dispose` writes zeros over the whole buffer, through `CryptographicOperations.ZeroMemory`. A rented buffer is zeroed
+whole, including the part beyond the length you asked for. <Proof claim="R1" /> <Proof source="Adr1016" />
+
+### What it does not do
+
+Nothing zeroes without `Dispose`. No buffer has a finalizer, so an owner you drop keeps its contents until the memory
+is reused. <Proof source="Adr1011" /> A buffer is not cleared when it is allocated either: pinned memory is allocated
+without initialization, so write before you read. <Proof source="Adr1013" /> A copy your code makes is memory that
+`Dispose` never touches.
+
+### How we know
+
+[R1](/evidence/guarantees/#zeroed-on-dispose) lists the tests behind it. The sample below asserts the whole page,
+not only the 32 bytes asked for. <Proof claim="R1" />
+
+### In code
+
+```cs snippet=SiteDisposeZeroesWholePage title="Dispose zeroes the whole page"
+```
+
+<Proof sample="SiteDisposeZeroesWholePage" />
+
+## Pooled
+
+### The problem
+
+A pool hands a buffer to the next caller as it finds it, so a key you left in a pooled buffer reaches whoever rents
+next. <LeakCard leak="L3" />
+
+### What the library does
+
+`SecureMemoryPool<T>` keeps a cache of pages of 4096 bytes. A request of a page or less takes a page from the cache, or
+allocates one when the cache is empty. `Dispose` zeros the page before it goes back, so the next renter gets zeros.
+<Proof claim="R2" /> A request above a page gets an array of its own, pinned and zeroed on `Dispose`, and no cache
+keeps it.
+
+<MemoryStrip script="pool-loop" />
+
+A pool you create has its own cache and its own pressure threshold. Disposing the pool drops its cache and makes
+`Rent` throw `ObjectDisposedException`. A buffer still rented stays valid, and is zeroed when you dispose it.
+<Proof test="SecureMemoryPoolTests.Dispose_ClearsMemoryQueue" />
+<Proof test="SecureMemoryPoolTests.Rent_WhenDisposed_ThrowsObjectDisposedException" />
+
+### What it does not do
+
+The cache has no size limit of its own. It grows to the most buffers rented at once, and keeps them until a Gen2
+collection finds memory pressure or the pool is disposed. <Proof source="Adr1015" /> A view you keep after `Dispose`
+points at a page the pool can give to another caller: drop every view when you dispose. Buffers rented with
+`isSensitive: false` come from the shared pool, which passes their bytes on as they are. <LeakCard leak="L3" />
+
+### How we know
+
+[R2](/evidence/guarantees/#zeroed-before-reuse) lists the test behind it. The first sample below asserts that a second
+renter gets the same array, holding only zeros. <Proof claim="R2" />
+
+### In code
+
+```cs snippet=SiteSecondRenterSeesZeros title="The next renter sees zeros"
+```
+
+<Proof sample="SiteSecondRenterSeesZeros" />
+
+A pool of your own, and what disposing it does:
+
+```cs snippet=SiteOwnPool title="A pool of your own"
+```
+
+<Proof sample="SiteOwnPool" />
+
+## What it costs
+
+- **A whole page zeroed per rental.** Asking for 32 bytes zeroes 4096 on `Dispose`.
+  <Proof sample="SiteDisposeZeroesWholePage" />
+- **A new pinned array per call above a page, or from `CreatePinnedArray`.** Nothing caches them.
+  <Proof test="SecureMemoryPoolTests.Rent_LargeBuffer_IsNotPooled" /> <Proof source="SecureArrayLifetime.Allocate" />
+- **A cache with no size limit of its own.** <Proof source="Adr1015" />
+- **No metrics, and no benchmarks.** The library defines no meters, instruments or activity sources.
+  <Proof source="Metrics.None" /> Measure in your workload.
+
+<Related>
+- **Learn** [Quick start](/start/quick-start/)
+- **Understand** [Ownership: who zeroes what, and when](/concepts/ownership/)
+- **Look up** [Buffer behavior, sizes and pooling](/reference/buffer-behavior/)
+</Related>
