@@ -82,3 +82,35 @@ jobs:
             artifacts/packages/*.snupkg
           retention-days: 14
           if-no-files-found: ignore
+
+  # The LargeMemoryTests facts allocate 2 GiB each, so build-and-test skips them. This job runs them alone on a runner
+  # with the memory to spare (ubuntu-latest has 16 GB), so the 2 GiB paths of ZeroMemory<T> and FixedTimeEquals<T>
+  # are checked on every change, and it fails if they were skipped instead of run.
+  large-memory-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Nerdbank.GitVersioning computes the version from the history and fails on a shallow clone.
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/install-dotnet
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('Directory.Packages.props', 'global.json', '.config/dotnet-tools.json', '**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+      - name: Large-memory tests
+        env:
+          NCODE_BUFFERS_LARGE_MEMORY_TESTS: '1'
+        run: |
+          $output = dotnet test tests/NCode.Buffers.Tests/NCode.Buffers.Tests.csproj --filter "FullyQualifiedName~LargeMemoryTests" -- RunConfiguration.TreatNoTestsAsError=true
+          $code = $LASTEXITCODE
+          $output
+          if ($code) { exit $code }
+          if ("$output" -match 'Skipped:\s+[1-9]') { Write-Error 'LargeMemoryTests were skipped instead of run.'; exit 1 }
