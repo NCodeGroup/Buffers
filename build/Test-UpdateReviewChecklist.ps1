@@ -4,14 +4,19 @@
     Tests build/Update-ReviewChecklist.ps1 against fixture folders, offline.
 .DESCRIPTION
     Covers the sidebar walk in order, through a group with items and an object with a slug, which keeps only the
-    'guides/' slugs and skips 'guides/review-checklist'; an item that continues on an indented line; a guide without a
-    '## Checklist' section, which gets no group; a section that ends at '<Related>'; a section that ends at the next
-    '## '; fenced code blocks, which hold a '## ' line, a '- ' line or the heading and which the scan ignores; no guide
-    with a checklist, which gives an empty list of groups; a guide without a 'title:' line, which is an error; and
-    -Check with the file the script wrote, with a stale file and with no file. Each fixture is a folder under the temp
-    path, not a repository, that holds docs/site/site.config.json, the guides and, where the case needs one, the data
-    file. Each case checks the exit code and the exact output: the written JSON, the printed line or the message thrown.
-    Exits 1 on the first failed check. build/gate.ps1 runs it before the check.
+    guides the requiredHeadings rule that lists '## Checklist' covers; an item that continues on an indented line; a
+    covered guide without a '## Checklist' section, which is an error; a section that ends at '<Related>'; a section
+    that ends at the next '## '; fenced code blocks, which hold a '## ' line, a '- ' line or the heading and which the
+    scan ignores; a sidebar with no covered guide, which gives an empty list of groups; a guide the rule excepts; the
+    globs: a ** glob that covers a guide in a folder, a * glob that does not, a ? glob that matches one character, a
+    **/ glob that matches no folder or one, a . that matches only itself, and a sidebar slug with capitals that a
+    lower-case glob covers; a rule without '## Checklist', which gathers nothing; a configuration without such a
+    rule, and a pages glob with brackets, which are errors; a guide without a 'title:' line, which is an error; and
+    -Check with the file the script wrote, with a stale file and with no file.
+    Each fixture is a folder under the temp path, not a repository, that holds docs/site/site.config.json, the guides
+    and, where the case needs one, the data file. Each case checks the exit code and the exact output: the written
+    JSON, the printed line or the message thrown. Exits 1 on the first failed check. build/gate.ps1 runs it before the
+    check.
 #>
 $ErrorActionPreference = 'Stop'
 $script = Join-Path $PSScriptRoot 'Update-ReviewChecklist.ps1'
@@ -36,9 +41,16 @@ function Document([string[]]$Groups) {
     "{`n$comment`n$list`n}`n"
 }
 
+# The rule the cases share, as docs/site/site.config.json states it for the guides: every guide but the review
+# checklist ends with a Checklist section.
+$rule = '"requiredHeadings": [{ "pages": ["guides/*"], "headings": ["## Checklist"], "except": ["guides/review-checklist"] }]'
+# A whole site.config.json: the sidebar, then the rules, or none for an empty $Rules.
+function Config([string]$Sidebar, [string]$Rules = $rule) {
+    if ($Rules) { "{ `"sidebar`": $Sidebar, $Rules }" } else { "{ `"sidebar`": $Sidebar }" }
+}
 # A sidebar of slugs, a group with items and an object with a slug.
-$mixedSidebar = '{ "sidebar": ["start/intro", { "label": "Secrets", "items": ["guides/b", "guides/review-checklist", { "label": "More", "items": ["guides/c"] }] }, { "slug": "guides/a" }, "concepts/ownership", "guides/d"] }'
-$plainSidebar = '{ "sidebar": ["guides/a"] }'
+$mixedSidebar = Config '["start/intro", { "label": "Secrets", "items": ["guides/b", "guides/review-checklist", { "label": "More", "items": ["guides/c"] }] }, { "slug": "guides/a" }, "concepts/ownership", "guides/d"]'
+$plainSidebar = Config '["guides/a"]'
 
 $sections = @{
     related  = "## Checklist`n- first`n- second`n`n<Related>`n- not an item`n</Related>"
@@ -71,7 +83,11 @@ function Invoke-Case {
     try {
         New-Item -ItemType Directory -Path (Join-Path $root 'docs/site/guides'), (Join-Path $root 'docs/site/_components/data') -Force | Out-Null
         [IO.File]::WriteAllText((Join-Path $root $configPath), "$Sidebar`n", $utf8)
-        foreach ($slug in $Guides.Keys) { [IO.File]::WriteAllText((Join-Path $root "docs/site/$slug.mdx"), $Guides[$slug], $utf8) }
+        foreach ($slug in $Guides.Keys) {
+            $path = Join-Path $root "docs/site/$slug.mdx"
+            New-Item -ItemType Directory -Force (Split-Path -Parent $path) | Out-Null
+            [IO.File]::WriteAllText($path, $Guides[$slug], $utf8)
+        }
         $data = Join-Path $root $outputPath
         if ($PSBoundParameters.ContainsKey('Existing')) { [IO.File]::WriteAllText($data, $Existing, $utf8) }
 
@@ -104,7 +120,7 @@ function Invoke-Case {
     Write-Host "ok: $Name"
 }
 
-Invoke-Case 'the sidebar walk keeps the guides in order' -Sidebar $mixedSidebar -Guides @{
+Invoke-Case 'the sidebar walk keeps the guides the rule covers, in order' -Sidebar $mixedSidebar -Guides @{
     'guides/a' = Guide 'Guide A' $sections.related
     'guides/b' = Guide 'Guide B' $sections.related
     'guides/c' = Guide 'Guide C' $sections.related
@@ -113,10 +129,10 @@ Invoke-Case 'the sidebar walk keeps the guides in order' -Sidebar $mixedSidebar 
 } -Written (Document (GroupText 'guides/b' 'Guide B' 'first', 'second'), (GroupText 'guides/c' 'Guide C' 'first', 'second'), (GroupText 'guides/a' 'Guide A' 'first', 'second'), (GroupText 'guides/d' 'Guide D' 'first', 'second'))
 Invoke-Case 'an item that continues on an indented line' -Guides @{ 'guides/a' = Guide 'Guide A' $sections.wrapped } `
     -Written (Document (GroupText 'guides/a' 'Guide A' 'first continues here and here', 'second'))
-Invoke-Case 'a guide without a Checklist section gets no group' -Sidebar '{ "sidebar": ["guides/a", "guides/b"] }' -Guides @{
+Invoke-Case 'a guide the rule covers without a Checklist section is an error' -Sidebar (Config '["guides/a", "guides/b"]') -Guides @{
     'guides/a' = Guide 'Guide A' $sections.none
     'guides/b' = Guide 'Guide B' $sections.related
-} -Written (Document (GroupText 'guides/b' 'Guide B' 'first', 'second'))
+} -Throws "Review checklist: docs/site/guides/a.mdx has no '## Checklist' section, which the requiredHeadings rule in docs/site/site.config.json requires."
 Invoke-Case 'a section that ends at Related' -Guides @{ 'guides/a' = Guide 'Guide A' $sections.related } `
     -Written (Document (GroupText 'guides/a' 'Guide A' 'first', 'second'))
 Invoke-Case 'a section that ends at the next heading' -Guides @{ 'guides/a' = Guide 'Guide A' $sections.heading } `
@@ -129,8 +145,48 @@ Invoke-Case 'a longer backtick fence closes only on a fence as long' -Guides @{ 
     -Written (Document (GroupText 'guides/a' 'Guide A' 'before', 'after'))
 Invoke-Case 'a Checklist heading inside a fence is not the heading' -Guides @{ 'guides/a' = Guide 'Guide A' $sections.opening } `
     -Written (Document (GroupText 'guides/a' 'Guide A' 'outside'))
-Invoke-Case 'no guide with a checklist gives no groups' -Guides @{ 'guides/a' = Guide 'Guide A' $sections.none } `
+Invoke-Case 'a sidebar with no guide the rule covers gives no groups' -Sidebar (Config '["concepts/a"]') -Guides @{} `
     -Written (Document)
+Invoke-Case 'a guide the rule excepts gets no group' -Sidebar (Config '["guides/a", "guides/b"]' '"requiredHeadings": [{ "pages": ["guides/*"], "headings": ["## Checklist"], "except": ["guides/a"] }]') -Guides @{
+    'guides/a' = Guide 'Guide A' $sections.none
+    'guides/b' = Guide 'Guide B' $sections.related
+} -Written (Document (GroupText 'guides/b' 'Guide B' 'first', 'second'))
+Invoke-Case 'a ** glob covers a guide in a folder' -Sidebar (Config '["guides/deep/a", "guides/b"]' '"requiredHeadings": [{ "pages": ["guides/**"], "headings": ["## Checklist"] }]') -Guides @{
+    'guides/deep/a' = Guide 'Guide A' $sections.related
+    'guides/b' = Guide 'Guide B' $sections.related
+} -Written (Document (GroupText 'guides/deep/a' 'Guide A' 'first', 'second'), (GroupText 'guides/b' 'Guide B' 'first', 'second'))
+Invoke-Case 'a * glob stays within its folder' -Sidebar (Config '["guides/deep/a", "guides/b"]') -Guides @{
+    'guides/deep/a' = Guide 'Guide A' $sections.none
+    'guides/b' = Guide 'Guide B' $sections.related
+} -Written (Document (GroupText 'guides/b' 'Guide B' 'first', 'second'))
+Invoke-Case 'a ? glob matches one character' -Sidebar (Config '["guides/a", "guides/ab"]' '"requiredHeadings": [{ "pages": ["guides/?"], "headings": ["## Checklist"] }]') -Guides @{
+    'guides/a' = Guide 'Guide A' $sections.related
+    'guides/ab' = Guide 'Guide AB' $sections.none
+} -Written (Document (GroupText 'guides/a' 'Guide A' 'first', 'second'))
+Invoke-Case 'a **/ glob matches no folder or one' -Sidebar (Config '["guides/a", "guides/deep/a", "guides/b"]' '"requiredHeadings": [{ "pages": ["guides/**/a"], "headings": ["## Checklist"] }]') -Guides @{
+    'guides/a' = Guide 'Guide A' $sections.related
+    'guides/deep/a' = Guide 'Deep A' $sections.related
+    'guides/b' = Guide 'Guide B' $sections.none
+} -Written (Document (GroupText 'guides/a' 'Guide A' 'first', 'second'), (GroupText 'guides/deep/a' 'Deep A' 'first', 'second'))
+Invoke-Case 'a . in a glob matches only itself' -Sidebar (Config '["guides/v1.0", "guides/v1x0"]' '"requiredHeadings": [{ "pages": ["guides/v1.0"], "headings": ["## Checklist"] }]') -Guides @{
+    'guides/v1.0' = Guide 'Version 1.0' $sections.related
+    'guides/v1x0' = Guide 'Version 1x0' $sections.none
+} -Written (Document (GroupText 'guides/v1.0' 'Version 1.0' 'first', 'second'))
+Invoke-Case 'a lower-case glob covers a slug with capitals' -Sidebar (Config '["guides/Mixed"]' '"requiredHeadings": [{ "pages": ["guides/mixed"], "headings": ["## Checklist"] }]') -Guides @{
+    'guides/Mixed' = Guide 'Mixed' $sections.related
+} -Written (Document (GroupText 'guides/Mixed' 'Mixed' 'first', 'second'))
+Invoke-Case 'a rule without ## Checklist does not gather' -Sidebar (Config '["guides/a", "guides/b"]' '"requiredHeadings": [{ "pages": ["guides/*"], "headings": ["## Checklist"], "except": ["guides/b"] }, { "pages": ["guides/b"], "headings": ["## Check your work"] }]') -Guides @{
+    'guides/a' = Guide 'Guide A' $sections.related
+    'guides/b' = Guide 'Guide B' $sections.none
+} -Written (Document (GroupText 'guides/a' 'Guide A' 'first', 'second'))
+Invoke-Case 'no rule that lists ## Checklist is an error' -Sidebar (Config '["guides/a"]' '"requiredHeadings": [{ "pages": ["guides/*"], "headings": ["## Check your work"] }]') `
+    -Guides @{ 'guides/a' = Guide 'Guide A' $sections.related } `
+    -Throws "Review checklist: docs/site/site.config.json has no requiredHeadings rule that lists '## Checklist'."
+Invoke-Case 'a configuration without requiredHeadings is an error' -Sidebar (Config '["guides/a"]' '') `
+    -Guides @{ 'guides/a' = Guide 'Guide A' $sections.related } `
+    -Throws "Review checklist: docs/site/site.config.json has no requiredHeadings rule that lists '## Checklist'."
+Invoke-Case 'a pages glob with brackets is an error' -Sidebar (Config '["concepts/a"]' '"requiredHeadings": [{ "pages": ["guides/[ab]"], "headings": ["## Checklist"] }]') `
+    -Throws "Review checklist: the pages glob 'guides/[ab]' in docs/site/site.config.json uses a pattern this script does not read; use *, ** and ?."
 Invoke-Case 'a guide without a title line' -Guides @{ 'guides/a' = "---`ndescription: No title.`n---`n`n$($sections.related)`n" } `
     -Throws "Review checklist: docs/site/guides/a.mdx has no 'title:' line in its frontmatter."
 Invoke-Case '-Check passes with the file the script wrote' -Check -Guides @{ 'guides/a' = Guide 'Guide A' $sections.related } `

@@ -16,31 +16,31 @@
 <style>
   .landing-situations > :global(ul) {
     display: grid;
-    gap: var(--space-5);
+    gap: var(--nc-space-5);
     margin: 0;
     padding: 0;
     list-style: none;
   }
   .landing-situations > :global(ul > li) {
     display: grid;
-    gap: var(--space-4);
+    gap: var(--nc-space-4);
     margin: 0;
-    padding: var(--space-5);
-    border: var(--border-hair) solid var(--color-border);
-    border-radius: var(--radius-panel);
-    background: var(--color-surface);
+    padding: var(--nc-space-5);
+    border: var(--nc-border-hair) solid var(--nc-color-border);
+    border-radius: var(--nc-radius-panel);
+    background: var(--nc-color-surface);
   }
   .landing-situations > :global(ul > li > strong),
   .landing-situations > :global(ul > li > p > strong) {
-    color: var(--color-text);
-    font-size: var(--text-lg);
-    font-stretch: var(--width-display);
-    font-weight: var(--weight-semibold);
+    color: var(--nc-color-text);
+    font-size: var(--sl-text-lg);
+    font-stretch: var(--nc-type-heading-stretch);
+    font-weight: 600;
   }
   .landing-situations :global(ul ul) {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-3);
+    gap: var(--nc-space-3);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -50,19 +50,19 @@
     display: inline-flex;
     align-items: center;
     max-width: 100%;
-    min-height: var(--control-md);
-    padding: var(--space-2) var(--space-4);
-    border: var(--border-hair) solid var(--color-border-strong);
-    border-radius: var(--radius-control);
-    background: var(--color-control);
-    box-shadow: inset 0 1px 0 var(--color-glint), 0 var(--travel) 0 var(--color-lip);
-    color: var(--color-text);
+    min-height: var(--nc-control-md);
+    padding: var(--nc-space-2) var(--nc-space-4);
+    border: var(--nc-border-hair) solid var(--nc-color-border-strong);
+    border-radius: var(--nc-radius-control);
+    background: var(--nc-color-control);
+    box-shadow: inset 0 1px 0 var(--nc-color-glint), 0 var(--nc-travel) 0 var(--nc-color-lip);
+    color: var(--nc-color-text);
     text-decoration: none;
     line-height: 1.35;
   }
-  .landing-situations :global(ul ul a:hover) { background: var(--color-control-hover); }
+  .landing-situations :global(ul ul a:hover) { background: var(--nc-color-control-hover); }
   .landing-situations :global(ul ul a:focus-visible) {
-    outline: var(--focus-width) solid var(--color-focus);
-    outline-offset: var(--focus-gap);
+    outline: var(--nc-focus-width) solid var(--nc-color-focus);
+    outline-offset: var(--nc-focus-gap);
   }
 </style>

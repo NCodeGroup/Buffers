@@ -31,24 +31,31 @@ This repository references it for every project. <Proof source="BannedApiAnalyze
 NCode.Buffers keeps two lists of banned symbols. Copy them into your repository's root from a tagged commit, so that
 the lists do not move under you:
 
-- [`BannedSymbols.Buffers.txt`](https://github.com/NCodeGroup/Buffers/blob/v5.1.0/BannedSymbols.Buffers.txt) bans the
+- [`BannedSymbols.Buffers.txt`](https://github.com/NCodeGroup/Buffers/blob/v5.2.0/BannedSymbols.Buffers.txt) bans the
   bare pools and writers: `ArrayPool<T>.Shared`, `MemoryPool<T>.Shared`, `SecureMemoryPool<T>.Shared` and the
   constructors of `ArrayBufferWriter<T>` and `Sequence<T>`. Each entry names the `BufferFactory` call to use instead.
   <Proof source="BannedBuffers" />
-- [`BannedSymbols.Encoding.txt`](https://github.com/NCodeGroup/Buffers/blob/v5.1.0/BannedSymbols.Encoding.txt) bans the
+- [`BannedSymbols.Encoding.txt`](https://github.com/NCodeGroup/Buffers/blob/v5.2.0/BannedSymbols.Encoding.txt) bans the
   lenient encodings, such as `Encoding.UTF8`, and the file and stream APIs that default to them. Each entry names
   `SecureEncoding`, or the constructor argument that makes the encoding strict. <Proof source="BannedEncoding" />
+
+`BannedSymbols.Buffers.txt` holds these entries:
+
+```txt file=BannedSymbols.Buffers.txt wrap
+```
+
+`BannedSymbols.Encoding.txt` starts with the encodings themselves; the rest of the file bans the file and stream APIs
+that default to them:
+
+```txt file=BannedSymbols.Encoding.txt to="P:System.Text.Encoding.Default;" wrap
+```
 
 ## Bind them to shipping projects only
 
 Tell the analyzer where the lists are. Put the items in `Directory.Build.props`, so that every project has them, and
 leave your test projects out:
 
-```xml title="Directory.Build.props"
-<ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
-  <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.Encoding.txt" />
-  <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.Buffers.txt" />
-</ItemGroup>
+```xml file=Directory.Build.props from="Shipping code takes encodings from SecureEncoding" to="</ItemGroup>" wrap
 ```
 
 The analyzer's help says the files have to be added to any project that references the package.
@@ -74,6 +81,11 @@ Or treat every warning as an error, as this repository does. <Proof source="Warn
 Somewhere a banned API has to be called: the wrapper that every other file calls instead. That file suppresses
 `RS0030` with a reason, and no other file does. This repository's two wrappers, `BufferFactory` and `SecureEncoding`,
 each start with one. <Proof source="BufferFactory.Rs0030" /> <Proof source="SecureEncoding.Rs0030" />
+
+`BufferFactory` starts with this line:
+
+```cs file=src/NCode.Buffers/BufferFactory.cs from="#pragma warning disable RS0030" to="#pragma warning disable RS0030" wrap
+```
 
 ## Check your work
 

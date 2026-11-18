@@ -22,7 +22,7 @@ Then run `dotnet tool restore`, which installs the CSharpier and MarkdownSnippet
 | Test | `dotnet test` |
 | Format | `dotnet csharpier format .` |
 | Copy the README samples from the tests | `dotnet mdsnippets` |
-| Serve the documentation site, with [NCodeGroup/docs](https://github.com/NCodeGroup/docs) cloned beside this repository | `npm --prefix ../docs run dev -- .` |
+| Serve the documentation site, with [NCodeGroup/docs](https://github.com/NCodeGroup/docs) cloned beside this repository | `npm --prefix ../docs run dev '--' .` |
 | The full gate | `./build/gate.ps1` |
 | The local gate before a push | `./build/gate.ps1 -Fast` |
 | Only the tests a filter matches | `./build/gate.ps1 -Fast -Filter 'FullyQualifiedName~OrderStore'` |
@@ -83,6 +83,15 @@ To write a page:
    ```
    ````
 
+5. Never copy a file of this repository into a page. Show it, or the lines between two texts of it, with an empty code block that names it; the site's build fills the block and links it to those lines at the commit it was built from:
+
+   ````md
+   ```xml file=Directory.Build.props from="<ItemGroup" to="</ItemGroup>"
+   ```
+   ````
+
+6. Keep a guide's headings in the order the `requiredHeadings` rules of `docs/site/site.config.json` list; the site's build names a guide that does not. A guide that is a numbered procedure ends with `## Check your work` instead: add it to the first rule's `except` and the second rule's `pages`.
+
 To write a sample ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)):
 
 1. Add a fact to the page's class in `tests/NCode.Buffers.Site.Tests`, a test project that cannot see the library's internal members, so a sample is code a user of the package can write. The class is named for the page's file, in a folder named for the page's folder: `docs/site/guides/verify-a-mac.mdx` has `Guides/VerifyAMacSamples.cs`, class `VerifyAMacSamples` in namespace `SiteSamples.Guides`. That file shows the form.
@@ -90,9 +99,9 @@ To write a sample ([ADR-1010](docs/decisions/1010-site-samples-are-compiled-test
 3. Start the key with `Site`, in PascalCase letters and digits: `SiteVerifyMacWebhook`. A key is defined once in the repository, whatever its letter case, and only a site sample's key starts with `Site`; the gate checks all three rules, and the form of every marker. A page may also include a README sample by its key, and a change to that sample changes the READMEs too.
 4. Run `dotnet csharpier format .`, then `./build/gate.ps1 -Fast`.
 
-The site's own components are in `docs/site/_components/`, each with its usage in a comment at its top, and the data they draw from is in `docs/site/_components/data/`: `evidence.json` lists the claims of [Guarantees and their tests](docs/site/evidence/guarantees.mdx) and every test, sample and source line a page cites, linked at a pinned commit so the line a link opens never moves. `build/Test-SiteEvidence.ps1`, which the gate runs, fails when a test or a sample it names is gone, when a pinned line no longer holds what it names, and when a pin a page marks on a sample, a quoted text in the block's info string, does not match exactly one line of it.
+The site's own components are in `docs/site/_components/`, each with its usage in a comment at its top, and the data they draw from is in `docs/site/_components/data/`: `evidence.json` lists the claims of [Guarantees and their tests](docs/site/evidence/guarantees.mdx) and every test, sample and source line a page cites, linked at a pinned commit so the line a link opens never moves. `build/Test-SiteEvidence.ps1`, which the gate runs, fails when a test or a sample it names is gone, when a pinned line no longer holds what it names, and when a pin a page marks on a sample, a quoted text in the block's info string, does not match exactly one line of it. A component styles itself with the brand's public tokens, prefixed `--nc-`, and Starlight's `--sl-text-*` sizes, never a step of a colour ramp or of the type scale, such as `--nc-blue-600` or `--nc-text-sm`; the site's build fails a component that reads one, or a `--nc-` token the brand does not define.
 
-To see the result, clone NCodeGroup/docs beside this repository and set it up as its README says. From this repository's root, `npm --prefix ../docs run dev -- .` then serves the site at `http://localhost:4321/Buffers/`, and `npm --prefix ../docs run site -- build . --out <folder>` builds it into a folder outside this repository and stops on a sample key no test defines. Neither writes into this repository. The gate does not build the site; the documentation site workflow does, on every pull request.
+To see the result, clone NCodeGroup/docs beside this repository and set it up as its README says. From this repository's root, `npm --prefix ../docs run dev '--' .` then serves the site at `http://localhost:4321/Buffers/`, and `npm --prefix ../docs run site '--' build . --out <folder>` builds it into a folder outside this repository and stops on a sample key no test defines, a file a page includes that is not there, a component that reads a token the brand does not offer, or a guide without its headings. The `--` is quoted so PowerShell passes it to npm. Neither command writes into this repository. The gate does not build the site; the documentation site workflow does, on every pull request.
 
 ## Conventions
 

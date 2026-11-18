@@ -18,7 +18,8 @@ offers. Every document in `docs/` has a line here.
   `.github/workflows/docs.yml` builds the site on every pull request and publishes nothing:
   [#56](https://github.com/NCodeGroup/Buffers/issues/56) tracks publishing it.
   `build/Test-SiteEvidence.ps1` checks the evidence the pages cite and the API map against `PublicAPI.Shipped.txt`, and
-  `build/Update-ReviewChecklist.ps1` keeps the review checklist in step with the guides.
+  `build/Update-ReviewChecklist.ps1` keeps the review checklist in step with the guides that the `requiredHeadings`
+  rule of `site.config.json` holds to a Checklist section.
 - [metrics.md](metrics.md): the metrics and traces catalog, every meter, instrument, attribute, activity source and
   span the project defines, which dashboards and alerts are built against.
 - [api-compatibility.md](api-compatibility.md): how the public API of the published packages evolves and is checked, and how the package validation baseline is kept.
