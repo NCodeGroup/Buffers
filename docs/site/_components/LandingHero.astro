@@ -39,7 +39,8 @@
   .hero .tagline p + p { margin-top: var(--nc-space-4); }
   .hero .tagline .landing-limit { color: var(--nc-color-text); }
 
-  /* Below 72rem, where the sidebar leaves the hero too narrow for two columns, the drawing follows the copy, at the copy's width; from 72rem it stands in the hero's second column. */
+  /* Below 72rem, where the sidebar leaves the hero too narrow for two columns, the drawing follows the copy, at
+     the copy's width; from 72rem it stands in the hero's second column. */
   .hero > .hero-html {
     order: 2;
     width: 100%;
@@ -52,10 +53,6 @@
   @media (min-width: 50rem) and (max-width: 71.99rem) {
     .hero:has(.landing-eyebrow) { grid-template-columns: minmax(0, 1fr); }
     .hero:has(.landing-eyebrow) > .hero-html { justify-self: start; }
-  }
-  /* Starlight sizes the card grid's two columns to their content, so a long test name in a card would widen the page beside the sidebar; minmax(0, 1fr) lets each card shrink and the name end in an ellipsis. */
-  @media (min-width: 50rem) {
-    [data-has-hero] .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 
   .landing-monitor {
