@@ -30,77 +30,12 @@ public class BufferBehaviorMatrixTests
         "fixed-memory-writer",
     ];
 
-    #region Behavior Tests
-
-    [Fact]
-    public void OutcomeIds_WhenReadFromBuffersJson_MatchTheTheoryRows()
-    {
-        var expected = OutcomeIds
-            .Cast<object[]>()
-            .Select(row => Assert.IsType<string>(row[0]))
-            .Order()
-            .ToArray();
-
-        var actual = ReadOutcomes()
-            .Select(outcome => Assert.IsAssignableFrom<JsonValue>(outcome["id"]).GetValue<string>())
-            .Order()
-            .ToArray();
-
-        Assert.Equal(expected, actual);
-    }
-
-    [Theory]
-    [MemberData(nameof(OutcomeIds))]
-    public void Behavior_ForEachOutcome_MatchesBuffersJson(string id)
-    {
-        var outcome = ReadOutcomes().Single(node => node["id"]?.GetValue<string>() == id);
-        var pinned = ReadFlag(outcome, "pinned");
-        var zeroedOnDispose = ReadFlag(outcome, "zeroedOnDispose");
-
-        switch (id)
-        {
-            case "rent-span":
-                CheckRentSpan(pinned, zeroedOnDispose);
-                break;
-            case "rent-memory":
-                CheckRentMemory(pinned, zeroedOnDispose);
-                break;
-            case "pooled-writer":
-                CheckPooledWriter(pinned, zeroedOnDispose);
-                break;
-            case "secure-pool":
-                CheckSecurePool(pinned, zeroedOnDispose);
-                break;
-            case "pinned-array":
-                CheckPinnedArray(pinned, zeroedOnDispose);
-                break;
-            case "secure-lifetime":
-                CheckSecureLifetime(pinned, zeroedOnDispose);
-                break;
-            case "plain-pooled":
-                CheckPlainPooled(pinned, zeroedOnDispose);
-                break;
-            case "array-writer":
-                CheckArrayWriter(pinned, zeroedOnDispose);
-                break;
-            case "fixed-span-writer":
-                CheckFixedSpanWriter(pinned, zeroedOnDispose);
-                break;
-            case "fixed-memory-writer":
-                CheckFixedMemoryWriter(pinned, zeroedOnDispose);
-                break;
-            default:
-                Assert.Fail($"No check is written for the outcome '{id}'.");
-                break;
-        }
-    }
-
-    #endregion
-
     #region Outcome Checks
 
     private static void CheckRentSpan(bool pinned, bool zeroedOnDispose)
     {
+        SecureMemoryPool<byte>.Shared.MemoryQueue.Clear();
+
         var owner = BufferFactory.Rent(Size, isSensitive: true, out Span<byte> span);
         span.Fill(Fill);
         var view = owner.Memory[..Size];
@@ -113,6 +48,8 @@ public class BufferBehaviorMatrixTests
 
     private static void CheckRentMemory(bool pinned, bool zeroedOnDispose)
     {
+        SecureMemoryPool<byte>.Shared.MemoryQueue.Clear();
+
         var owner = BufferFactory.Rent(Size, isSensitive: true, out Memory<byte> memory);
         memory.Span.Fill(Fill);
         var view = memory;
@@ -137,6 +74,8 @@ public class BufferBehaviorMatrixTests
 
     private static void CheckPooledWriter(bool pinned, bool zeroedOnDispose)
     {
+        SecureMemoryPool<byte>.Shared.MemoryQueue.Clear();
+
         var writer = BufferFactory.CreatePooledBufferWriter(isSensitive: true);
         var span = writer.GetSpan(Size);
         span[..Size].Fill(Fill);
@@ -242,6 +181,10 @@ public class BufferBehaviorMatrixTests
 
     // The runtime offers no way to show that an array is not pinned (GC.GetGeneration of an
     // ordinary array can also be GC.MaxGeneration), so a `pinned: false` row is not asserted.
+    // Every row whose `pinned` is true tests a freshly allocated array: the rows that rent from
+    // SecureMemoryPool<byte>.Shared clear its queue first, so the rent allocates a new page. A
+    // freshly allocated ordinary array is in generation 0, so GC.MaxGeneration tells a pinned
+    // page from an ordinary one.
     private static void AssertPinned(bool pinned, byte[] array)
     {
         if (!pinned)
@@ -289,7 +232,14 @@ public class BufferBehaviorMatrixTests
         var outcomes = root?["outcomes"]?.AsArray();
         Assert.NotNull(outcomes);
 
-        return [.. outcomes.Select(outcome => Assert.IsAssignableFrom<JsonNode>(outcome))];
+        return
+        [
+            .. outcomes.Select(outcome =>
+            {
+                Assert.NotNull(outcome);
+                return outcome;
+            }),
+        ];
     }
 
     private static string FindBuffersJson()
@@ -308,6 +258,73 @@ public class BufferBehaviorMatrixTests
         }
 
         throw new FileNotFoundException($"Cannot find '{relativePath}' above the test output.");
+    }
+
+    #endregion
+
+    #region Behavior Tests
+
+    [Fact]
+    public void OutcomeIds_WhenReadFromBuffersJson_MatchTheTheoryRows()
+    {
+        var expected = OutcomeIds
+            .Cast<object[]>()
+            .Select(row => Assert.IsType<string>(row[0]))
+            .Order()
+            .ToArray();
+
+        var actual = ReadOutcomes()
+            .Select(outcome => Assert.IsAssignableFrom<JsonValue>(outcome["id"]).GetValue<string>())
+            .Order()
+            .ToArray();
+
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [MemberData(nameof(OutcomeIds))]
+    public void Behavior_ForEachOutcome_MatchesBuffersJson(string id)
+    {
+        var outcome = ReadOutcomes().Single(node => node["id"]?.GetValue<string>() == id);
+        var pinned = ReadFlag(outcome, "pinned");
+        var zeroedOnDispose = ReadFlag(outcome, "zeroedOnDispose");
+
+        switch (id)
+        {
+            case "rent-span":
+                CheckRentSpan(pinned, zeroedOnDispose);
+                break;
+            case "rent-memory":
+                CheckRentMemory(pinned, zeroedOnDispose);
+                break;
+            case "pooled-writer":
+                CheckPooledWriter(pinned, zeroedOnDispose);
+                break;
+            case "secure-pool":
+                CheckSecurePool(pinned, zeroedOnDispose);
+                break;
+            case "pinned-array":
+                CheckPinnedArray(pinned, zeroedOnDispose);
+                break;
+            case "secure-lifetime":
+                CheckSecureLifetime(pinned, zeroedOnDispose);
+                break;
+            case "plain-pooled":
+                CheckPlainPooled(pinned, zeroedOnDispose);
+                break;
+            case "array-writer":
+                CheckArrayWriter(pinned, zeroedOnDispose);
+                break;
+            case "fixed-span-writer":
+                CheckFixedSpanWriter(pinned, zeroedOnDispose);
+                break;
+            case "fixed-memory-writer":
+                CheckFixedMemoryWriter(pinned, zeroedOnDispose);
+                break;
+            default:
+                Assert.Fail($"No check is written for the outcome '{id}'.");
+                break;
+        }
     }
 
     #endregion
