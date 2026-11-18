@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.1] - 2026-11-18
+
 ### Changed
 
 - Package validation compares each package with the published 5.2.0 package.
+- The documentation site is built with NCodeGroup/docs v0.13.0, taken the day it was released while the toolchain is built out, and its components read the brand's public tokens, with the values they had ([#81](https://github.com/NCodeGroup/Buffers/issues/81), [ADR-1024](docs/decisions/1024-ncodegroup-docs-releases-are-taken-without-a-cooldown-during-the-build-out.md)).
+- The guide to ban the leaky APIs shows `BannedSymbols.Buffers.txt`, the start of `BannedSymbols.Encoding.txt`, the banned-symbols `ItemGroup` of `Directory.Build.props` and `BufferFactory`'s `RS0030` suppression as they are in the repository, each linked to its lines at the commit the site was built from, and links the lists at v5.2.0 ([#81](https://github.com/NCodeGroup/Buffers/issues/81)).
+- The documentation site's build fails when a guide lacks a heading of its kind: The usual code, With NCode.Buffers, Pitfalls, What this does not fix and Checklist, in order, or Check your work for the two numbered procedures; `build/Update-ReviewChecklist.ps1` gathers the guides that rule covers and fails on one without its Checklist ([#82](https://github.com/NCodeGroup/Buffers/issues/82)).
 
 ## [5.2.0] - 2026-11-17
 
@@ -187,7 +192,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.2.0...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.2.1...HEAD
+[5.2.1]: https://github.com/NCodeGroup/Buffers/compare/v5.2.0...v5.2.1
 [5.2.0]: https://github.com/NCodeGroup/Buffers/compare/v5.1.3...v5.2.0
 [5.1.3]: https://github.com/NCodeGroup/Buffers/compare/v5.1.2...v5.1.3
 [5.1.2]: https://github.com/NCodeGroup/Buffers/compare/v5.1.1...v5.1.2
