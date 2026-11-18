@@ -66,7 +66,7 @@ The pool keeps the pages it takes back, so the next `Rent` does not allocate.
 - The callback for that collection is code copied from the .NET runtime. <Proof source="Gen2GcCallback.CopiedFrom" />
 - Disposing a pool you create clears its cache. Disposing `SecureMemoryPool<T>.Shared` does nothing, so no caller can
   empty or end it for the rest of the process. <Proof test="SecureMemoryPoolTests.Dispose_ClearsMemoryQueue" />
-  <Proof source="Adr1023" />
+  <Proof test="SecureMemoryPoolTests.Shared_WhenDisposed_RentStillReturnsABuffer" /> <Proof source="Adr1023" />
 
 <Related>
 - **Do** [Which buffer?](/start/which-buffer/)

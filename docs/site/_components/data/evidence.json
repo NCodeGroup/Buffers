@@ -111,6 +111,10 @@
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
       "line": 120
     },
+    "CryptographicOperationsExtensionsTests.FixedTimeEqualsInChunks_WhenOnlyTheFirstChunkDiffers_ReturnsFalse": {
+      "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
+      "line": 187
+    },
     "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_WithBytes_MatchesSequenceEqual": {
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsPropertyTests.cs",
       "line": 26
@@ -258,6 +262,10 @@
     "SecureMemoryPoolTests.Dispose_ClearsMemoryQueue": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
       "line": 155
+    },
+    "SecureMemoryPoolTests.Shared_WhenDisposed_RentStillReturnsABuffer": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
+      "line": 61
     },
     "SecureMemoryPoolTests.RentDisposeRent_ReusesBuffer": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
@@ -2193,7 +2201,8 @@
         "CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentLengths_ReturnsFalse",
         "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_WithBytes_MatchesSequenceEqual",
         "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_WithInts_MatchesSequenceEqual",
-        "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_GivenACopy_ReturnsTrue"
+        "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_GivenACopy_ReturnsTrue",
+        "CryptographicOperationsExtensionsTests.FixedTimeEqualsInChunks_WhenOnlyTheFirstChunkDiffers_ReturnsFalse"
       ],
       "sources": [
         "FixedTimeEquals"
