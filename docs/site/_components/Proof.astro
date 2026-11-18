@@ -47,7 +47,7 @@ if (props.claim) {
     display: inline-flex;
     align-items: center;
     gap: 0.4375rem;
-    max-width: 100%;
+    max-width: calc(100% - 0.25rem);
     margin-inline-start: 0.25rem;
     padding: 0.0625rem 0.4375rem 0.0625rem 0.3125rem;
     border: var(--nc-border-hair) solid var(--nc-color-border);
@@ -79,4 +79,8 @@ if (props.claim) {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  /* A card in a card grid is never narrower than its content, and a chip's evidence name does not wrap, so a
+     card holding a long name would widen the page. A card that holds a chip may shrink, and the name ends in an
+     ellipsis. */
+  :global(.card-grid > .card:has(.proof)) { min-width: 0; }
 </style>
