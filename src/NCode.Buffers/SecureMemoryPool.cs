@@ -106,6 +106,10 @@ public class SecureMemoryPool<T> : MemoryPool<T>
 
     /// <inheritdoc />
     /// <value>Returns <see cref="Array.MaxLength"/>, the maximum length of an array.</value>
+    /// <remarks>
+    /// A buffer of up to this many elements is zeroed when its owner is disposed, whatever the element type.
+    /// Whether the runtime can allocate it depends on the memory available.
+    /// </remarks>
     public override int MaxBufferSize => Array.MaxLength;
 
     /// <summary>

@@ -16,7 +16,8 @@ namespace NCode.Buffers;
 /// <para>
 /// The standard <see cref="CryptographicOperations"/> class only provides methods that operate on byte spans.
 /// This extension class enables the same security-critical operations on spans of any unmanaged value type
-/// by converting them to byte spans internally using <see cref="MemoryMarshal.AsBytes{T}(Span{T})"/>.
+/// by viewing them as byte spans with <see cref="MemoryMarshal.AsBytes{T}(Span{T})"/>, in chunks of at most
+/// <see cref="int.MaxValue"/> bytes, so a span of any length is handled.
 /// </para>
 /// <para>
 /// These methods are essential for secure handling of sensitive data such as cryptographic keys, passwords,
@@ -122,6 +123,10 @@ public static class CryptographicOperationsExtensions
         /// <see cref="CryptographicOperations.ZeroMemory(Span{byte})"/> internally, which guarantees
         /// the zeroing operation will not be removed by compiler optimizations.
         /// </para>
+        /// <para>
+        /// A span of any length is zeroed: the bytes are zeroed in chunks of at most <see cref="int.MaxValue"/> bytes,
+        /// the most one <see cref="Span{T}"/> of bytes can hold.
+        /// </para>
         /// </remarks>
         /// <example>
         /// <code>
@@ -154,6 +159,10 @@ public static class CryptographicOperationsExtensions
         /// This method performs a constant-time comparison, meaning the time taken to compare two spans
         /// does not depend on where the first difference occurs. This is critical for comparing secrets
         /// such as cryptographic hashes, MACs, or authentication tokens to prevent timing attacks.
+        /// </para>
+        /// <para>
+        /// Spans of any length are compared: spans of equal length are compared in chunks of at most
+        /// <see cref="int.MaxValue"/> bytes, and every chunk is compared, whatever an earlier chunk held.
         /// </para>
         /// <para>
         /// A timing attack could allow an attacker to determine the contents of a secret value by
