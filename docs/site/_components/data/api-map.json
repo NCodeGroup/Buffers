@@ -204,7 +204,7 @@
       "signatures": [
         "public double HighPressureThreshold { get; set; } = DefaultHighPressureThreshold;"
       ],
-      "summary": "The share of the system's high memory load above which the pool drops its cached buffers at the next generation 2 collection.",
+      "summary": "The fraction of the GC's high memory load threshold at or above which the pool drops its cached buffers, checked on the finalizer thread after each generation 2 collection.",
       "constraint": "unmanaged",
       "throws": null,
       "page": "/concepts/how-the-buffers-work/",
@@ -644,7 +644,7 @@
       "signatures": [
         "public void Clear()"
       ],
-      "summary": "Sets `WrittenCount` to zero. It does not clear the buffer; use `Reset` for that.",
+      "summary": "Sets `WrittenCount` to zero and leaves the buffer as it is. A later `Reset` zeroes only what is written after it, so call `Reset`, not `Clear`, to remove a secret.",
       "constraint": null,
       "throws": null,
       "page": "/guides/fixed-size-buffer/",
@@ -848,7 +848,7 @@
       "signatures": [
         "public void Clear()"
       ],
-      "summary": "Sets `WrittenCount` to zero. It does not clear the buffer; use `Reset` for that.",
+      "summary": "Sets `WrittenCount` to zero and leaves the buffer as it is. A later `Reset` zeroes only what is written after it, so call `Reset`, not `Clear`, to remove a secret.",
       "constraint": null,
       "throws": null,
       "page": "/guides/fixed-size-buffer/",
@@ -1527,7 +1527,7 @@
         "extension(CryptographicOperations)",
         "public static bool FixedTimeEquals<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right) where T : unmanaged"
       ],
-      "summary": "Compares two spans of any unmanaged element type in time that does not depend on where they first differ. It returns `true` only when the lengths and the contents match.",
+      "summary": "Compares two spans of any unmanaged element type in time that does not depend on where they first differ. It returns `true` only when the lengths and the contents match. Spans of different lengths return `false` at once, so it does not hide the length.",
       "constraint": "unmanaged",
       "throws": null,
       "page": "/guides/verify-a-mac/",
