@@ -10,7 +10,7 @@
 `src/NCode.Buffers/NCode.Buffers.csproj` references JetBrains.Annotations for the `[PublicAPI]` attribute on the
 public types. Its attributes are declared `[Conditional("JETBRAINS_ANNOTATIONS")]`, and the build does not define that
 symbol, so none of them reaches `NCode.Buffers.dll`: the assembly built from the 5.1.2 source names no JetBrains type
-(read 2026-11-18). Without `PrivateAssets`, `dotnet pack` lists JetBrains.Annotations as a dependency in the nuspec,
+(read 2026-11-17). Without `PrivateAssets`, `dotnet pack` lists JetBrains.Annotations as a dependency in the nuspec,
 and every consumer restores a package the library never loads.
 [ADR-1017](1017-the-pooled-buffer-writers-return-nerdbank-streams-sequence.md) records it as the package's one other
 dependency.

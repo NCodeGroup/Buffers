@@ -14,7 +14,7 @@ holds on the runtime the package targets:
 
 - Microsoft's documentation of `GC.AllocateUninitializedArray<T>` limits the restriction to ".NET 7 and earlier
   versions: If pinned is set to `true`, `T` must not be a reference type or a type that contains object references"
-  ([the API page](https://learn.microsoft.com/dotnet/api/system.gc.allocateuninitializedarray), read 2026-11-18). On
+  ([the API page](https://learn.microsoft.com/dotnet/api/system.gc.allocateuninitializedarray), read 2026-11-17). On
   .NET 10.0.15, `GC.AllocateUninitializedArray<string>(10, pinned: true)`, `GC.AllocateArray<string>(10, pinned: true)`
   and the same call for a struct with a `string` field each return an array, which `GC.GetGeneration` reports in
   generation 2, as it reports every object on the Pinned Object Heap.

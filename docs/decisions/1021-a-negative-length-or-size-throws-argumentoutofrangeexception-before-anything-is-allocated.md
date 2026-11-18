@@ -7,7 +7,7 @@
 ## Context
 
 The public APIs that take a length or a size answer a negative one in different ways (.NET 10.0.15, read
-2026-11-18):
+2026-11-17):
 
 - `BufferFactory.CreatePinnedArray` checks its `length` and throws `ArgumentOutOfRangeException` with `ParamName`
   `length`, while `SecureArrayLifetime<T>.Create` and the `SecureArrayLifetime<T>` constructor, which it calls, check
