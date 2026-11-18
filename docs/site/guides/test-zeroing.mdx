@@ -62,8 +62,9 @@ read after it.
 ## For code that takes a `MemoryPool<T>`, pass a `SecureMemoryPool<T>` the test created
 
 Code that rents its buffer from a pool disposes the owner it gets, and the pool zeroes the buffer before it can be
-handed out again. <Proof claim="R2" /> The test passes a pool of its own, runs the code, and rents again from that
-pool. The pool hands the same buffer out again, and the test asserts that it holds only zeros.
+handed out again. <Proof claim="R2" /> The test rents one page from a pool of its own and disposes it, so the pool's
+cache holds exactly that page. It runs the code, then rents again. The same array comes back only if the code disposed
+its owner, so the test asserts that, and then asserts that the array holds only zeros.
 
 ```cs snippet=SiteTestZeroingWithAPoolOfYourOwn title="ProcessTests.cs"
 ```

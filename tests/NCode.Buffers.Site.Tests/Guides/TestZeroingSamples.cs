@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 using System.Buffers;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using NCode.Buffers;
 
@@ -70,12 +71,32 @@ public class TestZeroingSamples
         // Never read a buffer of the shared pool after disposing it: another caller may hold it.
         using var pool = new SecureMemoryPool<byte>();
 
+        // Rent and dispose one page first, so the pool's cache holds exactly that page.
+        // The test keeps the page's array to read it after the code runs.
+        var first = pool.Rent(32);
+        bool hasPage = MemoryMarshal.TryGetArray<byte>(
+            first.Memory,
+            out ArraySegment<byte> page
+        );
+        Assert.True(hasPage);
+        first.Dispose();
+
         Process(pool);
 
-        // The pool hands the same buffer out again. It holds only zeros.
+        // The code took the cached page. If it gave the page back, the next Rent returns
+        // the same array. If it never disposed, the pool allocates a new array and the
+        // assertion below fails, so this test fails when nothing disposes.
         using var next = pool.Rent(32);
-        bool nextHasData = next.Memory.Span.ContainsAnyExcept((byte)0);
-        Assert.False(nextHasData);
+        bool hasNext = MemoryMarshal.TryGetArray<byte>(
+            next.Memory,
+            out ArraySegment<byte> again
+        );
+        Assert.True(hasNext);
+        Assert.Same(page.Array, again.Array);
+
+        // The page holds only zeros.
+        bool pageHasData = page.AsSpan().ContainsAnyExcept((byte)0);
+        Assert.False(pageHasData);
         // end-snippet
     }
 }
