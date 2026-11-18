@@ -240,5 +240,48 @@ public class CryptographicOperationsExtensionsTests
         Assert.True(result);
     }
 
+    [Theory]
+    [InlineData(4, 4)]
+    [InlineData(6, 3)]
+    [InlineData(5, 1)]
+    public void FixedTimeEqualsInChunks_WhenEveryElementMatchesAtAChunkBoundary_ReturnsTrue(
+        int length,
+        int maxElementsPerChunk
+    )
+    {
+        var left = new int[length];
+        var right = new int[length];
+
+        var result = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            left,
+            right,
+            maxElementsPerChunk
+        );
+
+        Assert.True(result);
+    }
+
+    [Theory]
+    [InlineData(4, 4)]
+    [InlineData(6, 3)]
+    [InlineData(5, 1)]
+    public void FixedTimeEqualsInChunks_WhenOnlyTheLastElementDiffersAtAChunkBoundary_ReturnsFalse(
+        int length,
+        int maxElementsPerChunk
+    )
+    {
+        var left = new int[length];
+        var right = new int[length];
+        right[^1] = 1;
+
+        var result = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            left,
+            right,
+            maxElementsPerChunk
+        );
+
+        Assert.False(result);
+    }
+
     #endregion
 }
