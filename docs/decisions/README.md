@@ -86,3 +86,4 @@ override in `AGENTS.md`.
 | [ADR-1021](1021-a-negative-length-or-size-throws-argumentoutofrangeexception-before-anything-is-allocated.md) | A negative length or size throws ArgumentOutOfRangeException before anything is allocated | Accepted |
 | [ADR-1022](1022-jetbrains-annotations-is-a-build-time-reference-not-a-package-dependency.md) | JetBrains.Annotations is a build-time reference, not a package dependency (amends 1017) | Accepted |
 | [ADR-1023](1023-the-shared-secure-pool-ignores-dispose.md) | The shared secure pool ignores Dispose (amends 1015) | Accepted |
+| [ADR-1024](1024-ncodegroup-docs-releases-are-taken-without-a-cooldown-during-the-build-out.md) | NCodeGroup/docs releases are taken without a cooldown during the build-out (supersedes project-template 0009 for NCodeGroup/docs) | Accepted |
