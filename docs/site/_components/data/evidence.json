@@ -1038,6 +1038,12 @@
       "kind": "documented",
       "label": "ADR-1020"
     },
+    "Adr1021": {
+      "file": "docs/decisions/1021-a-negative-length-or-size-throws-argumentoutofrangeexception-before-anything-is-allocated.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1021"
+    },
     "Adr1022": {
       "file": "docs/decisions/1022-jetbrains-annotations-is-a-build-time-reference-not-a-package-dependency.md",
       "branch": "main",
