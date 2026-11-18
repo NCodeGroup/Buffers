@@ -23,7 +23,8 @@ public class LargeMemoryTests
 
         CryptographicOperations.ZeroMemory<int>(values);
 
-        Assert.False(values.AsSpan().ContainsAnyExcept(0));
+        var hasNonZero = values.AsSpan().ContainsAnyExcept(0);
+        Assert.False(hasNonZero);
     }
 
     #endregion
@@ -39,8 +40,11 @@ public class LargeMemoryTests
         var first = values.AsSpan(0, IntsPastInt32MaxValueBytes);
         var shifted = values.AsSpan(1, IntsPastInt32MaxValueBytes);
 
-        Assert.True(CryptographicOperations.FixedTimeEquals<int>(first, first));
-        Assert.False(CryptographicOperations.FixedTimeEquals<int>(first, shifted));
+        var firstEqualsFirst = CryptographicOperations.FixedTimeEquals<int>(first, first);
+        var firstEqualsShifted = CryptographicOperations.FixedTimeEquals<int>(first, shifted);
+
+        Assert.True(firstEqualsFirst);
+        Assert.False(firstEqualsShifted);
     }
 
     #endregion
@@ -57,7 +61,8 @@ public class LargeMemoryTests
 
         owner.Dispose();
 
-        Assert.False(memory.Span.ContainsAnyExcept(0));
+        var hasNonZero = memory.Span.ContainsAnyExcept(0);
+        Assert.False(hasNonZero);
     }
 
     #endregion
@@ -73,7 +78,8 @@ public class LargeMemoryTests
 
         lifetime.Dispose();
 
-        Assert.False(values.AsSpan().ContainsAnyExcept(0));
+        var hasNonZero = values.AsSpan().ContainsAnyExcept(0);
+        Assert.False(hasNonZero);
     }
 
     #endregion
@@ -88,7 +94,8 @@ public class LargeMemoryTests
 
         values.AsSpan().GetSecureLifetime().Dispose();
 
-        Assert.False(values.AsSpan().ContainsAnyExcept(0));
+        var hasNonZero = values.AsSpan().ContainsAnyExcept(0);
+        Assert.False(hasNonZero);
     }
 
     #endregion

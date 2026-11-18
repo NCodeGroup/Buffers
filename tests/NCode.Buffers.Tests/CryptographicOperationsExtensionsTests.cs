@@ -133,7 +133,8 @@ public class CryptographicOperationsExtensionsTests
     public void FixedTimeEquals_WhenOneSpanHoldsMoreThanInt32MaxValueBytes_ReturnsFalse()
     {
         const int length = 536_870_912;
-        var longer = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.NullRef<int>(), length);
+        ref var noElement = ref Unsafe.NullRef<int>();
+        var longer = MemoryMarshal.CreateReadOnlySpan(ref noElement, length);
 
         var result = CryptographicOperations.FixedTimeEquals<int>(longer, ReadOnlySpan<int>.Empty);
 

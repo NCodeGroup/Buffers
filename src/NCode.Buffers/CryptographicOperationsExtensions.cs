@@ -95,10 +95,11 @@ public static class CryptographicOperationsExtensions
         while (!left.IsEmpty)
         {
             var count = Math.Min(left.Length, maxElementsPerChunk);
-            equal &= CryptographicOperations.FixedTimeEquals(
-                MemoryMarshal.AsBytes(left[..count]),
-                MemoryMarshal.AsBytes(right[..count])
-            );
+            var leftChunk = left[..count];
+            var rightChunk = right[..count];
+            var leftBytes = MemoryMarshal.AsBytes(leftChunk);
+            var rightBytes = MemoryMarshal.AsBytes(rightChunk);
+            equal &= CryptographicOperations.FixedTimeEquals(leftBytes, rightBytes);
             left = left[count..];
             right = right[count..];
         }
