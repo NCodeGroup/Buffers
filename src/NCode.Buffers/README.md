@@ -4,6 +4,8 @@
 
 Pinned, pooled .NET buffers that zero themselves on dispose, for keys and other secrets, plus fixed-size buffer writers and string splitting without substring copies.
 
+The [documentation site](https://ncodegroup.github.io/Buffers/) has a quick start, a guide for each task, the concepts behind the buffers, the evidence for each guarantee and a reference for every public member.
+
 ## Installation
 
 ```shell
@@ -54,7 +56,8 @@ public static class Signatures
 
 ## Learn more
 
-- [Documentation and samples](https://github.com/NCodeGroup/Buffers#readme)
+- [Documentation site](https://ncodegroup.github.io/Buffers/)
+- [README and samples](https://github.com/NCodeGroup/Buffers#readme)
 - [Choosing a type](https://github.com/NCodeGroup/Buffers#choosing-a-type)
 - [Security notes](https://github.com/NCodeGroup/Buffers#security-notes)
 - [Changelog](https://github.com/NCodeGroup/Buffers/blob/main/CHANGELOG.md)
