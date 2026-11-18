@@ -3,14 +3,17 @@
 .SYNOPSIS
     Generates the site's review checklist data from the Checklist section of each guide (ADR-1010).
 .DESCRIPTION
-    Reads docs/site/site.config.json, walks its sidebar in order and keeps the guides, which are the slugs that start
-    with 'guides/', except 'guides/review-checklist', the page that shows the result. For each guide it reads the title
-    from the frontmatter and the items of its '## Checklist' section: the lines after that heading up to the next line
-    that starts with '## ' or '<Related>'. An item starts with '- ', and a following line that starts with spaces
-    continues it. A guide without that heading has no group. A fenced code block is skipped: a line whose trimmed
-    start is three or more backticks or tildes opens a fence, and a line of the same character and at least that
-    length, with nothing else on it, closes it. No line inside a fence, and no fence line, is the heading, the end of
-    the section or an item. A guide with no 'title:' line in its frontmatter is an error.
+    Reads docs/site/site.config.json, walks its sidebar in order and keeps the guides that a requiredHeadings rule
+    listing '## Checklist' covers, which the site's build holds to that rule (NCodeGroup/docs ADR-1011): the slugs,
+    lower-cased, that one of the rule's pages globs matches and its except list does not name. A glob reads * and ?
+    within a folder and ** across folders, as the site's build does. For each guide it reads the title from the
+    frontmatter and the items of its '## Checklist' section: the lines after that heading up to the next line that
+    starts with '## ' or '<Related>'. An item starts with '- ', and a following line that starts with spaces continues
+    it. A fenced code block is skipped: a line whose trimmed start is three or more backticks or tildes opens a fence,
+    and a line of the same character and at least that length, with nothing else on it, closes it. No line inside a
+    fence, and no fence line, is the heading, the end of the section or an item. These are errors: a guide with no
+    'title:' line in its frontmatter, a covered guide without a '## Checklist' section, a configuration without a
+    requiredHeadings rule that lists '## Checklist', and a pages glob with a character other than *, ** and ?.
 
     Writes docs/site/_components/data/checklists.json, which the review checklist page renders, so the page never holds
     a second copy of a guide's checklist. With -Check, writes nothing: prints 'Review checklist: FAILED.' and exits 1
@@ -32,6 +35,27 @@ try {
     $output = "$site/_components/data/checklists.json"
     $config = Get-Content -Raw -LiteralPath "$site/site.config.json" | ConvertFrom-Json -AsHashtable
 
+    # The rules the site's build holds the guides to (NCodeGroup/docs ADR-1011); the ones that list a Checklist name the
+    # guides this page gathers.
+    $rules = @($config.requiredHeadings | Where-Object { $_.headings -ccontains '## Checklist' })
+    if (-not $rules) { throw "Review checklist: $site/site.config.json has no requiredHeadings rule that lists '## Checklist'." }
+    # The globs as the site's build reads them: * and ? within a folder, ** across folders.
+    function ConvertTo-GlobPattern([string]$Glob) {
+        if ($Glob -match '[\[\]{}!()|+@]') { throw "Review checklist: the pages glob '$Glob' in $site/site.config.json uses a pattern this script does not read; use *, ** and ?." }
+        $pattern = [regex]::Escape($Glob) -replace '\\\*\\\*/', '(?:.*/)?' -replace '\\\*\\\*', '.*' -replace '\\\*', '[^/]*' -replace '\\\?', '[^/]'
+        "^$pattern$"
+    }
+    # Every glob is read once here, so a pattern this script does not read stops it whatever the sidebar holds.
+    $patterns = @{}
+    foreach ($rule in $rules) { foreach ($glob in $rule.pages) { $patterns[$glob] = ConvertTo-GlobPattern $glob } }
+    function Test-Covered([string]$Slug) {
+        foreach ($rule in $rules) {
+            $matched = @($rule.pages | Where-Object { $Slug -cmatch $patterns[$_] }).Count
+            if ($matched -and -not (@($rule.except) -ccontains $Slug)) { return $true }
+        }
+        $false
+    }
+
     # An item of the sidebar is a slug, an object with a slug, or a group with items.
     function Get-Slugs($items) {
         foreach ($item in $items) {
@@ -41,7 +65,7 @@ try {
         }
     }
 
-    $groups = @(foreach ($slug in @(Get-Slugs $config.sidebar | Where-Object { $_.StartsWith('guides/', [StringComparison]::Ordinal) -and $_ -ne 'guides/review-checklist' })) {
+    $groups = @(foreach ($slug in @(Get-Slugs $config.sidebar | Where-Object { Test-Covered $_.ToLowerInvariant() })) {
         $lines = @(Get-Content -LiteralPath "$site/$slug.mdx")
         $titleLine = $lines | Where-Object { $_.StartsWith('title: ', [StringComparison]::Ordinal) } | Select-Object -First 1
         if ($null -eq $titleLine) { throw "Review checklist: $site/$slug.mdx has no 'title:' line in its frontmatter." }
@@ -69,7 +93,7 @@ try {
         for ($i = 0; $i -lt $lines.Count; $i++) {
             if (-not $fenced[$i] -and $lines[$i] -ceq '## Checklist') { $start = $i; break }
         }
-        if ($start -lt 0) { continue }
+        if ($start -lt 0) { throw "Review checklist: $site/$slug.mdx has no '## Checklist' section, which the requiredHeadings rule in $site/site.config.json requires." }
         $items = [Collections.Generic.List[string]]::new()
         for ($i = $start + 1; $i -lt $lines.Count; $i++) {
             if ($fenced[$i]) { continue }
