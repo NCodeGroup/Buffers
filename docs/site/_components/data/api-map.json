@@ -185,9 +185,9 @@
       "type": "SecureMemoryPool<T>",
       "member": "Shared",
       "signatures": [
-        "public static new SecureMemoryPool<T> Shared { get; } = new();"
+        "public static new SecureMemoryPool<T>         Shared { get; } = new() { IsShared = true };"
       ],
-      "summary": "The shared instance of the pool. `BufferFactory` rents from it when `isSensitive` is true.",
+      "summary": "The shared instance of the pool, one per element type. `BufferFactory` rents from it when `isSensitive` is true. Its `Dispose` does nothing.",
       "constraint": "unmanaged",
       "throws": null,
       "page": "/concepts/how-the-buffers-work/",
@@ -256,7 +256,7 @@
       "signatures": [
         "protected override void Dispose(bool disposing)"
       ],
-      "summary": "Drops the cached buffers. Buffers already rented stay valid and are not returned to the pool.",
+      "summary": "Drops the cached buffers of a pool you create, and makes its `Rent` throw. Buffers already rented stay valid and are not returned to the pool. On `Shared` it does nothing.",
       "constraint": "unmanaged",
       "throws": null,
       "page": "/concepts/how-the-buffers-work/",
@@ -275,7 +275,7 @@
       ],
       "summary": "Rents a buffer: `EmptyMemory<T>.Singleton` for 0, a pooled page for a size up to `PageSize` bytes, and a non-pooled buffer, still zeroed on dispose, above that.",
       "constraint": "unmanaged",
-      "throws": "`ObjectDisposedException` when the pool is disposed; `ArgumentOutOfRangeException` when `minBufferSize` is less than -1.",
+      "throws": "`ObjectDisposedException` when the pool is disposed, which `Shared` never is; `ArgumentOutOfRangeException` when `minBufferSize` is less than -1.",
       "page": "/reference/buffer-behavior/",
       "source": "Api.SecureMemoryPool.Rent",
       "api": [

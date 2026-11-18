@@ -129,6 +129,8 @@ ArrayBufferWriter<byte> arrayWriter = BufferFactory.CreateArrayBufferWriter(1024
 
 A `MemoryPool<T>` whose buffers are pinned and zeroed with `CryptographicOperations.ZeroMemory` when returned. It drops its cached buffers during a Gen2 collection when memory load passes `HighPressureThreshold` (default 0.9).
 
+`SecureMemoryPool<T>.Shared` serves the whole process, so its `Dispose` does nothing; dispose only a pool you create.
+
 <!-- snippet: SecureMemoryPool -->
 ```cs
 using IMemoryOwner<byte> owner = SecureMemoryPool<byte>.Shared.Rent(1024);
