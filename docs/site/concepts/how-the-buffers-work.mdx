@@ -104,6 +104,8 @@ A pool you create has its own cache and its own pressure threshold. Disposing th
 `Rent` throw `ObjectDisposedException`. A buffer still rented stays valid, and is zeroed when you dispose it.
 <Proof test="SecureMemoryPoolTests.Dispose_ClearsMemoryQueue" />
 <Proof test="SecureMemoryPoolTests.Rent_WhenDisposed_ThrowsObjectDisposedException" />
+`SecureMemoryPool<T>.Shared`, which `BufferFactory` rents from, ignores `Dispose`, as `MemoryPool<T>.Shared` does, so
+no caller can end it for the others. <Proof source="Adr1023" />
 
 ### What it does not do
 
