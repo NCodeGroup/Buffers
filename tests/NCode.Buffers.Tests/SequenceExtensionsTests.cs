@@ -1,6 +1,8 @@
 // Copyright © NCode Group
 // SPDX-License-Identifier: Apache-2.0
 
+using System.Buffers;
+using System.Runtime.CompilerServices;
 using Nerdbank.Streams;
 
 namespace NCode.Buffers.Tests;
@@ -484,6 +486,29 @@ public class SequenceExtensionsTests
         using var lease = sequence.GetSpanLease(isSensitive: false);
 
         Assert.Equal(pageSize, lease.Span.Length);
+    }
+
+    [Fact]
+    public void GetSpanLease_WhenMultipleSegmentsAndSensitive_DisposeZeroesTheCopy()
+    {
+        var filler = new LeaseElement(-1, -1);
+        var elementsPerPage =
+            SecureMemoryPool<LeaseElement>.PageSize / Unsafe.SizeOf<LeaseElement>();
+        using var writer = BufferFactory.CreatePooledBufferWriter<LeaseElement>(isSensitive: true);
+        writer.GetSpan(elementsPerPage)[..elementsPerPage].Fill(filler);
+        writer.Advance(elementsPerPage);
+        writer.GetSpan(1)[..1].Fill(filler);
+        writer.Advance(1);
+        Assert.False(writer.AsReadOnlySequence.IsSingleSegment);
+        var lease = writer.GetSpanLease(isSensitive: true);
+        var copy = lease.Span;
+        Assert.Equal(elementsPerPage + 1, copy.Length);
+        Assert.All(copy.ToArray(), element => Assert.Equal(filler, element));
+
+        lease.Dispose();
+
+        Assert.All(copy.ToArray(), element => Assert.Equal(default, element));
+        Assert.All(writer.AsReadOnlySequence.ToArray(), element => Assert.Equal(filler, element));
     }
 
     #endregion
@@ -1011,4 +1036,7 @@ public class SequenceExtensionsTests
     }
 
     #endregion
+
+    // The zeroing test rents an element type of its own, so no other test's rentals reach its SecureMemoryPool<T>.Shared.
+    private readonly record struct LeaseElement(long First, long Second);
 }
