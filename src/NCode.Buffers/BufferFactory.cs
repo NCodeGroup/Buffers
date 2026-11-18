@@ -343,7 +343,7 @@ public static class BufferFactory
     /// </remarks>
     /// <example>
     /// <code>
-    /// using var writer = BufferFactory.CreateArrayBufferWriter&lt;int&gt;();
+    /// var writer = BufferFactory.CreateArrayBufferWriter&lt;int&gt;();
     /// var span = writer.GetSpan(10);
     /// // Write data to span
     /// writer.Advance(10);
@@ -375,7 +375,7 @@ public static class BufferFactory
     /// </remarks>
     /// <example>
     /// <code>
-    /// using var writer = BufferFactory.CreateArrayBufferWriter&lt;int&gt;(1024);
+    /// var writer = BufferFactory.CreateArrayBufferWriter&lt;int&gt;(1024);
     /// var span = writer.GetSpan(100);
     /// // Write data to span
     /// writer.Advance(100);
@@ -410,7 +410,7 @@ public static class BufferFactory
     /// </remarks>
     /// <example>
     /// <code>
-    /// using var writer = BufferFactory.CreateArrayBufferWriter();
+    /// var writer = BufferFactory.CreateArrayBufferWriter();
     /// var span = writer.GetSpan(100);
     /// // Write byte data to span
     /// writer.Advance(100);
@@ -440,7 +440,7 @@ public static class BufferFactory
     /// </remarks>
     /// <example>
     /// <code>
-    /// using var writer = BufferFactory.CreateArrayBufferWriter(1024);
+    /// var writer = BufferFactory.CreateArrayBufferWriter(1024);
     /// var span = writer.GetSpan(100);
     /// // Write byte data to span
     /// writer.Advance(100);
