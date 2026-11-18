@@ -33,6 +33,19 @@ public class SecureArrayLifetimeTests
         Assert.Equal(length, lifetime.Length);
     }
 
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(int.MinValue)]
+    public void Create_WhenLengthIsNegative_ThrowsArgumentOutOfRangeException(int length)
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            using var lifetime = SecureArrayLifetime<long>.Create(length);
+        });
+
+        Assert.Equal("length", exception.ParamName);
+    }
+
     #endregion
 
     #region Constructor Tests
@@ -45,6 +58,19 @@ public class SecureArrayLifetimeTests
         Assert.NotNull(lifetime.PinnedArray);
         Assert.Equal(128, lifetime.PinnedArray.Length);
         Assert.Equal(128, lifetime.Length);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(int.MinValue)]
+    public void Constructor_WhenLengthIsNegative_ThrowsArgumentOutOfRangeException(int length)
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            using var lifetime = new SecureArrayLifetime<byte>(length);
+        });
+
+        Assert.Equal("length", exception.ParamName);
     }
 
     [Fact]

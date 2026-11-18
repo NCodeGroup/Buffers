@@ -130,9 +130,11 @@ public class BufferFactoryTests
         bool isSensitive
     )
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             BufferFactory.Rent(size, isSensitive, out Span<byte> _)
         );
+
+        Assert.Equal("minBufferSize", exception.ParamName);
     }
 
     [Theory]
@@ -145,9 +147,11 @@ public class BufferFactoryTests
         bool isSensitive
     )
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             BufferFactory.Rent(size, isSensitive, out Memory<byte> _)
         );
+
+        Assert.Equal("minBufferSize", exception.ParamName);
     }
 
     [Fact]
@@ -218,6 +222,17 @@ public class BufferFactoryTests
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
         {
             using var lifetime = BufferFactory.CreatePinnedArray(-1);
+        });
+
+        Assert.Equal("length", exception.ParamName);
+    }
+
+    [Fact]
+    public void CreatePinnedArray_Generic_WhenLengthIsNegative_ThrowsArgumentOutOfRangeException()
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            using var lifetime = BufferFactory.CreatePinnedArray<int>(int.MinValue);
         });
 
         Assert.Equal("length", exception.ParamName);
