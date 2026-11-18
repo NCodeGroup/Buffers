@@ -48,8 +48,8 @@ every run on the default branch, and the site has no generated API reference.**
 - A deployment runs the toolchain's deploy job with the `pages: write` and `id-token: write` permissions `docs.yml`
   grants; that job runs none of this repository's code.
 - The site's address comes from the Pages settings, so a custom domain needs no change here.
-- ADR-1009's statements that publishing is part of #56 and that the API reference remains open there give way to
-  this record.
+- ADR-1009's statements that publishing is part of [#56](https://github.com/NCodeGroup/Buffers/issues/56) and that
+  the API reference remains open there give way to this record.
 
 ## References
 
