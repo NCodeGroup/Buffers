@@ -138,8 +138,8 @@ try {
     # The API map covers every line of PublicAPI.Shipped.txt once. The check sets no exit code when it passes, so start
     # from a clean one; it prints 'API map: FAILED.' first, then one line per problem.
     $global:LASTEXITCODE = 0
-    $apiMap = @(& (Join-Path $PSScriptRoot 'Assert-ApiMap.ps1'))
-    if ($LASTEXITCODE) { foreach ($line in $apiMap | Select-Object -Skip 1) { $problems.Add($line) } }
+    $apiMapProblems = @(& (Join-Path $PSScriptRoot 'Assert-ApiMap.ps1'))
+    if ($LASTEXITCODE) { foreach ($line in $apiMapProblems | Select-Object -Skip 1) { $problems.Add($line) } }
 
     if ($problems.Count) { 'Site evidence: FAILED.'; $problems; exit 1 }
     'Site evidence: passed.'
