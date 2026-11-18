@@ -43,7 +43,7 @@ try {
     function ConvertTo-GlobPattern([string]$Glob) {
         if ($Glob -match '[\[\]{}!()|+@]') { throw "Review checklist: the pages glob '$Glob' in $site/site.config.json uses a pattern this script does not read; use *, ** and ?." }
         $pattern = [regex]::Escape($Glob) -replace '\\\*\\\*/', '(?:.*/)?' -replace '\\\*\\\*', '.*' -replace '\\\*', '[^/]*' -replace '\\\?', '[^/]'
-        "^$pattern$"
+        "^$pattern\z"
     }
     # Every glob is read once here, so a pattern this script does not read stops it whatever the sidebar holds.
     $patterns = @{}
