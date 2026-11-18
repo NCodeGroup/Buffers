@@ -470,7 +470,9 @@ public class BufferFactoryTests
     [StructLayout(LayoutKind.Sequential, Size = 8)]
     private struct SharedDisposeProbe { }
 
-    // Each zeroing test rents an element type of its own, so no other test's rentals reach its SecureMemoryPool<T>.Shared.
+    // Rent_Span_WhenSensitive_DisposeZeroesTheWholeBuffer and the pooled writer's zeroing test rent these element
+    // types, one each, so no other test's rentals reach their SecureMemoryPool<T>.Shared. The larger-than-a-page test
+    // rents byte: a buffer larger than a page is allocated for that one rental and never cached.
     private readonly record struct RentSpanElement(long First, long Second);
 
     private readonly record struct WriterElement(long First, long Second);
