@@ -166,6 +166,21 @@ public class BufferFactoryTests
         }
     }
 
+    [Fact]
+    public void Rent_WhenSensitiveAndTheSecureSharedPoolWasDisposed_ReturnsABuffer()
+    {
+        var shared = SecureMemoryPool<SharedDisposeProbe>.Shared;
+        shared.Dispose();
+
+        using var owner = BufferFactory.Rent<SharedDisposeProbe>(
+            16,
+            isSensitive: true,
+            out Span<SharedDisposeProbe> buffer
+        );
+
+        Assert.Equal(16, buffer.Length);
+    }
+
     #endregion
 
     #region CreatePinnedArray Tests
@@ -370,4 +385,9 @@ public class BufferFactoryTests
     }
 
     #endregion
+
+    // Rent_WhenSensitiveAndTheSecureSharedPoolWasDisposed_ReturnsABuffer alone uses this type.
+    // It disposes this type's Shared pool, so no other test's pool is affected.
+    [StructLayout(LayoutKind.Sequential, Size = 8)]
+    private struct SharedDisposeProbe { }
 }
