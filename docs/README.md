@@ -15,8 +15,9 @@ offers. Every document in `docs/` has a line here.
   ([ADR-1009](decisions/1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md)),
   and the samples its pages show are tests in `tests/NCode.Buffers.Site.Tests`
   ([ADR-1010](decisions/1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md)).
-  `.github/workflows/docs.yml` builds the site on every pull request and publishes nothing:
-  [#56](https://github.com/NCodeGroup/Buffers/issues/56) tracks publishing it.
+  `.github/workflows/docs.yml` builds the site on every pull request and publishes it from every push to the default
+  branch to <https://ncodegroup.github.io/Buffers/>
+  ([ADR-1025](decisions/1025-the-documentation-site-is-published-to-github-pages-from-the-default-branch.md)).
   `build/Test-SiteEvidence.ps1` checks the evidence the pages cite and the API map against `PublicAPI.Shipped.txt`, and
   `build/Update-ReviewChecklist.ps1` keeps the review checklist in step with the guides that the `requiredHeadings`
   rule of `site.config.json` holds to a Checklist section.
