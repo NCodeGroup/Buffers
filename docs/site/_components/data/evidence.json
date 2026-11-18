@@ -1,7 +1,7 @@
 {
   "$comment": "The site's evidence: the tests, source lines and outside pages a claim names, and the claims the ledger on /evidence/guarantees/ lists. A test or source is linked at `commit`, a commit of the default branch, so its line never moves; build/Test-SiteEvidence.ps1, which the gate runs, checks every entry against that commit and the working tree. Text fields take `code` and [links](/x/).",
   "repository": "https://github.com/NCodeGroup/Buffers",
-  "commit": "29f9ed7b098abe83993315ca46f1eedab45a027b",
+  "commit": "f605387abef008c0790aa3388a09fbbc9307483a",
   "tests": {
     "SecureMemoryTests.Dispose_ZeroesMemory": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryTests.cs",
@@ -13,15 +13,15 @@
     },
     "SecureArrayLifetimeTests.Dispose_ZerosMemory_ByteArray": {
       "file": "tests/NCode.Buffers.Tests/SecureArrayLifetimeTests.cs",
-      "line": 240
+      "line": 269
     },
     "SecureArrayLifetimeTests.Dispose_ZerosMemory_CustomStruct": {
       "file": "tests/NCode.Buffers.Tests/SecureArrayLifetimeTests.cs",
-      "line": 308
+      "line": 337
     },
     "SecureArrayLifetimeTests.UsingStatement_ZerosMemoryOnExit": {
       "file": "tests/NCode.Buffers.Tests/SecureArrayLifetimeTests.cs",
-      "line": 369
+      "line": 398
     },
     "SecureSpanLifetimeTests.Dispose_ZerosMemory_ByteSpan": {
       "file": "tests/NCode.Buffers.Tests/SecureSpanLifetimeTests.cs",
@@ -45,31 +45,31 @@
     },
     "SecureMemoryPoolTests.RentedMemory_IsZeroedOnReturn": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 512
+      "line": 559
     },
     "SecureMemoryPoolTests.Rent_SizeLessThanPage_ReturnsPageSizeBuffer": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 186
+      "line": 233
     },
     "SecureMemoryPoolTests.Rent_SizeMoreThanPage_ReturnsExactSizeBuffer": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 208
+      "line": 255
     },
     "SecureMemoryPoolTests.CanBeUsedAsMemoryPool": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 475
+      "line": 522
     },
     "BufferFactoryTests.CreatePinnedArray_AllocatesOnPinnedObjectHeap": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
-      "line": 192
+      "line": 249
     },
     "BufferFactoryTests.CreatePinnedArray_Byte_ReturnsArrayOfRequestedLength": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
-      "line": 183
+      "line": 240
     },
     "SecureArrayLifetimeTests.ImplicitConversionToArray_ReturnsPinnedArray": {
       "file": "tests/NCode.Buffers.Tests/SecureArrayLifetimeTests.cs",
-      "line": 180
+      "line": 209
     },
     "BufferExtensionsTests.GetSecureLifetime_ZerosMemoryOnDispose": {
       "file": "tests/NCode.Buffers.Tests/BufferExtensionsTests.cs",
@@ -77,51 +77,51 @@
     },
     "BufferFactoryTests.ChoosePool_WhenSensitive_ReturnsSecureSharedPool": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
-      "line": 14
+      "line": 15
     },
     "BufferFactoryTests.ChoosePool_WhenNotSensitive_ReturnsSharedPool": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
-      "line": 22
+      "line": 23
     },
     "BufferFactoryTests.CreatePooledBufferWriter_WhenSensitive_RentsWholePagesFromSecurePool": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
-      "line": 216
+      "line": 284
     },
     "BufferFactoryTests.CreatePooledBufferWriter_WhenNotSensitive_RentsFromSharedPool": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
-      "line": 225
+      "line": 319
     },
     "BufferFactoryTests.CreateArrayBufferWriter_Byte_ReturnsEmptyWriter": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
-      "line": 319
+      "line": 413
     },
     "CryptographicOperationsExtensionsTests.FixedTimeEquals_SameContents_ReturnsTrue": {
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
-      "line": 84
+      "line": 86
     },
     "CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentElement_ReturnsFalse": {
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
-      "line": 95
+      "line": 97
     },
     "CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferenceOnlyInHighByte_ReturnsFalse": {
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
-      "line": 107
+      "line": 109
     },
     "CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentLengths_ReturnsFalse": {
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
-      "line": 118
+      "line": 120
     },
     "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_WithBytes_MatchesSequenceEqual": {
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsPropertyTests.cs",
-      "line": 25
+      "line": 26
     },
     "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_WithInts_MatchesSequenceEqual": {
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsPropertyTests.cs",
-      "line": 15
+      "line": 16
     },
     "CryptographicOperationsExtensionsPropertyTests.FixedTimeEquals_GivenACopy_ReturnsTrue": {
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsPropertyTests.cs",
-      "line": 35
+      "line": 36
     },
     "SecureEncodingTests.UTF8_DecodeInvalidStartByte_ThrowsDecoderFallbackException": {
       "file": "tests/NCode.Buffers.Tests/SecureEncodingTests.cs",
@@ -153,35 +153,35 @@
     },
     "FixedSpanBufferWriterTests.GetSpan_SizeHintExceedsFreeCapacity_ThrowsInvalidOperationException": {
       "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterTests.cs",
-      "line": 459
+      "line": 520
     },
     "FixedSpanBufferWriterTests.GetSpan_WhenBufferFull_WithZeroSizeHint_ReturnsEmptySpan": {
       "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterTests.cs",
-      "line": 493
+      "line": 554
     },
     "FixedMemoryBufferWriterTests.GetMemory_SizeHintExceedsFreeCapacity_ThrowsInvalidOperationException": {
       "file": "tests/NCode.Buffers.Tests/FixedMemoryBufferWriterTests.cs",
-      "line": 556
+      "line": 598
     },
     "FixedMemoryBufferWriterTests.GetSpan_SizeHintExceedsFreeCapacity_ThrowsInvalidOperationException": {
       "file": "tests/NCode.Buffers.Tests/FixedMemoryBufferWriterTests.cs",
-      "line": 461
+      "line": 503
     },
     "FixedMemoryBufferWriterTests.CanBeUsedInAsyncMethods_UnlikeSpanVersion": {
       "file": "tests/NCode.Buffers.Tests/FixedMemoryBufferWriterTests.cs",
-      "line": 832
+      "line": 874
     },
     "FixedSpanBufferWriterPropertyTests.GetSpan_GivenAnySizeHint_ReturnsEnoughSpanOrThrowsADocumentedException": {
       "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterPropertyTests.cs",
-      "line": 75
+      "line": 114
     },
     "FixedMemoryBufferWriterPropertyTests.GetMemory_GivenAnySizeHint_ReturnsEnoughMemoryOrThrowsADocumentedException": {
       "file": "tests/NCode.Buffers.Tests/FixedMemoryBufferWriterPropertyTests.cs",
-      "line": 76
+      "line": 115
     },
     "BufferFactoryTests.Rent_WhenSizeIsZeroAndSensitive_ReturnsEmptyMemorySingleton": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
-      "line": 116
+      "line": 117
     },
     "SecureMemoryTests.Dispose_CalledTwice_ReturnsMemoryToPoolOnce": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryTests.cs",
@@ -201,67 +201,67 @@
     },
     "SequenceExtensionsTests.GetSpanLease_SingleSegment_Dispose_DoesNotResetSequence": {
       "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
-      "line": 396
+      "line": 398
     },
     "SequenceExtensionsTests.GetSpanLease_MultipleSegments_CopiesDataToContiguousBuffer": {
       "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
-      "line": 61
+      "line": 63
     },
     "SequenceExtensionsTests.ConsumeAsContiguousSpan_SingleSegment_ReturnsSequenceAsOwner": {
       "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
-      "line": 589
+      "line": 624
     },
     "SequenceExtensionsTests.ConsumeAsContiguousSpan_MultipleSegments_DisposesOriginalSequence": {
       "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
-      "line": 629
+      "line": 664
     },
     "SecureMemoryPoolTests.Rent_CharPool_ReturnsOnePageOfBytes": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 310
+      "line": 357
     },
     "SecureMemoryPoolTests.Rent_SizeZero_ReturnsEmptyMemorySingleton": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 166
+      "line": 213
     },
     "SecureMemoryPoolTests.Rent_SizeNegativeOne_ReturnsPageSizeBuffer": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 176
+      "line": 223
     },
     "SecureMemoryPoolTests.Rent_SizeLessThanNegativeOne_ThrowsArgumentOutOfRangeException": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 158
+      "line": 205
     },
     "SecureMemoryPoolTests.Rent_LargeBuffer_IsNotPooled": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 235
+      "line": 282
     },
     "SecureMemoryPoolTests.Rent_Int32Pool_ReturnsOnePageOfBytes": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 278
+      "line": 325
     },
     "SecureMemoryPoolTests.Rent_ElementLargerThanPage_ReturnsOneElement": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 320
+      "line": 367
     },
     "SecureMemoryPoolTests.Return_AddsToMemoryQueue": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 343
+      "line": 390
     },
     "SecureMemoryPoolTests.TrimMemory_WhenHighPressure_ClearsQueue": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 391
+      "line": 438
     },
     "SecureMemoryPoolTests.TrimMemory_WhenLowPressure_KeepsQueue": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 415
+      "line": 462
     },
     "SecureMemoryPoolTests.Dispose_ClearsMemoryQueue": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 108
+      "line": 155
     },
     "SecureMemoryPoolTests.RentDisposeRent_ReusesBuffer": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 492
+      "line": 539
     },
     "SecureEncodingTests.UTF8_HasNoPreamble": {
       "file": "tests/NCode.Buffers.Tests/SecureEncodingTests.cs",
@@ -273,7 +273,7 @@
     },
     "FixedSpanBufferWriterTests.GetMemory_ThrowsNotSupportedException": {
       "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterTests.cs",
-      "line": 524
+      "line": 585
     },
     "FixedSpanBufferWriterTests.Reset_OnlyClearsWrittenPortion": {
       "file": "tests/NCode.Buffers.Tests/FixedSpanBufferWriterTests.cs",
@@ -297,7 +297,7 @@
     },
     "SecureMemoryPoolTests.Rent_WhenDisposed_ThrowsObjectDisposedException": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
-      "line": 149
+      "line": 196
     }
   },
   "samples": {
@@ -577,48 +577,48 @@
     "SecureMemoryPool.Return": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        186,
-        192
+        205,
+        211
       ],
       "match": "internal virtual void Return(T[] pinnedArray)"
     },
     "SecureArrayLifetime.Allocate": {
       "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
       "lines": [
-        62,
-        62
+        69,
+        69
       ],
       "match": "GC.AllocateUninitializedArray<T>(length, pinned: true)"
     },
     "SecureArrayLifetime.Dispose": {
       "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
       "lines": [
-        108,
-        111
+        117,
+        120
       ],
       "match": "public void Dispose()"
     },
     "SecureArrayLifetime.Unmanaged": {
       "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
       "lines": [
-        36,
-        37
+        37,
+        38
       ],
       "match": "public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable"
     },
     "SecureSpanLifetime.Dispose": {
       "file": "src/NCode.Buffers/SecureSpanLifetime.cs",
       "lines": [
-        73,
-        76
+        75,
+        78
       ],
       "match": "public void Dispose()"
     },
     "SecureArrayLifetime.ToArray": {
       "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
       "lines": [
-        81,
-        81
+        89,
+        89
       ],
       "match": "public static implicit operator T[](SecureArrayLifetime<T> lifetime)"
     },
@@ -633,18 +633,18 @@
     "ZeroMemory": {
       "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
       "lines": [
-        99,
-        103
+        51,
+        70
       ],
-      "match": "public static void ZeroMemory<T>(Span<T> buffer)"
+      "match": "internal static void ZeroMemoryOrClear<T>(Span<T> buffer, int maxElementsPerChunk)"
     },
     "FixedTimeEquals": {
       "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
       "lines": [
-        137,
-        144
+        82,
+        108
       ],
-      "match": "public static bool FixedTimeEquals<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right)"
+      "match": "internal static bool FixedTimeEqualsInChunks<T>("
     },
     "SecureEncoding.ASCII": {
       "file": "src/NCode.Buffers/SecureEncoding.cs",
@@ -665,16 +665,16 @@
     "FixedSpanBufferWriter.GetSpan": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        177,
-        200
+        179,
+        202
       ],
       "match": "public Span<T> GetSpan(int sizeHint = 0)"
     },
     "FixedMemoryBufferWriter.GetMemory": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        205,
-        228
+        207,
+        230
       ],
       "match": "public Memory<T> GetMemory(int sizeHint = 0)"
     },
@@ -772,8 +772,8 @@
     "SecureMemoryPool.Rent": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        166,
-        175
+        185,
+        194
       ],
       "match": "var byteCount = minBufferSize == -1 ? PageSize"
     },
@@ -796,8 +796,8 @@
     "RefSpanLease.Type": {
       "file": "src/NCode.Buffers/RefSpanLease.cs",
       "lines": [
-        42,
-        42
+        43,
+        43
       ],
       "match": "public readonly ref struct RefSpanLease<T>"
     },
@@ -838,7 +838,7 @@
       "file": "docs/architecture.md",
       "lines": [
         42,
-        43
+        44
       ],
       "match": "Ownership is explicit",
       "kind": "documented"
@@ -855,8 +855,8 @@
     "RefSpanLease.Dispose": {
       "file": "src/NCode.Buffers/RefSpanLease.cs",
       "lines": [
-        71,
-        74
+        72,
+        75
       ],
       "match": "public void Dispose()"
     },
@@ -884,16 +884,16 @@
     "FixedSpanBufferWriter.Reset": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        112,
-        117
+        114,
+        119
       ],
       "match": "public void Reset()"
     },
     "BufferFactory.CreatePooledBufferWriter": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
       "lines": [
-        278,
-        286
+        260,
+        268
       ],
       "match": "public static Sequence<T> CreatePooledBufferWriter<T>("
     },
@@ -908,8 +908,8 @@
     "Readme.DecodeIntoABuffer": {
       "file": "README.md",
       "lines": [
-        328,
-        328
+        330,
+        330
       ],
       "match": "A `string` decoded with `SecureEncoding` can't be zeroed.",
       "kind": "documented"
@@ -917,16 +917,16 @@
     "BufferFactory.RentMemory": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
       "lines": [
-        126,
-        146
+        119,
+        132
       ],
       "match": "/// <remarks>"
     },
     "SecureArrayLifetime.Declaration": {
       "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
       "lines": [
-        36,
-        36
+        37,
+        37
       ],
       "match": "public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable"
     },
@@ -941,8 +941,8 @@
     "RefSpanLease.Declaration": {
       "file": "src/NCode.Buffers/RefSpanLease.cs",
       "lines": [
-        42,
-        42
+        43,
+        43
       ],
       "match": "public readonly ref struct RefSpanLease<T>(IDisposable? owner, ReadOnlySpan<T> span) : IDisposable"
     },
@@ -1059,48 +1059,48 @@
     "SecureMemoryPool.PageSize": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        61,
-        61
+        63,
+        63
       ],
       "match": "public const int PageSize = 4096;"
     },
     "SecureMemoryPool.ElementsPerPage": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        79,
-        79
+        84,
+        84
       ],
       "match": "private static readonly int ElementsPerPage"
     },
     "SecureMemoryPool.MemoryQueue": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        92,
-        92
+        100,
+        100
       ],
       "match": "internal ConcurrentQueue<T[]> MemoryQueue"
     },
     "SecureMemoryPool.RegisterTrim": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        120,
-        120
+        135,
+        135
       ],
       "match": "Gen2GcCallback.Register("
     },
     "SecureMemoryPool.Dispose": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        128,
-        134
+        144,
+        153
       ],
       "match": "protected override void Dispose(bool disposing)"
     },
     "SecureMemoryPool.TrimMemory": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        203,
-        217
+        224,
+        238
       ],
       "match": "internal bool TrimMemory()"
     },
@@ -1121,24 +1121,24 @@
     "FixedSpanBufferWriter.GetMemory": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        208,
-        213
+        210,
+        215
       ],
       "match": "public Memory<T> GetMemory(int sizeHint = 0)"
     },
     "FixedSpanBufferWriter.Clear": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        96,
-        100
+        98,
+        102
       ],
       "match": "public void Clear()"
     },
     "Changelog.SplitAllocations": {
       "file": "CHANGELOG.md",
       "lines": [
-        138,
-        138
+        180,
+        180
       ],
       "match": "The XML documentation of",
       "kind": "documented"
@@ -1278,152 +1278,152 @@
     "Api.BufferFactory.CreatePinnedArray": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
       "lines": [
-        200,
-        200
+        186,
+        186
       ],
       "match": "public static SecureArrayLifetime<T> CreatePinnedArray<T>(int length)"
     },
     "Api.BufferFactory.CreatePooledBufferWriter": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
       "lines": [
-        278,
-        278
+        260,
+        260
       ],
       "match": "public static Sequence<T> CreatePooledBufferWriter<T>("
     },
     "Api.BufferFactory.CreateArrayBufferWriter": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
       "lines": [
-        354,
-        354
+        336,
+        336
       ],
       "match": "public static ArrayBufferWriter<T> CreateArrayBufferWriter<T>()"
     },
     "Api.SecureMemoryPool": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        44,
-        44
+        46,
+        46
       ],
       "match": "public class SecureMemoryPool<T> : MemoryPool<T>"
     },
     "Api.SecureMemoryPool.DefaultHighPressureThreshold": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        51,
-        51
+        53,
+        53
       ],
       "match": "public const double DefaultHighPressureThreshold = 0.90;"
     },
     "Api.SecureMemoryPool.PageSize": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        61,
-        61
+        63,
+        63
       ],
       "match": "public const int PageSize = 4096;"
     },
     "Api.SecureMemoryPool.Shared": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        76,
-        76
+        81,
+        81
       ],
-      "match": "public static new SecureMemoryPool<T> Shared { get; } = new();"
+      "match": "public static new SecureMemoryPool<T> Shared { get; } = new() { IsShared = true };"
     },
     "Api.SecureMemoryPool.HighPressureThreshold": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        105,
-        105
+        116,
+        116
       ],
       "match": "public double HighPressureThreshold { get; set; } = DefaultHighPressureThreshold;"
     },
     "Api.SecureMemoryPool.MaxBufferSize": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        109,
-        109
+        124,
+        124
       ],
       "match": "public override int MaxBufferSize => Array.MaxLength;"
     },
     "Api.SecureMemoryPool.Constructor": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        118,
-        118
+        133,
+        133
       ],
       "match": "public SecureMemoryPool()"
     },
     "Api.SecureMemoryPool.Dispose": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        128,
-        128
+        144,
+        144
       ],
       "match": "protected override void Dispose(bool disposing)"
     },
     "Api.SecureMemoryPool.Rent": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        156,
-        156
+        175,
+        175
       ],
       "match": "public override IMemoryOwner<T> Rent(int minBufferSize = -1)"
     },
     "Api.SecureArrayLifetime": {
       "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
       "lines": [
-        36,
-        36
+        37,
+        37
       ],
       "match": "public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable"
     },
     "Api.SecureArrayLifetime.Constructor": {
       "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
       "lines": [
-        36,
-        36
+        37,
+        37
       ],
       "match": "public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable"
     },
     "Api.SecureArrayLifetime.Create": {
       "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
       "lines": [
-        49,
-        49
+        51,
+        51
       ],
       "match": "public static SecureArrayLifetime<T> Create(int length) => new(length);"
     },
     "Api.SecureArrayLifetime.PinnedArray": {
       "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
       "lines": [
-        62,
-        62
+        64,
+        64
       ],
-      "match": "public T[] PinnedArray { get; } = GC.AllocateUninitializedArray<T>(length, pinned: true);"
+      "match": "public T[] PinnedArray { get; } = AllocatePinned(length);"
     },
     "Api.SecureArrayLifetime.Length": {
       "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
       "lines": [
-        70,
-        70
+        78,
+        78
       ],
       "match": "public int Length => PinnedArray.Length;"
     },
     "Api.SecureArrayLifetime.ImplicitOperator": {
       "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
       "lines": [
-        81,
-        81
+        89,
+        89
       ],
       "match": "public static implicit operator T[](SecureArrayLifetime<T> lifetime) => lifetime.PinnedArray;"
     },
     "Api.SecureArrayLifetime.Dispose": {
       "file": "src/NCode.Buffers/SecureArrayLifetime.cs",
       "lines": [
-        108,
-        108
+        117,
+        117
       ],
       "match": "public void Dispose()"
     },
@@ -1446,24 +1446,24 @@
     "Api.SecureSpanLifetime.Span": {
       "file": "src/NCode.Buffers/SecureSpanLifetime.cs",
       "lines": [
-        48,
-        48
+        50,
+        50
       ],
       "match": "public Span<T> Span { get; } = span;"
     },
     "Api.SecureSpanLifetime.ImplicitOperator": {
       "file": "src/NCode.Buffers/SecureSpanLifetime.cs",
       "lines": [
-        59,
-        59
+        61,
+        61
       ],
       "match": "public static implicit operator Span<T>(SecureSpanLifetime<T> lifetime) => lifetime.Span;"
     },
     "Api.SecureSpanLifetime.Dispose": {
       "file": "src/NCode.Buffers/SecureSpanLifetime.cs",
       "lines": [
-        73,
-        73
+        75,
+        75
       ],
       "match": "public void Dispose()"
     },
@@ -1534,40 +1534,40 @@
     "Api.FixedSpanBufferWriter.Clear": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        96,
-        96
+        98,
+        98
       ],
       "match": "public void Clear()"
     },
     "Api.FixedSpanBufferWriter.Reset": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        112,
-        112
+        114,
+        114
       ],
       "match": "public void Reset()"
     },
     "Api.FixedSpanBufferWriter.Advance": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        134,
-        134
+        136,
+        136
       ],
       "match": "public void Advance(int count)"
     },
     "Api.FixedSpanBufferWriter.GetSpan": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        177,
-        177
+        179,
+        179
       ],
       "match": "public Span<T> GetSpan(int sizeHint = 0)"
     },
     "Api.FixedSpanBufferWriter.GetMemory": {
       "file": "src/NCode.Buffers/FixedSpanBufferWriter.cs",
       "lines": [
-        208,
-        208
+        210,
+        210
       ],
       "match": "public Memory<T> GetMemory(int sizeHint = 0)"
     },
@@ -1630,40 +1630,40 @@
     "Api.FixedMemoryBufferWriter.Clear": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        123,
-        123
+        125,
+        125
       ],
       "match": "public void Clear()"
     },
     "Api.FixedMemoryBufferWriter.Reset": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        139,
-        139
+        141,
+        141
       ],
       "match": "public void Reset()"
     },
     "Api.FixedMemoryBufferWriter.Advance": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        161,
-        161
+        163,
+        163
       ],
       "match": "public void Advance(int count)"
     },
     "Api.FixedMemoryBufferWriter.GetMemory": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        205,
-        205
+        207,
+        207
       ],
       "match": "public Memory<T> GetMemory(int sizeHint = 0)"
     },
     "Api.FixedMemoryBufferWriter.GetSpan": {
       "file": "src/NCode.Buffers/FixedMemoryBufferWriter.cs",
       "lines": [
-        250,
-        250
+        252,
+        252
       ],
       "match": "public Span<T> GetSpan(int sizeHint = 0)"
     },
@@ -1734,32 +1734,32 @@
     "Api.RefSpanLease": {
       "file": "src/NCode.Buffers/RefSpanLease.cs",
       "lines": [
-        42,
-        42
+        43,
+        43
       ],
       "match": "public readonly ref struct RefSpanLease<T>(IDisposable? owner, ReadOnlySpan<T> span) : IDisposable"
     },
     "Api.RefSpanLease.Constructor": {
       "file": "src/NCode.Buffers/RefSpanLease.cs",
       "lines": [
-        42,
-        42
+        43,
+        43
       ],
       "match": "public readonly ref struct RefSpanLease<T>(IDisposable? owner, ReadOnlySpan<T> span) : IDisposable"
     },
     "Api.RefSpanLease.Span": {
       "file": "src/NCode.Buffers/RefSpanLease.cs",
       "lines": [
-        57,
-        57
+        58,
+        58
       ],
       "match": "public ReadOnlySpan<T> Span { get; } = span;"
     },
     "Api.RefSpanLease.Dispose": {
       "file": "src/NCode.Buffers/RefSpanLease.cs",
       "lines": [
-        71,
-        71
+        72,
+        72
       ],
       "match": "public void Dispose()"
     },
@@ -1910,32 +1910,32 @@
     "Api.CryptographicOperationsExtensions": {
       "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
       "lines": [
-        27,
-        27
+        28,
+        28
       ],
       "match": "public static class CryptographicOperationsExtensions"
     },
     "Api.CryptographicOperationsExtensions.ZeroMemory": {
       "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
       "lines": [
-        99,
-        99
+        142,
+        142
       ],
       "match": "public static void ZeroMemory<T>(Span<T> buffer)"
     },
     "Api.CryptographicOperationsExtensions.FixedTimeEquals": {
       "file": "src/NCode.Buffers/CryptographicOperationsExtensions.cs",
       "lines": [
-        137,
-        137
+        189,
+        189
       ],
       "match": "public static bool FixedTimeEquals<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right)"
     },
     "Api.SecureMemoryPool.Shared.ThreadSafe": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        66,
-        66
+        68,
+        68
       ],
       "match": "A shared, thread-safe instance"
     },
