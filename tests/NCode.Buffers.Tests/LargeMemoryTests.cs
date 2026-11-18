@@ -5,7 +5,8 @@ using System.Security.Cryptography;
 
 namespace NCode.Buffers.Tests;
 
-// Each test allocates 2 GiB, so the class runs alone and only on request. It covers four types that share that need, so it is named for it rather than for one type under test.
+// Each test allocates 2 GiB, so the class runs alone and only on request. Its tests cover five members that
+// share that need, so the class is named for that need rather than for one type under test.
 [CollectionDefinition(nameof(LargeMemoryTests), DisableParallelization = true)]
 [Collection(nameof(LargeMemoryTests))]
 public class LargeMemoryTests
@@ -19,11 +20,12 @@ public class LargeMemoryTests
     public void ZeroMemory_WhenTheSpanHoldsMoreThanInt32MaxValueBytes_SetsEveryElementToZero()
     {
         var values = GC.AllocateUninitializedArray<int>(IntsPastInt32MaxValueBytes);
-        values.AsSpan().Fill(-1);
+        var span = values.AsSpan();
+        span.Fill(-1);
 
-        CryptographicOperations.ZeroMemory<int>(values);
+        CryptographicOperations.ZeroMemory<int>(span);
 
-        var hasNonZero = values.AsSpan().ContainsAnyExcept(0);
+        var hasNonZero = span.ContainsAnyExcept(0);
         Assert.False(hasNonZero);
     }
 
@@ -32,7 +34,18 @@ public class LargeMemoryTests
     #region FixedTimeEquals Tests
 
     [LargeMemoryFact]
-    public void FixedTimeEquals_WhenTheSpansHoldMoreThanInt32MaxValueBytes_ComparesEveryElement()
+    public void FixedTimeEquals_WhenEqualSpansHoldMoreThanInt32MaxValueBytes_ReturnsTrue()
+    {
+        var values = new int[IntsPastInt32MaxValueBytes];
+        var span = values.AsSpan();
+
+        var result = CryptographicOperations.FixedTimeEquals<int>(span, span);
+
+        Assert.True(result);
+    }
+
+    [LargeMemoryFact]
+    public void FixedTimeEquals_WhenSpansOfMoreThanInt32MaxValueBytesDifferOnlyInTheLastElement_ReturnsFalse()
     {
         // One element more than a span needs, so that two overlapping spans differ only in their last element.
         var values = new int[IntsPastInt32MaxValueBytes + 1];
@@ -40,11 +53,9 @@ public class LargeMemoryTests
         var first = values.AsSpan(0, IntsPastInt32MaxValueBytes);
         var shifted = values.AsSpan(1, IntsPastInt32MaxValueBytes);
 
-        var firstEqualsFirst = CryptographicOperations.FixedTimeEquals<int>(first, first);
-        var firstEqualsShifted = CryptographicOperations.FixedTimeEquals<int>(first, shifted);
+        var result = CryptographicOperations.FixedTimeEquals<int>(first, shifted);
 
-        Assert.True(firstEqualsFirst);
-        Assert.False(firstEqualsShifted);
+        Assert.False(result);
     }
 
     #endregion
@@ -74,11 +85,12 @@ public class LargeMemoryTests
     {
         var lifetime = BufferFactory.CreatePinnedArray<int>(IntsPastInt32MaxValueBytes);
         var values = lifetime.PinnedArray;
-        values.AsSpan().Fill(-1);
+        var span = values.AsSpan();
+        span.Fill(-1);
 
         lifetime.Dispose();
 
-        var hasNonZero = values.AsSpan().ContainsAnyExcept(0);
+        var hasNonZero = span.ContainsAnyExcept(0);
         Assert.False(hasNonZero);
     }
 
@@ -90,11 +102,13 @@ public class LargeMemoryTests
     public void GetSecureLifetime_WhenTheSpanHoldsMoreThanInt32MaxValueBytes_DisposeZeroesIt()
     {
         var values = GC.AllocateUninitializedArray<int>(IntsPastInt32MaxValueBytes);
-        values.AsSpan().Fill(-1);
+        var span = values.AsSpan();
+        span.Fill(-1);
 
-        values.AsSpan().GetSecureLifetime().Dispose();
+        var lifetime = span.GetSecureLifetime();
+        lifetime.Dispose();
 
-        var hasNonZero = values.AsSpan().ContainsAnyExcept(0);
+        var hasNonZero = span.ContainsAnyExcept(0);
         Assert.False(hasNonZero);
     }
 
