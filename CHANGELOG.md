@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.0] - 2026-11-17
+
+### Added
+
+- Tests that a buffer `BufferFactory.Rent` returns into a `Span<T>` with `isSensitive: true` is all zeros after its owner is disposed, past the requested length too, and that a sensitive buffer larger than one page is all zeros after its owner is disposed; that every segment of a sensitive `CreatePooledBufferWriter` with two segments is all zeros after the writer is disposed; and that the copy `GetSpanLease` makes of a sensitive writer with two segments is all zeros after the lease is disposed, while the writer keeps its data. `SecureArrayLifetimeTests.Constructor_AllocatesPinnedArray` asserts that the array is on the Pinned Object Heap ([#87](https://github.com/NCodeGroup/Buffers/issues/87)).
+- `./build/gate.ps1` runs `build/Test-XmlDocExamples.ps1`, which compiles every example in the XML documentation and fails on one that does not compile ([#83](https://github.com/NCodeGroup/Buffers/issues/83)).
+
+### Changed
+
+- The package does not list JetBrains.Annotations as a dependency: the reference is build-time only, because none of its attributes reaches the assembly. A consumer that uses JetBrains.Annotations references it directly ([#88](https://github.com/NCodeGroup/Buffers/issues/88), [ADR-1022](docs/decisions/1022-jetbrains-annotations-is-a-build-time-reference-not-a-package-dependency.md)).
+
+### Fixed
+
+- The `SecureArrayLifetime<T>` constructor and `SecureArrayLifetime<T>.Create` throw `ArgumentOutOfRangeException` with `ParamName` `length` for a negative length, as `BufferFactory.CreatePinnedArray` does, instead of `OverflowException`; and `BufferFactory.Rent` checks a negative `minBufferSize` before it rents, throwing `ArgumentOutOfRangeException` with `ParamName` `minBufferSize`, where it rented a buffer first for -1 or reported the pool's parameter name ([#86](https://github.com/NCodeGroup/Buffers/issues/86), [ADR-1021](docs/decisions/1021-a-negative-length-or-size-throws-argumentoutofrangeexception-before-anything-is-allocated.md)).
+- The XML documentation and the site's API reference describe what the code does: when `SecureMemoryPool<T>` drops its cache, what `Clear` on the fixed buffer writers leaves for `Reset`, that a lifetime's span still reaches the zeroed memory after `Dispose`, that every `Dispose` of a `RefSpanLease<T>` reaches its owner, and that `FixedTimeEquals<T>` does not hide the length; the `CreateArrayBufferWriter`, `RefSpanLease<T>` and `FixedTimeEquals<T>` examples compile ([#83](https://github.com/NCodeGroup/Buffers/issues/83)).
+- `README.md`, `docs/architecture.md` and `docs/assurance-case.md` say which APIs take `isSensitive`, when the pool drops its cache, what a span reaches after its owner is disposed, what a second `Dispose` does, and that CodeQL runs through GitHub's code scanning default setup ([#84](https://github.com/NCodeGroup/Buffers/issues/84)).
+- [ADR-1020](docs/decisions/1020-the-unmanaged-constraint-rests-on-byte-views-and-zeroing-not-on-pinned-allocation.md) amends ADR-1006 with the reasons the `unmanaged` constraint holds on the target framework, where a pinned allocation accepts any element type, and the site's design decisions page gives them ([#85](https://github.com/NCodeGroup/Buffers/issues/85)).
+
 ## [5.1.3] - 2026-11-17
 
 ### Added
@@ -164,7 +182,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.1.3...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.2.0...HEAD
+[5.2.0]: https://github.com/NCodeGroup/Buffers/compare/v5.1.3...v5.2.0
 [5.1.3]: https://github.com/NCodeGroup/Buffers/compare/v5.1.2...v5.1.3
 [5.1.2]: https://github.com/NCodeGroup/Buffers/compare/v5.1.1...v5.1.2
 [5.1.1]: https://github.com/NCodeGroup/Buffers/compare/v5.1.0...v5.1.1
