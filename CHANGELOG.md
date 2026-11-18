@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Package validation compares each package with the published 5.1.3 package.
 - The package does not list JetBrains.Annotations as a dependency: the reference is build-time only, because none of its attributes reaches the assembly. A consumer that uses JetBrains.Annotations references it directly ([#88](https://github.com/NCodeGroup/Buffers/issues/88), [ADR-1022](docs/decisions/1022-jetbrains-annotations-is-a-build-time-reference-not-a-package-dependency.md)).
 
 ### Fixed
