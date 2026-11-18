@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.3] - 2026-11-17
+
 ### Added
 
 - Thirteen pages of the documentation site: guides to reject malformed UTF-8 and ASCII, serialize into a buffer that must not grow, split delimited text without copying substrings, ban the leaky APIs at build time, test that your code zeroes its secrets, review a change that touches secrets, and give pipes and stream readers a pool that cleans up; concepts on how the buffers work and why the library is built this way; objections and alternatives, and the package's versions, support and verification; and references for buffer behavior, sizes and pooling, and every public member ([#68](https://github.com/NCodeGroup/Buffers/issues/68)).
@@ -16,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Package validation compares each package with the published 5.1.2 package.
 - `./build/gate.ps1` runs `build/Test-AssertApiMap.ps1`; `build/Test-SiteEvidence.ps1` fails when the site's API map and `PublicAPI.Shipped.txt` differ; and `build/Update-ReviewChecklist.ps1 -Check` fails when the review checklist is out of step with the guides' Checklist sections ([#68](https://github.com/NCodeGroup/Buffers/issues/68)).
+
+### Fixed
+
+- `CryptographicOperations.ZeroMemory<T>` zeroes, and `CryptographicOperations.FixedTimeEquals<T>` compares, spans of more than `int.MaxValue` bytes, in chunks of at most that many bytes. Such a span threw `OverflowException` before any byte was zeroed or compared, so disposing a sensitive buffer, a `SecureArrayLifetime<T>` or a `SecureSpanLifetime<T>` of 2 GiB or more, of an element type wider than one byte, threw and left the buffer as it was ([#89](https://github.com/NCodeGroup/Buffers/issues/89)).
 
 ## [5.1.2] - 2026-11-17
 
@@ -156,7 +162,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.1.2...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.1.3...HEAD
+[5.1.3]: https://github.com/NCodeGroup/Buffers/compare/v5.1.2...v5.1.3
 [5.1.2]: https://github.com/NCodeGroup/Buffers/compare/v5.1.1...v5.1.2
 [5.1.1]: https://github.com/NCodeGroup/Buffers/compare/v5.1.0...v5.1.1
 [5.1.0]: https://github.com/NCodeGroup/Buffers/compare/v5.0.3...v5.1.0
