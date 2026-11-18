@@ -93,8 +93,9 @@ Both are tests in the repository, and this page includes them from there.
 
 ## What tests cannot prove
 
-- **Timing.** No test measures how long a comparison takes. [R4](#fixed-time) rests on the one call the library makes
-  to .NET's fixed-time comparison, and on .NET's documented contract for it.
+- **Timing.** No test measures how long a comparison takes. [R4](#fixed-time) rests on the calls the library makes to
+  .NET's fixed-time comparison, one for each chunk of at most `int.MaxValue` bytes with every chunk compared, and on
+  .NET's documented contract for it.
 - **What the collector does in your process.** The tests assert where an array is allocated. They do not assert what
   a collection moved, because the collector decides that.
 - **Your code.** A test of the library cannot see whether your code disposes what it rents, or copies what it holds.
