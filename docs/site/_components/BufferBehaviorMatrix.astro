@@ -143,18 +143,27 @@ const headings = [
     font-weight: 600;
   }
   .behavior-matrix__radio:focus-visible + .behavior-matrix__chip { outline: var(--nc-focus-width) solid var(--nc-color-focus); outline-offset: var(--nc-focus-gap); }
-  .behavior-matrix__scroll { overflow-x: auto; }
-  .behavior-matrix__scroll:focus-visible { outline: var(--nc-focus-width) solid var(--nc-color-focus); outline-offset: var(--nc-focus-gap); }
-  .behavior-matrix__table {
-    width: 100%;
-    min-width: 72rem;
-    border-collapse: collapse;
-    font-size: var(--sl-text-sm);
-    line-height: 1.3;
+  .behavior-matrix__table { display: block; width: 100%; font-size: var(--sl-text-sm); line-height: 1.45; }
+  .behavior-matrix__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .behavior-matrix__table tbody { display: grid; gap: var(--nc-space-4); }
+  .behavior-matrix__row {
+    scroll-margin-top: calc(var(--sl-nav-height) + var(--nc-space-5));
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: var(--nc-space-3) var(--nc-space-5);
+    padding: var(--nc-space-4) var(--nc-space-5);
+    border: var(--nc-border-hair) solid var(--nc-color-border);
+    border-radius: var(--nc-radius-panel);
+    background: var(--nc-color-surface);
   }
-  .behavior-matrix__table th,
-  .behavior-matrix__table td { padding: var(--nc-space-3); border-bottom: var(--nc-border-hair) solid var(--nc-color-border); text-align: start; vertical-align: top; }
-  .behavior-matrix__table thead th {
+  .behavior-matrix__row:target { border-color: var(--nc-color-primary-text); box-shadow: 0 0 0 1px var(--nc-color-primary-text); }
+  .behavior-matrix__row > :is(th, td) { display: block; padding: 0; border: 0; text-align: start; }
+  .behavior-matrix__row > :is(th, .behavior-matrix__text, .behavior-matrix__proof) { grid-column: 1 / -1; }
+  .behavior-matrix__row > th { font-size: var(--sl-text-base); font-weight: 600; }
+  .behavior-matrix__row > td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: var(--nc-space-1);
     font-size: 0.6875rem;
     font-stretch: var(--nc-type-label-stretch);
     font-weight: 600;
@@ -162,13 +171,10 @@ const headings = [
     text-transform: uppercase;
     color: var(--nc-color-text-muted);
   }
-  .behavior-matrix__table tbody th { font-weight: 600; }
-  .behavior-matrix__row { scroll-margin-top: calc(var(--sl-nav-height) + var(--nc-space-5)); }
-  .behavior-matrix__row:target { background: var(--nc-color-surface-sunken); }
   .behavior-matrix__table a { color: var(--nc-color-text); text-decoration-color: var(--nc-color-border-strong); text-underline-offset: 0.2em; overflow-wrap: anywhere; }
   .behavior-matrix__table a:hover { color: var(--nc-color-primary-text); }
   .behavior-matrix__table a:focus-visible { outline: var(--nc-focus-width) solid var(--nc-color-focus); outline-offset: var(--nc-focus-gap); }
-  .behavior-matrix :global(code) { font-family: var(--nc-font-mono); font-stretch: var(--nc-type-code-stretch); font-size: 0.88em; }
+  .behavior-matrix :global(code) { font-family: var(--nc-font-mono); font-stretch: var(--nc-type-code-stretch); font-size: 0.88em; overflow-wrap: break-word; }
   .behavior-matrix__na { color: var(--nc-color-text-muted); }
   .behavior-matrix__evidence { margin: 0; padding: 0; list-style: none; font-size: var(--sl-text-xs); }
   .behavior-matrix__evidence li { margin: 0 0 var(--nc-space-1); }
@@ -178,36 +184,4 @@ const headings = [
   /* The filter: a row that does not match the checked chip is hidden. Without :has() every row shows. */
   .behavior-matrix:has(.behavior-matrix__radio--secret:checked) .behavior-matrix__row[data-secret='false'],
   .behavior-matrix:has(.behavior-matrix__radio--other:checked) .behavior-matrix__row[data-secret='true'] { display: none; }
-
-  @media (max-width: 40rem) {
-    .behavior-matrix__table { min-width: 0; }
-    .behavior-matrix__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-    .behavior-matrix__table,
-    .behavior-matrix__table tbody,
-    .behavior-matrix__table th,
-    .behavior-matrix__table td { display: block; }
-    .behavior-matrix__table .behavior-matrix__row {
-      display: block;
-      margin-bottom: var(--nc-space-4);
-      padding: var(--nc-space-4);
-      border: var(--nc-border-hair) solid var(--nc-color-border);
-      border-radius: var(--nc-radius-panel);
-      background: var(--nc-color-surface);
-    }
-    .behavior-matrix__table th,
-    .behavior-matrix__table td { padding: var(--nc-space-1) 0; border: 0; }
-    .behavior-matrix__table td::before,
-    .behavior-matrix__table th[data-label]::before {
-      content: attr(data-label);
-      display: block;
-      font-size: 0.6875rem;
-      font-stretch: var(--nc-type-label-stretch);
-      font-weight: 600;
-      letter-spacing: var(--nc-type-label-tracking);
-      text-transform: uppercase;
-      color: var(--nc-color-text-muted);
-    }
-    .behavior-matrix:has(.behavior-matrix__radio--secret:checked) .behavior-matrix__table .behavior-matrix__row[data-secret='false'],
-    .behavior-matrix:has(.behavior-matrix__radio--other:checked) .behavior-matrix__table .behavior-matrix__row[data-secret='true'] { display: none; }
-  }
 </style>
