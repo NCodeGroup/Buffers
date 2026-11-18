@@ -164,4 +164,80 @@ public class CryptographicOperationsExtensionsTests
     }
 
     #endregion
+
+    #region FixedTimeEqualsInChunks Tests
+
+    [Fact]
+    public void FixedTimeEqualsInChunks_WhenEveryChunkMatches_ReturnsTrue()
+    {
+        int[] left = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        int[] right = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+        var result = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            left,
+            right,
+            maxElementsPerChunk: 3
+        );
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void FixedTimeEqualsInChunks_WhenOnlyTheFirstChunkDiffers_ReturnsFalse()
+    {
+        int[] left = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        int[] right = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+        var result = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            left,
+            right,
+            maxElementsPerChunk: 3
+        );
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void FixedTimeEqualsInChunks_WhenOnlyTheLastChunkDiffers_ReturnsFalse()
+    {
+        int[] left = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        int[] right = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+
+        var result = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            left,
+            right,
+            maxElementsPerChunk: 3
+        );
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void FixedTimeEqualsInChunks_WhenLengthsDiffer_ReturnsFalse()
+    {
+        int[] left = [1, 2, 3, 4];
+        int[] right = [1, 2, 3];
+
+        var result = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            left,
+            right,
+            maxElementsPerChunk: 2
+        );
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void FixedTimeEqualsInChunks_WhenBothAreEmpty_ReturnsTrue()
+    {
+        var result = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            ReadOnlySpan<int>.Empty,
+            ReadOnlySpan<int>.Empty,
+            maxElementsPerChunk: 2
+        );
+
+        Assert.True(result);
+    }
+
+    #endregion
 }

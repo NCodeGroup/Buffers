@@ -1,6 +1,7 @@
 // Copyright © NCode Group
 // SPDX-License-Identifier: Apache-2.0
 
+using FsCheck;
 using FsCheck.Xunit;
 
 namespace NCode.Buffers.Tests;
@@ -37,6 +38,39 @@ public class CryptographicOperationsExtensionsPropertyTests
         var copy = value.ToArray();
 
         return CryptographicOperationsExtensions.FixedTimeEquals<long>(value, copy);
+    }
+
+    [Property(Replay = Seed)]
+    public bool FixedTimeEqualsInChunks_GivenAnyChunkSize_MatchesSequenceEqual(
+        int[] left,
+        int[] right,
+        PositiveInt maxElementsPerChunk
+    )
+    {
+        var expected = left.AsSpan().SequenceEqual(right);
+
+        var actual = CryptographicOperationsExtensions.FixedTimeEqualsInChunks<int>(
+            left,
+            right,
+            maxElementsPerChunk.Get
+        );
+
+        return actual == expected;
+    }
+
+    [Property(Replay = Seed)]
+    public bool FixedTimeEqualsInChunks_GivenACopyAndAnyChunkSize_ReturnsTrue(
+        long[] value,
+        PositiveInt maxElementsPerChunk
+    )
+    {
+        var copy = value.ToArray();
+
+        return CryptographicOperationsExtensions.FixedTimeEqualsInChunks<long>(
+            value,
+            copy,
+            maxElementsPerChunk.Get
+        );
     }
 
     #endregion
