@@ -7,10 +7,12 @@
     guides the requiredHeadings rule that lists '## Checklist' covers; an item that continues on an indented line; a
     covered guide without a '## Checklist' section, which is an error; a section that ends at '<Related>'; a section
     that ends at the next '## '; fenced code blocks, which hold a '## ' line, a '- ' line or the heading and which the
-    scan ignores; a sidebar with no covered guide, which gives an empty list of groups; a guide the rule excepts; a **
-    glob that covers a guide in a folder and a * glob that does not; a rule without '## Checklist', which gathers
-    nothing; a configuration without such a rule, and a pages glob with brackets, which are errors; a guide without a
-    'title:' line, which is an error; and -Check with the file the script wrote, with a stale file and with no file.
+    scan ignores; a sidebar with no covered guide, which gives an empty list of groups; a guide the rule excepts; the
+    globs: a ** glob that covers a guide in a folder, a * glob that does not, a ? glob that matches one character, a
+    **/ glob that matches no folder or one, a . that matches only itself, and a sidebar slug with capitals that a
+    lower-case glob covers; a rule without '## Checklist', which gathers nothing; a configuration without such a
+    rule, and a pages glob with brackets, which are errors; a guide without a 'title:' line, which is an error; and
+    -Check with the file the script wrote, with a stale file and with no file.
     Each fixture is a folder under the temp path, not a repository, that holds docs/site/site.config.json, the guides
     and, where the case needs one, the data file. Each case checks the exit code and the exact output: the written
     JSON, the printed line or the message thrown. Exits 1 on the first failed check. build/gate.ps1 runs it before the
@@ -157,6 +159,22 @@ Invoke-Case 'a * glob stays within its folder' -Sidebar (Config '["guides/deep/a
     'guides/deep/a' = Guide 'Guide A' $sections.none
     'guides/b' = Guide 'Guide B' $sections.related
 } -Written (Document (GroupText 'guides/b' 'Guide B' 'first', 'second'))
+Invoke-Case 'a ? glob matches one character' -Sidebar (Config '["guides/a", "guides/ab"]' '"requiredHeadings": [{ "pages": ["guides/?"], "headings": ["## Checklist"] }]') -Guides @{
+    'guides/a' = Guide 'Guide A' $sections.related
+    'guides/ab' = Guide 'Guide AB' $sections.none
+} -Written (Document (GroupText 'guides/a' 'Guide A' 'first', 'second'))
+Invoke-Case 'a **/ glob matches no folder or one' -Sidebar (Config '["guides/a", "guides/deep/a", "guides/b"]' '"requiredHeadings": [{ "pages": ["guides/**/a"], "headings": ["## Checklist"] }]') -Guides @{
+    'guides/a' = Guide 'Guide A' $sections.related
+    'guides/deep/a' = Guide 'Deep A' $sections.related
+    'guides/b' = Guide 'Guide B' $sections.none
+} -Written (Document (GroupText 'guides/a' 'Guide A' 'first', 'second'), (GroupText 'guides/deep/a' 'Deep A' 'first', 'second'))
+Invoke-Case 'a . in a glob matches only itself' -Sidebar (Config '["guides/v1.0", "guides/v1x0"]' '"requiredHeadings": [{ "pages": ["guides/v1.0"], "headings": ["## Checklist"] }]') -Guides @{
+    'guides/v1.0' = Guide 'Version 1.0' $sections.related
+    'guides/v1x0' = Guide 'Version 1x0' $sections.none
+} -Written (Document (GroupText 'guides/v1.0' 'Version 1.0' 'first', 'second'))
+Invoke-Case 'a lower-case glob covers a slug with capitals' -Sidebar (Config '["guides/Mixed"]' '"requiredHeadings": [{ "pages": ["guides/mixed"], "headings": ["## Checklist"] }]') -Guides @{
+    'guides/Mixed' = Guide 'Mixed' $sections.related
+} -Written (Document (GroupText 'guides/Mixed' 'Mixed' 'first', 'second'))
 Invoke-Case 'a rule without ## Checklist does not gather' -Sidebar (Config '["guides/a", "guides/b"]' '"requiredHeadings": [{ "pages": ["guides/*"], "headings": ["## Checklist"], "except": ["guides/b"] }, { "pages": ["guides/b"], "headings": ["## Check your work"] }]') -Guides @{
     'guides/a' = Guide 'Guide A' $sections.related
     'guides/b' = Guide 'Guide B' $sections.none
