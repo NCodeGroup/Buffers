@@ -87,8 +87,9 @@ public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable
     /// <returns>A span over the pinned array.</returns>
     /// <remarks>
     /// This conversion allows <see cref="SecureArrayLifetime{T}"/> to be used directly in APIs
-    /// that expect a <see cref="Span{T}"/> without explicit conversion. The span remains valid
-    /// until this lifetime is disposed.
+    /// that expect a <see cref="Span{T}"/> without explicit conversion. The span is over the pinned array itself.
+    /// <see cref="Dispose"/> zeroes the array and does not invalidate the span: after it, the span still reads and
+    /// writes the same array, which holds zeros. Stop using the span when you dispose the lifetime.
     /// </remarks>
     public static implicit operator Span<T>(SecureArrayLifetime<T> lifetime) =>
         lifetime.PinnedArray.AsSpan();
