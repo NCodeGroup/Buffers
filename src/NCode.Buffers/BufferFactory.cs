@@ -77,7 +77,8 @@ public static class BufferFactory
         where T : unmanaged
     {
         ArgumentOutOfRangeException.ThrowIfNegative(minBufferSize);
-        var lease = ChoosePool<T>(isSensitive).Rent(minBufferSize);
+        var pool = ChoosePool<T>(isSensitive);
+        var lease = pool.Rent(minBufferSize);
         buffer = lease.Memory.Span[..Math.Min(lease.Memory.Length, minBufferSize)];
         return lease;
     }
@@ -124,7 +125,8 @@ public static class BufferFactory
         where T : unmanaged
     {
         ArgumentOutOfRangeException.ThrowIfNegative(minBufferSize);
-        var lease = ChoosePool<T>(isSensitive).Rent(minBufferSize);
+        var pool = ChoosePool<T>(isSensitive);
+        var lease = pool.Rent(minBufferSize);
         buffer = lease.Memory[..Math.Min(lease.Memory.Length, minBufferSize)];
         return lease;
     }
