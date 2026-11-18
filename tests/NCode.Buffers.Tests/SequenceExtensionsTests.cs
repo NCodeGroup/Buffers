@@ -492,26 +492,33 @@ public class SequenceExtensionsTests
     public void GetSpanLease_WhenMultipleSegmentsAndSensitive_DisposeZeroesTheCopy()
     {
         var filler = new LeaseElement(-1, -1);
-        var elementsPerPage =
-            SecureMemoryPool<LeaseElement>.PageSize / Unsafe.SizeOf<LeaseElement>();
         using var writer = BufferFactory.CreatePooledBufferWriter<LeaseElement>(isSensitive: true);
-        writer.GetSpan(elementsPerPage)[..elementsPerPage].Fill(filler);
-        writer.Advance(elementsPerPage);
-        writer.GetSpan(1)[..1].Fill(filler);
-        writer.Advance(1);
+        var written = WriteTwoSegments(writer, filler);
         Assert.False(writer.AsReadOnlySequence.IsSingleSegment);
         var lease = writer.GetSpanLease(isSensitive: true);
         var copy = lease.Span;
-        Assert.Equal(elementsPerPage + 1, copy.Length);
+        Assert.Equal(written, copy.Length);
         var copiedBefore = copy.ToArray();
         Assert.All(copiedBefore, element => Assert.Equal(filler, element));
 
         lease.Dispose();
 
         var copiedAfter = copy.ToArray();
-        var written = writer.AsReadOnlySequence.ToArray();
         Assert.All(copiedAfter, element => Assert.Equal(default, element));
-        Assert.All(written, element => Assert.Equal(filler, element));
+    }
+
+    [Fact]
+    public void GetSpanLease_WhenMultipleSegmentsAndSensitive_DisposeLeavesTheWriterData()
+    {
+        var filler = new LeaseElement(-1, -1);
+        using var writer = BufferFactory.CreatePooledBufferWriter<LeaseElement>(isSensitive: true);
+        WriteTwoSegments(writer, filler);
+        var lease = writer.GetSpanLease(isSensitive: true);
+
+        lease.Dispose();
+
+        var contents = writer.AsReadOnlySequence.ToArray();
+        Assert.All(contents, element => Assert.Equal(filler, element));
     }
 
     #endregion
@@ -1039,6 +1046,18 @@ public class SequenceExtensionsTests
     }
 
     #endregion
+
+    // Fills one page of the writer and one element more, so it holds two segments; returns the elements written.
+    private static int WriteTwoSegments(IBufferWriter<LeaseElement> writer, LeaseElement filler)
+    {
+        var elementsPerPage =
+            SecureMemoryPool<LeaseElement>.PageSize / Unsafe.SizeOf<LeaseElement>();
+        writer.GetSpan(elementsPerPage)[..elementsPerPage].Fill(filler);
+        writer.Advance(elementsPerPage);
+        writer.GetSpan(1)[..1].Fill(filler);
+        writer.Advance(1);
+        return elementsPerPage + 1;
+    }
 
     // The zeroing test rents an element type of its own, so no other test's rentals reach its SecureMemoryPool<T>.Shared.
     private readonly record struct LeaseElement(long First, long Second);
