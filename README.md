@@ -75,7 +75,7 @@ Pick the row that matches your data and where the buffer lives. `Rent` and the `
 
 ### For secrets
 
-Pass `isSensitive: true`. Each of these zeroes its memory on dispose, and all but `GetSecureLifetime`, which wraps memory you already have, pin it so the GC never copies it.
+Each of these zeroes its memory on dispose, and all but `GetSecureLifetime`, which wraps memory you already have, pin it so the GC never copies it. `Rent` and `CreatePooledBufferWriter` take `isSensitive: true`; `SecureMemoryPool<T>`, `CreatePinnedArray` and `GetSecureLifetime` take no such argument, because they always give you the secure kind.
 
 | API | Use it when | Pooled |
 |---|---|---|
@@ -127,7 +127,7 @@ ArrayBufferWriter<byte> arrayWriter = BufferFactory.CreateArrayBufferWriter(1024
 
 #### SecureMemoryPool&lt;T&gt;
 
-A `MemoryPool<T>` whose buffers are pinned and zeroed with `CryptographicOperations.ZeroMemory` when returned. It drops its cached buffers during a Gen2 collection when memory load passes `HighPressureThreshold` (default 0.9).
+A `MemoryPool<T>` whose buffers are pinned and zeroed with `CryptographicOperations.ZeroMemory` when returned. After a garbage collection, on the finalizer thread, it drops its cached buffers when the memory load is at or above `HighPressureThreshold` (default 0.9) times the GC's high memory load threshold. That check follows every generation 2 collection, and the first one or two after the pool is created can follow a generation 0 or 1 collection.
 
 `SecureMemoryPool<T>.Shared` serves the whole process, so its `Dispose` does nothing; dispose only a pool you create.
 
@@ -322,7 +322,7 @@ CryptographicOperationsExtensions.ZeroMemory(sensitiveData);
 - Does not: run without `Dispose`. There is no finalizer, so always use `using`.
 - Does not: clear copies, such as a `string`, a `ToArray()` result, or a buffer rented with `isSensitive: false`.
 - A newly allocated buffer is not zeroed when rented, so write before you read.
-- Using a span after its owner is disposed reads memory another caller may have rented.
+- Using a span after its owner is disposed is a bug. For a pooled buffer, from `Rent`, `CreatePooledBufferWriter` or `SecureMemoryPool<T>`, the span can read and write memory the pool has since rented to another caller. A `SecureArrayLifetime<T>`'s array and the memory under a `SecureSpanLifetime<T>` belong to no pool: the span still reaches the same memory, which `Dispose` zeroed.
 
 ### Comparing and encoding
 
