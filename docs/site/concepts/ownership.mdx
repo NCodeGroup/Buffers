@@ -71,9 +71,8 @@ until the method ends. A `using` statement with its own block ends it with the w
 
 <Proof sample="SiteOwnershipTightScope" /> The block disposes on every way out, exceptions and early returns
 included. <Proof external="UsingStatementDocs" /> A `Dispose()` call written after the work does not.
-<LeakCard leak="L6" /> `BufferFactory.Rent` does the same inside: if it fails after taking a buffer, it disposes
-the buffer before it throws.
-<Proof source="BufferFactory.Rent.DisposeOnFailure" />
+<LeakCard leak="L6" /> `BufferFactory.Rent` checks its size before it takes a buffer, so it never throws while it
+holds one. <Proof source="BufferFactory.Rent.ChecksFirst" />
 
 ## Order
 

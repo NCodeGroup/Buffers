@@ -863,13 +863,10 @@
       ],
       "match": "public void Dispose()"
     },
-    "BufferFactory.Rent.DisposeOnFailure": {
+    "BufferFactory.Rent.ChecksFirst": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
-      "lines": [
-        81,
-        90
-      ],
-      "match": "try"
+      "branch": "main",
+      "label": "BufferFactory.Rent"
     },
     "SequenceExtensions.GetSpanLease.Rent": {
       "file": "src/NCode.Buffers/SequenceExtensions.cs",

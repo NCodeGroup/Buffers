@@ -310,7 +310,7 @@
       ],
       "summary": "Allocates a pinned array of `length` elements.",
       "constraint": "unmanaged",
-      "throws": null,
+      "throws": "`ArgumentOutOfRangeException` when `length` is negative.",
       "page": "/concepts/ownership/",
       "source": "Api.SecureArrayLifetime.Constructor",
       "api": [
@@ -328,7 +328,7 @@
       ],
       "summary": "Creates a lifetime that owns a pinned array of `length` elements.",
       "constraint": "unmanaged",
-      "throws": null,
+      "throws": "`ArgumentOutOfRangeException` when `length` is negative.",
       "page": "/concepts/ownership/",
       "source": "Api.SecureArrayLifetime.Create",
       "api": [
@@ -341,7 +341,7 @@
       "type": "SecureArrayLifetime<T>",
       "member": "PinnedArray",
       "signatures": [
-        "public T[] PinnedArray { get; } = GC.AllocateUninitializedArray<T>(length, pinned: true);"
+        "public T[] PinnedArray { get; }"
       ],
       "summary": "The pinned array the lifetime owns.",
       "constraint": "unmanaged",
