@@ -40,28 +40,28 @@ const { tone = 'usual' } = Astro.props;
     min-width: 1.25rem;
     height: 1.25rem;
     padding: 0 0.25rem;
-    border-radius: var(--radius-round);
-    font-family: var(--font-sans);
-    font-size: var(--text-2xs);
-    font-stretch: var(--width-text);
-    font-weight: var(--weight-bold);
+    border-radius: var(--nc-radius-round);
+    font-family: var(--nc-font-sans);
+    font-size: 0.6875rem;
+    font-stretch: var(--nc-type-body-stretch);
+    font-weight: 700;
     line-height: 1;
     user-select: none;
   }
   .pinned--usual :global(.ec-line:has(mark) .code::after) {
-    background: var(--color-screen-hot);
-    color: var(--color-screen);
+    background: var(--nc-color-screen-hot);
+    color: var(--nc-color-screen);
   }
   .pinned--fix :global(.ec-line:has(mark) .code::after) {
-    background: var(--color-screen-lit);
-    color: var(--color-screen);
+    background: var(--nc-color-screen-lit);
+    color: var(--nc-color-screen);
   }
   .pinned--usual :global(mark) {
-    background: color-mix(in srgb, var(--color-screen-hot) 12%, transparent);
-    box-shadow: inset 0 -1px 0 var(--color-screen-hot);
+    background: color-mix(in srgb, var(--nc-color-screen-hot) 12%, transparent);
+    box-shadow: inset 0 -1px 0 var(--nc-color-screen-hot);
   }
   .pinned--fix :global(mark) {
-    background: color-mix(in srgb, var(--color-screen-lit) 18%, transparent);
-    box-shadow: inset 0 -1px 0 var(--color-screen-lit);
+    background: color-mix(in srgb, var(--nc-color-screen-lit) 18%, transparent);
+    box-shadow: inset 0 -1px 0 var(--nc-color-screen-lit);
   }
 </style>

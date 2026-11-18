@@ -22,24 +22,24 @@ const kinds = Object.entries(evidence.kinds) as [Kind, { label: string; meaning:
 <style>
   .kinds {
     display: grid;
-    margin: var(--space-5) 0 0;
-    border: var(--border-hair) solid var(--color-border);
-    border-radius: var(--radius-panel);
-    background: var(--color-surface);
+    margin: var(--nc-space-5) 0 0;
+    border: var(--nc-border-hair) solid var(--nc-color-border);
+    border-radius: var(--nc-radius-panel);
+    background: var(--nc-color-surface);
     overflow: hidden;
   }
   .kinds__row {
     display: grid;
     grid-template-columns: 11rem minmax(0, 1fr);
-    gap: var(--space-4);
+    gap: var(--nc-space-4);
     align-items: baseline;
-    padding: var(--space-4) var(--space-5);
+    padding: var(--nc-space-4) var(--nc-space-5);
   }
-  .kinds__row + .kinds__row { border-top: var(--border-hair) solid var(--color-border); }
-  dd { margin: 0; font-size: var(--text-md); line-height: var(--leading-normal); }
-  .kinds__meaning { color: var(--color-text); }
-  .kinds__shows { color: var(--color-text-secondary); }
+  .kinds__row + .kinds__row { border-top: var(--nc-border-hair) solid var(--nc-color-border); }
+  dd { margin: 0; font-size: var(--sl-text-sm); line-height: 1.5; }
+  .kinds__meaning { color: var(--nc-color-text); }
+  .kinds__shows { color: var(--nc-color-text-secondary); }
   @media (max-width: 40rem) {
-    .kinds__row { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); padding-inline: var(--space-4); }
+    .kinds__row { grid-template-columns: minmax(0, 1fr); gap: var(--nc-space-2); padding-inline: var(--nc-space-4); }
   }
 </style>
