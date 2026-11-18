@@ -17,7 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\docs\site\_components\data\buffers.json" Link="buffers.json" CopyToOutputDirectory="PreserveNewest" />
+    <None
+      Include="..\..\docs\site\_components\data\buffers.json"
+      Link="buffers.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
   </ItemGroup>
 
   <ItemGroup>
