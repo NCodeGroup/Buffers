@@ -1,7 +1,7 @@
 #requires -version 7
 <#
 .SYNOPSIS
-    The project's gate: the sample key check, the README samples check, the site evidence check, the API map check (build/Assert-ApiMap.ps1) and the review checklist check (build/Update-ReviewChecklist.ps1, tested offline by build/Test-UpdateReviewChecklist.ps1), then the Definition of Done, build/dod.ps1, whose Format stage runs the CSharpier check (ADR-1002, ADR-1005, ADR-1010).
+    The project's gate: the sample key check, the README samples check, the site evidence check (which runs the API map check, build/Assert-ApiMap.ps1, whose rules build/Test-AssertApiMap.ps1 tests offline first) and the review checklist check (build/Update-ReviewChecklist.ps1, tested offline by build/Test-UpdateReviewChecklist.ps1), then the Definition of Done, build/dod.ps1, whose Format stage runs the CSharpier check (ADR-1002, ADR-1005, ADR-1010).
 .DESCRIPTION
     build/dod.ps1 is template-owned and has no stage for the samples, so this script runs those checks before it, as
     project-template ADR-0117 says. -Fast and -Filter are passed on to build/dod.ps1.
@@ -32,12 +32,13 @@ try {
     $pages = @($changed -like '*.mdx')
     if ($pages) { "Site pages: FAILED. dotnet mdsnippets rewrote $($pages -join ', '); restore it, and keep *.mdx in ExcludeMarkdownFiles of mdsnippets.json."; exit 1 }
     if ($changed) { 'README samples: FAILED. dotnet mdsnippets updated a README from the tests; commit the result.'; exit 1 }
-    # The site's claims link tests and source lines at a pinned commit, and its pages pin sample lines by their text;
-    # each must still name what it names (ADR-1010). The API map must cover every line of PublicAPI.Shipped.txt once;
-    # the map check's rules are tested offline first, so a rule broken in build/Assert-ApiMap.ps1 fails here instead
-    # of passing every map.
+    # The API map check's rules are tested offline first, so a rule broken in build/Assert-ApiMap.ps1 fails here
+    # instead of passing every map.
     ./build/Test-AssertApiMap.ps1
     if ($LASTEXITCODE) { exit $LASTEXITCODE }
+    # The site's claims link tests and source lines at a pinned commit, and its pages pin sample lines by their text;
+    # each must still name what it names (ADR-1010). The API map, which this check runs, must cover every line of
+    # PublicAPI.Shipped.txt once.
     ./build/Test-SiteEvidence.ps1
     if ($LASTEXITCODE) { exit $LASTEXITCODE }
     # The review checklist's data is generated from the guides' Checklist sections; a guide changed without it fails here.
