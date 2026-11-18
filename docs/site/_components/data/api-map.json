@@ -185,7 +185,7 @@
       "type": "SecureMemoryPool<T>",
       "member": "Shared",
       "signatures": [
-        "public static new SecureMemoryPool<T>         Shared { get; } = new() { IsShared = true };"
+        "public static new SecureMemoryPool<T> Shared { get; } = new() { IsShared = true };"
       ],
       "summary": "The shared instance of the pool, one per element type. `BufferFactory` rents from it when `isSensitive` is true. Its `Dispose` does nothing.",
       "constraint": "unmanaged",
