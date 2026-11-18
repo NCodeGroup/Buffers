@@ -76,18 +76,10 @@ public static class BufferFactory
     public static IMemoryOwner<T> Rent<T>(int minBufferSize, bool isSensitive, out Span<T> buffer)
         where T : unmanaged
     {
-        var pool = ChoosePool<T>(isSensitive);
-        var lease = pool.Rent(minBufferSize);
-        try
-        {
-            buffer = lease.Memory.Span[..Math.Min(lease.Memory.Length, minBufferSize)];
-            return lease;
-        }
-        catch
-        {
-            lease.Dispose();
-            throw;
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(minBufferSize);
+        var lease = ChoosePool<T>(isSensitive).Rent(minBufferSize);
+        buffer = lease.Memory.Span[..Math.Min(lease.Memory.Length, minBufferSize)];
+        return lease;
     }
 
     /// <summary>
@@ -131,18 +123,10 @@ public static class BufferFactory
     public static IMemoryOwner<T> Rent<T>(int minBufferSize, bool isSensitive, out Memory<T> buffer)
         where T : unmanaged
     {
-        var pool = ChoosePool<T>(isSensitive);
-        var lease = pool.Rent(minBufferSize);
-        try
-        {
-            buffer = lease.Memory[..Math.Min(lease.Memory.Length, minBufferSize)];
-            return lease;
-        }
-        catch
-        {
-            lease.Dispose();
-            throw;
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(minBufferSize);
+        var lease = ChoosePool<T>(isSensitive).Rent(minBufferSize);
+        buffer = lease.Memory[..Math.Min(lease.Memory.Length, minBufferSize)];
+        return lease;
     }
 
     /// <summary>
@@ -198,11 +182,7 @@ public static class BufferFactory
     /// </example>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="length"/> is negative.</exception>
     public static SecureArrayLifetime<T> CreatePinnedArray<T>(int length)
-        where T : unmanaged
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(length);
-        return SecureArrayLifetime<T>.Create(length);
-    }
+        where T : unmanaged => SecureArrayLifetime<T>.Create(length);
 
     /// <summary>
     /// Creates a pinned byte array wrapped in a <see cref="SecureArrayLifetime{T}"/> that securely zeroes the memory upon disposal.

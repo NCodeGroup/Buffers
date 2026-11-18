@@ -12,7 +12,6 @@ namespace NCode.Buffers;
 /// is cleared when the lifetime ends.
 /// </summary>
 /// <typeparam name="T">The type of elements in the array. Must be an unmanaged value type.</typeparam>
-/// <param name="length">The length of the array to allocate.</param>
 /// <remarks>
 /// <para>
 /// This struct allocates a pinned array using <see cref="GC.AllocateUninitializedArray{T}(int, bool)"/>
@@ -33,14 +32,26 @@ namespace NCode.Buffers;
 /// </code>
 /// </example>
 [PublicAPI]
-public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable
+public readonly ref struct SecureArrayLifetime<T> : IDisposable
     where T : unmanaged
 {
+    /// <summary>
+    /// Allocates a pinned array of the specified length and takes ownership of it.
+    /// </summary>
+    /// <param name="length">The length of the array to allocate.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="length"/> is negative.</exception>
+    public SecureArrayLifetime(int length)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
+        PinnedArray = GC.AllocateUninitializedArray<T>(length, pinned: true);
+    }
+
     /// <summary>
     /// Creates a new <see cref="SecureArrayLifetime{T}"/> with the specified length.
     /// </summary>
     /// <param name="length">The length of the array to allocate.</param>
     /// <returns>A new <see cref="SecureArrayLifetime{T}"/> instance.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="length"/> is negative.</exception>
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Design",
         "CA1000:Do not declare static members on generic types",
@@ -59,7 +70,7 @@ public readonly ref struct SecureArrayLifetime<T>(int length) : IDisposable
     /// with pinned set to true, ensuring it will not be moved by the garbage collector.
     /// The array contents are uninitialized and may contain arbitrary data until explicitly written.
     /// </remarks>
-    public T[] PinnedArray { get; } = GC.AllocateUninitializedArray<T>(length, pinned: true);
+    public T[] PinnedArray { get; }
 
     /// <summary>
     /// Gets the length of the pinned array.
