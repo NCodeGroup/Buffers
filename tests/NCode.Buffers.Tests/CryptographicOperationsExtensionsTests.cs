@@ -1,6 +1,8 @@
 // Copyright © NCode Group
 // SPDX-License-Identifier: Apache-2.0
 
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace NCode.Buffers.Tests;
@@ -121,6 +123,19 @@ public class CryptographicOperationsExtensionsTests
         int[] right = [1, 2, 3];
 
         var result = CryptographicOperations.FixedTimeEquals<int>(left, right);
+
+        Assert.False(result);
+    }
+
+    // 536,870,912 ints are 2,147,483,648 bytes, one more than int.MaxValue. The span points at no memory:
+    // spans of different lengths are unequal before any element is read, so the test allocates nothing.
+    [Fact]
+    public void FixedTimeEquals_WhenOneSpanHoldsMoreThanInt32MaxValueBytes_ReturnsFalse()
+    {
+        const int length = 536_870_912;
+        var longer = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.NullRef<int>(), length);
+
+        var result = CryptographicOperations.FixedTimeEquals<int>(longer, ReadOnlySpan<int>.Empty);
 
         Assert.False(result);
     }
