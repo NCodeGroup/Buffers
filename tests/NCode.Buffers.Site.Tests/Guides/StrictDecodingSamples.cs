@@ -77,7 +77,8 @@ public class StrictDecodingSamples
             SecureEncoding.UTF8,
             detectEncodingFromByteOrderMarks: true
         );
-        Assert.Equal("a", detecting.ReadToEnd());
+        string detected = detecting.ReadToEnd();
+        Assert.Equal("a", detected);
     }
 
     [Fact]

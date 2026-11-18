@@ -80,7 +80,8 @@ public class FixedSizeBufferSamples
         Assert.Equal(64, buffer.Length);
         bool hasData = writer.WrittenSpan.ContainsAnyExcept((byte)0);
         Assert.True(hasData);
-        SecretAssert.Equal(buffer.Span[..32], writer.WrittenSpan);
+        ReadOnlySpan<byte> head = buffer.Span[..32];
+        SecretAssert.Equal(head, writer.WrittenSpan);
 
         Memory<byte> kept = buffer;
         owner.Dispose();
