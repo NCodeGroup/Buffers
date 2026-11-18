@@ -53,5 +53,13 @@
     { "label": "GitHub", "href": "https://github.com/NCodeGroup/Buffers" },
     { "label": "NuGet", "href": "https://www.nuget.org/packages/NCode.Buffers/" }
   ],
-  "samples": ["tests/**/*.cs"]
+  "samples": ["tests/**/*.cs"],
+  "requiredHeadings": [
+    {
+      "pages": ["guides/*"],
+      "headings": ["## The usual code", "## With NCode.Buffers", "## Pitfalls", "## What this does not fix", "## Checklist"],
+      "except": ["guides/ban-leaky-apis", "guides/review-checklist", "guides/test-zeroing"]
+    },
+    { "pages": ["guides/ban-leaky-apis", "guides/test-zeroing"], "headings": ["## Check your work"] }
+  ]
 }
