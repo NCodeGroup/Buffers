@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Package validation compares each package with the published 5.2.2 package.
 - The documentation site's home page shows the sidebar, as every other page does, so the navigation stays in place when you choose Overview, and on a phone the home page has the menu button.
 - The site's API map and buffer behavior matrix draw each entry as a card, so every field shows at any window width, where they hid columns behind a sideways scroll.
+- A card on the documentation site that holds an evidence link fits its column, so the home page and the quick start no longer scroll sideways beside the sidebar.
 - The package's project website, the link nuget.org shows as "Project website", is the documentation site, https://ncodegroup.github.io/Buffers/; the source repository link opens GitHub.
 
 ## [5.2.2] - 2026-11-18
