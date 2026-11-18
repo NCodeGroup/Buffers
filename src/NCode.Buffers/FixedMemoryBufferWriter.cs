@@ -117,8 +117,10 @@ public class FixedMemoryBufferWriter<T> : IBufferWriter<T>
     /// Clears the written data by resetting the write position to zero.
     /// </summary>
     /// <remarks>
-    /// This method does not clear the underlying buffer contents. To securely clear sensitive data,
-    /// use <see cref="Reset"/> instead.
+    /// This method does not change the underlying buffer: the elements written so far stay in it, and a later
+    /// <see cref="Reset"/> does not reach them, because it zeroes only the elements written since the last call to
+    /// <see cref="Clear"/> or <see cref="Reset"/>. To remove a secret, call <see cref="Reset"/> instead of this method,
+    /// or zero the whole buffer you gave the writer.
     /// </remarks>
     public void Clear()
     {
