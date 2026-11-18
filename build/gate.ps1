@@ -1,7 +1,7 @@
 #requires -version 7
 <#
 .SYNOPSIS
-    The project's gate: the sample key check, the README samples check, the site evidence check (which runs the API map check, build/Assert-ApiMap.ps1, whose rules build/Test-AssertApiMap.ps1 tests offline first) the review checklist check (build/Update-ReviewChecklist.ps1, tested offline by build/Test-UpdateReviewChecklist.ps1) and the XML documentation examples check (build/Test-XmlDocExamples.ps1), then the Definition of Done, build/dod.ps1, whose Format stage runs the CSharpier check (ADR-1002, ADR-1005, ADR-1010).
+    The project's gate: the sample key check, the README samples check, the site evidence check (which runs the API map check, build/Assert-ApiMap.ps1, whose rules build/Test-AssertApiMap.ps1 tests offline first), the review checklist check (build/Update-ReviewChecklist.ps1, tested offline by build/Test-UpdateReviewChecklist.ps1) and the XML documentation examples check (build/Test-XmlDocExamples.ps1), then the Definition of Done, build/dod.ps1, whose Format stage runs the CSharpier check (ADR-1002, ADR-1005, ADR-1010).
 .DESCRIPTION
     build/dod.ps1 is template-owned and has no stage for the samples, so this script runs those checks before it, as
     project-template ADR-0117 says. -Fast and -Filter are passed on to build/dod.ps1.
