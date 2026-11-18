@@ -386,6 +386,67 @@ public class FixedSpanBufferWriterTests
         Assert.NotNull(ex);
     }
 
+    [Theory]
+    [InlineData(1, int.MaxValue)]
+    [InlineData(4, int.MaxValue - 1)]
+    [InlineData(16, int.MaxValue)]
+    [InlineData(16, int.MaxValue - 15)]
+    public void Advance_WhenWrittenCountPlusCountExceedsInt32MaxValue_ThrowsInvalidOperationException(
+        int written,
+        int count
+    )
+    {
+        const int capacity = 16;
+        Span<byte> buffer = stackalloc byte[capacity];
+        var writer = new FixedSpanBufferWriter<byte>(buffer);
+
+        writer.Advance(written);
+
+        InvalidOperationException? ex = null;
+        try
+        {
+            writer.Advance(count);
+        }
+        catch (InvalidOperationException e)
+        {
+            ex = e;
+        }
+
+        Assert.NotNull(ex);
+        Assert.Contains("Cannot advance past the end of the buffer", ex.Message);
+        Assert.Equal(written, writer.WrittenCount);
+        Assert.Equal(capacity - written, writer.FreeCapacity);
+    }
+
+    [Fact]
+    public void Advance_WhenWrittenCountPlusCountExceedsInt32MaxValue_ResetStillZeroesTheWrittenPart()
+    {
+        var buffer = new byte[16];
+        var writer = new FixedSpanBufferWriter<byte>(buffer);
+
+        var destination = writer.GetSpan(4);
+        "abcd"u8.CopyTo(destination);
+        writer.Advance(4);
+
+        InvalidOperationException? ex = null;
+        try
+        {
+            writer.Advance(int.MaxValue - 1);
+        }
+        catch (InvalidOperationException e)
+        {
+            ex = e;
+        }
+
+        Assert.NotNull(ex);
+
+        writer.Reset();
+
+        var hasNonZero = buffer.AsSpan().ContainsAnyExcept((byte)0);
+        Assert.Equal(0, writer.WrittenCount);
+        Assert.False(hasNonZero);
+    }
+
     #endregion
 
     #region GetSpan Method Tests
