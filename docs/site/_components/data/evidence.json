@@ -765,12 +765,9 @@
     },
     "PackageDependencies": {
       "file": "src/NCode.Buffers/NCode.Buffers.csproj",
-      "lines": [
-        11,
-        12
-      ],
-      "match": "<PackageReference Include=\"JetBrains.Annotations\" />",
-      "kind": "process"
+      "branch": "main",
+      "kind": "process",
+      "label": "NCode.Buffers.csproj"
     },
     "SecureMemoryPool.Rent": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
@@ -1040,6 +1037,12 @@
       "branch": "main",
       "kind": "documented",
       "label": "ADR-1020"
+    },
+    "Adr1022": {
+      "file": "docs/decisions/1022-jetbrains-annotations-is-a-build-time-reference-not-a-package-dependency.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1022"
     },
     "Adr1023": {
       "file": "docs/decisions/1023-the-shared-secure-pool-ignores-dispose.md",

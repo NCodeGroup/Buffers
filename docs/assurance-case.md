@@ -41,7 +41,8 @@ attack surface is its public API.
 
 ## Secure Design Principles Applied
 
-- **Economy of mechanism:** one assembly, one small dependency, no I/O, no native code.
+- **Economy of mechanism:** one assembly, one package dependency, Nerdbank.Streams, which brings dependencies of its
+  own; no I/O, no native code.
 - **Fail-safe defaults:** analyzers ban raw `ArrayPool`, `MemoryPool` and `Encoding` use in shipping code, so buffers and
   encodings come from the secure entry points (ADR-1003); encodings throw rather than guess.
 - **Complete mediation of ownership:** memory is returned only through its owner's `Dispose`, which zeroes it. A
