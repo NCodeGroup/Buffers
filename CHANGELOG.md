@@ -7,9 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.2] - 2026-11-18
+
+### Added
+
+- The documentation site is published to GitHub Pages, at https://ncodegroup.github.io/Buffers/, from every push to `main`, and `README.md` and the package README link to it ([#99](https://github.com/NCodeGroup/Buffers/issues/99), [ADR-1025](docs/decisions/1025-the-documentation-site-is-published-to-github-pages-from-the-default-branch.md)).
+
 ### Changed
 
 - Package validation compares each package with the published 5.2.1 package.
+- The site's proof of fixed-time comparison (R4) cites the test that compares spans whose only difference is in the first chunk, the buffer behavior reference cites the test that rents from `SecureMemoryPool<T>.Shared` after disposing it, and the proof that a fixed buffer writer never writes past its memory (R6) covers `Advance`, with the tests of counts near `int.MaxValue` and both writers' `Advance` ([#93](https://github.com/NCodeGroup/Buffers/issues/93), [#94](https://github.com/NCodeGroup/Buffers/issues/94)).
+
+### Fixed
+
+- The site's links to tests and source lines open the lines they name, at a `main` commit that holds the 5.1.3 fixes, and its pages describe `FixedTimeEquals<T>` comparing in chunks of at most `int.MaxValue` bytes, where they said the library has no comparison loop of its own ([#93](https://github.com/NCodeGroup/Buffers/issues/93), [#94](https://github.com/NCodeGroup/Buffers/issues/94)).
 
 ## [5.2.1] - 2026-11-18
 
@@ -196,7 +207,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.2.1...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.2.2...HEAD
+[5.2.2]: https://github.com/NCodeGroup/Buffers/compare/v5.2.1...v5.2.2
 [5.2.1]: https://github.com/NCodeGroup/Buffers/compare/v5.2.0...v5.2.1
 [5.2.0]: https://github.com/NCodeGroup/Buffers/compare/v5.1.3...v5.2.0
 [5.1.3]: https://github.com/NCodeGroup/Buffers/compare/v5.1.2...v5.1.3

@@ -33,9 +33,10 @@ one does.
 The library does not depend on that staying true. Microsoft keeps `CryptographicOperations.ZeroMemory` for the case:
 "This method exists to future-proof against potential optimizations in the .NET runtime that could eliminate memory
 writes that aren't followed by memory reads". <Proof external="ZeroMemoryRemarks" /> The owners' `Dispose`, the fixed
-writers' `Reset()`, `ZeroMemory<T>` and `FixedTimeEquals<T>` call the methods Microsoft documents for this, and no loop
-of the library's own. <Proof source="Adr1016" /> A `Reset()` over elements that hold references sets them to default
-with `Span<T>.Clear()`.
+writers' `Reset()`, `ZeroMemory<T>` and `FixedTimeEquals<T>` call the methods Microsoft documents for this; the only
+loop of the library's own splits a span of more than `int.MaxValue` bytes into chunks and calls them on each chunk.
+<Proof source="Adr1016" /> <Proof source="ZeroMemory" /> <Proof source="FixedTimeEquals" /> A `Reset()` over
+elements that hold references sets them to default with `Span<T>.Clear()`.
 
 ## "I can do it by hand"
 
