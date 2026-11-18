@@ -225,7 +225,8 @@ public class BufferBehaviorMatrixTests
 
     private static JsonNode[] ReadOutcomes()
     {
-        var path = FindBuffersJson();
+        var baseDirectory = AppContext.BaseDirectory;
+        var path = Path.Combine(baseDirectory, "buffers.json");
         var json = File.ReadAllText(path);
         var root = JsonNode.Parse(json);
 
@@ -240,24 +241,6 @@ public class BufferBehaviorMatrixTests
                 return outcome;
             }),
         ];
-    }
-
-    private static string FindBuffersJson()
-    {
-        const string relativePath = "docs/site/_components/data/buffers.json";
-
-        for (
-            var directory = new DirectoryInfo(AppContext.BaseDirectory);
-            directory is not null;
-            directory = directory.Parent
-        )
-        {
-            var path = Path.Combine(directory.FullName, relativePath);
-            if (File.Exists(path))
-                return path;
-        }
-
-        throw new FileNotFoundException($"Cannot find '{relativePath}' above the test output.");
     }
 
     #endregion
