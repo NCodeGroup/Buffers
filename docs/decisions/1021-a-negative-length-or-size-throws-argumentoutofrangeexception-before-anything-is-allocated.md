@@ -48,6 +48,10 @@ it allocates or rents anything; its XML documentation lists that exception.**
 
 - A caller that passes a negative length to `SecureArrayLifetime<T>` or its `Create` gets `ArgumentOutOfRangeException`
   instead of an undocumented `OverflowException`. The public API's signatures do not change.
+- The change ships in a minor release, not a major one: the `OverflowException` it replaces was never documented,
+  and `BufferFactory.CreatePinnedArray` and `BufferFactory.Rent` already documented `ArgumentOutOfRangeException`
+  for the same input, so code written against the documentation sees no change. A major version is kept for a
+  change to documented behavior.
 - `BufferFactory.Rent` with a negative size rents nothing and reports `minBufferSize`. Once the size is checked, the
   slice it takes of the rented buffer cannot fail, so `Rent` has no failure path after it rents and no `try`/`catch`.
 - A new public API that takes a length or a size follows the same rule.
