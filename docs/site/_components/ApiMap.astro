@@ -1,7 +1,7 @@
 ---
 // One group of the API map on /reference/api-map/: the entries of api-map.json that name the group, in file order, as one
-// table. Each row has the entry's id as its anchor. Below 40rem each row is a card. The text fields take `code` and
-// links. Usage:
+// table whose rows are drawn as cards, so no field is hidden at any width. Each row has the entry's id as its anchor.
+// The text fields take `code` and links. Usage:
 // <ApiMap group="secure-memory" />
 import apiMap from '@site/components/data/api-map.json';
 import { inline, sitePath, sourceLink } from '@site/components/lib/evidence';
@@ -34,40 +34,38 @@ const headings = ['Member', 'Signature', 'What it does', '`T`', 'Throws', 'Expla
 ---
 
 <div class="api-map not-content">
-  <div class="api-map__scroll" role="region" aria-label={`API map: ${known.title.replace(/`/g, '')}`} tabindex="0">
-    <table class="api-map__table">
-      <thead>
-        <tr>
-          {headings.map((heading) => (
-            <th scope="col" set:html={inline(heading)} />
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => (
-          <tr id={row.id} class="api-map__row">
-            <th scope="row" data-label="Member">
-              <code>{row.member ? `${row.type}.${row.member}` : row.type}</code>
-            </th>
-            <td data-label="Signature">
-              {row.signatures.map((signature) => (
-                <code class="api-map__signature">{signature}</code>
-              ))}
-            </td>
-            <td data-label="What it does" set:html={inline(row.summary)} />
-            <td data-label="T">{row.constraint === 'Any' ? 'Any' : <code>{row.constraint}</code>}</td>
-            <td data-label="Throws" set:html={inline(row.throws)} />
-            <td data-label="Explained on">
-              <a href={row.href}>{row.page}</a>
-            </td>
-            <td data-label="Source">
-              <a href={row.source.href} rel="noopener">{row.source.label}</a>
-            </td>
-          </tr>
+  <table class="api-map__table" aria-label={`API map: ${known.title.replace(/`/g, '')}`}>
+    <thead>
+      <tr>
+        {headings.map((heading) => (
+          <th scope="col" set:html={inline(heading)} />
         ))}
-      </tbody>
-    </table>
-  </div>
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((row) => (
+        <tr id={row.id} class="api-map__row">
+          <th scope="row" data-label="Member">
+            <code>{row.member ? `${row.type}.${row.member}` : row.type}</code>
+          </th>
+          <td data-label="Signature">
+            {row.signatures.map((signature) => (
+              <code class="api-map__signature">{signature}</code>
+            ))}
+          </td>
+          <td data-label="What it does" set:html={inline(row.summary)} />
+          <td data-label="T">{row.constraint === 'Any' ? 'Any' : <code>{row.constraint}</code>}</td>
+          <td data-label="Throws" set:html={inline(row.throws)} />
+          <td data-label="Explained on">
+            <a href={row.href}>{row.page}</a>
+          </td>
+          <td data-label="Source">
+            <a href={row.source.href} rel="noopener">{row.source.label}</a>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
 </div>
 
 <style>
