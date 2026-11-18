@@ -167,17 +167,22 @@ public static class CryptographicOperationsExtensions
         /// </para>
         /// <para>
         /// A timing attack could allow an attacker to determine the contents of a secret value by
-        /// measuring how long comparisons take. This method prevents such attacks by always comparing
-        /// all bytes regardless of where differences occur.
+        /// measuring how long comparisons take. For spans of equal length, this method prevents such attacks by
+        /// always comparing all bytes regardless of where differences occur.
+        /// </para>
+        /// <para>
+        /// Spans of different lengths return <see langword="false"/> at once, so the comparison does not hide the
+        /// length.
         /// </para>
         /// </remarks>
         /// <example>
         /// <code>
-        /// ReadOnlySpan&lt;byte&gt; computedHash = ComputeHash(data);
-        /// ReadOnlySpan&lt;byte&gt; expectedHash = GetExpectedHash();
+        /// ReadOnlySpan&lt;int&gt; expected = [3, 1, 4, 1];
+        /// Span&lt;int&gt; received = stackalloc int[4];
+        /// // ... fill received from the caller ...
         ///
-        /// // Use constant-time comparison to prevent timing attacks
-        /// bool isValid = CryptographicOperations.FixedTimeEquals(computedHash, expectedHash);
+        /// // Constant time for equal lengths, so the time taken does not reveal where the spans differ.
+        /// bool isMatch = CryptographicOperations.FixedTimeEquals&lt;int&gt;(received, expected);
         /// </code>
         /// </example>
         [PublicAPI]
