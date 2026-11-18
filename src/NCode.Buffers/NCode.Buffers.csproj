@@ -8,7 +8,8 @@
     <PackageValidationBaselineVersion>5.1.2</PackageValidationBaselineVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" />
+    <!-- Build-time only: the attributes are [Conditional("JETBRAINS_ANNOTATIONS")], so none reaches the assembly, and PrivateAssets keeps the package out of the nuspec (ADR-1022). -->
+    <PackageReference Include="JetBrains.Annotations" PrivateAssets="all" />
     <PackageReference Include="Nerdbank.Streams" />
   </ItemGroup>
 </Project>
