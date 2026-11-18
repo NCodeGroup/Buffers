@@ -1,6 +1,6 @@
 # 1006. The secure APIs constrain their element type to unmanaged
 
-- **Status:** Accepted
+- **Status:** Accepted (amended by 1020)
 - **Date:** 2026-11-14
 - **Deciders:** NCode Group
 
