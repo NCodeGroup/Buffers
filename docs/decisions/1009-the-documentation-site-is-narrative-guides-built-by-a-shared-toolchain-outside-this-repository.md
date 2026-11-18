@@ -1,6 +1,6 @@
 # 1009. The documentation site is narrative guides, built by a shared toolchain outside this repository
 
-- **Status:** Accepted
+- **Status:** Accepted (amended by 1025)
 - **Date:** 2026-11-15
 - **Deciders:** NCode Group
 

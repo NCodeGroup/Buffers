@@ -71,7 +71,7 @@ override in `AGENTS.md`.
 | [ADR-1006](1006-the-secure-apis-constrain-their-element-type-to-unmanaged.md) | The secure APIs constrain their element type to unmanaged | Accepted (amended by 1020) |
 | [ADR-1007](1007-a-workflow-raises-the-package-validation-baseline-after-each-release.md) | A workflow raises the package validation baseline after each release | Superseded by 0150 |
 | [ADR-1008](1008-release-follow-ups-are-jobs-publish-calls.md) | Release follow-ups are jobs that publish.yml calls | Superseded by 0151 |
-| [ADR-1009](1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md) | The documentation site is narrative guides, built by a shared toolchain outside this repository | Accepted |
+| [ADR-1009](1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md) | The documentation site is narrative guides, built by a shared toolchain outside this repository | Accepted (amended by 1025) |
 | [ADR-1010](1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md) | Site samples are compiled tests in a project of their own, included by key when the site is built (amends 1005) | Accepted |
 | [ADR-1011](1011-buffers-have-no-finalizer-and-are-zeroed-only-by-dispose.md) | Buffers have no finalizer and are zeroed only by Dispose | Accepted |
 | [ADR-1012](1012-the-secure-pool-caches-buffers-of-one-4096-byte-page.md) | The secure pool caches buffers of one 4096-byte page | Accepted |
@@ -87,3 +87,4 @@ override in `AGENTS.md`.
 | [ADR-1022](1022-jetbrains-annotations-is-a-build-time-reference-not-a-package-dependency.md) | JetBrains.Annotations is a build-time reference, not a package dependency (amends 1017) | Accepted |
 | [ADR-1023](1023-the-shared-secure-pool-ignores-dispose.md) | The shared secure pool ignores Dispose (amends 1015) | Accepted |
 | [ADR-1024](1024-ncodegroup-docs-releases-are-taken-without-a-cooldown-during-the-build-out.md) | NCodeGroup/docs releases are taken without a cooldown during the build-out (supersedes project-template 0009 for NCodeGroup/docs) | Accepted |
+| [ADR-1025](1025-the-documentation-site-is-published-to-github-pages-from-the-default-branch.md) | The documentation site is published to GitHub Pages from the default branch (amends 1009) | Accepted |
