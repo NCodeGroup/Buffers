@@ -518,4 +518,383 @@ public class PooledMemoryStreamTests
     }
 
     #endregion
+
+    #region ReadByte and WriteByte Tests
+
+    [Fact]
+    public void ReadByte_ReturnsTheBytesThenMinusOne()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        stream.Write([7, 8]);
+        stream.Position = 0;
+
+        Assert.Equal(7, stream.ReadByte());
+        Assert.Equal(8, stream.ReadByte());
+        Assert.Equal(2, stream.Position);
+    }
+
+    [Fact]
+    public void ReadByte_AtEnd_ReturnsMinusOne()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        stream.Write([7]);
+
+        Assert.Equal(-1, stream.ReadByte());
+        Assert.Equal(1, stream.Position);
+    }
+
+    [Fact]
+    public void ReadByte_OnFreshStream_ReturnsMinusOne()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+
+        Assert.Equal(-1, stream.ReadByte());
+    }
+
+    [Fact]
+    public void ReadByte_WhenDisposed_ThrowsObjectDisposedException()
+    {
+        var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        stream.Dispose();
+
+        Assert.Throws<ObjectDisposedException>(() => stream.ReadByte());
+    }
+
+    [Fact]
+    public void WriteByte_Appends()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: true);
+
+        stream.WriteByte(1);
+        stream.WriteByte(2);
+
+        Assert.Equal(2, stream.Position);
+        Assert.Equal<byte>([1, 2], stream.WrittenSpan.ToArray());
+    }
+
+    #endregion
+
+    #region ReadAsync and WriteAsync Tests
+
+    [Fact]
+    public async Task ReadAsync_Memory_Reads()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        stream.Write([1, 2, 3]);
+        stream.Position = 1;
+        var buffer = new byte[4];
+
+        var count = await stream.ReadAsync(buffer.AsMemory(), CancellationToken.None);
+
+        Assert.Equal(2, count);
+        Assert.Equal<byte>([2, 3, 0, 0], buffer);
+        Assert.Equal(3, stream.Position);
+    }
+
+    [Fact]
+    public async Task ReadAsync_Array_Reads()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        stream.Write([1, 2, 3]);
+        stream.Position = 1;
+        var buffer = new byte[4];
+
+#pragma warning disable CA1835 // The test deliberately calls the array overload.
+        var count = await stream.ReadAsync(buffer, 1, 3, CancellationToken.None);
+#pragma warning restore CA1835
+
+        Assert.Equal(2, count);
+        Assert.Equal<byte>([0, 2, 3, 0], buffer);
+        Assert.Equal(3, stream.Position);
+    }
+
+    [Fact]
+    public async Task WriteAsync_Memory_Writes()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+
+        await stream.WriteAsync(new byte[] { 1, 2, 3 }.AsMemory(), CancellationToken.None);
+
+        Assert.Equal(3, stream.Position);
+        Assert.Equal<byte>([1, 2, 3], stream.WrittenSpan.ToArray());
+    }
+
+    [Fact]
+    public async Task WriteAsync_Array_Writes()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+
+#pragma warning disable CA1835 // The test deliberately calls the array overload.
+        await stream.WriteAsync(new byte[] { 1, 2, 3, 4 }, 1, 2, CancellationToken.None);
+#pragma warning restore CA1835
+
+        Assert.Equal(2, stream.Position);
+        Assert.Equal<byte>([2, 3], stream.WrittenSpan.ToArray());
+    }
+
+    [Fact]
+    public void ReadAsync_Canceled_ReturnsACanceledTask()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        stream.Write([1, 2, 3]);
+        stream.Position = 0;
+        var buffer = new byte[3];
+
+        var task = stream.ReadAsync(buffer.AsMemory(), new CancellationToken(canceled: true));
+
+        Assert.True(task.IsCanceled);
+        Assert.Equal(0, stream.Position);
+    }
+
+    [Fact]
+    public void ReadAsync_ArrayCanceled_ReturnsACanceledTask()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        stream.Write([1, 2, 3]);
+        stream.Position = 0;
+        var buffer = new byte[3];
+
+        var task = stream.ReadAsync(buffer, 0, 3, new CancellationToken(canceled: true));
+
+        Assert.True(task.IsCanceled);
+        Assert.Equal(0, stream.Position);
+    }
+
+    [Fact]
+    public void WriteAsync_Canceled_ReturnsACanceledTask()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+
+        var task = stream.WriteAsync(
+            new byte[] { 1, 2, 3 }.AsMemory(),
+            new CancellationToken(canceled: true)
+        );
+
+        Assert.True(task.IsCanceled);
+        Assert.Equal(0, stream.Length);
+    }
+
+    [Fact]
+    public void WriteAsync_ArrayCanceled_ReturnsACanceledTask()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+
+        var task = stream.WriteAsync(
+            new byte[] { 1, 2, 3 },
+            0,
+            3,
+            new CancellationToken(canceled: true)
+        );
+
+        Assert.True(task.IsCanceled);
+        Assert.Equal(0, stream.Length);
+    }
+
+    [Fact]
+    public async Task FlushAsync_Completes()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        stream.Write([1, 2, 3]);
+
+        var task = stream.FlushAsync(CancellationToken.None);
+        await task;
+
+        Assert.True(task.IsCompletedSuccessfully);
+        Assert.Equal<byte>([1, 2, 3], stream.WrittenSpan.ToArray());
+    }
+
+    [Fact]
+    public void FlushAsync_Canceled_ReturnsACanceledTask()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+
+        var task = stream.FlushAsync(new CancellationToken(canceled: true));
+
+        Assert.True(task.IsCanceled);
+    }
+
+    #endregion
+
+    #region CopyTo Tests
+
+    [Fact]
+    public void CopyTo_WritesTheRestAndMovesToTheEnd()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: true);
+        stream.Write([1, 2, 3, 4, 5]);
+        stream.Position = 2;
+        using var destination = new MemoryStream();
+
+        stream.CopyTo(destination);
+
+        Assert.Equal<byte>([3, 4, 5], destination.ToArray());
+        Assert.Equal(5, stream.Position);
+    }
+
+    [Fact]
+    public void CopyTo_AtEnd_WritesNothing()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: true);
+        stream.Write([1, 2, 3]);
+        using var destination = new MemoryStream();
+
+        stream.CopyTo(destination);
+
+        Assert.Equal(0, destination.Length);
+        Assert.Equal(3, stream.Position);
+    }
+
+    [Fact]
+    public void CopyTo_PastEnd_WritesNothingAndKeepsPosition()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: true);
+        stream.Write([1, 2, 3]);
+        stream.Position = 10;
+        using var destination = new MemoryStream();
+
+        stream.CopyTo(destination);
+
+        Assert.Equal(0, destination.Length);
+        Assert.Equal(10, stream.Position);
+    }
+
+    [Fact]
+    public void CopyTo_NullDestination_ThrowsArgumentNullException()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+
+        Assert.Throws<ArgumentNullException>(() => stream.CopyTo(null!));
+    }
+
+    [Fact]
+    public void CopyTo_WhenDisposed_ThrowsObjectDisposedException()
+    {
+        var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        stream.Dispose();
+        using var destination = new MemoryStream();
+
+        Assert.Throws<ObjectDisposedException>(() => stream.CopyTo(destination));
+    }
+
+    #endregion
+
+    #region CopyToAsync Tests
+
+    [Fact]
+    public async Task CopyToAsync_WritesTheRestAndMovesToTheEnd()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: true);
+        stream.Write([1, 2, 3, 4, 5]);
+        stream.Position = 2;
+        using var destination = new MemoryStream();
+
+        await stream.CopyToAsync(destination, CancellationToken.None);
+
+        Assert.Equal<byte>([3, 4, 5], destination.ToArray());
+        Assert.Equal(5, stream.Position);
+    }
+
+    [Fact]
+    public async Task CopyToAsync_PastEnd_WritesNothingAndKeepsPosition()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: true);
+        stream.Write([1, 2, 3]);
+        stream.Position = 10;
+        using var destination = new MemoryStream();
+
+        await stream.CopyToAsync(destination, CancellationToken.None);
+
+        Assert.Equal(0, destination.Length);
+        Assert.Equal(10, stream.Position);
+    }
+
+    [Fact]
+    public void CopyToAsync_Canceled_ReturnsACanceledTask()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: true);
+        stream.Write([1, 2, 3]);
+        stream.Position = 0;
+        using var destination = new MemoryStream();
+
+        var task = stream.CopyToAsync(destination, new CancellationToken(canceled: true));
+
+        Assert.True(task.IsCanceled);
+        Assert.Equal(0, destination.Length);
+        Assert.Equal(0, stream.Position);
+    }
+
+    [Fact]
+    public void CopyToAsync_NullDestination_ThrowsArgumentNullException()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+
+        Assert.Throws<ArgumentNullException>(() =>
+        {
+            _ = stream.CopyToAsync(null!, CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public void CopyToAsync_WhenDisposed_ThrowsObjectDisposedException()
+    {
+        var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        stream.Dispose();
+        using var destination = new MemoryStream();
+
+        Assert.Throws<ObjectDisposedException>(() =>
+        {
+            _ = stream.CopyToAsync(destination, CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task CopyToAsync_DestinationFails_ReturnsAFaultedTask()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        stream.Write([1, 2, 3]);
+        stream.Position = 1;
+        using var destination = new FaultingStream();
+
+        var task = stream.CopyToAsync(destination, CancellationToken.None);
+
+        await Assert.ThrowsAsync<IOException>(() => task);
+        Assert.Equal(3, stream.Position);
+    }
+
+    private sealed class FaultingStream : Stream
+    {
+        public override bool CanRead => false;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => true;
+
+        public override long Length => throw new NotSupportedException();
+
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
+
+        public override void Flush() => throw new NotSupportedException();
+
+        public override int Read(byte[] buffer, int offset, int count) =>
+            throw new NotSupportedException();
+
+        public override long Seek(long offset, SeekOrigin origin) =>
+            throw new NotSupportedException();
+
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        public override void Write(byte[] buffer, int offset, int count) =>
+            throw new NotSupportedException();
+
+        public override ValueTask WriteAsync(
+            ReadOnlyMemory<byte> buffer,
+            CancellationToken cancellationToken = default
+        ) => ValueTask.FromException(new IOException());
+    }
+
+    #endregion
 }

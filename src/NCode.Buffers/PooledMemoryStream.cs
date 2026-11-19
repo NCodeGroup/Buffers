@@ -313,6 +313,174 @@ public sealed class PooledMemoryStream : Stream
     }
 
     /// <inheritdoc />
+    /// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
+    public override int ReadByte()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        if (_position >= _length)
+        {
+            return -1;
+        }
+
+        return Buffer.Span[_position++];
+    }
+
+    /// <inheritdoc />
+    /// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
+    /// <exception cref="IOException">The write would end past <see cref="Array.MaxLength"/>.</exception>
+    public override void WriteByte(byte value) => Write(new ReadOnlySpan<byte>(in value));
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// This method completes synchronously, and returns a canceled task when <paramref name="cancellationToken"/> is
+    /// canceled. An exception is thrown synchronously instead of being returned in the task.
+    /// </remarks>
+    public override ValueTask<int> ReadAsync(
+        Memory<byte> buffer,
+        CancellationToken cancellationToken
+    )
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return ValueTask.FromCanceled<int>(cancellationToken);
+        }
+
+        return new ValueTask<int>(Read(buffer.Span));
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// This method completes synchronously, and returns a canceled task when <paramref name="cancellationToken"/> is
+    /// canceled. An exception is thrown synchronously instead of being returned in the task.
+    /// </remarks>
+    public override Task<int> ReadAsync(
+        byte[] buffer,
+        int offset,
+        int count,
+        CancellationToken cancellationToken
+    )
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return Task.FromCanceled<int>(cancellationToken);
+        }
+
+        return Task.FromResult(Read(buffer, offset, count));
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// This method completes synchronously, and returns a canceled task when <paramref name="cancellationToken"/> is
+    /// canceled. An exception is thrown synchronously instead of being returned in the task.
+    /// </remarks>
+    public override ValueTask WriteAsync(
+        ReadOnlyMemory<byte> buffer,
+        CancellationToken cancellationToken
+    )
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return ValueTask.FromCanceled(cancellationToken);
+        }
+
+        Write(buffer.Span);
+        return ValueTask.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// This method completes synchronously, and returns a canceled task when <paramref name="cancellationToken"/> is
+    /// canceled. An exception is thrown synchronously instead of being returned in the task.
+    /// </remarks>
+    public override Task WriteAsync(
+        byte[] buffer,
+        int offset,
+        int count,
+        CancellationToken cancellationToken
+    )
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return Task.FromCanceled(cancellationToken);
+        }
+
+        Write(buffer, offset, count);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// This method does nothing and completes synchronously, or returns a canceled task when
+    /// <paramref name="cancellationToken"/> is canceled.
+    /// </remarks>
+    public override Task FlushAsync(CancellationToken cancellationToken) =>
+        cancellationToken.IsCancellationRequested
+            ? Task.FromCanceled(cancellationToken)
+            : Task.CompletedTask;
+
+    /// <inheritdoc />
+    /// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
+    /// <remarks>
+    /// This method copies the bytes from <see cref="Position"/> up to <see cref="Length"/> straight from the pooled
+    /// buffer to <paramref name="destination"/>, without an intermediate array, and moves <see cref="Position"/> to
+    /// <see cref="Length"/>. When <see cref="Position"/> is at or past <see cref="Length"/>, nothing is copied and
+    /// <see cref="Position"/> does not change. The <paramref name="bufferSize"/> is only validated.
+    /// </remarks>
+    public override void CopyTo(Stream destination, int bufferSize)
+    {
+        ValidateCopyToArguments(destination, bufferSize);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        if (_position >= _length)
+        {
+            return;
+        }
+
+        destination.Write(Buffer.Span[_position.._length]);
+        _position = _length;
+    }
+
+    /// <inheritdoc />
+    /// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
+    /// <remarks>
+    /// <para>
+    /// This method copies the bytes from <see cref="Position"/> up to <see cref="Length"/> straight from the pooled
+    /// buffer to <paramref name="destination"/>, without an intermediate array. It validates its arguments, checks
+    /// the disposed state and the token synchronously, and moves <see cref="Position"/> to <see cref="Length"/>
+    /// before it starts writing. When <see cref="Position"/> is at or past <see cref="Length"/>, nothing is copied and
+    /// <see cref="Position"/> does not change. The <paramref name="bufferSize"/> is only validated.
+    /// </para>
+    /// <para>
+    /// The stream must not be written, shrunk or disposed until the returned task completes. A failure of the
+    /// destination is returned in the task.
+    /// </para>
+    /// </remarks>
+    public override Task CopyToAsync(
+        Stream destination,
+        int bufferSize,
+        CancellationToken cancellationToken
+    )
+    {
+        ValidateCopyToArguments(destination, bufferSize);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return Task.FromCanceled(cancellationToken);
+        }
+
+        if (_position >= _length)
+        {
+            return Task.CompletedTask;
+        }
+
+        var start = _position;
+        _position = _length;
+        return destination.WriteAsync(Buffer[start.._length], cancellationToken).AsTask();
+    }
+
+    /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
         if (!_disposed)

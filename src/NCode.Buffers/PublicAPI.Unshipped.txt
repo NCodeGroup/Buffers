@@ -32,16 +32,25 @@ NCode.Buffers.SequenceExtensions.extension<T>(System.Buffers.ReadOnlySequence<T>
 override NCode.Buffers.PooledMemoryStream.CanRead.get -> bool
 override NCode.Buffers.PooledMemoryStream.CanSeek.get -> bool
 override NCode.Buffers.PooledMemoryStream.CanWrite.get -> bool
+override NCode.Buffers.PooledMemoryStream.CopyTo(System.IO.Stream! destination, int bufferSize) -> void
+override NCode.Buffers.PooledMemoryStream.CopyToAsync(System.IO.Stream! destination, int bufferSize, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 override NCode.Buffers.PooledMemoryStream.Flush() -> void
+override NCode.Buffers.PooledMemoryStream.FlushAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 override NCode.Buffers.PooledMemoryStream.Length.get -> long
 override NCode.Buffers.PooledMemoryStream.Position.get -> long
 override NCode.Buffers.PooledMemoryStream.Position.set -> void
 override NCode.Buffers.PooledMemoryStream.Read(byte[]! buffer, int offset, int count) -> int
 override NCode.Buffers.PooledMemoryStream.Read(System.Span<byte> buffer) -> int
+override NCode.Buffers.PooledMemoryStream.ReadAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
+override NCode.Buffers.PooledMemoryStream.ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<int>
+override NCode.Buffers.PooledMemoryStream.ReadByte() -> int
 override NCode.Buffers.PooledMemoryStream.Seek(long offset, System.IO.SeekOrigin origin) -> long
 override NCode.Buffers.PooledMemoryStream.SetLength(long value) -> void
 override NCode.Buffers.PooledMemoryStream.Write(byte[]! buffer, int offset, int count) -> void
 override NCode.Buffers.PooledMemoryStream.Write(System.ReadOnlySpan<byte> buffer) -> void
+override NCode.Buffers.PooledMemoryStream.WriteAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+override NCode.Buffers.PooledMemoryStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+override NCode.Buffers.PooledMemoryStream.WriteByte(byte value) -> void
 static NCode.Buffers.BinaryTextEncoding.RentDecoded(System.ReadOnlySpan<char> text, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Memory<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
 static NCode.Buffers.BinaryTextEncoding.RentDecoded(System.ReadOnlySpan<char> text, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Span<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
 static NCode.Buffers.BinaryTextEncoding.RentEncoded(System.ReadOnlySpan<byte> bytes, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Memory<char> text) -> System.Buffers.IMemoryOwner<char>!
