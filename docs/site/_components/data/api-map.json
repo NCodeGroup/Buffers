@@ -22,6 +22,18 @@
       "title": "Secure encoding"
     },
     {
+      "id": "streams-and-text",
+      "title": "Streams and text building"
+    },
+    {
+      "id": "secret-holder",
+      "title": "Secret holder"
+    },
+    {
+      "id": "metrics",
+      "title": "Metrics"
+    },
+    {
       "id": "cryptographic-operations",
       "title": "`CryptographicOperations` extensions"
     }
@@ -126,6 +138,61 @@
         "static NCode.Buffers.BufferFactory.CreateArrayBufferWriter(int initialCapacity) -> System.Buffers.ArrayBufferWriter<byte>!",
         "static NCode.Buffers.BufferFactory.CreateArrayBufferWriter<T>() -> System.Buffers.ArrayBufferWriter<T>!",
         "static NCode.Buffers.BufferFactory.CreateArrayBufferWriter<T>(int initialCapacity) -> System.Buffers.ArrayBufferWriter<T>!"
+      ]
+    },
+    {
+      "id": "buffer-factory-rent-random",
+      "group": "secure-memory",
+      "type": "BufferFactory",
+      "member": "RentRandom",
+      "signatures": [
+        "public static IMemoryOwner<byte> RentRandom(int length, bool isSensitive, out Span<byte> buffer)",
+        "public static IMemoryOwner<byte> RentRandom(int length, bool isSensitive, out Memory<byte> buffer)"
+      ],
+      "summary": "Rents a byte buffer of exactly `length` bytes and fills it with cryptographically strong random bytes, as a `Span<byte>` or a `Memory<byte>`. Pass `false` for `isSensitive` for values such as nonces and salts, which are random but not secret.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `length` is negative.",
+      "page": "/guides/encode-a-secret/",
+      "source": "Api.BufferFactory.RentRandom",
+      "api": [
+        "static NCode.Buffers.BufferFactory.RentRandom(int length, bool isSensitive, out System.Memory<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!",
+        "static NCode.Buffers.BufferFactory.RentRandom(int length, bool isSensitive, out System.Span<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!"
+      ]
+    },
+    {
+      "id": "buffer-factory-create-contiguous-buffer-writer",
+      "group": "secure-memory",
+      "type": "BufferFactory",
+      "member": "CreateContiguousBufferWriter",
+      "signatures": [
+        "public static ContiguousBufferWriter<T> CreateContiguousBufferWriter<T>(bool isSensitive, int initialCapacity = 0)",
+        "public static ContiguousBufferWriter<byte> CreateContiguousBufferWriter(bool isSensitive, int initialCapacity = 0)"
+      ],
+      "summary": "Creates a `ContiguousBufferWriter<T>` that keeps everything written in one contiguous buffer, rented from `SecureMemoryPool<T>` when `isSensitive` is true and from `MemoryPool<T>.Shared` when it is false. It rents nothing until the first call to `GetSpan` or `GetMemory`.",
+      "constraint": "unmanaged",
+      "throws": "`ArgumentOutOfRangeException` when `initialCapacity` is negative.",
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.BufferFactory.CreateContiguousBufferWriter",
+      "api": [
+        "static NCode.Buffers.BufferFactory.CreateContiguousBufferWriter(bool isSensitive, int initialCapacity = 0) -> NCode.Buffers.ContiguousBufferWriter<byte>!",
+        "static NCode.Buffers.BufferFactory.CreateContiguousBufferWriter<T>(bool isSensitive, int initialCapacity = 0) -> NCode.Buffers.ContiguousBufferWriter<T>!"
+      ]
+    },
+    {
+      "id": "buffer-factory-create-pooled-stream",
+      "group": "secure-memory",
+      "type": "BufferFactory",
+      "member": "CreatePooledStream",
+      "signatures": [
+        "public static PooledMemoryStream CreatePooledStream(bool isSensitive, int initialCapacity = 0)"
+      ],
+      "summary": "Creates a `PooledMemoryStream`, a seekable, readable and writable `Stream` over one pooled buffer that grows as needed. It rents nothing until the first write or call to `SetLength` that needs room.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `initialCapacity` is negative.",
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.BufferFactory.CreatePooledStream",
+      "api": [
+        "static NCode.Buffers.BufferFactory.CreatePooledStream(bool isSensitive, int initialCapacity = 0) -> NCode.Buffers.PooledMemoryStream!"
       ]
     },
     {
@@ -964,6 +1031,210 @@
       ]
     },
     {
+      "id": "contiguous-buffer-writer",
+      "group": "buffer-writers",
+      "type": "ContiguousBufferWriter<T>",
+      "member": null,
+      "signatures": [
+        "public sealed class ContiguousBufferWriter<T> : IBufferWriter<T>, IDisposable"
+      ],
+      "summary": "A growable buffer writer that keeps everything written in one contiguous buffer, so `WrittenSpan` and `WrittenMemory` are always a single span or memory and never a sequence. A span or memory it returned is not valid after the next call to `GetSpan` or `GetMemory`.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.ContiguousBufferWriter",
+      "api": [
+        "NCode.Buffers.ContiguousBufferWriter<T>"
+      ]
+    },
+    {
+      "id": "contiguous-buffer-writer-is-sensitive",
+      "group": "buffer-writers",
+      "type": "ContiguousBufferWriter<T>",
+      "member": "IsSensitive",
+      "signatures": [
+        "public bool IsSensitive { get; }"
+      ],
+      "summary": "Whether the writer rents its buffers from the secure pool, which zeroes them when they are disposed.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.ContiguousBufferWriter.IsSensitive",
+      "api": [
+        "NCode.Buffers.ContiguousBufferWriter<T>.IsSensitive.get -> bool"
+      ]
+    },
+    {
+      "id": "contiguous-buffer-writer-capacity",
+      "group": "buffer-writers",
+      "type": "ContiguousBufferWriter<T>",
+      "member": "Capacity",
+      "signatures": [
+        "public int Capacity => Buffer.Length;"
+      ],
+      "summary": "The total capacity of the current buffer. It is 0 until the first call to `GetSpan` or `GetMemory`, and after `Dispose`.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.ContiguousBufferWriter.Capacity",
+      "api": [
+        "NCode.Buffers.ContiguousBufferWriter<T>.Capacity.get -> int"
+      ]
+    },
+    {
+      "id": "contiguous-buffer-writer-written-count",
+      "group": "buffer-writers",
+      "type": "ContiguousBufferWriter<T>",
+      "member": "WrittenCount",
+      "signatures": [
+        "public int WrittenCount { get; private set; }"
+      ],
+      "summary": "The number of elements written so far. It is 0 after `Reset` and `Dispose`.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.ContiguousBufferWriter.WrittenCount",
+      "api": [
+        "NCode.Buffers.ContiguousBufferWriter<T>.WrittenCount.get -> int"
+      ]
+    },
+    {
+      "id": "contiguous-buffer-writer-free-capacity",
+      "group": "buffer-writers",
+      "type": "ContiguousBufferWriter<T>",
+      "member": "FreeCapacity",
+      "signatures": [
+        "public int FreeCapacity => Capacity - WrittenCount;"
+      ],
+      "summary": "The number of elements that can still be written before the buffer must grow.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.ContiguousBufferWriter.FreeCapacity",
+      "api": [
+        "NCode.Buffers.ContiguousBufferWriter<T>.FreeCapacity.get -> int"
+      ]
+    },
+    {
+      "id": "contiguous-buffer-writer-written-span",
+      "group": "buffer-writers",
+      "type": "ContiguousBufferWriter<T>",
+      "member": "WrittenSpan",
+      "signatures": [
+        "public ReadOnlySpan<T> WrittenSpan"
+      ],
+      "summary": "The written elements as one `ReadOnlySpan<T>`. It is not valid after the next call to `GetSpan` or `GetMemory`, because the buffer may grow. Never write this span into the same writer.",
+      "constraint": "unmanaged",
+      "throws": "`ObjectDisposedException` when the writer has been disposed.",
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.ContiguousBufferWriter.WrittenSpan",
+      "api": [
+        "NCode.Buffers.ContiguousBufferWriter<T>.WrittenSpan.get -> System.ReadOnlySpan<T>"
+      ]
+    },
+    {
+      "id": "contiguous-buffer-writer-written-memory",
+      "group": "buffer-writers",
+      "type": "ContiguousBufferWriter<T>",
+      "member": "WrittenMemory",
+      "signatures": [
+        "public ReadOnlyMemory<T> WrittenMemory"
+      ],
+      "summary": "The written elements as one `ReadOnlyMemory<T>`. It is not valid after the next call to `GetSpan` or `GetMemory`, because the buffer may grow.",
+      "constraint": "unmanaged",
+      "throws": "`ObjectDisposedException` when the writer has been disposed.",
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.ContiguousBufferWriter.WrittenMemory",
+      "api": [
+        "NCode.Buffers.ContiguousBufferWriter<T>.WrittenMemory.get -> System.ReadOnlyMemory<T>"
+      ]
+    },
+    {
+      "id": "contiguous-buffer-writer-get-span",
+      "group": "buffer-writers",
+      "type": "ContiguousBufferWriter<T>",
+      "member": "GetSpan",
+      "signatures": [
+        "public Span<T> GetSpan(int sizeHint = 0)"
+      ],
+      "summary": "Returns all the free space as a `Span<T>` that is at least `sizeHint` long and never empty, growing the buffer when needed. Growing disposes the old buffer, which invalidates every span and memory the writer returned before, and zeroes it when the writer is sensitive. Call `Advance` after writing to it.",
+      "constraint": "unmanaged",
+      "throws": "`ObjectDisposedException` when the writer has been disposed. `ArgumentOutOfRangeException` when `sizeHint` is negative.",
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.ContiguousBufferWriter.GetSpan",
+      "api": [
+        "NCode.Buffers.ContiguousBufferWriter<T>.GetSpan(int sizeHint = 0) -> System.Span<T>"
+      ]
+    },
+    {
+      "id": "contiguous-buffer-writer-get-memory",
+      "group": "buffer-writers",
+      "type": "ContiguousBufferWriter<T>",
+      "member": "GetMemory",
+      "signatures": [
+        "public Memory<T> GetMemory(int sizeHint = 0)"
+      ],
+      "summary": "Returns all the free space as a `Memory<T>` that is at least `sizeHint` long and never empty, growing the buffer when needed. Growing disposes the old buffer, which invalidates every span and memory the writer returned before, and zeroes it when the writer is sensitive. Call `Advance` after writing to it.",
+      "constraint": "unmanaged",
+      "throws": "`ObjectDisposedException` when the writer has been disposed. `ArgumentOutOfRangeException` when `sizeHint` is negative.",
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.ContiguousBufferWriter.GetMemory",
+      "api": [
+        "NCode.Buffers.ContiguousBufferWriter<T>.GetMemory(int sizeHint = 0) -> System.Memory<T>"
+      ]
+    },
+    {
+      "id": "contiguous-buffer-writer-advance",
+      "group": "buffer-writers",
+      "type": "ContiguousBufferWriter<T>",
+      "member": "Advance",
+      "signatures": [
+        "public void Advance(int count)"
+      ],
+      "summary": "Advances the write position by `count`, the exact number of elements written to the span or memory that `GetSpan` or `GetMemory` returned.",
+      "constraint": "unmanaged",
+      "throws": "`ObjectDisposedException` when the writer has been disposed. `ArgumentOutOfRangeException` when `count` is negative. `InvalidOperationException` when `count` is more than `FreeCapacity`; the writer is left as it was.",
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.ContiguousBufferWriter.Advance",
+      "api": [
+        "NCode.Buffers.ContiguousBufferWriter<T>.Advance(int count) -> void"
+      ]
+    },
+    {
+      "id": "contiguous-buffer-writer-reset",
+      "group": "buffer-writers",
+      "type": "ContiguousBufferWriter<T>",
+      "member": "Reset",
+      "signatures": [
+        "public void Reset()"
+      ],
+      "summary": "Zeroes the written part of the buffer with `CryptographicOperations.ZeroMemory`, sets the write position to zero and keeps the buffer. Elements past the written part are not touched.",
+      "constraint": "unmanaged",
+      "throws": "`ObjectDisposedException` when the writer has been disposed.",
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.ContiguousBufferWriter.Reset",
+      "api": [
+        "NCode.Buffers.ContiguousBufferWriter<T>.Reset() -> void"
+      ]
+    },
+    {
+      "id": "contiguous-buffer-writer-dispose",
+      "group": "buffer-writers",
+      "type": "ContiguousBufferWriter<T>",
+      "member": "Dispose",
+      "signatures": [
+        "public void Dispose()"
+      ],
+      "summary": "Returns the buffer to its pool, zeroing it when the writer is sensitive. Calling it again does nothing. Afterwards `Capacity`, `WrittenCount` and `FreeCapacity` are 0, and every other member except `IsSensitive` throws `ObjectDisposedException`.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.ContiguousBufferWriter.Dispose",
+      "api": [
+        "NCode.Buffers.ContiguousBufferWriter<T>.Dispose() -> void"
+      ]
+    },
+    {
       "id": "memory-segment",
       "group": "sequences",
       "type": "MemorySegment<T>",
@@ -1069,6 +1340,26 @@
       "api": [
         "NCode.Buffers.SequenceExtensions.extension<T>(Nerdbank.Streams.Sequence<T>!).ConsumeAsContiguousSpan(bool isSensitive, out System.ReadOnlySpan<T> span) -> System.IDisposable!",
         "static NCode.Buffers.SequenceExtensions.ConsumeAsContiguousSpan<T>(this Nerdbank.Streams.Sequence<T>! buffer, bool isSensitive, out System.ReadOnlySpan<T> span) -> System.IDisposable!"
+      ]
+    },
+    {
+      "id": "sequence-extensions-read-only-sequence-get-span-lease",
+      "group": "sequences",
+      "type": "SequenceExtensions",
+      "member": "GetSpanLease",
+      "signatures": [
+        "extension<T>(ReadOnlySequence<T> sequence) where T : unmanaged",
+        "public RefSpanLease<T> GetSpanLease(bool isSensitive)"
+      ],
+      "summary": "Returns a `RefSpanLease<T>` over the contents as one `ReadOnlySpan<T>`: the sequence's own span when it has one segment, a copy in a rented buffer when it has more. The sequence stays valid.",
+      "constraint": "unmanaged",
+      "throws": "`OverflowException` when the sequence is longer than `int.MaxValue` elements and must be copied.",
+      "page": "/guides/pipes-and-streams/",
+      "source": "Api.SequenceExtensions.GetSpanLease.ReadOnlySequence",
+      "api": [
+        "NCode.Buffers.SequenceExtensions.extension<T>(System.Buffers.ReadOnlySequence<T>)",
+        "NCode.Buffers.SequenceExtensions.extension<T>(System.Buffers.ReadOnlySequence<T>).GetSpanLease(bool isSensitive) -> NCode.Buffers.RefSpanLease<T>",
+        "static NCode.Buffers.SequenceExtensions.GetSpanLease<T>(this System.Buffers.ReadOnlySequence<T> sequence, bool isSensitive) -> NCode.Buffers.RefSpanLease<T>"
       ]
     },
     {
@@ -1478,6 +1769,149 @@
       "source": "Api.SecureEncoding.UTF8",
       "api": [
         "static NCode.Buffers.SecureEncoding.UTF8.get -> System.Text.UTF8Encoding!"
+      ]
+    },
+    {
+      "id": "secure-encoding-extensions",
+      "group": "secure-encoding",
+      "type": "SecureEncodingExtensions",
+      "member": null,
+      "signatures": [
+        "public static class SecureEncodingExtensions",
+        "extension(Encoding encoding)"
+      ],
+      "summary": "Extension members on `Encoding` that encode and decode into rented buffers that hold exactly the result. Use them with `SecureEncoding.UTF8` so that invalid input throws instead of being replaced.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/encode-a-secret/",
+      "source": "Api.SecureEncodingExtensions",
+      "api": [
+        "NCode.Buffers.SecureEncodingExtensions",
+        "NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!)"
+      ]
+    },
+    {
+      "id": "secure-encoding-extensions-rent-bytes",
+      "group": "secure-encoding",
+      "type": "SecureEncodingExtensions",
+      "member": "RentBytes",
+      "signatures": [
+        "extension(Encoding encoding)",
+        "public IMemoryOwner<byte> RentBytes(ReadOnlySpan<char> chars, bool isSensitive, out Span<byte> bytes)",
+        "public IMemoryOwner<byte> RentBytes(ReadOnlySpan<char> chars, bool isSensitive, out Memory<byte> bytes)"
+      ],
+      "summary": "Encodes `chars` into a rented buffer that holds exactly the encoded bytes, as a `Span<byte>` or a `Memory<byte>`. The result is sized before anything is rented, so invalid input throws without renting a buffer.",
+      "constraint": null,
+      "throws": "`ArgumentNullException` when the encoding is null. `EncoderFallbackException` when `chars` cannot be encoded and the encoding uses an exception fallback.",
+      "page": "/guides/encode-a-secret/",
+      "source": "Api.SecureEncodingExtensions.RentBytes",
+      "api": [
+        "NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentBytes(System.ReadOnlySpan<char> chars, bool isSensitive, out System.Memory<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!",
+        "NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentBytes(System.ReadOnlySpan<char> chars, bool isSensitive, out System.Span<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!",
+        "static NCode.Buffers.SecureEncodingExtensions.RentBytes(this System.Text.Encoding! encoding, System.ReadOnlySpan<char> chars, bool isSensitive, out System.Memory<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!",
+        "static NCode.Buffers.SecureEncodingExtensions.RentBytes(this System.Text.Encoding! encoding, System.ReadOnlySpan<char> chars, bool isSensitive, out System.Span<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!"
+      ]
+    },
+    {
+      "id": "secure-encoding-extensions-rent-chars",
+      "group": "secure-encoding",
+      "type": "SecureEncodingExtensions",
+      "member": "RentChars",
+      "signatures": [
+        "extension(Encoding encoding)",
+        "public IMemoryOwner<char> RentChars(ReadOnlySpan<byte> bytes, bool isSensitive, out Span<char> chars)",
+        "public IMemoryOwner<char> RentChars(ReadOnlySpan<byte> bytes, bool isSensitive, out Memory<char> chars)"
+      ],
+      "summary": "Decodes `bytes` into a rented buffer that holds exactly the decoded characters, as a `Span<char>` or a `Memory<char>`. The result is sized before anything is rented, so invalid input throws without renting a buffer.",
+      "constraint": null,
+      "throws": "`ArgumentNullException` when the encoding is null. `DecoderFallbackException` when `bytes` cannot be decoded and the encoding uses an exception fallback.",
+      "page": "/guides/encode-a-secret/",
+      "source": "Api.SecureEncodingExtensions.RentChars",
+      "api": [
+        "NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentChars(System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Memory<char> chars) -> System.Buffers.IMemoryOwner<char>!",
+        "NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentChars(System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Span<char> chars) -> System.Buffers.IMemoryOwner<char>!",
+        "static NCode.Buffers.SecureEncodingExtensions.RentChars(this System.Text.Encoding! encoding, System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Memory<char> chars) -> System.Buffers.IMemoryOwner<char>!",
+        "static NCode.Buffers.SecureEncodingExtensions.RentChars(this System.Text.Encoding! encoding, System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Span<char> chars) -> System.Buffers.IMemoryOwner<char>!"
+      ]
+    },
+    {
+      "id": "binary-text-format",
+      "group": "secure-encoding",
+      "type": "BinaryTextFormat",
+      "member": null,
+      "signatures": [
+        "public enum BinaryTextFormat",
+        "Base64 = 0",
+        "Base64Url = 1",
+        "HexUpper = 2",
+        "HexLower = 3"
+      ],
+      "summary": "A text representation of binary data: standard Base64 with padding (`Base64`), URL-safe Base64 without padding (`Base64Url`), and hexadecimal with uppercase (`HexUpper`) or lowercase (`HexLower`) digits.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/encode-a-secret/",
+      "source": "Api.BinaryTextFormat",
+      "api": [
+        "NCode.Buffers.BinaryTextFormat",
+        "NCode.Buffers.BinaryTextFormat.Base64 = 0 -> NCode.Buffers.BinaryTextFormat",
+        "NCode.Buffers.BinaryTextFormat.Base64Url = 1 -> NCode.Buffers.BinaryTextFormat",
+        "NCode.Buffers.BinaryTextFormat.HexLower = 3 -> NCode.Buffers.BinaryTextFormat",
+        "NCode.Buffers.BinaryTextFormat.HexUpper = 2 -> NCode.Buffers.BinaryTextFormat"
+      ]
+    },
+    {
+      "id": "binary-text-encoding",
+      "group": "secure-encoding",
+      "type": "BinaryTextEncoding",
+      "member": null,
+      "signatures": [
+        "public static class BinaryTextEncoding"
+      ],
+      "summary": "Converts between binary data and its text representation in a `BinaryTextFormat`, using rented buffers that hold exactly the result.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/encode-a-secret/",
+      "source": "Api.BinaryTextEncoding",
+      "api": [
+        "NCode.Buffers.BinaryTextEncoding"
+      ]
+    },
+    {
+      "id": "binary-text-encoding-rent-decoded",
+      "group": "secure-encoding",
+      "type": "BinaryTextEncoding",
+      "member": "RentDecoded",
+      "signatures": [
+        "public static IMemoryOwner<byte> RentDecoded(ReadOnlySpan<char> text, BinaryTextFormat format, bool isSensitive, out Span<byte> bytes)",
+        "public static IMemoryOwner<byte> RentDecoded(ReadOnlySpan<char> text, BinaryTextFormat format, bool isSensitive, out Memory<byte> bytes)"
+      ],
+      "summary": "Decodes `text` in the given format into a rented buffer that holds exactly the decoded bytes, as a `Span<byte>` or a `Memory<byte>`. An undefined format throws before anything is rented, and the rented buffer is disposed when decoding throws. Hexadecimal decoding accepts both uppercase and lowercase digits.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `format` is not a defined `BinaryTextFormat` value. `FormatException` when `text` is not valid in the given format.",
+      "page": "/guides/encode-a-secret/",
+      "source": "Api.BinaryTextEncoding.RentDecoded",
+      "api": [
+        "static NCode.Buffers.BinaryTextEncoding.RentDecoded(System.ReadOnlySpan<char> text, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Memory<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!",
+        "static NCode.Buffers.BinaryTextEncoding.RentDecoded(System.ReadOnlySpan<char> text, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Span<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!"
+      ]
+    },
+    {
+      "id": "binary-text-encoding-rent-encoded",
+      "group": "secure-encoding",
+      "type": "BinaryTextEncoding",
+      "member": "RentEncoded",
+      "signatures": [
+        "public static IMemoryOwner<char> RentEncoded(ReadOnlySpan<byte> bytes, BinaryTextFormat format, bool isSensitive, out Span<char> text)",
+        "public static IMemoryOwner<char> RentEncoded(ReadOnlySpan<byte> bytes, BinaryTextFormat format, bool isSensitive, out Memory<char> text)"
+      ],
+      "summary": "Encodes `bytes` in the given format into a rented buffer that holds exactly the encoded text, as a `Span<char>` or a `Memory<char>`. An undefined format throws before anything is rented.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `format` is not a defined `BinaryTextFormat` value.",
+      "page": "/guides/encode-a-secret/",
+      "source": "Api.BinaryTextEncoding.RentEncoded",
+      "api": [
+        "static NCode.Buffers.BinaryTextEncoding.RentEncoded(System.ReadOnlySpan<byte> bytes, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Memory<char> text) -> System.Buffers.IMemoryOwner<char>!",
+        "static NCode.Buffers.BinaryTextEncoding.RentEncoded(System.ReadOnlySpan<byte> bytes, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Span<char> text) -> System.Buffers.IMemoryOwner<char>!"
       ]
     },
     {

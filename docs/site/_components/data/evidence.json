@@ -1482,6 +1482,30 @@
       ],
       "match": "public static ArrayBufferWriter<T> CreateArrayBufferWriter<T>()"
     },
+    "Api.BufferFactory.RentRandom": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        181,
+        181
+      ],
+      "match": "public static IMemoryOwner<byte> RentRandom(int length, bool isSensitive, out Span<byte> buffer)"
+    },
+    "Api.BufferFactory.CreateContiguousBufferWriter": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        404,
+        404
+      ],
+      "match": "public static ContiguousBufferWriter<T> CreateContiguousBufferWriter<T>("
+    },
+    "Api.BufferFactory.CreatePooledStream": {
+      "file": "src/NCode.Buffers/BufferFactory.cs",
+      "lines": [
+        471,
+        471
+      ],
+      "match": "public static PooledMemoryStream CreatePooledStream(bool isSensitive, int initialCapacity = 0)"
+    },
     "Api.SecureMemoryPool": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
@@ -1914,6 +1938,14 @@
       ],
       "match": "public IDisposable ConsumeAsContiguousSpan(bool isSensitive, out ReadOnlySpan<T> span)"
     },
+    "Api.SequenceExtensions.GetSpanLease.ReadOnlySequence": {
+      "file": "src/NCode.Buffers/SequenceExtensions.cs",
+      "lines": [
+        193,
+        193
+      ],
+      "match": "public RefSpanLease<T> GetSpanLease(bool isSensitive)"
+    },
     "Api.RefSpanLease": {
       "file": "src/NCode.Buffers/RefSpanLease.cs",
       "lines": [
@@ -2113,6 +2145,158 @@
         189
       ],
       "match": "public static bool FixedTimeEquals<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right)"
+    },
+    "Api.SecureEncodingExtensions": {
+      "file": "src/NCode.Buffers/SecureEncodingExtensions.cs",
+      "lines": [
+        26,
+        26
+      ],
+      "match": "public static class SecureEncodingExtensions"
+    },
+    "Api.SecureEncodingExtensions.RentBytes": {
+      "file": "src/NCode.Buffers/SecureEncodingExtensions.cs",
+      "lines": [
+        56,
+        56
+      ],
+      "match": "public IMemoryOwner<byte> RentBytes("
+    },
+    "Api.SecureEncodingExtensions.RentChars": {
+      "file": "src/NCode.Buffers/SecureEncodingExtensions.cs",
+      "lines": [
+        151,
+        151
+      ],
+      "match": "public IMemoryOwner<char> RentChars("
+    },
+    "Api.BinaryTextFormat": {
+      "file": "src/NCode.Buffers/BinaryTextFormat.cs",
+      "lines": [
+        12,
+        12
+      ],
+      "match": "public enum BinaryTextFormat"
+    },
+    "Api.BinaryTextEncoding": {
+      "file": "src/NCode.Buffers/BinaryTextEncoding.cs",
+      "lines": [
+        25,
+        25
+      ],
+      "match": "public static class BinaryTextEncoding"
+    },
+    "Api.BinaryTextEncoding.RentDecoded": {
+      "file": "src/NCode.Buffers/BinaryTextEncoding.cs",
+      "lines": [
+        52,
+        52
+      ],
+      "match": "public static IMemoryOwner<byte> RentDecoded("
+    },
+    "Api.BinaryTextEncoding.RentEncoded": {
+      "file": "src/NCode.Buffers/BinaryTextEncoding.cs",
+      "lines": [
+        151,
+        151
+      ],
+      "match": "public static IMemoryOwner<char> RentEncoded("
+    },
+    "Api.ContiguousBufferWriter": {
+      "file": "src/NCode.Buffers/ContiguousBufferWriter.cs",
+      "lines": [
+        55,
+        55
+      ],
+      "match": "public sealed class ContiguousBufferWriter<T> : IBufferWriter<T>, IDisposable"
+    },
+    "Api.ContiguousBufferWriter.IsSensitive": {
+      "file": "src/NCode.Buffers/ContiguousBufferWriter.cs",
+      "lines": [
+        77,
+        77
+      ],
+      "match": "public bool IsSensitive { get; }"
+    },
+    "Api.ContiguousBufferWriter.Capacity": {
+      "file": "src/NCode.Buffers/ContiguousBufferWriter.cs",
+      "lines": [
+        86,
+        86
+      ],
+      "match": "public int Capacity => Buffer.Length;"
+    },
+    "Api.ContiguousBufferWriter.WrittenCount": {
+      "file": "src/NCode.Buffers/ContiguousBufferWriter.cs",
+      "lines": [
+        92,
+        92
+      ],
+      "match": "public int WrittenCount { get; private set; }"
+    },
+    "Api.ContiguousBufferWriter.FreeCapacity": {
+      "file": "src/NCode.Buffers/ContiguousBufferWriter.cs",
+      "lines": [
+        98,
+        98
+      ],
+      "match": "public int FreeCapacity => Capacity - WrittenCount;"
+    },
+    "Api.ContiguousBufferWriter.WrittenSpan": {
+      "file": "src/NCode.Buffers/ContiguousBufferWriter.cs",
+      "lines": [
+        128,
+        128
+      ],
+      "match": "public ReadOnlySpan<T> WrittenSpan"
+    },
+    "Api.ContiguousBufferWriter.WrittenMemory": {
+      "file": "src/NCode.Buffers/ContiguousBufferWriter.cs",
+      "lines": [
+        109,
+        109
+      ],
+      "match": "public ReadOnlyMemory<T> WrittenMemory"
+    },
+    "Api.ContiguousBufferWriter.GetSpan": {
+      "file": "src/NCode.Buffers/ContiguousBufferWriter.cs",
+      "lines": [
+        236,
+        236
+      ],
+      "match": "public Span<T> GetSpan(int sizeHint = 0)"
+    },
+    "Api.ContiguousBufferWriter.GetMemory": {
+      "file": "src/NCode.Buffers/ContiguousBufferWriter.cs",
+      "lines": [
+        210,
+        210
+      ],
+      "match": "public Memory<T> GetMemory(int sizeHint = 0)"
+    },
+    "Api.ContiguousBufferWriter.Advance": {
+      "file": "src/NCode.Buffers/ContiguousBufferWriter.cs",
+      "lines": [
+        168,
+        168
+      ],
+      "match": "public void Advance(int count)"
+    },
+    "Api.ContiguousBufferWriter.Reset": {
+      "file": "src/NCode.Buffers/ContiguousBufferWriter.cs",
+      "lines": [
+        145,
+        145
+      ],
+      "match": "public void Reset()"
+    },
+    "Api.ContiguousBufferWriter.Dispose": {
+      "file": "src/NCode.Buffers/ContiguousBufferWriter.cs",
+      "lines": [
+        247,
+        247
+      ],
+      "match": "public void Dispose()"
     },
     "Api.SecureMemoryPool.Shared.ThreadSafe": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
