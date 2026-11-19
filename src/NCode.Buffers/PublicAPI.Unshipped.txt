@@ -1,10 +1,12 @@
 #nullable enable
+const NCode.Buffers.BufferMetrics.MeterName = "NCode.Buffers" -> string!
 NCode.Buffers.BinaryTextEncoding
 NCode.Buffers.BinaryTextFormat
 NCode.Buffers.BinaryTextFormat.Base64 = 0 -> NCode.Buffers.BinaryTextFormat
 NCode.Buffers.BinaryTextFormat.Base64Url = 1 -> NCode.Buffers.BinaryTextFormat
 NCode.Buffers.BinaryTextFormat.HexLower = 3 -> NCode.Buffers.BinaryTextFormat
 NCode.Buffers.BinaryTextFormat.HexUpper = 2 -> NCode.Buffers.BinaryTextFormat
+NCode.Buffers.BufferMetrics
 NCode.Buffers.ContiguousBufferWriter<T>
 NCode.Buffers.ContiguousBufferWriter<T>.Advance(int count) -> void
 NCode.Buffers.ContiguousBufferWriter<T>.Capacity.get -> int

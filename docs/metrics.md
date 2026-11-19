@@ -30,14 +30,17 @@ Built-in instruments and spans of .NET and ASP.NET Core are not listed unless th
 
 ## Meters and Instruments
 
-NCode.Buffers defines no meters, instruments, activity sources or spans yet.
+NCode.Buffers defines one meter, NCode.Buffers (BufferMetrics.MeterName), created once per process ([ADR-1030](decisions/1030-the-secure-pool-reports-metrics-through-one-static-meter.md)).
 
 | Name | Type | Unit | Attributes and their values | Owner |
 | --- | --- | --- | --- | --- |
+| `ncode.buffers.secure_pool.rentals` | Counter | `{buffer}` | `ncode.buffers.rental.source`: `cache`, `new`, `unpooled`, `empty` | `SecureMemoryPool<T>.Rent` |
+| `ncode.buffers.secure_pool.returns` | Counter | `{buffer}` | none | `SecureMemoryPool<T>`, when a disposed owner returns its page |
+| `ncode.buffers.secure_pool.trimmed` | Counter | `{buffer}` | none | `SecureMemoryPool<T>`, when memory pressure drops its cache |
 
 ## Activity Sources and Spans
 
-NCode.Buffers defines no meters, instruments, activity sources or spans yet.
+NCode.Buffers defines no activity sources or spans.
 
 | Activity source | Span | Mirrors histogram | Attributes and their values | Owner |
 | --- | --- | --- | --- | --- |
