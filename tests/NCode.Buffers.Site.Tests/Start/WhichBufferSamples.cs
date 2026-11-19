@@ -7,7 +7,7 @@ using NCode.Buffers;
 
 namespace SiteSamples.Start;
 
-// The samples of docs/site/start/which-buffer.mdx: the call on each of the ten cards, whose keys
+// The samples of docs/site/start/which-buffer.mdx: the call on each of the fourteen cards, whose keys
 // docs/site/_components/data/buffers.json names. Each fact asserts the length the call gives. The site's build
 // includes each begin-snippet region in the page by its key (ADR-1010).
 public class WhichBufferSamples
@@ -59,6 +59,42 @@ public class WhichBufferSamples
     }
 
     [Fact]
+    public void SiteAnswerContiguousWriterSample_Runs()
+    {
+        // begin-snippet: SiteAnswerContiguousWriter
+        using var writer = BufferFactory.CreateContiguousBufferWriter(isSensitive: true);
+        "a secret of any length"u8.CopyTo(writer.GetSpan(22));
+        writer.Advance(22);
+        // end-snippet
+
+        Assert.Equal(22, writer.WrittenSpan.Length);
+    }
+
+    [Fact]
+    public void SiteAnswerPooledStreamSample_Runs()
+    {
+        // begin-snippet: SiteAnswerPooledStream
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: true);
+        stream.Write("a secret of any length"u8);
+        stream.Position = 0;
+        // end-snippet
+
+        Assert.Equal(22, stream.Length);
+    }
+
+    [Fact]
+    public void SiteAnswerTextBuilderSample_Runs()
+    {
+        // begin-snippet: SiteAnswerTextBuilder
+        using var builder = new PooledTextBuilder(isSensitive: true);
+        builder.Append("Password=");
+        builder.Append("s3cr3t");
+        // end-snippet
+
+        Assert.Equal(15, builder.Length);
+    }
+
+    [Fact]
     public void SiteAnswerSecurePoolSample_Runs()
     {
         // begin-snippet: SiteAnswerSecurePool
@@ -94,6 +130,16 @@ public class WhichBufferSamples
         // end-snippet
 
         Assert.Equal(32, mac.Length);
+    }
+
+    [Fact]
+    public void SiteAnswerSecretHolderSample_Runs()
+    {
+        // begin-snippet: SiteAnswerSecretHolder
+        using Secret<byte> secret = Secret.Create("s3cr3t"u8);
+        // end-snippet
+
+        Assert.Equal("[REDACTED]", secret.ToString());
     }
 
     [Fact]
