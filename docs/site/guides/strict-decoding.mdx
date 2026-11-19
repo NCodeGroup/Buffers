@@ -125,8 +125,8 @@ fourth is a surrogate code point, and the fifth is a sequence cut short. The sam
 
 - **Decoding again with the standard encoding.**
   - *You write* a `catch` that calls `Encoding.UTF8.GetString` on the same bytes.
-  - *What happens:* the input you rejected becomes a string anyway, with replacement characters in it.
-    <LeakCard leak="L8" /> <Proof sample="SiteLenientDecodingCollision" />
+  - *What happens:* the input you rejected becomes a string anyway, with replacement characters in
+    it. <Proof sample="SiteLenientDecodingCollision" /> <LeakCard leak="L8" />
   - *Write instead:* reject the input, as the sample does.
 - **A lenient encoding that looks strict.**
   - *You write* `new UTF8Encoding()` or `Encoding.GetEncoding("utf-8")`.

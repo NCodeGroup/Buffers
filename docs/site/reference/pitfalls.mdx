@@ -264,8 +264,8 @@ deserialized `string` property, for a secret.
 
 **You write** an `ArrayBufferWriter<byte>`, a `MemoryStream` or a `List<byte>` for a secret of unknown length.
 
-**What happens** Each time it grows, the smaller array is dropped with the first part of the secret in it.
-<Proof sample="SiteGrowthLeavesCopies" /> <LeakCard leak="L4" />
+**What happens** Each time it grows, the smaller array is dropped with the first part of the secret in
+it. <Proof sample="SiteGrowthLeavesCopies" /> <LeakCard leak="L4" />
 
 **Write instead** `BufferFactory.CreatePooledBufferWriter(isSensitive: true)`, as
 [Build a secret of unknown length](/guides/secret-of-unknown-length/) shows.
