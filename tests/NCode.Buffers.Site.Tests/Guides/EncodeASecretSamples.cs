@@ -15,7 +15,7 @@ public class EncodeASecretSamples
     public void SiteEncodeSecretUsualSample_Runs()
     {
         string text = Convert.ToBase64String([0x01, 0x02, 0x03, 0x04]);
-        string passwordText = "correct horse";
+        const string passwordText = "correct horse";
 
         // begin-snippet: SiteEncodeSecretUsual
         // Three arrays nothing zeroes.
@@ -55,7 +55,7 @@ public class EncodeASecretSamples
     [Fact]
     public void SiteEncodeSecretPasswordBytesSample_Runs()
     {
-        string password = "correct horse";
+        const string password = "correct horse";
 
         // begin-snippet: SiteEncodeSecretPasswordBytes
         // The password's bytes are strict UTF-8 in a buffer that is zeroed on dispose.

@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using NCode.Buffers;
 
@@ -55,10 +54,8 @@ public class GrowAContiguousSecretSamples
         HMACSHA256.HashData(key, writer.WrittenSpan, mac);
         // end-snippet
 
-        byte[] expected = HMACSHA256.HashData(
-            key,
-            Encoding.UTF8.GetBytes("{\"ApiKey\":\"k\",\"Scope\":\"s\"}")
-        );
+        ReadOnlySpan<byte> expectedJson = "{\"ApiKey\":\"k\",\"Scope\":\"s\"}"u8;
+        byte[] expected = HMACSHA256.HashData(key, expectedJson);
         SecretAssert.Equal(expected, mac);
     }
 
