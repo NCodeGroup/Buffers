@@ -253,8 +253,10 @@ public class ReadmeSamplesTests
     public void ReadOnlySequenceLease_Lease_ReturnsContiguousSpan()
     {
         // begin-snippet: ReadOnlySequenceLease
-        var first = new MemorySegment<byte>("pay"u8.ToArray());
-        var last = first.Append("load"u8.ToArray());
+        byte[] head = "pay"u8.ToArray();
+        byte[] tail = "load"u8.ToArray();
+        var first = new MemorySegment<byte>(head);
+        var last = first.Append(tail);
         var sequence = new ReadOnlySequence<byte>(first, 0, last, last.Memory.Length);
 
         // The data spans two segments, so it is copied into a rented buffer.
