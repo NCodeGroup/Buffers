@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Package validation compares each package with the published 5.2.3 package.
+- Package validation compares each package with the published 5.2.4 package.
 - The project follows project-template v0.104.0: the package's project website, https://ncodegroup.github.io/Buffers/, comes from `site.url` in `docs/site/site.config.json` instead of a setting in the project file, so it follows the site if it moves ([ADR-0152](docs/decisions/project-template/0152-a-packages-project-page-is-its-documentation-site.md)).
 
 ## [5.2.4] - 2026-11-18
