@@ -1915,6 +1915,553 @@
       ]
     },
     {
+      "id": "pooled-memory-stream",
+      "group": "streams-and-text",
+      "type": "PooledMemoryStream",
+      "member": null,
+      "signatures": [
+        "public sealed class PooledMemoryStream : Stream"
+      ],
+      "summary": "A seekable, readable and writable `Stream` over one pooled buffer that keeps everything written in one contiguous span, so `WrittenSpan` and `WrittenMemory` are always available. Create it with `BufferFactory.CreatePooledStream`. The buffer holds at most `Array.MaxLength` bytes.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledMemoryStream",
+      "api": [
+        "NCode.Buffers.PooledMemoryStream"
+      ]
+    },
+    {
+      "id": "pooled-memory-stream-is-sensitive",
+      "group": "streams-and-text",
+      "type": "PooledMemoryStream",
+      "member": "IsSensitive",
+      "signatures": [
+        "public bool IsSensitive { get; }"
+      ],
+      "summary": "Whether the stream rents its buffers from the secure pool, which zeroes them when they are disposed.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledMemoryStream.IsSensitive",
+      "api": [
+        "NCode.Buffers.PooledMemoryStream.IsSensitive.get -> bool"
+      ]
+    },
+    {
+      "id": "pooled-memory-stream-written-span",
+      "group": "streams-and-text",
+      "type": "PooledMemoryStream",
+      "member": "WrittenSpan",
+      "signatures": [
+        "public ReadOnlySpan<byte> WrittenSpan"
+      ],
+      "summary": "The bytes from the start of the stream up to `Length` as one `ReadOnlySpan<byte>`. It is not valid after the next write or call to `SetLength`, because the buffer may grow and the old buffer is then zeroed when the stream is sensitive. Writing it into the same stream is supported.",
+      "constraint": null,
+      "throws": "`ObjectDisposedException` when the stream has been disposed.",
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledMemoryStream.WrittenSpan",
+      "api": [
+        "NCode.Buffers.PooledMemoryStream.WrittenSpan.get -> System.ReadOnlySpan<byte>"
+      ]
+    },
+    {
+      "id": "pooled-memory-stream-written-memory",
+      "group": "streams-and-text",
+      "type": "PooledMemoryStream",
+      "member": "WrittenMemory",
+      "signatures": [
+        "public ReadOnlyMemory<byte> WrittenMemory"
+      ],
+      "summary": "The bytes from the start of the stream up to `Length` as one `ReadOnlyMemory<byte>`. It is not valid after the next write or call to `SetLength`, because the buffer may grow and the old buffer is then zeroed when the stream is sensitive.",
+      "constraint": null,
+      "throws": "`ObjectDisposedException` when the stream has been disposed.",
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledMemoryStream.WrittenMemory",
+      "api": [
+        "NCode.Buffers.PooledMemoryStream.WrittenMemory.get -> System.ReadOnlyMemory<byte>"
+      ]
+    },
+    {
+      "id": "pooled-memory-stream-stream-members",
+      "group": "streams-and-text",
+      "type": "PooledMemoryStream",
+      "member": "Stream members",
+      "signatures": [
+        "public override bool CanRead",
+        "public override bool CanSeek",
+        "public override bool CanWrite",
+        "public override long Length",
+        "public override long Position { get; set; }",
+        "public override long Seek(long offset, SeekOrigin origin)",
+        "public override void SetLength(long value)",
+        "public override void Flush()",
+        "public override int Read(byte[] buffer, int offset, int count)",
+        "public override int Read(Span<byte> buffer)",
+        "public override void Write(byte[] buffer, int offset, int count)",
+        "public override void Write(ReadOnlySpan<byte> buffer)",
+        "public override int ReadByte()",
+        "public override void WriteByte(byte value)",
+        "public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)",
+        "public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)",
+        "public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)",
+        "public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)",
+        "public override Task FlushAsync(CancellationToken cancellationToken)",
+        "public override void CopyTo(Stream destination, int bufferSize)",
+        "public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)"
+      ],
+      "summary": "The members that make it a seekable, readable and writable `Stream` over one pooled buffer. They copy straight to and from the pooled buffer through no shared array, and the async members complete synchronously. Writing past the end zero-fills the gap, and `SetLength` zeroes the bytes it cuts off. After `Dispose`, `CanRead`, `CanSeek` and `CanWrite` are `false`.",
+      "constraint": null,
+      "throws": "`ObjectDisposedException` when the stream has been disposed, except for `CanRead`, `CanSeek` and `CanWrite`. `IOException` when a seek would move the position before the start of the stream, or a write would end past `Array.MaxLength`. `ArgumentOutOfRangeException` when a position or length is negative or more than `Array.MaxLength`.",
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledMemoryStream",
+      "api": [
+        "override NCode.Buffers.PooledMemoryStream.CanRead.get -> bool",
+        "override NCode.Buffers.PooledMemoryStream.CanSeek.get -> bool",
+        "override NCode.Buffers.PooledMemoryStream.CanWrite.get -> bool",
+        "override NCode.Buffers.PooledMemoryStream.CopyTo(System.IO.Stream! destination, int bufferSize) -> void",
+        "override NCode.Buffers.PooledMemoryStream.CopyToAsync(System.IO.Stream! destination, int bufferSize, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!",
+        "override NCode.Buffers.PooledMemoryStream.Flush() -> void",
+        "override NCode.Buffers.PooledMemoryStream.FlushAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!",
+        "override NCode.Buffers.PooledMemoryStream.Length.get -> long",
+        "override NCode.Buffers.PooledMemoryStream.Position.get -> long",
+        "override NCode.Buffers.PooledMemoryStream.Position.set -> void",
+        "override NCode.Buffers.PooledMemoryStream.Read(byte[]! buffer, int offset, int count) -> int",
+        "override NCode.Buffers.PooledMemoryStream.Read(System.Span<byte> buffer) -> int",
+        "override NCode.Buffers.PooledMemoryStream.ReadAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!",
+        "override NCode.Buffers.PooledMemoryStream.ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<int>",
+        "override NCode.Buffers.PooledMemoryStream.ReadByte() -> int",
+        "override NCode.Buffers.PooledMemoryStream.Seek(long offset, System.IO.SeekOrigin origin) -> long",
+        "override NCode.Buffers.PooledMemoryStream.SetLength(long value) -> void",
+        "override NCode.Buffers.PooledMemoryStream.Write(byte[]! buffer, int offset, int count) -> void",
+        "override NCode.Buffers.PooledMemoryStream.Write(System.ReadOnlySpan<byte> buffer) -> void",
+        "override NCode.Buffers.PooledMemoryStream.WriteAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!",
+        "override NCode.Buffers.PooledMemoryStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask",
+        "override NCode.Buffers.PooledMemoryStream.WriteByte(byte value) -> void"
+      ]
+    },
+    {
+      "id": "pooled-text-builder",
+      "group": "streams-and-text",
+      "type": "PooledTextBuilder",
+      "member": null,
+      "signatures": [
+        "public ref struct PooledTextBuilder"
+      ],
+      "summary": "A growable builder for text that keeps its characters in a pooled buffer, and zeroes them when it releases the buffer if it is sensitive. It is a `ref struct`, so it stays on the stack and cannot cross an `await`. Pass it by `ref` and never copy it.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledTextBuilder",
+      "api": [
+        "NCode.Buffers.PooledTextBuilder"
+      ]
+    },
+    {
+      "id": "pooled-text-builder-constructor",
+      "group": "streams-and-text",
+      "type": "PooledTextBuilder",
+      "member": "constructor",
+      "signatures": [
+        "public PooledTextBuilder(bool isSensitive, int initialCapacity = 0)",
+        "public PooledTextBuilder(Span<char> initialBuffer, bool isSensitive)"
+      ],
+      "summary": "Starts the builder with a buffer rented from the pool that `isSensitive` selects, rented up front when `initialCapacity` is more than 0 and otherwise on the first append, or with a span you provide, such as a `stackalloc` span, that the builder zeroes when it leaves it if it is sensitive. The parameterless constructor makes an empty builder that is not sensitive.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `initialCapacity` is negative.",
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledTextBuilder.Constructor",
+      "api": [
+        "NCode.Buffers.PooledTextBuilder.PooledTextBuilder() -> void",
+        "NCode.Buffers.PooledTextBuilder.PooledTextBuilder(bool isSensitive, int initialCapacity = 0) -> void",
+        "NCode.Buffers.PooledTextBuilder.PooledTextBuilder(System.Span<char> initialBuffer, bool isSensitive) -> void"
+      ]
+    },
+    {
+      "id": "pooled-text-builder-is-sensitive",
+      "group": "streams-and-text",
+      "type": "PooledTextBuilder",
+      "member": "IsSensitive",
+      "signatures": [
+        "public bool IsSensitive { get; }"
+      ],
+      "summary": "Whether the builder zeroes its buffers when it releases them, and rents them from the secure pool.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledTextBuilder.IsSensitive",
+      "api": [
+        "NCode.Buffers.PooledTextBuilder.IsSensitive.get -> bool"
+      ]
+    },
+    {
+      "id": "pooled-text-builder-length",
+      "group": "streams-and-text",
+      "type": "PooledTextBuilder",
+      "member": "Length",
+      "signatures": [
+        "public readonly int Length => _length;"
+      ],
+      "summary": "The number of characters written so far. It is 0 after `Reset` and `Dispose`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledTextBuilder.Length",
+      "api": [
+        "NCode.Buffers.PooledTextBuilder.Length.get -> int"
+      ]
+    },
+    {
+      "id": "pooled-text-builder-capacity",
+      "group": "streams-and-text",
+      "type": "PooledTextBuilder",
+      "member": "Capacity",
+      "signatures": [
+        "public readonly int Capacity => _chars.Length;"
+      ],
+      "summary": "The number of characters the current buffer can hold. It is 0 when the builder has no buffer.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledTextBuilder.Capacity",
+      "api": [
+        "NCode.Buffers.PooledTextBuilder.Capacity.get -> int"
+      ]
+    },
+    {
+      "id": "pooled-text-builder-written-span",
+      "group": "streams-and-text",
+      "type": "PooledTextBuilder",
+      "member": "WrittenSpan",
+      "signatures": [
+        "public readonly ReadOnlySpan<char> WrittenSpan => _chars[.._length];"
+      ],
+      "summary": "The characters written so far as a `ReadOnlySpan<char>`. It is not valid after an append that grows the buffer, after `Reset`, or after `Dispose`, but it is valid as the argument of an append to the same builder. Use it for sensitive text, so that the text never becomes a `string`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledTextBuilder.WrittenSpan",
+      "api": [
+        "NCode.Buffers.PooledTextBuilder.WrittenSpan.get -> System.ReadOnlySpan<char>"
+      ]
+    },
+    {
+      "id": "pooled-text-builder-append",
+      "group": "streams-and-text",
+      "type": "PooledTextBuilder",
+      "member": "Append",
+      "signatures": [
+        "public void Append(char value)",
+        "public void Append(ReadOnlySpan<char> value)",
+        "public void Append<T>(T value, ReadOnlySpan<char> format = default, IFormatProvider? provider = null) where T : ISpanFormattable"
+      ],
+      "summary": "Appends a character, a span of characters, or the text that formats a value, growing the buffer when needed. A value formats straight into the buffer, so no `string` is made. A span may be the builder's own `WrittenSpan`, because the builder copies it before it releases the old buffer.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledTextBuilder.Append",
+      "api": [
+        "NCode.Buffers.PooledTextBuilder.Append(char value) -> void",
+        "NCode.Buffers.PooledTextBuilder.Append(System.ReadOnlySpan<char> value) -> void",
+        "NCode.Buffers.PooledTextBuilder.Append<T>(T value, System.ReadOnlySpan<char> format = default(System.ReadOnlySpan<char>), System.IFormatProvider? provider = null) -> void"
+      ]
+    },
+    {
+      "id": "pooled-text-builder-append-span",
+      "group": "streams-and-text",
+      "type": "PooledTextBuilder",
+      "member": "AppendSpan",
+      "signatures": [
+        "public Span<char> AppendSpan(int length)"
+      ],
+      "summary": "Reserves `length` characters at the end of the text, growing the buffer when needed, counts them as written and returns a span over them for the caller to fill. The span is not valid after the next append that grows the buffer.",
+      "constraint": null,
+      "throws": "`ArgumentOutOfRangeException` when `length` is negative.",
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledTextBuilder.AppendSpan",
+      "api": [
+        "NCode.Buffers.PooledTextBuilder.AppendSpan(int length) -> System.Span<char>"
+      ]
+    },
+    {
+      "id": "pooled-text-builder-reset",
+      "group": "streams-and-text",
+      "type": "PooledTextBuilder",
+      "member": "Reset",
+      "signatures": [
+        "public void Reset()"
+      ],
+      "summary": "Zeroes the written part of the buffer, sets the length to zero and keeps the buffer.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledTextBuilder.Reset",
+      "api": [
+        "NCode.Buffers.PooledTextBuilder.Reset() -> void"
+      ]
+    },
+    {
+      "id": "pooled-text-builder-dispose",
+      "group": "streams-and-text",
+      "type": "PooledTextBuilder",
+      "member": "Dispose",
+      "signatures": [
+        "public void Dispose()"
+      ],
+      "summary": "Releases the buffer, zeroing it when the builder is sensitive, and leaves the builder empty. When the buffer is a span passed to the constructor, a sensitive builder zeroes all of it. The builder can be used again, and then it rents a new buffer.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledTextBuilder.Dispose",
+      "api": [
+        "NCode.Buffers.PooledTextBuilder.Dispose() -> void"
+      ]
+    },
+    {
+      "id": "pooled-text-builder-to-string",
+      "group": "streams-and-text",
+      "type": "PooledTextBuilder",
+      "member": "ToString",
+      "signatures": [
+        "public override readonly string ToString() => new(_chars[.._length]);"
+      ],
+      "summary": "Makes a `string` from the characters written so far. A `string` cannot be zeroed, so the copy stays in memory until the garbage collector reclaims it, even when the builder is sensitive. Call it only when the text is not sensitive, and use `WrittenSpan` otherwise.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/grow-a-contiguous-secret/",
+      "source": "Api.PooledTextBuilder.ToString",
+      "api": [
+        "override NCode.Buffers.PooledTextBuilder.ToString() -> string!"
+      ]
+    },
+    {
+      "id": "secret",
+      "group": "secret-holder",
+      "type": "Secret",
+      "member": null,
+      "signatures": [
+        "public static class Secret"
+      ],
+      "summary": "Creates `Secret<T>` instances. The factory is a non-generic class so that `Secret<T>` has no static members.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/hold-a-secret/",
+      "source": "Api.Secret",
+      "api": [
+        "NCode.Buffers.Secret"
+      ]
+    },
+    {
+      "id": "secret-create",
+      "group": "secret-holder",
+      "type": "Secret",
+      "member": "Create",
+      "signatures": [
+        "public static Secret<T> Create<T>(ReadOnlySpan<T> value) where T : unmanaged",
+        "public static Secret<T> Create<T, TState>(int length, TState state, SpanAction<T, TState> action) where T : unmanaged"
+      ],
+      "summary": "Creates a `Secret<T>` in a sensitive buffer, either as a copy of `value` or of `length` elements that `action` fills in place, so the value never needs a second copy. The caller must dispose the secret, and still owns `value`. When `action` throws, the buffer is zeroed and returned, and the exception is rethrown.",
+      "constraint": "unmanaged",
+      "throws": "`ArgumentOutOfRangeException` when `length` is negative. `ArgumentNullException` when `action` is null.",
+      "page": "/guides/hold-a-secret/",
+      "source": "Api.Secret.Create",
+      "api": [
+        "static NCode.Buffers.Secret.Create<T, TState>(int length, TState state, System.Buffers.SpanAction<T, TState>! action) -> NCode.Buffers.Secret<T>!",
+        "static NCode.Buffers.Secret.Create<T>(System.ReadOnlySpan<T> value) -> NCode.Buffers.Secret<T>!"
+      ]
+    },
+    {
+      "id": "secret-t",
+      "group": "secret-holder",
+      "type": "Secret<T>",
+      "member": null,
+      "signatures": [
+        "public sealed class Secret<T> : IDisposable, IEquatable<Secret<T>> where T : unmanaged"
+      ],
+      "summary": "Holds a secret value in a sensitive buffer, hides it from `ToString` and the debugger, compares it in fixed time, and zeroes it when disposed. It lives in memory only: it is not serializable and it is not key storage. It is not thread-safe against `Dispose`.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/hold-a-secret/",
+      "source": "Api.SecretT",
+      "api": [
+        "NCode.Buffers.Secret<T>"
+      ]
+    },
+    {
+      "id": "secret-t-length",
+      "group": "secret-holder",
+      "type": "Secret<T>",
+      "member": "Length",
+      "signatures": [
+        "public int Length { get; }"
+      ],
+      "summary": "The number of elements in the secret. Reading it does not reveal the contents, and it works after `Dispose`.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/hold-a-secret/",
+      "source": "Api.SecretT.Length",
+      "api": [
+        "NCode.Buffers.Secret<T>.Length.get -> int"
+      ]
+    },
+    {
+      "id": "secret-t-reveal",
+      "group": "secret-holder",
+      "type": "Secret<T>",
+      "member": "Reveal",
+      "signatures": [
+        "public ReadOnlySpan<T> Reveal()"
+      ],
+      "summary": "Returns the secret as a `ReadOnlySpan<T>`. This is the one way to read the secret. The span is valid until the secret is disposed.",
+      "constraint": "unmanaged",
+      "throws": "`ObjectDisposedException` when the secret has been disposed.",
+      "page": "/guides/hold-a-secret/",
+      "source": "Api.SecretT.Reveal",
+      "api": [
+        "NCode.Buffers.Secret<T>.Reveal() -> System.ReadOnlySpan<T>"
+      ]
+    },
+    {
+      "id": "secret-t-reveal-memory",
+      "group": "secret-holder",
+      "type": "Secret<T>",
+      "member": "RevealMemory",
+      "signatures": [
+        "public ReadOnlyMemory<T> RevealMemory()"
+      ],
+      "summary": "Returns the secret as a `ReadOnlyMemory<T>`, for callers that cannot hold a span. The memory is valid until the secret is disposed.",
+      "constraint": "unmanaged",
+      "throws": "`ObjectDisposedException` when the secret has been disposed.",
+      "page": "/guides/hold-a-secret/",
+      "source": "Api.SecretT.RevealMemory",
+      "api": [
+        "NCode.Buffers.Secret<T>.RevealMemory() -> System.ReadOnlyMemory<T>"
+      ]
+    },
+    {
+      "id": "secret-t-copy-to",
+      "group": "secret-holder",
+      "type": "Secret<T>",
+      "member": "CopyTo",
+      "signatures": [
+        "public void CopyTo(Span<T> destination)"
+      ],
+      "summary": "Copies the secret to `destination`. The copy is not a secret that the library tracks, so zero it when the secret is sensitive.",
+      "constraint": "unmanaged",
+      "throws": "`ArgumentException` when `destination` is shorter than `Length`. `ObjectDisposedException` when the secret has been disposed.",
+      "page": "/guides/hold-a-secret/",
+      "source": "Api.SecretT.CopyTo",
+      "api": [
+        "NCode.Buffers.Secret<T>.CopyTo(System.Span<T> destination) -> void"
+      ]
+    },
+    {
+      "id": "secret-t-fixed-time-equals",
+      "group": "secret-holder",
+      "type": "Secret<T>",
+      "member": "FixedTimeEquals",
+      "signatures": [
+        "public bool FixedTimeEquals(ReadOnlySpan<T> other)"
+      ],
+      "summary": "Compares the secret to a span in time that does not depend on where they first differ. It returns `true` only when the lengths and the contents match. Spans of different lengths return `false` at once, so it does not hide the length.",
+      "constraint": "unmanaged",
+      "throws": "`ObjectDisposedException` when the secret has been disposed.",
+      "page": "/guides/hold-a-secret/",
+      "source": "Api.SecretT.FixedTimeEquals",
+      "api": [
+        "NCode.Buffers.Secret<T>.FixedTimeEquals(System.ReadOnlySpan<T> other) -> bool"
+      ]
+    },
+    {
+      "id": "secret-t-equals",
+      "group": "secret-holder",
+      "type": "Secret<T>",
+      "member": "Equals",
+      "signatures": [
+        "public bool Equals(Secret<T>? other)",
+        "public override bool Equals(object? obj)",
+        "public override int GetHashCode()"
+      ],
+      "summary": "Compares the contents of two secrets in fixed time. It returns `true` when the other secret is the same instance, or has the same length and contents, and `false` for null. `GetHashCode` returns `Length`, so the hash code reveals nothing about the contents.",
+      "constraint": "unmanaged",
+      "throws": "`ObjectDisposedException` when this secret or the other one has been disposed.",
+      "page": "/guides/hold-a-secret/",
+      "source": "Api.SecretT.Equals",
+      "api": [
+        "NCode.Buffers.Secret<T>.Equals(NCode.Buffers.Secret<T>? other) -> bool",
+        "override NCode.Buffers.Secret<T>.Equals(object? obj) -> bool",
+        "override NCode.Buffers.Secret<T>.GetHashCode() -> int"
+      ]
+    },
+    {
+      "id": "secret-t-to-string",
+      "group": "secret-holder",
+      "type": "Secret<T>",
+      "member": "ToString",
+      "signatures": [
+        "public override string ToString()"
+      ],
+      "summary": "Returns `[REDACTED]`, never the secret, so a secret that is logged or inspected does not leak.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/hold-a-secret/",
+      "source": "Api.SecretT.ToString",
+      "api": [
+        "override NCode.Buffers.Secret<T>.ToString() -> string!"
+      ]
+    },
+    {
+      "id": "secret-t-dispose",
+      "group": "secret-holder",
+      "type": "Secret<T>",
+      "member": "Dispose",
+      "signatures": [
+        "public void Dispose()"
+      ],
+      "summary": "Zeroes the secret and returns its buffer. Calling it again does nothing. Afterwards `Reveal`, `RevealMemory`, `CopyTo`, `FixedTimeEquals` and `Equals` throw `ObjectDisposedException`.",
+      "constraint": "unmanaged",
+      "throws": null,
+      "page": "/guides/hold-a-secret/",
+      "source": "Api.SecretT.Dispose",
+      "api": [
+        "NCode.Buffers.Secret<T>.Dispose() -> void"
+      ]
+    },
+    {
+      "id": "buffer-metrics",
+      "group": "metrics",
+      "type": "BufferMetrics",
+      "member": null,
+      "signatures": [
+        "public static class BufferMetrics"
+      ],
+      "summary": "Names the `Meter` through which NCode.Buffers reports its metrics: the counters `ncode.buffers.secure_pool.rentals`, `ncode.buffers.secure_pool.returns` and `ncode.buffers.secure_pool.trimmed`. Recording costs nothing until a listener subscribes.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/watch-the-secure-pool/",
+      "source": "Api.BufferMetrics",
+      "api": [
+        "NCode.Buffers.BufferMetrics"
+      ]
+    },
+    {
+      "id": "buffer-metrics-meter-name",
+      "group": "metrics",
+      "type": "BufferMetrics",
+      "member": "MeterName",
+      "signatures": [
+        "public const string MeterName = \"NCode.Buffers\";"
+      ],
+      "summary": "The name of the meter, `NCode.Buffers`. One meter serves the whole process. A host subscribes to it with OpenTelemetry's `AddMeter(BufferMetrics.MeterName)`.",
+      "constraint": null,
+      "throws": null,
+      "page": "/guides/watch-the-secure-pool/",
+      "source": "Api.BufferMetrics.MeterName",
+      "api": [
+        "const NCode.Buffers.BufferMetrics.MeterName = \"NCode.Buffers\" -> string!"
+      ]
+    },
+    {
       "id": "cryptographic-operations-extensions",
       "group": "cryptographic-operations",
       "type": "CryptographicOperationsExtensions",

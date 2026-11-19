@@ -2298,6 +2298,230 @@
       ],
       "match": "public void Dispose()"
     },
+    "Api.PooledMemoryStream": {
+      "file": "src/NCode.Buffers/PooledMemoryStream.cs",
+      "lines": [
+        50,
+        50
+      ],
+      "match": "public sealed class PooledMemoryStream : Stream"
+    },
+    "Api.PooledMemoryStream.IsSensitive": {
+      "file": "src/NCode.Buffers/PooledMemoryStream.cs",
+      "lines": [
+        75,
+        75
+      ],
+      "match": "public bool IsSensitive { get; }"
+    },
+    "Api.PooledMemoryStream.WrittenSpan": {
+      "file": "src/NCode.Buffers/PooledMemoryStream.cs",
+      "lines": [
+        104,
+        104
+      ],
+      "match": "public ReadOnlySpan<byte> WrittenSpan"
+    },
+    "Api.PooledMemoryStream.WrittenMemory": {
+      "file": "src/NCode.Buffers/PooledMemoryStream.cs",
+      "lines": [
+        86,
+        86
+      ],
+      "match": "public ReadOnlyMemory<byte> WrittenMemory"
+    },
+    "Api.PooledTextBuilder": {
+      "file": "src/NCode.Buffers/PooledTextBuilder.cs",
+      "lines": [
+        53,
+        53
+      ],
+      "match": "public ref struct PooledTextBuilder"
+    },
+    "Api.PooledTextBuilder.Constructor": {
+      "file": "src/NCode.Buffers/PooledTextBuilder.cs",
+      "lines": [
+        73,
+        73
+      ],
+      "match": "public PooledTextBuilder(bool isSensitive, int initialCapacity = 0)"
+    },
+    "Api.PooledTextBuilder.IsSensitive": {
+      "file": "src/NCode.Buffers/PooledTextBuilder.cs",
+      "lines": [
+        114,
+        114
+      ],
+      "match": "public bool IsSensitive { get; }"
+    },
+    "Api.PooledTextBuilder.Length": {
+      "file": "src/NCode.Buffers/PooledTextBuilder.cs",
+      "lines": [
+        120,
+        120
+      ],
+      "match": "public readonly int Length => _length;"
+    },
+    "Api.PooledTextBuilder.Capacity": {
+      "file": "src/NCode.Buffers/PooledTextBuilder.cs",
+      "lines": [
+        126,
+        126
+      ],
+      "match": "public readonly int Capacity => _chars.Length;"
+    },
+    "Api.PooledTextBuilder.WrittenSpan": {
+      "file": "src/NCode.Buffers/PooledTextBuilder.cs",
+      "lines": [
+        136,
+        136
+      ],
+      "match": "public readonly ReadOnlySpan<char> WrittenSpan => _chars[.._length];"
+    },
+    "Api.PooledTextBuilder.Append": {
+      "file": "src/NCode.Buffers/PooledTextBuilder.cs",
+      "lines": [
+        145,
+        145
+      ],
+      "match": "public void Append(char value)"
+    },
+    "Api.PooledTextBuilder.AppendSpan": {
+      "file": "src/NCode.Buffers/PooledTextBuilder.cs",
+      "lines": [
+        206,
+        206
+      ],
+      "match": "public Span<char> AppendSpan(int length)"
+    },
+    "Api.PooledTextBuilder.Reset": {
+      "file": "src/NCode.Buffers/PooledTextBuilder.cs",
+      "lines": [
+        223,
+        223
+      ],
+      "match": "public void Reset()"
+    },
+    "Api.PooledTextBuilder.Dispose": {
+      "file": "src/NCode.Buffers/PooledTextBuilder.cs",
+      "lines": [
+        236,
+        236
+      ],
+      "match": "public void Dispose()"
+    },
+    "Api.PooledTextBuilder.ToString": {
+      "file": "src/NCode.Buffers/PooledTextBuilder.cs",
+      "lines": [
+        252,
+        252
+      ],
+      "match": "public override readonly string ToString() => new(_chars[.._length]);"
+    },
+    "Api.Secret": {
+      "file": "src/NCode.Buffers/Secret.cs",
+      "lines": [
+        17,
+        17
+      ],
+      "match": "public static class Secret"
+    },
+    "Api.Secret.Create": {
+      "file": "src/NCode.Buffers/Secret.cs",
+      "lines": [
+        36,
+        36
+      ],
+      "match": "public static Secret<T> Create<T>(ReadOnlySpan<T> value)"
+    },
+    "Api.SecretT": {
+      "file": "src/NCode.Buffers/Secret.cs",
+      "lines": [
+        130,
+        130
+      ],
+      "match": "public sealed class Secret<T> : IDisposable, IEquatable<Secret<T>>"
+    },
+    "Api.SecretT.Length": {
+      "file": "src/NCode.Buffers/Secret.cs",
+      "lines": [
+        152,
+        152
+      ],
+      "match": "public int Length { get; }"
+    },
+    "Api.SecretT.Reveal": {
+      "file": "src/NCode.Buffers/Secret.cs",
+      "lines": [
+        166,
+        166
+      ],
+      "match": "public ReadOnlySpan<T> Reveal()"
+    },
+    "Api.SecretT.RevealMemory": {
+      "file": "src/NCode.Buffers/Secret.cs",
+      "lines": [
+        177,
+        177
+      ],
+      "match": "public ReadOnlyMemory<T> RevealMemory()"
+    },
+    "Api.SecretT.CopyTo": {
+      "file": "src/NCode.Buffers/Secret.cs",
+      "lines": [
+        198,
+        198
+      ],
+      "match": "public void CopyTo(Span<T> destination)"
+    },
+    "Api.SecretT.FixedTimeEquals": {
+      "file": "src/NCode.Buffers/Secret.cs",
+      "lines": [
+        217,
+        217
+      ],
+      "match": "public bool FixedTimeEquals(ReadOnlySpan<T> other)"
+    },
+    "Api.SecretT.Equals": {
+      "file": "src/NCode.Buffers/Secret.cs",
+      "lines": [
+        231,
+        231
+      ],
+      "match": "public bool Equals(Secret<T>? other)"
+    },
+    "Api.SecretT.ToString": {
+      "file": "src/NCode.Buffers/Secret.cs",
+      "lines": [
+        261,
+        261
+      ],
+      "match": "public override string ToString()"
+    },
+    "Api.SecretT.Dispose": {
+      "file": "src/NCode.Buffers/Secret.cs",
+      "lines": [
+        269,
+        269
+      ],
+      "match": "public void Dispose()"
+    },
+    "Api.BufferMetrics": {
+      "file": "src/NCode.Buffers/BufferMetrics.cs",
+      "lines": [
+        42,
+        42
+      ],
+      "match": "public static class BufferMetrics"
+    },
+    "Api.BufferMetrics.MeterName": {
+      "file": "src/NCode.Buffers/BufferMetrics.cs",
+      "lines": [
+        48,
+        48
+      ],
+      "match": "public const string MeterName = \"NCode.Buffers\";"
+    },
     "Api.SecureMemoryPool.Shared.ThreadSafe": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
