@@ -19,6 +19,8 @@ public class SecureMemoryPoolMetricsTests
     [Fact]
     public void Rent_RecordsOneRentalWithItsSource()
     {
+        const string sourceTag = "ncode.buffers.rental.source";
+
         using var pool = new SecureMemoryPool<byte>();
         using var collector = new MetricCollector<long>(
             null,
@@ -33,18 +35,11 @@ public class SecureMemoryPoolMetricsTests
 
         var sources = collector
             .GetMeasurementSnapshot()
-            .Select(measurement => measurement.Tags[SecureMemoryPoolMetrics.SourceTag])
+            .Select(measurement => measurement.Tags[sourceTag])
             .ToArray();
 
-        Assert.Equal(
-            [
-                SecureMemoryPoolMetrics.New,
-                SecureMemoryPoolMetrics.Cache,
-                SecureMemoryPoolMetrics.Unpooled,
-                SecureMemoryPoolMetrics.Empty,
-            ],
-            sources
-        );
+        Assert.Equal(["new", "cache", "unpooled", "empty"], sources);
+        Assert.Equal("NCode.Buffers", collector.Instrument?.Meter.Name);
         Assert.Equal("{buffer}", collector.Instrument?.Unit);
     }
 
@@ -66,6 +61,7 @@ public class SecureMemoryPoolMetricsTests
 
         var measurement = Assert.Single(collector.GetMeasurementSnapshot());
         Assert.Equal(1, measurement.Value);
+        Assert.Equal("{buffer}", collector.Instrument?.Unit);
     }
 
     #endregion
@@ -91,6 +87,7 @@ public class SecureMemoryPoolMetricsTests
 
         // The Gen2 GC callback can also trim this pool, so assert that a trim dropped both pages.
         Assert.Contains(collector.GetMeasurementSnapshot(), measurement => measurement.Value == 2);
+        Assert.Equal("{buffer}", collector.Instrument?.Unit);
     }
 
     #endregion
