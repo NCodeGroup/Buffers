@@ -55,18 +55,39 @@ namespace NCode.Buffers;
 public sealed class ContiguousBufferWriter<T> : IBufferWriter<T>, IDisposable
     where T : unmanaged
 {
-    private const int DefaultInitialCapacity = 256;
-
+    /// <summary>
+    /// Gets the size of the first buffer, and the least a growth rents.
+    /// </summary>
     private int InitialCapacity { get; }
+
+    /// <summary>
+    /// Gets or sets the owner of the current buffer, or <see langword="null"/> before the first rental and after
+    /// <see cref="Dispose"/>.
+    /// </summary>
     private IMemoryOwner<T>? Owner { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value that indicates whether <see cref="Dispose"/> has run.
+    /// </summary>
     private bool IsDisposed { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ContiguousBufferWriter{T}"/> class.
+    /// </summary>
+    /// <param name="isSensitive">Whether the writer rents its buffers from the secure pool.</param>
+    /// <param name="initialCapacity">
+    /// The size of the first buffer, or 0 to use the default size.
+    /// <c>BufferFactory.CreateContiguousBufferWriter</c> checks the arguments.
+    /// </param>
     internal ContiguousBufferWriter(bool isSensitive, int initialCapacity)
     {
         IsSensitive = isSensitive;
-        InitialCapacity = initialCapacity == 0 ? DefaultInitialCapacity : initialCapacity;
+        InitialCapacity = initialCapacity == 0 ? BufferGrowth.DefaultCapacity : initialCapacity;
     }
 
+    /// <summary>
+    /// Gets the current buffer, or an empty memory when there is none.
+    /// </summary>
     private Memory<T> Buffer => Owner is null ? Memory<T>.Empty : Owner.Memory;
 
     /// <summary>
@@ -260,6 +281,11 @@ public sealed class ContiguousBufferWriter<T> : IBufferWriter<T>, IDisposable
         owner?.Dispose();
     }
 
+    /// <summary>
+    /// Rents a larger buffer when fewer than <paramref name="needed"/> elements are free, copies the written part into
+    /// it, and disposes the old owner, which zeroes it when the writer is sensitive.
+    /// </summary>
+    /// <param name="needed">The number of free elements the buffer must have.</param>
     private void Grow(int needed)
     {
         if (FreeCapacity >= needed)
@@ -268,11 +294,9 @@ public sealed class ContiguousBufferWriter<T> : IBufferWriter<T>, IDisposable
         }
 
         var required = checked(WrittenCount + needed);
-        var doubled = (int)Math.Min(2L * Capacity, Array.MaxLength);
-        var minimum = Math.Max(InitialCapacity, doubled);
-        var newSize = Math.Max(required, minimum);
-
-        var owner = BufferFactory.ChoosePool<T>(IsSensitive).Rent(newSize);
+        var newSize = BufferGrowth.GetNewSize(required, Capacity, InitialCapacity);
+        var pool = BufferFactory.ChoosePool<T>(IsSensitive);
+        var owner = pool.Rent(newSize);
         Buffer.Span[..WrittenCount].CopyTo(owner.Memory.Span);
 
         var previous = Owner;
