@@ -88,7 +88,7 @@ supported target once it leaves support is another major version.
 
 ## Design rules
 
-Nine rules the code keeps, each recorded so that a change to it is decided in the record. Each gives the rule, its
+Thirteen rules the code keeps, each recorded so that a change to it is decided in the record. Each gives the rule, its
 reason, what it costs you and its record.
 
 ### No finalizer; memory is zeroed only by `Dispose`
@@ -201,6 +201,69 @@ while a secret is there. A secret that must not be readable in use belongs outsi
 and what it does not](/start/limits/).
 
 <Proof source="Adr1018" /> <Proof source="Roadmap.NotPlanned" />
+
+### Rent-and-fill helpers return the owner
+
+**The rule.** A helper that produces text, Base64, Base64url, hex or random bytes into a buffer rents the buffer from
+`BufferFactory.Rent` and returns its `IMemoryOwner<T>`; the value comes back through an `out` parameter, sliced to the
+exact length written.
+
+**Reason.** The BCL methods that do this return an array that nothing zeroes, so a secret stays on the managed heap
+until the garbage collector reuses its memory. Writing the rent, fill and cleanup by hand repeats the cleanup in every
+caller.
+
+**What it costs you.** You dispose one owner per call, and a sensitive result is zeroed then. A helper that fails
+after it rents, on invalid Base64 or hex, disposes the owner before the exception reaches you. A caller that needs a
+`byte[]` still uses the BCL, because these helpers are for results held in a pooled buffer.
+
+<Proof source="Adr1027" />
+
+### Growable buffers zero what they outgrow
+
+**The rule.** A growable writer, stream or text builder keeps its content in one contiguous buffer rented from
+`BufferFactory.ChoosePool<T>`, and when it outgrows that buffer it copies the content into a larger one and disposes
+the old owner, which zeroes the old buffer when the writer is sensitive.
+
+**Reason.** `ArrayBufferWriter<T>`, `StringBuilder` and `MemoryStream` grow by dropping the old array unzeroed, and
+`Sequence<T>` has no single span, so a hash or a cipher needs a copy that nothing zeroes.
+
+**What it costs you.** Above 4096 bytes every growth allocates a pinned array of its own, because the secure pool
+caches one page size. With `isSensitive: false` the outgrown buffers go back to `MemoryPool<T>.Shared` unzeroed. A span
+or memory from a writer is invalid after the next `GetSpan` or `GetMemory`, because growth zeroes the old buffer.
+`PooledTextBuilder` is a `ref struct`, so it cannot cross an `await`, and its `ToString()` makes a `string` that cannot
+be zeroed.
+
+<Proof source="Adr1028" />
+
+### `Secret<T>` never prints its value
+
+**The rule.** `Secret<T>` is a sealed class that owns one sensitive rental, never prints its value, and gives the value
+back only through `Reveal()` and its siblings; it lives in memory only, with no serialization, persistence or
+encryption.
+
+**Reason.** A secret in a field is a `byte[]` or a `string`, and `ToString()`, interpolation, a log line and a
+debugger's variable view each print it. `SecureString` is not the answer: Microsoft says not to use it for new code.
+
+**What it costs you.** `Equals` compares contents in fixed time but reveals the length. `GetHashCode()` is the length, so
+a dictionary keyed by secrets puts every secret of one length in one bucket. A span from `Reveal()` is invalid after
+`Dispose`, and a copy you make outlives the secret. Key storage stays with you and the platform.
+
+<Proof source="Adr1029" />
+
+### One static meter
+
+**The rule.** The secure pool reports its metrics through one static `Meter` named `NCode.Buffers`, and the name is the
+public constant `BufferMetrics.MeterName`.
+
+**Reason.** A host that runs the pool wants to see its rentals, returns and trims, and `System.Diagnostics.Metrics` is
+the platform's way to report them. The library has no dependency injection and no host, and `SecureMemoryPool<T>.Shared`
+is static, so there is no `IMeterFactory` to take a meter from.
+
+**What it costs you.** There is one meter per process, shared by every host in it, so two hosts in one process see
+each other's rentals. Recording costs nothing until a listener subscribes. A test that reads the instruments runs in a
+collection without parallelization. See [Watch the secure pool with metrics](/guides/watch-the-secure-pool/).
+
+<Proof source="Adr1030" />
 
 <Related>
 - **Understand** [How the buffers work](/concepts/how-the-buffers-work/)
