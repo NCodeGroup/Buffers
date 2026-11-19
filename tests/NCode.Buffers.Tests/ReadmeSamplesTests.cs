@@ -12,6 +12,10 @@ using ReadmeSamples;
 namespace NCode.Buffers.Tests;
 
 // `dotnet mdsnippets` copies each begin-snippet block into README.md and src/NCode.Buffers/README.md (ADR-1005).
+// The PoolMetrics sample listens to the static, process-wide meter, so the class runs alone, after the parallel test
+// classes, and no other test records on the meter while it runs.
+[CollectionDefinition(nameof(ReadmeSamplesTests), DisableParallelization = true)]
+[Collection(nameof(ReadmeSamplesTests))]
 public class ReadmeSamplesTests
 {
     private static void Process(ReadOnlySpan<byte> data) => Assert.Equal("payload"u8, data);
@@ -400,11 +404,13 @@ public class ReadmeSamplesTests
         listener.Start();
         // end-snippet
 
+        const long expectedRentals = 1;
+
         using var pool = new SecureMemoryPool<byte>();
         pool.Rent(16).Dispose();
 
         var rentals = totals.GetValueOrDefault("ncode.buffers.secure_pool.rentals");
-        Assert.True(rentals >= 1);
+        Assert.Equal(expectedRentals, rentals);
     }
 
     #endregion
