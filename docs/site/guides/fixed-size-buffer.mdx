@@ -102,9 +102,10 @@ The figure draws these rules on a 64-byte buffer. **A drawing, not a trace:** no
 ```
 
 *What happens:* the JSON writer asks for 256 bytes of free space before it writes the first byte, so the 128-byte
-writer throws `InvalidOperationException`. A buffer of 256 bytes succeeds, and `WrittenCount` is 12.
-<Proof sample="SiteFixedBufferTooSmallForJson" /> <Proof claim="R6" /> *Write instead:* size the buffer for what the
-serializer asks for, not for what it writes, or use `CreatePooledBufferWriter` when you cannot say.
+writer throws `InvalidOperationException`. A buffer of 256 bytes succeeds, and `WrittenCount` is 12. <Proof sample="SiteFixedBufferTooSmallForJson" /> <Proof claim="R6" />
+
+*Write instead:* size the buffer for what the serializer asks for, not for what it writes, or use
+`CreatePooledBufferWriter` when you cannot say.
 
 ### Passing the writer by value
 
@@ -114,7 +115,9 @@ serializer asks for, not for what it writes, or use `CreatePooledBufferWriter` w
 ```
 
 *What happens:* the helper advances its own copy. The caller's `WrittenCount` stays at 0, so the second header lands
-on the first. <Proof sample="SitePitfallWriterByValue" /> *Write instead:* pass it by `ref`.
+on the first. <Proof sample="SitePitfallWriterByValue" />
+
+*Write instead:* pass it by `ref`.
 [A fixed span writer passed by value](/reference/pitfalls/#writers-and-sequences)
 
 ### A partial write left in the buffer
@@ -124,8 +127,9 @@ on the first. <Proof sample="SitePitfallWriterByValue" /> *Write instead:* pass 
 ```cs snippet=SiteFixedBufferPartialWrite title="Partial.cs"
 ```
 
-*What happens:* the 4 bytes already written stay in the buffer. *Write instead:* call `Reset()` where you catch the
-failure. It zeroes the 4 bytes and sets the count to 0. <Proof sample="SiteFixedBufferPartialWrite" /> <Proof source="FixedSpanBufferWriter.Reset" />
+*What happens:* the 4 bytes already written stay in the buffer.
+
+*Write instead:* call `Reset()` where you catch the failure. It zeroes the 4 bytes and sets the count to 0. <Proof sample="SiteFixedBufferPartialWrite" /> <Proof source="FixedSpanBufferWriter.Reset" />
 
 ### Advancing by the span's length
 
@@ -135,8 +139,9 @@ failure. It zeroes the 4 bytes and sets the count to 0. <Proof sample="SiteFixed
 ```
 
 *What happens:* `GetSpan(4)` returned all 64 free bytes, so the writer commits 64 bytes, 60 of which were never
-written. <Proof sample="SitePitfallAdvanceBySpanLength" /> *Write instead:* `Advance` by the number of bytes you
-wrote.
+written. <Proof sample="SitePitfallAdvanceBySpanLength" />
+
+*Write instead:* `Advance` by the number of bytes you wrote.
 
 ## What this does not fix
 

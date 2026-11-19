@@ -115,27 +115,36 @@ the reader finds the value `42`. <Proof sample="SiteSequenceSplitJson" /> <Proof
 
 ### A piece turned into a string
 
-*You write* `segment.Memory.ToString()` to compare or log a piece. *What happens:* `ToString` on a
-`ReadOnlyMemory<char>` makes a new string, which nothing can erase. <LeakCard leak="L5" /> *Write instead:* compare
-the span, as `FindValue` does, and copy a piece into a buffer you own when you must keep it.
+*You write* `segment.Memory.ToString()` to compare or log a piece.
+
+*What happens:* `ToString` on a `ReadOnlyMemory<char>` makes a new string, which nothing can erase. <LeakCard leak="L5" />
+
+*Write instead:* compare the span, as `FindValue` does, and copy a piece into a buffer you own when you must keep it.
 
 ### Pieces that are not trimmed
 
-*You write* a name comparison for `lang` against a header that has a space after the `;`. *What happens:* the piece is
-` lang=en`, and its name is ` lang`, so nothing matches. <Proof sample="SiteSplitTextHeader" /> *Write instead:* trim
-the span you compare, with `Trim()` on a `ReadOnlySpan<char>`, which makes no string.
+*You write* a name comparison for `lang` against a header that has a space after the `;`.
+
+*What happens:* the piece is ` lang=en`, and its name is ` lang`, so nothing matches. <Proof sample="SiteSplitTextHeader" />
+
+*Write instead:* trim the span you compare, with `Trim()` on a `ReadOnlySpan<char>`, which makes no string.
 
 ### Every piece keeps the whole original alive
 
-*You write* code that keeps one piece, such as a value, after the call. *What happens:* the piece is a slice of the
-original, so the original stays reachable for as long as the piece does. The pieces hold no separator, and together
-with the separators they cover the original. <Proof test="StringSegmentsPropertyTests.Split_WhenSlicing_SegmentsHoldNoSeparatorAndCoverTheOriginal" />
+*You write* code that keeps one piece, such as a value, after the call.
+
+*What happens:* the piece is a slice of the original, so the original stays reachable for as long as the piece does.
+The pieces hold no separator, and together with the separators they cover the original. <Proof test="StringSegmentsPropertyTests.Split_WhenSlicing_SegmentsHoldNoSeparatorAndCoverTheOriginal" />
+
 *Write instead:* copy the piece into a buffer sized for it when it outlives the original.
 
 ### Secret text in an ordinary string
 
-*You write* `Split` on a string that holds a secret. *What happens:* the original and every piece are strings.
-<LeakCard leak="L5" /> *Write instead:* hold the secret in a sensitive buffer and split the buffer.
+*You write* `Split` on a string that holds a secret.
+
+*What happens:* the original and every piece are strings. <LeakCard leak="L5" />
+
+*Write instead:* hold the secret in a sensitive buffer and split the buffer.
 
 ```cs snippet=SiteSplitTextOverSensitiveBuffer title="Credentials.cs"
 ```
