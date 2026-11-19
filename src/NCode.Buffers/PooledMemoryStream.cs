@@ -264,7 +264,8 @@ public sealed class PooledMemoryStream : Stream
         var newLength = (int)value;
         if (newLength > DataLength)
         {
-            Grow(newLength)?.Dispose();
+            var previous = Grow(newLength);
+            previous?.Dispose();
             Buffer.Span[DataLength..newLength].Clear();
         }
         else
@@ -302,7 +303,8 @@ public sealed class PooledMemoryStream : Stream
             return 0;
         }
 
-        Buffer.Span.Slice(CurrentPosition, count).CopyTo(buffer);
+        var source = Buffer.Span.Slice(CurrentPosition, count);
+        source.CopyTo(buffer);
         CurrentPosition += count;
         return count;
     }

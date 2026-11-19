@@ -125,7 +125,8 @@ public sealed class Secret<T> : IDisposable, IEquatable<Secret<T>>
     /// </example>
     public void CopyTo(Span<T> destination)
     {
-        Reveal().CopyTo(destination);
+        var value = Reveal();
+        value.CopyTo(destination);
     }
 
     /// <summary>
@@ -207,6 +208,7 @@ public sealed class Secret<T> : IDisposable, IEquatable<Secret<T>>
     /// </summary>
     public void Dispose()
     {
-        Interlocked.Exchange(ref _owner, null)?.Dispose();
+        var owner = Interlocked.Exchange(ref _owner, null);
+        owner?.Dispose();
     }
 }
