@@ -7,10 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.0] - 2026-11-19
+
+### Added
+
+- `BufferFactory.RentRandom` rents a buffer of the length you ask for, filled from `RandomNumberGenerator`; `isSensitive` chooses the secure pool ([ADR-1027](docs/decisions/1027-text-base64-hex-and-random-helpers-rent-their-output-and-return-its-owner.md)).
+- `RentBytes` and `RentChars`, extension methods on `Encoding`, encode text into a rented byte buffer and decode bytes into a rented char buffer of the exact length, so `SecureEncoding.UTF8.RentBytes(password, isSensitive: true, out Span<byte> bytes)` leaves no array behind ([ADR-1027](docs/decisions/1027-text-base64-hex-and-random-helpers-rent-their-output-and-return-its-owner.md)).
+- `BinaryTextEncoding.RentDecoded` and `RentEncoded` decode Base64, Base64url and hexadecimal text, named by `BinaryTextFormat`, into a rented byte buffer, and encode bytes into a rented char buffer; invalid text throws `FormatException` after the rented buffer is returned, zeroed when `isSensitive` is true ([ADR-1027](docs/decisions/1027-text-base64-hex-and-random-helpers-rent-their-output-and-return-its-owner.md)).
+- `GetSpanLease` on `ReadOnlySequence<T>`, such as a `PipeReader`'s buffer, reads it as one span, copying into a rented buffer only when it spans several segments.
+- `BufferFactory.CreateContiguousBufferWriter` returns `ContiguousBufferWriter<T>`, a pooled `IBufferWriter<T>` whose data is one span; with `isSensitive: true` it zeroes each buffer it outgrows and its buffer on `Dispose` ([ADR-1028](docs/decisions/1028-growable-writers-streams-and-text-builders-zero-each-buffer-they-outgrow.md)).
+- `BufferFactory.CreatePooledStream` returns `PooledMemoryStream`, a seekable read-write `Stream` over one pooled buffer that zeroes each buffer it outgrows, the bytes `SetLength` cuts off and its buffer on `Dispose`; its `Read`, `Write`, `CopyTo`, `ReadByte` and `WriteByte` copy through no temporary array that nothing zeroes ([ADR-1028](docs/decisions/1028-growable-writers-streams-and-text-builders-zero-each-buffer-they-outgrow.md)).
+- `PooledTextBuilder`, a `ref struct` that builds text from strings, characters and formattable values in a pooled buffer, optionally starting in a `stackalloc` span, and zeroes each buffer it outgrows and its buffer on `Dispose` when `isSensitive` is true ([ADR-1028](docs/decisions/1028-growable-writers-streams-and-text-builders-zero-each-buffer-they-outgrow.md)).
+- `Secret<T>` and `Secret.Create` hold a secret in a pinned, pooled buffer that `Dispose` zeroes; `ToString()` and the debugger show `[REDACTED]`, `Equals` compares the contents in fixed time, and `Reveal()` is the one way to read it ([ADR-1029](docs/decisions/1029-secret-t-holds-a-secret-it-never-prints.md)).
+- `SecureMemoryPool<T>` reports rentals, returns and buffers dropped under memory pressure on the `NCode.Buffers` meter, `BufferMetrics.MeterName`; `docs/metrics.md` lists the instruments ([ADR-1030](docs/decisions/1030-the-secure-pool-reports-metrics-through-one-static-meter.md)).
+- The documentation site has guides to turning a secret between text, Base64, hex and bytes, building a secret that grows in one piece, keeping a secret in a field, and watching the secure pool; "Which buffer?", the buffer behavior matrix and the API map cover the new types.
+
 ### Changed
 
 - Package validation compares each package with the published 5.2.5 package.
 - The documentation site is served at https://buffers.ncode.io/, and the READMEs and the package's project website link there; GitHub Pages redirects every page at https://ncodegroup.github.io/Buffers/ to it ([ADR-1026](docs/decisions/1026-the-documentation-site-is-served-at-buffers-ncode-io.md)).
+- `Sequence<T>.GetSpanLease` throws `OverflowException` for data longer than `int.MaxValue`, as the `ReadOnlySequence<T>` overload does, where it threw `ArgumentOutOfRangeException` from a rental of a negative size.
+- The roadmap's scope includes the rent-and-fill helpers, the growable buffers, the secret holder and the pool's metrics.
+- The documentation site's design decisions, "How the buffers work" and "Objections and alternatives" pages describe the secure pool's meter, where they said the library records no metrics.
+- The site's evidence links tests and source lines at a commit that holds 5.3.0's code.
 
 ## [5.2.5] - 2026-11-18
 
@@ -239,7 +258,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.2.5...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.3.0...HEAD
+[5.3.0]: https://github.com/NCodeGroup/Buffers/compare/v5.2.5...v5.3.0
 [5.2.5]: https://github.com/NCodeGroup/Buffers/compare/v5.2.4...v5.2.5
 [5.2.4]: https://github.com/NCodeGroup/Buffers/compare/v5.2.3...v5.2.4
 [5.2.3]: https://github.com/NCodeGroup/Buffers/compare/v5.2.2...v5.2.3
