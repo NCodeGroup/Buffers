@@ -61,9 +61,11 @@ public class PooledMemoryStreamTests
     [Fact]
     public void CreatePooledStream_NegativeInitialCapacity_ThrowsArgumentOutOfRangeException()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             BufferFactory.CreatePooledStream(isSensitive: false, initialCapacity: -1)
         );
+
+        Assert.Equal("initialCapacity", exception.ParamName);
     }
 
     #endregion
@@ -141,27 +143,63 @@ public class PooledMemoryStreamTests
     }
 
     [Fact]
-    public void Read_InvalidArguments_Throws()
+    public void Read_NullBuffer_ThrowsArgumentNullException()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+
+        var exception = Assert.Throws<ArgumentNullException>(() => stream.Read(null!, 0, 1));
+
+        Assert.Equal("buffer", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(-1, 1, "offset")]
+    [InlineData(0, -1, "count")]
+    [InlineData(2, 3, "count")]
+    public void Read_InvalidRange_ThrowsArgumentOutOfRangeException(
+        int offset,
+        int count,
+        string paramName
+    )
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
         var buffer = new byte[4];
 
-        Assert.Throws<ArgumentNullException>(() => stream.Read(null!, 0, 1));
-        Assert.Throws<ArgumentOutOfRangeException>(() => stream.Read(buffer, -1, 1));
-        Assert.Throws<ArgumentOutOfRangeException>(() => stream.Read(buffer, 0, -1));
-        Assert.Throws<ArgumentOutOfRangeException>(() => stream.Read(buffer, 2, 3));
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            stream.Read(buffer, offset, count)
+        );
+
+        Assert.Equal(paramName, exception.ParamName);
     }
 
     [Fact]
-    public void Write_InvalidArguments_Throws()
+    public void Write_NullBuffer_ThrowsArgumentNullException()
+    {
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+
+        var exception = Assert.Throws<ArgumentNullException>(() => stream.Write(null!, 0, 1));
+
+        Assert.Equal("buffer", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(-1, 1, "offset")]
+    [InlineData(0, -1, "count")]
+    [InlineData(2, 3, "count")]
+    public void Write_InvalidRange_ThrowsArgumentOutOfRangeException(
+        int offset,
+        int count,
+        string paramName
+    )
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
         var buffer = new byte[4];
 
-        Assert.Throws<ArgumentNullException>(() => stream.Write(null!, 0, 1));
-        Assert.Throws<ArgumentOutOfRangeException>(() => stream.Write(buffer, -1, 1));
-        Assert.Throws<ArgumentOutOfRangeException>(() => stream.Write(buffer, 0, -1));
-        Assert.Throws<ArgumentOutOfRangeException>(() => stream.Write(buffer, 2, 3));
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            stream.Write(buffer, offset, count)
+        );
+
+        Assert.Equal(paramName, exception.ParamName);
     }
 
     [Fact]
@@ -280,9 +318,11 @@ public class PooledMemoryStreamTests
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             stream.Seek(Array.MaxLength + 1L, SeekOrigin.Begin)
         );
+
+        Assert.Equal("offset", exception.ParamName);
         Assert.Equal(0, stream.Position);
     }
 
@@ -291,7 +331,9 @@ public class PooledMemoryStreamTests
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
 
-        Assert.Throws<ArgumentException>(() => stream.Seek(0, (SeekOrigin)42));
+        var exception = Assert.Throws<ArgumentException>(() => stream.Seek(0, (SeekOrigin)42));
+
+        Assert.Equal("origin", exception.ParamName);
     }
 
     #endregion
@@ -303,7 +345,9 @@ public class PooledMemoryStreamTests
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => stream.Position = -1);
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => stream.Position = -1);
+
+        Assert.Equal("value", exception.ParamName);
     }
 
     [Fact]
@@ -311,7 +355,11 @@ public class PooledMemoryStreamTests
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => stream.Position = Array.MaxLength + 1L);
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            stream.Position = Array.MaxLength + 1L
+        );
+
+        Assert.Equal("value", exception.ParamName);
     }
 
     [Fact]
@@ -402,7 +450,9 @@ public class PooledMemoryStreamTests
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => stream.SetLength(-1));
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => stream.SetLength(-1));
+
+        Assert.Equal("value", exception.ParamName);
     }
 
     [Fact]
@@ -410,7 +460,11 @@ public class PooledMemoryStreamTests
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => stream.SetLength(Array.MaxLength + 1L));
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            stream.SetLength(Array.MaxLength + 1L)
+        );
+
+        Assert.Equal("value", exception.ParamName);
     }
 
     #endregion
@@ -434,7 +488,7 @@ public class PooledMemoryStreamTests
     }
 
     [Fact]
-    public void Dispose_ThenMembers_ThrowObjectDisposedException()
+    public void Dispose_ThenCanReadCanSeekCanWrite_AreFalse()
     {
         var stream = BufferFactory.CreatePooledStream(isSensitive: true);
         stream.Write([1, 2, 3]);
@@ -443,35 +497,91 @@ public class PooledMemoryStreamTests
         Assert.False(stream.CanRead);
         Assert.False(stream.CanSeek);
         Assert.False(stream.CanWrite);
-        Assert.True(stream.IsSensitive);
+    }
 
-        Assert.Throws<ObjectDisposedException>(() =>
+    [Fact]
+    public void Dispose_ThenIsSensitive_KeepsItsValue()
+    {
+        var stream = BufferFactory.CreatePooledStream(isSensitive: true);
+        stream.Write([1, 2, 3]);
+        stream.Dispose();
+
+        Assert.True(stream.IsSensitive);
+    }
+
+    [Theory]
+    [InlineData("Length")]
+    [InlineData("GetPosition")]
+    [InlineData("SetPosition")]
+    [InlineData("Seek")]
+    [InlineData("SetLength")]
+    [InlineData("ReadArray")]
+    [InlineData("ReadSpan")]
+    [InlineData("WriteArray")]
+    [InlineData("WriteSpan")]
+    [InlineData("WrittenSpan")]
+    [InlineData("WrittenMemory")]
+    public void Dispose_ThenMember_ThrowsObjectDisposedException(string member)
+    {
+        var stream = BufferFactory.CreatePooledStream(isSensitive: true);
+        stream.Write([1, 2, 3]);
+        stream.Dispose();
+
+        Assert.Throws<ObjectDisposedException>(() => CallMember(stream, member));
+    }
+
+    private static void CallMember(PooledMemoryStream stream, string member)
+    {
+        var bytes = new byte[1];
+
+        switch (member)
         {
-            _ = stream.Length;
-        });
-        Assert.Throws<ObjectDisposedException>(() =>
-        {
-            _ = stream.Position;
-        });
-        Assert.Throws<ObjectDisposedException>(() => stream.Position = 0);
-        Assert.Throws<ObjectDisposedException>(() => stream.Seek(0, SeekOrigin.Begin));
-        Assert.Throws<ObjectDisposedException>(() => stream.SetLength(0));
-        Assert.Throws<ObjectDisposedException>(() => stream.Read(new byte[1], 0, 1));
-        Assert.Throws<ObjectDisposedException>(() =>
-        {
-            Span<byte> buffer = stackalloc byte[1];
-            _ = stream.Read(buffer);
-        });
-        Assert.Throws<ObjectDisposedException>(() => stream.Write(new byte[1], 0, 1));
-        Assert.Throws<ObjectDisposedException>(() => stream.Write([1]));
-        Assert.Throws<ObjectDisposedException>(() =>
-        {
-            _ = stream.WrittenSpan;
-        });
-        Assert.Throws<ObjectDisposedException>(() =>
-        {
-            _ = stream.WrittenMemory;
-        });
+            case "Length":
+                _ = stream.Length;
+                break;
+            case "GetPosition":
+                _ = stream.Position;
+                break;
+            case "SetPosition":
+                stream.Position = 0;
+                break;
+            case "Seek":
+                _ = stream.Seek(0, SeekOrigin.Begin);
+                break;
+            case "SetLength":
+                stream.SetLength(0);
+                break;
+            case "ReadArray":
+                _ = stream.Read(bytes, 0, 1);
+                break;
+            case "ReadSpan":
+            {
+                Span<byte> span = bytes;
+                _ = stream.Read(span);
+                break;
+            }
+            case "WriteArray":
+                stream.Write(bytes, 0, 1);
+                break;
+            case "WriteSpan":
+            {
+                ReadOnlySpan<byte> data = bytes;
+                stream.Write(data);
+                break;
+            }
+            case "WrittenSpan":
+                _ = stream.WrittenSpan;
+                break;
+            case "WrittenMemory":
+                _ = stream.WrittenMemory;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(member),
+                    member,
+                    "No call is written for the member."
+                );
+        }
     }
 
     [Fact]
