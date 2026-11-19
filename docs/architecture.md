@@ -33,7 +33,7 @@ depends on Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers retur
 | `SecureEncoding` | UTF-8 and ASCII encodings that throw on invalid input instead of substituting characters |
 | `SecureEncodingExtensions` | `RentBytes` and `RentChars` on `Encoding` encode or decode into a rented buffer of the exact length |
 | `BinaryTextEncoding`, `BinaryTextFormat` | Decode and encode Base64, Base64url and hex into a rented buffer |
-| `ContiguousBufferWriter<T>`, `PooledMemoryStream`, `PooledTextBuilder` | A pooled `IBufferWriter<T>` over one span, a seekable read-write `Stream` over one pooled buffer, and a `ref struct` text builder that can start in a caller's span; each zeroes the buffers it outgrows when it is sensitive |
+| `ContiguousBufferWriter<T>`, `PooledMemoryStream`, `PooledTextBuilder`, `BufferGrowth` | A pooled `IBufferWriter<T>` over one span, a seekable read-write `Stream` over one pooled buffer, and a `ref struct` text builder that can start in a caller's span; each zeroes the buffers it outgrows when it is sensitive, and `BufferGrowth` computes the size each grows to ([ADR-1028](decisions/1028-growable-writers-streams-and-text-builders-zero-each-buffer-they-outgrow.md)) |
 | `Secret`, `Secret<T>` | Holds a sensitive rental as a value; `ToString()` and the debugger show `[REDACTED]`, and `Equals` takes fixed time |
 | `BufferMetrics`, `SecureMemoryPoolMetrics` | One static `Meter` named `NCode.Buffers` with counters for the secure pool's rentals, returns and trims |
 | `CryptographicOperationsExtensions`, `BufferExtensions` | `ZeroMemory` and `FixedTimeEquals` for spans of any unmanaged type, and span helpers |
