@@ -67,7 +67,8 @@ public class SecureEncodingExtensionsTests
         );
 
         Assert.Equal(5, bytes.Length);
-        Assert.True(bytes.SequenceEqual("café"u8));
+        var matches = bytes.SequenceEqual("café"u8);
+        Assert.True(matches);
     }
 
     [Fact]
@@ -82,7 +83,8 @@ public class SecureEncodingExtensionsTests
         );
 
         Assert.Equal(5, bytes.Length);
-        Assert.True(bytes.Span.SequenceEqual("café"u8));
+        var matches = bytes.Span.SequenceEqual("café"u8);
+        Assert.True(matches);
     }
 
     [Fact]
@@ -126,15 +128,20 @@ public class SecureEncodingExtensionsTests
     [Fact]
     public void RentBytes_WhenSensitive_ZeroesTheBytesOnDispose()
     {
-        var text = new string('a', 5000);
+        const int length = 5000;
+        var text = new string('a', length);
+        var expected = new byte[length];
+        Array.Fill(expected, (byte)'a');
 
         var owner = SecureEncoding.UTF8.RentBytes(text, isSensitive: true, out Memory<byte> bytes);
-        Assert.Equal(5000, bytes.Length);
-        Assert.True(bytes.Span.SequenceEqual(new string('a', 5000).Select(c => (byte)c).ToArray()));
+        Assert.Equal(length, bytes.Length);
+        var matches = bytes.Span.SequenceEqual(expected);
+        Assert.True(matches);
 
         owner.Dispose();
 
-        Assert.True(owner.Memory.Span[..5000].IndexOfAnyExcept((byte)0) < 0);
+        var firstNonZero = owner.Memory.Span[..length].IndexOfAnyExcept((byte)0);
+        Assert.Equal(-1, firstNonZero);
     }
 
     [Fact]
@@ -211,7 +218,8 @@ public class SecureEncodingExtensionsTests
         );
 
         Assert.Equal(4, chars.Length);
-        Assert.True(chars.SequenceEqual("café"));
+        var matches = chars.SequenceEqual("café");
+        Assert.True(matches);
     }
 
     [Fact]
@@ -224,7 +232,8 @@ public class SecureEncodingExtensionsTests
         );
 
         Assert.Equal(4, chars.Length);
-        Assert.True(chars.Span.SequenceEqual("café"));
+        var matches = chars.Span.SequenceEqual("café");
+        Assert.True(matches);
     }
 
     [Fact]

@@ -26,7 +26,9 @@ public class BinaryTextEncodingTests
             out Span<byte> bytes
         );
 
-        Assert.Equal<byte>([0xFB, 0xFF, 0x01], bytes.ToArray());
+        var actual = bytes.ToArray();
+
+        Assert.Equal<byte>([0xFB, 0xFF, 0x01], actual);
     }
 
     [Fact]
@@ -41,7 +43,9 @@ public class BinaryTextEncodingTests
             out Memory<byte> bytes
         );
 
-        Assert.Equal<byte>([0xFB, 0xFF, 0x01], bytes.Span.ToArray());
+        var actual = bytes.Span.ToArray();
+
+        Assert.Equal<byte>([0xFB, 0xFF, 0x01], actual);
     }
 
     [Fact]
@@ -56,7 +60,9 @@ public class BinaryTextEncodingTests
             out Span<byte> bytes
         );
 
-        Assert.Equal<byte>([0xFB, 0xFF, 0x01], bytes.ToArray());
+        var actual = bytes.ToArray();
+
+        Assert.Equal<byte>([0xFB, 0xFF, 0x01], actual);
     }
 
     [Theory]
@@ -167,7 +173,10 @@ public class BinaryTextEncodingTests
     [Fact]
     public void RentDecoded_WhenSensitive_ZeroesTheBytesOnDispose()
     {
-        var text = Convert.ToBase64String(Enumerable.Repeat((byte)0x41, 5001).ToArray());
+        const int length = 5001;
+        var data = new byte[length];
+        Array.Fill(data, (byte)0x41);
+        var text = Convert.ToBase64String(data);
 
         var owner = BinaryTextEncoding.RentDecoded(
             text,
@@ -175,12 +184,14 @@ public class BinaryTextEncodingTests
             isSensitive: true,
             out Memory<byte> bytes
         );
-        Assert.Equal(5001, bytes.Length);
-        Assert.All(bytes.ToArray(), value => Assert.Equal(0x41, value));
+        var decoded = bytes.ToArray();
+        Assert.Equal(length, bytes.Length);
+        Assert.All(decoded, value => Assert.Equal(0x41, value));
 
         owner.Dispose();
 
-        Assert.True(owner.Memory.Span.IndexOfAnyExcept((byte)0) < 0);
+        var firstNonZero = owner.Memory.Span.IndexOfAnyExcept((byte)0);
+        Assert.Equal(-1, firstNonZero);
     }
 
     #endregion
@@ -201,7 +212,9 @@ public class BinaryTextEncodingTests
             out Span<char> text
         );
 
-        Assert.Equal(expected, text.ToString());
+        var actual = text.ToString();
+
+        Assert.Equal(expected, actual);
     }
 
     [Fact]
@@ -214,7 +227,9 @@ public class BinaryTextEncodingTests
             out Memory<char> text
         );
 
-        Assert.Equal("+/8B", text.Span.ToString());
+        var actual = text.Span.ToString();
+
+        Assert.Equal("+/8B", actual);
     }
 
     [Theory]
@@ -288,7 +303,9 @@ public class BinaryTextEncodingTests
             out Span<byte> actual
         );
 
-        Assert.Equal<byte>(expected, actual.ToArray());
+        var actualBytes = actual.ToArray();
+
+        Assert.Equal<byte>(expected, actualBytes);
     }
 
     #endregion
