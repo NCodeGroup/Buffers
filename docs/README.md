@@ -22,6 +22,7 @@ offers. Every document in `docs/` has a line here.
   `build/Test-SiteEvidence.ps1` checks the evidence the pages cite and the API map against `PublicAPI.Shipped.txt`, and
   `build/Update-ReviewChecklist.ps1` keeps the review checklist in step with the guides that the `requiredHeadings`
   rule of `site.config.json` holds to a Checklist section.
+  `build/site.ps1` builds, layout-checks and serves the site locally, with the toolchain cloned beside the main checkout.
 - [metrics.md](metrics.md): the metrics and traces catalog, every meter, instrument, attribute, activity source and
   span the project defines, which dashboards and alerts are built against.
 - [api-compatibility.md](api-compatibility.md): how the public API of the published packages evolves and is checked, and how the package validation baseline is kept.
