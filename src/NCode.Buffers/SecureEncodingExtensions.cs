@@ -35,7 +35,7 @@ public static class SecureEncodingExtensions
         /// When <see langword="true"/>, the buffer is rented from <see cref="SecureMemoryPool{T}"/>
         /// and securely zeroed when disposed.
         /// </param>
-        /// <param name="bytes">When this method returns, contains a <see cref="Span{T}"/> of exactly the encoded bytes.</param>
+        /// <param name="bytes">When this method returns, contains a <see cref="Span{T}"/> of exactly the encoded bytes. It is valid until the returned owner is disposed.</param>
         /// <returns>
         /// An <see cref="IMemoryOwner{T}"/> that manages the lifetime of the rented buffer.
         /// Dispose this owner to return the buffer to the pool.
@@ -61,18 +61,9 @@ public static class SecureEncodingExtensions
         {
             ArgumentNullException.ThrowIfNull(encoding);
 
-            var byteCount = encoding.GetByteCount(chars);
-            var owner = BufferFactory.Rent(byteCount, isSensitive, out bytes);
-            try
-            {
-                bytes = bytes[..encoding.GetBytes(chars, bytes)];
-                return owner;
-            }
-            catch
-            {
-                owner.Dispose();
-                throw;
-            }
+            var owner = encoding.RentBytes(chars, isSensitive, out Memory<byte> memory);
+            bytes = memory.Span;
+            return owner;
         }
 
         /// <summary>
@@ -83,7 +74,7 @@ public static class SecureEncodingExtensions
         /// When <see langword="true"/>, the buffer is rented from <see cref="SecureMemoryPool{T}"/>
         /// and securely zeroed when disposed.
         /// </param>
-        /// <param name="bytes">When this method returns, contains a <see cref="Memory{T}"/> of exactly the encoded bytes.</param>
+        /// <param name="bytes">When this method returns, contains a <see cref="Memory{T}"/> of exactly the encoded bytes. It is valid until the returned owner is disposed.</param>
         /// <returns>
         /// An <see cref="IMemoryOwner{T}"/> that manages the lifetime of the rented buffer.
         /// Dispose this owner to return the buffer to the pool.
@@ -113,7 +104,11 @@ public static class SecureEncodingExtensions
             var owner = BufferFactory.Rent(byteCount, isSensitive, out bytes);
             try
             {
-                bytes = bytes[..encoding.GetBytes(chars, bytes.Span)];
+                var written = encoding.GetBytes(chars, bytes.Span);
+
+                // The rental has the length the encoding counted; the slice keeps an encoding
+                // that writes fewer than it counted from exposing the rest of the rental.
+                bytes = bytes[..written];
                 return owner;
             }
             catch
@@ -131,7 +126,7 @@ public static class SecureEncodingExtensions
         /// When <see langword="true"/>, the buffer is rented from <see cref="SecureMemoryPool{T}"/>
         /// and securely zeroed when disposed.
         /// </param>
-        /// <param name="chars">When this method returns, contains a <see cref="Span{T}"/> of exactly the decoded characters.</param>
+        /// <param name="chars">When this method returns, contains a <see cref="Span{T}"/> of exactly the decoded characters. It is valid until the returned owner is disposed.</param>
         /// <returns>
         /// An <see cref="IMemoryOwner{T}"/> that manages the lifetime of the rented buffer.
         /// Dispose this owner to return the buffer to the pool.
@@ -158,18 +153,9 @@ public static class SecureEncodingExtensions
         {
             ArgumentNullException.ThrowIfNull(encoding);
 
-            var charCount = encoding.GetCharCount(bytes);
-            var owner = BufferFactory.Rent(charCount, isSensitive, out chars);
-            try
-            {
-                chars = chars[..encoding.GetChars(bytes, chars)];
-                return owner;
-            }
-            catch
-            {
-                owner.Dispose();
-                throw;
-            }
+            var owner = encoding.RentChars(bytes, isSensitive, out Memory<char> memory);
+            chars = memory.Span;
+            return owner;
         }
 
         /// <summary>
@@ -180,7 +166,7 @@ public static class SecureEncodingExtensions
         /// When <see langword="true"/>, the buffer is rented from <see cref="SecureMemoryPool{T}"/>
         /// and securely zeroed when disposed.
         /// </param>
-        /// <param name="chars">When this method returns, contains a <see cref="Memory{T}"/> of exactly the decoded characters.</param>
+        /// <param name="chars">When this method returns, contains a <see cref="Memory{T}"/> of exactly the decoded characters. It is valid until the returned owner is disposed.</param>
         /// <returns>
         /// An <see cref="IMemoryOwner{T}"/> that manages the lifetime of the rented buffer.
         /// Dispose this owner to return the buffer to the pool.
@@ -211,7 +197,11 @@ public static class SecureEncodingExtensions
             var owner = BufferFactory.Rent(charCount, isSensitive, out chars);
             try
             {
-                chars = chars[..encoding.GetChars(bytes, chars.Span)];
+                var written = encoding.GetChars(bytes, chars.Span);
+
+                // The rental has the length the encoding counted; the slice keeps an encoding
+                // that writes fewer than it counted from exposing the rest of the rental.
+                chars = chars[..written];
                 return owner;
             }
             catch
