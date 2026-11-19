@@ -2003,9 +2003,9 @@
         "public override int ReadByte()",
         "public override void WriteByte(byte value)",
         "public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)",
-        "public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)",
+        "public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)",
         "public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)",
-        "public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)",
+        "public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)",
         "public override Task FlushAsync(CancellationToken cancellationToken)",
         "public override void CopyTo(Stream destination, int bufferSize)",
         "public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)"
@@ -2029,14 +2029,14 @@
         "override NCode.Buffers.PooledMemoryStream.Read(byte[]! buffer, int offset, int count) -> int",
         "override NCode.Buffers.PooledMemoryStream.Read(System.Span<byte> buffer) -> int",
         "override NCode.Buffers.PooledMemoryStream.ReadAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!",
-        "override NCode.Buffers.PooledMemoryStream.ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<int>",
+        "override NCode.Buffers.PooledMemoryStream.ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<int>",
         "override NCode.Buffers.PooledMemoryStream.ReadByte() -> int",
         "override NCode.Buffers.PooledMemoryStream.Seek(long offset, System.IO.SeekOrigin origin) -> long",
         "override NCode.Buffers.PooledMemoryStream.SetLength(long value) -> void",
         "override NCode.Buffers.PooledMemoryStream.Write(byte[]! buffer, int offset, int count) -> void",
         "override NCode.Buffers.PooledMemoryStream.Write(System.ReadOnlySpan<byte> buffer) -> void",
         "override NCode.Buffers.PooledMemoryStream.WriteAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!",
-        "override NCode.Buffers.PooledMemoryStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask",
+        "override NCode.Buffers.PooledMemoryStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask",
         "override NCode.Buffers.PooledMemoryStream.WriteByte(byte value) -> void"
       ]
     },

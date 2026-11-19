@@ -592,6 +592,19 @@ public class PooledMemoryStreamTests
     }
 
     [Fact]
+    public async Task ReadAsync_WithoutAToken_Reads()
+    {
+        using PooledMemoryStream stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        stream.Write([1, 2, 3]);
+        stream.Position = 0;
+        var buffer = new byte[4];
+
+        var count = await stream.ReadAsync(buffer.AsMemory());
+
+        Assert.Equal(3, count);
+    }
+
+    [Fact]
     public async Task ReadAsync_Array_Reads()
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
@@ -617,6 +630,17 @@ public class PooledMemoryStreamTests
 
         Assert.Equal(3, stream.Position);
         Assert.Equal<byte>([1, 2, 3], stream.WrittenSpan.ToArray());
+    }
+
+    [Fact]
+    public async Task WriteAsync_WithoutAToken_Writes()
+    {
+        using PooledMemoryStream stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        var data = new byte[] { 1, 2, 3 };
+
+        await stream.WriteAsync(data.AsMemory());
+
+        Assert.Equal(3, stream.Length);
     }
 
     [Fact]

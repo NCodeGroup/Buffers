@@ -331,6 +331,7 @@ public sealed class PooledMemoryStream : Stream
     /// <exception cref="IOException">The write would end past <see cref="Array.MaxLength"/>.</exception>
     public override void WriteByte(byte value) => Write(new ReadOnlySpan<byte>(in value));
 
+#pragma warning disable RS0027 // Stream declares these overloads with a default token; the overrides keep it, as MemoryStream's do.
     /// <inheritdoc />
     /// <remarks>
     /// This method completes synchronously, and returns a canceled task when <paramref name="cancellationToken"/> is
@@ -338,7 +339,7 @@ public sealed class PooledMemoryStream : Stream
     /// </remarks>
     public override ValueTask<int> ReadAsync(
         Memory<byte> buffer,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         if (cancellationToken.IsCancellationRequested)
@@ -348,6 +349,7 @@ public sealed class PooledMemoryStream : Stream
 
         return new ValueTask<int>(Read(buffer.Span));
     }
+#pragma warning restore RS0027
 
     /// <inheritdoc />
     /// <remarks>
@@ -369,6 +371,7 @@ public sealed class PooledMemoryStream : Stream
         return Task.FromResult(Read(buffer, offset, count));
     }
 
+#pragma warning disable RS0027 // Stream declares these overloads with a default token; the overrides keep it, as MemoryStream's do.
     /// <inheritdoc />
     /// <remarks>
     /// This method completes synchronously, and returns a canceled task when <paramref name="cancellationToken"/> is
@@ -376,7 +379,7 @@ public sealed class PooledMemoryStream : Stream
     /// </remarks>
     public override ValueTask WriteAsync(
         ReadOnlyMemory<byte> buffer,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     )
     {
         if (cancellationToken.IsCancellationRequested)
@@ -387,6 +390,7 @@ public sealed class PooledMemoryStream : Stream
         Write(buffer.Span);
         return ValueTask.CompletedTask;
     }
+#pragma warning restore RS0027
 
     /// <inheritdoc />
     /// <remarks>
