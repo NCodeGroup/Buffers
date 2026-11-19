@@ -31,11 +31,13 @@ through `Reveal()` and its siblings; it lives in memory only, with no serializat
   debugger, so a log, an interpolation and a debugger show no content.
 - `Reveal()` returns a `ReadOnlySpan<T>` and `RevealMemory()` a `ReadOnlyMemory<T>`; `CopyTo(Span<T>)` copies out and
   throws `ArgumentException` when the destination is too short.
-- `FixedTimeEquals(ReadOnlySpan<T>)` and `Equals(Secret<T>?)` compare contents with `CryptographicOperations.FixedTimeEquals`
-  (ADR-1016). A null is not equal, and the same instance is equal.
+- `FixedTimeEquals(ReadOnlySpan<T>)` and `Equals(Secret<T>?)` compare contents with
+  `CryptographicOperations.FixedTimeEquals` (ADR-1016). A null is not equal, and the same instance is equal while it
+  is not disposed.
 - `GetHashCode()` returns `Length`, so it never depends on the content.
 - `Dispose()` takes the owner with `Interlocked.Exchange` and disposes it once. After it, every member that reads the
-  value throws `ObjectDisposedException`.
+  value throws `ObjectDisposedException`, and `Equals` throws it too when it is given the same instance; `Equals`
+  given a null returns `false` without reading the value.
 
 ## Options considered
 

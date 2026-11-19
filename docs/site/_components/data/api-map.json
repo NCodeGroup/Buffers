@@ -2384,7 +2384,7 @@
       ],
       "summary": "Compares the contents of two secrets in fixed time. It returns `true` when the other secret is the same instance, or has the same length and contents, and `false` for null. `GetHashCode` returns `Length`, so the hash code reveals nothing about the contents.",
       "constraint": "unmanaged",
-      "throws": "`ObjectDisposedException` when this secret or the other one has been disposed.",
+      "throws": "`ObjectDisposedException` when this secret or the other one has been disposed, also when the other one is this secret; comparing with null returns `false`.",
       "page": "/guides/hold-a-secret/",
       "source": "Api.SecretT.Equals",
       "api": [
