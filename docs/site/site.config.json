@@ -26,26 +26,39 @@
       "items": [
         {
           "label": "Secrets",
+          "collapsed": true,
           "items": [
             "guides/derive-a-key-from-a-password",
-            "guides/verify-a-mac",
-            "guides/byte-array-apis",
-            "guides/encode-a-secret",
-            "guides/secret-of-unknown-length",
-            "guides/grow-a-contiguous-secret",
-            "guides/read-a-secret-without-a-string",
-            "guides/hold-a-secret",
-            "guides/secrets-across-await",
-            "guides/pipes-and-streams",
-            "guides/test-zeroing",
-            "guides/review-checklist"
+            { "slug": "guides/verify-a-mac", "label": "Verify a MAC" },
+            { "slug": "guides/byte-array-apis", "label": "Work with byte[] APIs" },
+            { "slug": "guides/encode-a-secret", "label": "Encode and decode a secret" },
+            { "slug": "guides/secret-of-unknown-length", "label": "Build a secret of any length" },
+            { "slug": "guides/grow-a-contiguous-secret", "label": "Grow a secret in one piece" },
+            { "slug": "guides/read-a-secret-without-a-string", "label": "Read a secret into a buffer" },
+            { "slug": "guides/hold-a-secret", "label": "Hold a secret in Secret<T>" },
+            { "slug": "guides/secrets-across-await", "label": "Keep a secret across await" },
+            { "slug": "guides/pipes-and-streams", "label": "Clean up pipes and streams" },
+            { "slug": "guides/test-zeroing", "label": "Test that secrets are zeroed" },
+            { "slug": "guides/review-checklist", "label": "Review a change" }
           ]
         },
         {
           "label": "Text and buffers",
-          "items": ["guides/strict-decoding", "guides/fixed-size-buffer", "guides/split-text"]
+          "collapsed": true,
+          "items": [
+            { "slug": "guides/strict-decoding", "label": "Reject malformed text" },
+            { "slug": "guides/fixed-size-buffer", "label": "Write into a fixed buffer" },
+            { "slug": "guides/split-text", "label": "Split text without copies" }
+          ]
         },
-        { "label": "Your build", "items": ["guides/ban-leaky-apis", "guides/watch-the-secure-pool"] }
+        {
+          "label": "Your build",
+          "collapsed": true,
+          "items": [
+            { "slug": "guides/ban-leaky-apis", "label": "Ban the leaky APIs" },
+            { "slug": "guides/watch-the-secure-pool", "label": "Watch the secure pool" }
+          ]
+        }
       ]
     },
     { "label": "Concepts", "items": ["concepts/how-secrets-leak", "concepts/ownership", "concepts/how-the-buffers-work", "concepts/design-decisions"] },
