@@ -53,6 +53,57 @@ public class SecureEncodingExtensionsTests
         public override int GetMaxCharCount(int byteCount) => byteCount;
     }
 
+    private sealed class ShortWritingEncoding : Encoding
+    {
+        public override int GetByteCount(char[] chars, int index, int count) => count + 1;
+
+        public override int GetByteCount(ReadOnlySpan<char> chars) => chars.Length + 1;
+
+        public override int GetBytes(
+            char[] chars,
+            int charIndex,
+            int charCount,
+            byte[] bytes,
+            int byteIndex
+        ) => throw new NotSupportedException();
+
+        public override int GetBytes(ReadOnlySpan<char> chars, Span<byte> bytes)
+        {
+            for (var i = 0; i < chars.Length; i++)
+            {
+                bytes[i] = (byte)chars[i];
+            }
+
+            return chars.Length;
+        }
+
+        public override int GetCharCount(byte[] bytes, int index, int count) => count + 1;
+
+        public override int GetCharCount(ReadOnlySpan<byte> bytes) => bytes.Length + 1;
+
+        public override int GetChars(
+            byte[] bytes,
+            int byteIndex,
+            int byteCount,
+            char[] chars,
+            int charIndex
+        ) => throw new NotSupportedException();
+
+        public override int GetChars(ReadOnlySpan<byte> bytes, Span<char> chars)
+        {
+            for (var i = 0; i < bytes.Length; i++)
+            {
+                chars[i] = (char)bytes[i];
+            }
+
+            return bytes.Length;
+        }
+
+        public override int GetMaxByteCount(int charCount) => charCount + 1;
+
+        public override int GetMaxCharCount(int byteCount) => byteCount + 1;
+    }
+
     #region RentBytes Tests
 
     [Fact]
@@ -206,6 +257,19 @@ public class SecureEncodingExtensionsTests
         Assert.Equal(-1, firstNonZero);
     }
 
+    [Fact]
+    public void RentBytes_EncodingWritesFewerThanItCounted_ReturnsOnlyTheWrittenBytes()
+    {
+        const string text = "abc";
+        var encoding = new ShortWritingEncoding();
+
+        using var owner = encoding.RentBytes(text, isSensitive: false, out Memory<byte> bytes);
+
+        Assert.Equal(3, bytes.Length);
+        var matches = bytes.Span.SequenceEqual("abc"u8);
+        Assert.True(matches);
+    }
+
     #endregion
 
     #region RentChars Tests
@@ -322,6 +386,18 @@ public class SecureEncodingExtensionsTests
         Span<char> pageChars = page;
         var firstNonZero = pageChars.IndexOfAnyExcept('\0');
         Assert.Equal(-1, firstNonZero);
+    }
+
+    [Fact]
+    public void RentChars_EncodingWritesFewerThanItCounted_ReturnsOnlyTheWrittenChars()
+    {
+        var encoding = new ShortWritingEncoding();
+
+        using var owner = encoding.RentChars("abc"u8, isSensitive: false, out Memory<char> chars);
+
+        Assert.Equal(3, chars.Length);
+        var matches = chars.Span.SequenceEqual("abc");
+        Assert.True(matches);
     }
 
     #endregion
