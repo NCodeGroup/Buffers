@@ -52,10 +52,12 @@ public class PooledTextBuilderTests
     [Fact]
     public void Constructor_NegativeInitialCapacity_ThrowsArgumentOutOfRangeException()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
         {
             _ = new PooledTextBuilder(isSensitive: false, initialCapacity: -1);
         });
+
+        Assert.Equal("initialCapacity", exception.ParamName);
     }
 
     [Fact]
@@ -293,11 +295,13 @@ public class PooledTextBuilderTests
     [Fact]
     public void AppendSpan_Negative_ThrowsArgumentOutOfRangeException()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
         {
             var builder = new PooledTextBuilder(isSensitive: false);
             _ = builder.AppendSpan(-1);
         });
+
+        Assert.Equal("length", exception.ParamName);
     }
 
     #endregion
