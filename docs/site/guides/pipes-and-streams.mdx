@@ -6,6 +6,7 @@ description: Make a Pipe, or a PipeReader over a stream, take its buffers from a
 import LeakCard from '@site/components/LeakCard.astro';
 import Pinned from '@site/components/Pinned.astro';
 import PinNotes from '@site/components/PinNotes.astro';
+import Pitfalls from '@site/components/Pitfalls.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
 
@@ -91,19 +92,28 @@ Dispose the lease before you call `AdvanceTo`, as the sample does, and use the s
 
 [Ways to get it wrong](/reference/pitfalls/) has more, each with its evidence.
 
-- **A minimum segment size above 4096 bytes.** *You write* `new PipeOptions(pool: pool, minimumSegmentSize: 8192)`.
-  *What happens:* the pool rents a buffer larger than a page as a pinned array of its own, which it does not keep for
-  reuse. Every segment of the pipe is one of those.
-  <Proof test="SecureMemoryPoolTests.Rent_LargeBuffer_IsNotPooled" /> *Write instead:* a minimum segment size of 4096
-  bytes or less, so the pipe's buffers are the pool's pages.
-- **Copying out of the pipe.** *You write* `result.Buffer.ToArray()`, as the samples do to check what was read.
-  *What happens:* the pool covers the pipe's buffers only. The copy is an ordinary array that nothing zeroes.
-  <LeakCard leak="L9" /> *Write instead:* read the sequence in place, or copy into a sensitive buffer, such as one
-  from `BufferFactory.Rent` with `isSensitive: true`.
-- **Bytes left in the pipe.** *You write* a read that does not consume what it read, or code that completes only one
-  end. *What happens:* a buffer that holds bytes nobody consumed stays rented, and unzeroed, until both ends complete.
-  <Proof sample="SitePipelinesUnconsumed" /> *Write instead:* consume what you read with `AdvanceTo`, and complete both
-  ends on every path, such as in a `finally` block.
+<Pitfalls>
+
+- **A minimum segment size above 4096 bytes.**
+  - *You write* `new PipeOptions(pool: pool, minimumSegmentSize: 8192)`.
+  - *What happens:* the pool rents a buffer larger than a page as a pinned array of its own, which it does not keep
+    for reuse. Every segment of the pipe is one of those.
+    <Proof test="SecureMemoryPoolTests.Rent_LargeBuffer_IsNotPooled" />
+  - *Write instead:* a minimum segment size of 4096 bytes or less, so the pipe's buffers are the pool's pages.
+- **Copying out of the pipe.**
+  - *You write* `result.Buffer.ToArray()`, as the samples do to check what was read.
+  - *What happens:* the pool covers the pipe's buffers only. The copy is an ordinary array that nothing zeroes.
+    <LeakCard leak="L9" />
+  - *Write instead:* read the sequence in place, or copy into a sensitive buffer, such as one from
+    `BufferFactory.Rent` with `isSensitive: true`.
+- **Bytes left in the pipe.**
+  - *You write* a read that does not consume what it read, or code that completes only one end.
+  - *What happens:* a buffer that holds bytes nobody consumed stays rented, and unzeroed, until both ends complete.
+    <Proof sample="SitePipelinesUnconsumed" />
+  - *Write instead:* consume what you read with `AdvanceTo`, and complete both ends on every path, such as in a
+    `finally` block.
+
+</Pitfalls>
 
 Bytes left in the pipe, as code:
 

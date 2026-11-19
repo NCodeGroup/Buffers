@@ -6,6 +6,7 @@ description: When an API insists on an array, keep that array from becoming one 
 import LeakCard from '@site/components/LeakCard.astro';
 import Pinned from '@site/components/Pinned.astro';
 import PinNotes from '@site/components/PinNotes.astro';
+import Pitfalls from '@site/components/Pitfalls.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
 
@@ -67,37 +68,48 @@ Both versions import the same key and seal a message the other side opens: their
 
 [Ways to get it wrong](/reference/pitfalls/) has more, each with its evidence.
 
-- **`return key;` from inside the scope.** *You write* `return key;` inside the `using` block, in a method that
-  returns `byte[]`. *What happens:* it compiles, because the lifetime converts to its array, and `Dispose` runs after
-  the `return`. The caller gets 32 zeros, and zeros work as a key, so nothing fails.
+<Pitfalls>
 
-  ```cs snippet=SiteByteArrayReturnTrap title="Compiles, and returns zeros"
-  ```
+- **`return key;` from inside the scope.**
+  - *You write* `return key;` inside the `using` block, in a method that returns `byte[]`.
+  - *What happens:* it compiles, because the lifetime converts to its array, and `Dispose` runs after the `return`.
+    The caller gets 32 zeros, and zeros work as a key, so nothing fails. <Proof sample="SiteByteArrayReturnTrap" />
 
-  <Proof sample="SiteByteArrayReturnTrap" /> *Write instead:* do the work inside the scope, or hand the lifetime
-  itself to the caller to dispose, as [Ownership](/concepts/ownership/#handing-it-over) describes.
-  [Returning the array from inside the scope](/reference/pitfalls/#returning-the-array-from-inside-the-scope)
-- **Passing a lifetime where an `object` is expected.** *You write* a lifetime as an argument to a logger or to
-  `string.Format`. *What happens:* `SecureArrayLifetime<T>` converts to `T[]`, and an array to `object`, so the call
-  compiles and receives the key's own array. <Proof source="SecureArrayLifetime.ToArray" /> *Write instead:* keep a
-  lifetime, and its array, out of anything that logs or formats.
-  [Passing a lifetime as an object](/reference/pitfalls/#passing-a-lifetime-as-an-object)
-- **Forgetting the copy the API keeps.** *You write* `aes.Key = key;` and dispose the lifetime. *What happens:* the
-  setter copies the array, and zeroing your array leaves that copy in the `Aes` object.
+    ```cs snippet=SiteByteArrayReturnTrap title="Compiles, and returns zeros"
+    ```
 
-  ```cs snippet=SiteKeySetterCopies title="The setter copies"
-  ```
+  - *Write instead:* do the work inside the scope, or hand the lifetime itself to the caller to dispose, as
+    [Ownership](/concepts/ownership/#handing-it-over) describes.
+    [Returning the array from inside the scope](/reference/pitfalls/#returning-the-array-from-inside-the-scope)
+- **Passing a lifetime where an `object` is expected.**
+  - *You write* a lifetime as an argument to a logger or to `string.Format`.
+  - *What happens:* `SecureArrayLifetime<T>` converts to `T[]`, and an array to `object`, so the call compiles and
+    receives the key's own array. <Proof source="SecureArrayLifetime.ToArray" />
+  - *Write instead:* keep a lifetime, and its array, out of anything that logs or formats.
+    [Passing a lifetime as an object](/reference/pitfalls/#passing-a-lifetime-as-an-object)
+- **Forgetting the copy the API keeps.**
+  - *You write* `aes.Key = key;` and dispose the lifetime.
+  - *What happens:* the setter copies the array, and zeroing your array leaves that copy in the `Aes` object.
+    <Proof sample="SiteKeySetterCopies" />
 
-  <Proof sample="SiteKeySetterCopies" /> *Write instead:* dispose the algorithm object in the same scope as the key
-  it took. [An API object that keeps the key](/reference/pitfalls/#an-api-object-that-keeps-the-key)
-- **Calling `CreatePinnedArray` on a hot path.** *You write* it in code that runs for every request. *What happens:*
-  every call allocates a new pinned array; nothing is pooled. <Proof source="SecureArrayLifetime.Allocate" /> *Write
-  instead:* for a buffer you need again and again, rent one: [Which buffer?](/start/which-buffer/)
-- **Treating a returned array as if it had been pinned.** *You write* `GetSecureLifetime()` over an array an API
-  returned. *What happens:* it pins nothing. It zeroes the array where it is now, and a copy the collector left at an
-  earlier address is out of its reach. <Proof source="BufferExtensions.GetSecureLifetime" /> <LeakCard leak="L1" />
-  *Write instead:* the API's span overload, where it has one.
-  [Expecting GetSecureLifetime to pin](/reference/pitfalls/#expecting-getsecurelifetime-to-pin)
+    ```cs snippet=SiteKeySetterCopies title="The setter copies"
+    ```
+
+  - *Write instead:* dispose the algorithm object in the same scope as the key it took.
+    [An API object that keeps the key](/reference/pitfalls/#an-api-object-that-keeps-the-key)
+- **Calling `CreatePinnedArray` on a hot path.**
+  - *You write* it in code that runs for every request.
+  - *What happens:* every call allocates a new pinned array; nothing is pooled.
+    <Proof source="SecureArrayLifetime.Allocate" />
+  - *Write instead:* for a buffer you need again and again, rent one: [Which buffer?](/start/which-buffer/)
+- **Treating a returned array as if it had been pinned.**
+  - *You write* `GetSecureLifetime()` over an array an API returned.
+  - *What happens:* it pins nothing. It zeroes the array where it is now, and a copy the collector left at an earlier
+    address is out of its reach. <Proof source="BufferExtensions.GetSecureLifetime" /> <LeakCard leak="L1" />
+  - *Write instead:* the API's span overload, where it has one.
+    [Expecting GetSecureLifetime to pin](/reference/pitfalls/#expecting-getsecurelifetime-to-pin)
+
+</Pitfalls>
 
 ## What this does not fix
 
