@@ -31,14 +31,15 @@ the name is a public constant, `BufferMetrics.MeterName`.**
   - `ncode.buffers.secure_pool.returns`;
   - `ncode.buffers.secure_pool.trimmed`, which adds the number of cached buffers a high-pressure trim drops.
 - Names are lowercase and dotted, units are UCUM annotations and the one attribute has four values, so no instrument's
-  series depends on the data (ADR-0113's other rules).
+  series depends on the data (project-template ADR-0113's other rules).
 - Tests read the instruments with `MetricCollector<long>` from `Microsoft.Extensions.Diagnostics.Testing`, in the test
   project only.
 
 ## Options considered
 
-- An `IMeterFactory` parameter on `SecureMemoryPool<T>`, as ADR-0113 says. Rejected: `Shared` and `BufferFactory` have no
-  host to take a factory from, so the parameter would be null on the path almost every caller uses.
+- An `IMeterFactory` parameter on `SecureMemoryPool<T>`, as project-template ADR-0113 says. Rejected: `Shared` and
+  `BufferFactory` have no host to take a factory from, so the parameter would be null on the path almost every caller
+  uses.
 - A static `Meter` (chosen). The meter exists with the static pool, and a host needs no setup to listen to it.
 
 ## Consequences
