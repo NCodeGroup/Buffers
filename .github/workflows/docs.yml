@@ -1,8 +1,9 @@
 name: Documentation site
 
 # Builds the documentation site from docs/site/ with the shared toolchain in NCodeGroup/docs (ADR-1009), on every pull
-# request and every push to the default branch, so a page that names a sample key no test defines, or links to a page
-# that does not exist, fails here. The build is kept for a week as the github-pages artifact, which a reviewer can
+# request and every push to the default branch, so a page that names a sample key no test defines, links to a page that
+# does not exist, or has an element that leaves its content column at 1440, 1280, 1024 or 390 px, fails here. The build
+# is kept for a week as the github-pages artifact, which a reviewer can
 # download and browse. A run on the default branch also publishes it to GitHub Pages, at
 # https://ncodegroup.github.io/Buffers/ (ADR-1025): the repository's Pages source is GitHub Actions, and the
 # github-pages environment takes deployments from the default branch only. The toolchain is pinned by commit, which
@@ -31,7 +32,7 @@ jobs:
       pages: write # reads the site's URL, and creates the deployment
       id-token: write # proves to GitHub Pages where the deployment comes from
     # Taken the day it is released, not after ADR-0009's cooldown, while the toolchain is built out (ADR-1024).
-    uses: NCodeGroup/docs/.github/workflows/site.yml@0dbafce6bf43f8bea0321d62183aa0322fb1c2c3 # v0.13.0
+    uses: NCodeGroup/docs/.github/workflows/site.yml@dc34a95304fd9f750b911b1ca6f41f1a21a7918c # v0.15.0
     with:
       content-path: docs/site
       deploy: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
