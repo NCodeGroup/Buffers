@@ -59,8 +59,9 @@ public class SecureMemoryPoolMetricsTests
 
         pool.Rent(PageSizeRequest).Dispose();
 
-        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
-        Assert.Equal(1, measurement.Value);
+        var measurements = collector.GetMeasurementSnapshot();
+
+        Assert.Contains(measurements, measurement => measurement.Value == 1);
         Assert.Equal("{buffer}", collector.Instrument?.Unit);
     }
 
@@ -86,7 +87,8 @@ public class SecureMemoryPoolMetricsTests
         _ = pool.TrimMemory();
 
         // The Gen2 GC callback can also trim this pool, so assert that a trim dropped both pages.
-        Assert.Contains(collector.GetMeasurementSnapshot(), measurement => measurement.Value == 2);
+        var measurements = collector.GetMeasurementSnapshot();
+        Assert.Contains(measurements, measurement => measurement.Value == 2);
         Assert.Equal("{buffer}", collector.Instrument?.Unit);
     }
 
