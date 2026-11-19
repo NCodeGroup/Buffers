@@ -6,9 +6,11 @@ changes it.
 
 ## Scope
 
-NCode.Buffers stays a small library: pinned, pooled buffers that zero themselves for secrets, fixed-size buffer writers,
-sequence helpers and string splitting without substring copies. Features outside that, such as encryption, key storage
-or serialization, belong in other packages.
+NCode.Buffers stays a small library: pinned, pooled buffers that zero themselves for secrets; helpers that rent a
+secret's bytes or text from random bytes, text, Base64, Base64url or hex; growable writers, streams and text builders
+that zero each buffer they outgrow; a holder that never prints a secret; fixed-size buffer writers, sequence helpers,
+metrics for the secure pool and string splitting without substring copies. Features outside that, such as encryption,
+key storage or serialization, belong in other packages.
 
 ## Next Twelve Months
 

@@ -140,8 +140,9 @@ A pool of your own, and what disposing it does:
 - **A new pinned array per call above a page, or from `CreatePinnedArray`.** Nothing caches them.
   <Proof test="SecureMemoryPoolTests.Rent_LargeBuffer_IsNotPooled" /> <Proof source="SecureArrayLifetime.Allocate" />
 - **A cache with no size limit of its own.** <Proof source="Adr1015" />
-- **No metrics, and no benchmarks.** The library defines no meters, instruments or activity sources.
-  <Proof source="Metrics.None" /> Measure in your workload.
+- **No benchmarks.** `SecureMemoryPool<T>` counts its rentals, returns and trimmed buffers on the `NCode.Buffers` meter,
+  and the library defines no activity sources. <Proof source="Metrics.Instruments" /> Measure in your workload:
+  [Watch the secure pool with metrics](/guides/watch-the-secure-pool/).
 
 <Related>
 - **Learn** [Quick start](/start/quick-start/)

@@ -107,7 +107,7 @@ public class SequenceExtensionsTests
     {
         using var sequence = new Sequence<byte>();
 
-        var testData = new byte[] { 0xDE, 0xAD, 0xBE, 0xEF };
+        byte[] testData = [0xDE, 0xAD, 0xBE, 0xEF];
         var span = sequence.GetSpan(testData.Length);
         testData.CopyTo(span);
         sequence.Advance(testData.Length);
@@ -141,7 +141,7 @@ public class SequenceExtensionsTests
     {
         using var sequence = new Sequence<byte>(SecureMemoryPool<byte>.Shared);
 
-        var testData = new byte[] { 1, 2, 3, 4, 5 };
+        byte[] testData = [1, 2, 3, 4, 5];
         var span = sequence.GetSpan(testData.Length);
         testData.CopyTo(span);
         sequence.Advance(testData.Length);
@@ -314,7 +314,7 @@ public class SequenceExtensionsTests
     {
         using var sequence = new Sequence<byte>();
 
-        var testData = new byte[] { 1, 2, 3, 4, 5 };
+        byte[] testData = [1, 2, 3, 4, 5];
         var span = sequence.GetSpan(testData.Length);
         testData.CopyTo(span);
         sequence.Advance(testData.Length);
@@ -625,7 +625,7 @@ public class SequenceExtensionsTests
     {
         var sequence = new Sequence<byte>();
 
-        var testData = new byte[] { 0xDE, 0xAD, 0xBE, 0xEF };
+        byte[] testData = [0xDE, 0xAD, 0xBE, 0xEF];
         var writeSpan = sequence.GetSpan(testData.Length);
         testData.CopyTo(writeSpan);
         sequence.Advance(testData.Length);
@@ -903,7 +903,7 @@ public class SequenceExtensionsTests
     {
         var sequence = new Sequence<byte>();
 
-        var testData = new byte[] { 1, 2, 3, 4, 5 };
+        byte[] testData = [1, 2, 3, 4, 5];
         var writeSpan = sequence.GetSpan(testData.Length);
         testData.CopyTo(writeSpan);
         sequence.Advance(testData.Length);
@@ -1047,6 +1047,99 @@ public class SequenceExtensionsTests
 
     #endregion
 
+    #region ReadOnlySequence GetSpanLease Tests
+
+    [Fact]
+    public void ReadOnlySequenceGetSpanLease_SingleSegment_ReturnsTheSegmentWithoutCopying()
+    {
+        byte[] array = [1, 2, 3];
+        var sequence = new ReadOnlySequence<byte>(array);
+
+        using var lease = sequence.GetSpanLease(isSensitive: false);
+
+        var overlaps = lease.Span.Overlaps(array);
+        var matches = lease.Span.SequenceEqual(array);
+
+        Assert.True(overlaps);
+        Assert.True(matches);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ReadOnlySequenceGetSpanLease_MultipleSegments_CopiesIntoARentedBuffer(
+        bool isSensitive
+    )
+    {
+        byte[] firstArray = [1, 2, 3];
+        byte[] lastArray = [4, 5, 6];
+        var first = new MemorySegment<byte>(firstArray);
+        var last = first.Append(lastArray);
+        var sequence = new ReadOnlySequence<byte>(first, 0, last, last.Memory.Length);
+
+        using var lease = sequence.GetSpanLease(isSensitive);
+
+        byte[] expected = [1, 2, 3, 4, 5, 6];
+        var matches = lease.Span.SequenceEqual(expected);
+        var overlapsFirst = lease.Span.Overlaps(firstArray);
+        var overlapsLast = lease.Span.Overlaps(lastArray);
+
+        Assert.True(matches);
+        Assert.False(overlapsFirst);
+        Assert.False(overlapsLast);
+    }
+
+    [Fact]
+    public void ReadOnlySequenceGetSpanLease_WhenSensitive_ZeroesTheCopyOnDispose()
+    {
+        const int segmentLength = 3000;
+        var firstArray = new byte[segmentLength];
+        var lastArray = new byte[segmentLength];
+        firstArray.AsSpan().Fill(0xAB);
+        lastArray.AsSpan().Fill(0xAB);
+        var first = new MemorySegment<byte>(firstArray);
+        var last = first.Append(lastArray);
+        var sequence = new ReadOnlySequence<byte>(first, 0, last, last.Memory.Length);
+        var lease = sequence.GetSpanLease(isSensitive: true);
+        var copy = lease.Span;
+        Assert.Equal(segmentLength * 2, copy.Length);
+        var beforeDispose = copy.ToArray();
+        Assert.All(beforeDispose, value => Assert.Equal(0xAB, value));
+
+        lease.Dispose();
+
+        var afterDispose = copy.ToArray();
+        Assert.All(afterDispose, value => Assert.Equal(0, value));
+        Assert.All(firstArray, value => Assert.Equal(0xAB, value));
+    }
+
+    [Fact]
+    public void ReadOnlySequenceGetSpanLease_Empty_ReturnsAnEmptySpan()
+    {
+        var sequence = ReadOnlySequence<byte>.Empty;
+
+        using var lease = sequence.GetSpanLease(isSensitive: false);
+
+        Assert.True(lease.Span.IsEmpty);
+    }
+
+    [Fact]
+    public void ReadOnlySequenceGetSpanLease_LongerThanIntMaxValue_ThrowsOverflowException()
+    {
+        var first = new FarSegment(new byte[1], runningIndex: 0);
+        var last = new FarSegment(new byte[1], runningIndex: int.MaxValue);
+        first.SetNext(last);
+        var sequence = new ReadOnlySequence<byte>(first, 0, last, 1);
+        Assert.Equal((long)int.MaxValue + 1, sequence.Length);
+
+        Assert.Throws<OverflowException>(() =>
+        {
+            using var lease = sequence.GetSpanLease(isSensitive: false);
+        });
+    }
+
+    #endregion
+
     // Fills one page of the writer and one element more, so it holds two segments; returns the elements written.
     private static int WriteTwoSegments(IBufferWriter<LeaseElement> writer, LeaseElement filler)
     {
@@ -1061,4 +1154,19 @@ public class SequenceExtensionsTests
 
     // The zeroing test rents an element type of its own, so no other test's rentals reach its SecureMemoryPool<T>.Shared.
     private readonly record struct LeaseElement(long First, long Second);
+
+    // A segment whose RunningIndex is set directly, so a sequence can be long without allocating its elements.
+    private sealed class FarSegment : ReadOnlySequenceSegment<byte>
+    {
+        public FarSegment(ReadOnlyMemory<byte> memory, long runningIndex)
+        {
+            Memory = memory;
+            RunningIndex = runningIndex;
+        }
+
+        public void SetNext(FarSegment next)
+        {
+            Next = next;
+        }
+    }
 }

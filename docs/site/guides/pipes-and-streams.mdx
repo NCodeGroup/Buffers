@@ -71,6 +71,27 @@ A `PipeReader` made over a stream rents its buffers the same way, and takes the 
 <Proof sample="SitePipelinesStreamReader" /> The reader returned each buffer it consumed to the pool, which zeroed
 it; completing the reader returns any it still holds. The pool is yours to dispose, as before.
 
+### One span from a pipe
+
+A read can come back in more than one segment, and an API that wants one span, such as a MAC or a cipher, can't take a
+sequence. `GetSpanLease` on the sequence returns its own span when it has one segment, and a copy in a rented buffer
+when it has several.
+
+<Pinned tone="fix">
+```cs snippet=SitePipelinesSequenceLease title="OneSpan.cs" "GetSpanLease(isSensitive: true)"
+```
+</Pinned>
+
+<PinNotes tone="fix">
+
+1. The copy is made in a buffer from `Rent` with `isSensitive: true`, which is pinned and zeroed when the lease is
+   disposed, so the span of a split read never sits in an ordinary array. <Proof sample="SitePipelinesSequenceLease" />
+   <Proof test="SequenceExtensionsTests.ReadOnlySequenceGetSpanLease_MultipleSegments_CopiesIntoARentedBuffer" />
+
+</PinNotes>
+
+Dispose the lease before you call `AdvanceTo`, as the sample does, and use the span only inside it.
+
 ## Pitfalls
 
 [Ways to get it wrong](/reference/pitfalls/) has more, each with its evidence.
@@ -110,6 +131,7 @@ Bytes left in the pipe, as code:
 - The minimum segment size is 4096 bytes or less.
 - Both ends of the pipe are completed on every path.
 - Nothing copies the pipe's bytes into an ordinary array.
+- A read that an API wants as one span is read with `GetSpanLease(isSensitive: true)`, and the lease is disposed.
 
 <Related>
 - **Do** [Keep a secret across an await, or in a field](/guides/secrets-across-await/)

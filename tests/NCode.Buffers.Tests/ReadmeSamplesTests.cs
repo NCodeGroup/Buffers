@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 using System.Buffers;
+using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -10,6 +12,10 @@ using ReadmeSamples;
 namespace NCode.Buffers.Tests;
 
 // `dotnet mdsnippets` copies each begin-snippet block into README.md and src/NCode.Buffers/README.md (ADR-1005).
+// The PoolMetrics sample listens to the static, process-wide meter, so the class runs alone, after the parallel test
+// classes, and no other test records on the meter while it runs.
+[CollectionDefinition(nameof(ReadmeSamplesTests), DisableParallelization = true)]
+[Collection(nameof(ReadmeSamplesTests))]
 public class ReadmeSamplesTests
 {
     private static void Process(ReadOnlySpan<byte> data) => Assert.Equal("payload"u8, data);
@@ -124,6 +130,70 @@ public class ReadmeSamplesTests
 
     #endregion
 
+    #region Rental Tests
+
+    [Fact]
+    public void RandomKey_Rent_ReturnsThirtyTwoRandomBytes()
+    {
+        // begin-snippet: RandomKey
+        // 32 random bytes in a pinned, pooled buffer that is zeroed on dispose.
+        using var owner = BufferFactory.RentRandom(32, isSensitive: true, out Span<byte> key);
+        // end-snippet
+
+        Assert.Equal(32, key.Length);
+    }
+
+    [Fact]
+    public void EncodeText_RentBytesThenChars_RoundTrips()
+    {
+        // begin-snippet: EncodeText
+        // Encode text to UTF-8 bytes in a rented buffer, and decode the bytes back to chars.
+        using var bytesOwner = SecureEncoding.UTF8.RentBytes(
+            "secret",
+            isSensitive: true,
+            out Span<byte> utf8
+        );
+        using var charsOwner = SecureEncoding.UTF8.RentChars(
+            utf8,
+            isSensitive: true,
+            out Span<char> chars
+        );
+        // end-snippet
+
+        var decoded = chars.ToString();
+
+        Assert.Equal("secret"u8, utf8);
+        Assert.Equal("secret", decoded);
+    }
+
+    [Fact]
+    public void DecodeBinaryText_RentDecodedThenEncoded_RoundTrips()
+    {
+        // begin-snippet: DecodeBinaryText
+        // Decode Base64Url text to bytes, then encode the bytes as lowercase hex.
+        using var bytesOwner = BinaryTextEncoding.RentDecoded(
+            "-_8B",
+            BinaryTextFormat.Base64Url,
+            isSensitive: true,
+            out Span<byte> bytes
+        );
+        using var textOwner = BinaryTextEncoding.RentEncoded(
+            bytes,
+            BinaryTextFormat.HexLower,
+            isSensitive: true,
+            out Span<char> hex
+        );
+        // end-snippet
+
+        var decoded = bytes.ToArray();
+        var encoded = hex.ToString();
+
+        Assert.Equal([0xFB, 0xFF, 0x01], decoded);
+        Assert.Equal("fbff01", encoded);
+    }
+
+    #endregion
+
     #region Buffer Writer Tests
 
     [Fact]
@@ -191,6 +261,22 @@ public class ReadmeSamplesTests
     }
 
     [Fact]
+    public void ReadOnlySequenceLease_Lease_ReturnsContiguousSpan()
+    {
+        // begin-snippet: ReadOnlySequenceLease
+        byte[] head = "pay"u8.ToArray();
+        byte[] tail = "load"u8.ToArray();
+        var first = new MemorySegment<byte>(head);
+        var last = first.Append(tail);
+        var sequence = new ReadOnlySequence<byte>(first, 0, last, last.Memory.Length);
+
+        // The data spans two segments, so it is copied into a rented buffer.
+        using var lease = sequence.GetSpanLease(isSensitive: true);
+        Process(lease.Span);
+        // end-snippet
+    }
+
+    [Fact]
     public void ConsumeAsContiguousSpanSample_Runs()
     {
         // begin-snippet: ConsumeAsContiguousSpan
@@ -214,6 +300,117 @@ public class ReadmeSamplesTests
         // end-snippet
 
         Assert.True(empty.Memory.IsEmpty);
+    }
+
+    #endregion
+
+    #region Pooled Writer Tests
+
+    [Fact]
+    public void ContiguousWriter_WriteJson_HashesWrittenSpan()
+    {
+        // begin-snippet: ContiguousWriter
+        using var writer = BufferFactory.CreateContiguousBufferWriter(isSensitive: true);
+        using (var json = new Utf8JsonWriter(writer))
+        {
+            JsonSerializer.Serialize(json, new { Id = 42 });
+        }
+
+        // The written data is always one span, so it can be hashed without a copy.
+        byte[] hash = SHA256.HashData(writer.WrittenSpan);
+        // end-snippet
+
+        var expected = SHA256.HashData("""{"Id":42}"""u8);
+
+        Assert.Equal(expected, hash);
+    }
+
+    [Fact]
+    public void PooledStream_WriteThenRead_ReturnsWrittenBytes()
+    {
+        // begin-snippet: PooledStream
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: true);
+        stream.Write("payload"u8);
+        stream.Position = 0;
+
+        Span<byte> buffer = stackalloc byte[7];
+        int read = stream.Read(buffer);
+        // end-snippet
+
+        Assert.Equal(7, read);
+        Assert.Equal("payload"u8, buffer);
+    }
+
+    #endregion
+
+    #region Text Builder Tests
+
+    [Fact]
+    public void TextBuilder_AppendTextAndInt_BuildsText()
+    {
+        // begin-snippet: TextBuilder
+        // Starts in a stack buffer, and moves to a pooled one only if the text outgrows it.
+        Span<char> start = stackalloc char[64];
+        using var builder = new PooledTextBuilder(start, isSensitive: true);
+        builder.Append("token-");
+        builder.Append(42);
+        ReadOnlySpan<char> text = builder.WrittenSpan;
+        // end-snippet
+
+        var built = text.ToString();
+
+        Assert.Equal("token-42", built);
+    }
+
+    #endregion
+
+    #region Secret Tests
+
+    [Fact]
+    public void SecretHolder_Create_RevealsValueAndRedactsText()
+    {
+        // begin-snippet: SecretHolder
+        using var secret = Secret.Create("hunter2"u8);
+        ReadOnlySpan<byte> value = secret.Reveal();
+        string text = secret.ToString(); // [REDACTED]
+        // end-snippet
+
+        Assert.Equal("hunter2"u8, value);
+        Assert.Equal("[REDACTED]", text);
+    }
+
+    #endregion
+
+    #region Metrics Tests
+
+    [Fact]
+    public void PoolMetrics_Listener_CountsARental()
+    {
+        // begin-snippet: PoolMetrics
+        var totals = new ConcurrentDictionary<string, long>();
+
+        using var listener = new MeterListener();
+        listener.InstrumentPublished = (instrument, l) =>
+        {
+            if (instrument.Meter.Name == BufferMetrics.MeterName)
+            {
+                l.EnableMeasurementEvents(instrument);
+            }
+        };
+        listener.SetMeasurementEventCallback<long>(
+            (instrument, value, tags, state) =>
+                totals.AddOrUpdate(instrument.Name, value, (_, total) => total + value)
+        );
+        listener.Start();
+        // end-snippet
+
+        const long expectedRentals = 1;
+
+        using var pool = new SecureMemoryPool<byte>();
+        pool.Rent(16).Dispose();
+
+        var rentals = totals.GetValueOrDefault("ncode.buffers.secure_pool.rentals");
+        Assert.Equal(expectedRentals, rentals);
     }
 
     #endregion

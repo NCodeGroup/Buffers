@@ -30,8 +30,11 @@
             "guides/derive-a-key-from-a-password",
             "guides/verify-a-mac",
             "guides/byte-array-apis",
+            "guides/encode-a-secret",
             "guides/secret-of-unknown-length",
+            "guides/grow-a-contiguous-secret",
             "guides/read-a-secret-without-a-string",
+            "guides/hold-a-secret",
             "guides/secrets-across-await",
             "guides/pipes-and-streams",
             "guides/test-zeroing",
@@ -42,7 +45,7 @@
           "label": "Text and buffers",
           "items": ["guides/strict-decoding", "guides/fixed-size-buffer", "guides/split-text"]
         },
-        { "label": "Your build", "items": ["guides/ban-leaky-apis"] }
+        { "label": "Your build", "items": ["guides/ban-leaky-apis", "guides/watch-the-secure-pool"] }
       ]
     },
     { "label": "Concepts", "items": ["concepts/how-secrets-leak", "concepts/ownership", "concepts/how-the-buffers-work", "concepts/design-decisions"] },
@@ -58,8 +61,8 @@
     {
       "pages": ["guides/*"],
       "headings": ["## The usual code", "## With NCode.Buffers", "## Pitfalls", "## What this does not fix", "## Checklist"],
-      "except": ["guides/ban-leaky-apis", "guides/review-checklist", "guides/test-zeroing"]
+      "except": ["guides/ban-leaky-apis", "guides/review-checklist", "guides/test-zeroing", "guides/watch-the-secure-pool"]
     },
-    { "pages": ["guides/ban-leaky-apis", "guides/test-zeroing"], "headings": ["## Check your work"] }
+    { "pages": ["guides/ban-leaky-apis", "guides/test-zeroing", "guides/watch-the-secure-pool"], "headings": ["## Check your work"] }
   ]
 }

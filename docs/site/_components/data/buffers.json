@@ -22,7 +22,17 @@
       "text": "Do you know its length before you start writing it?",
       "answers": [
         { "text": "Yes", "next": "needs" },
-        { "text": "No: it grows as I write, such as serialized JSON", "outcome": "pooled-writer" }
+        { "text": "No: it grows as I write, such as serialized JSON", "next": "grows" }
+      ]
+    },
+    {
+      "id": "grows",
+      "text": "What does the code that reads it need?",
+      "answers": [
+        { "text": "Its pieces, such as a `ReadOnlySequence<T>`", "outcome": "pooled-writer" },
+        { "text": "One span, such as for a hash or a cipher", "outcome": "contiguous-writer" },
+        { "text": "A `Stream`, such as for a serializer", "outcome": "pooled-stream" },
+        { "text": "Text built from parts, in synchronous code", "outcome": "text-builder" }
       ]
     },
     {
@@ -32,7 +42,8 @@
         { "text": "A span, in synchronous code", "outcome": "rent-span" },
         { "text": "To cross an `await`, or to live in a field", "outcome": "rent-memory" },
         { "text": "A `T[]`, within one synchronous scope", "outcome": "pinned-array" },
-        { "text": "A `MemoryPool<T>`", "outcome": "secure-pool" }
+        { "text": "A `MemoryPool<T>`", "outcome": "secure-pool" },
+        { "text": "To keep it in a field or pass it around, without ever printing it", "outcome": "secret-holder" }
       ]
     },
     {
@@ -87,6 +98,45 @@
       "evidence": ["BufferFactoryTests.CreatePooledBufferWriter_WhenSensitive_RentsWholePagesFromSecurePool"]
     },
     {
+      "id": "contiguous-writer",
+      "anchor": "a-contiguous-writer",
+      "name": "`BufferFactory.CreateContiguousBufferWriter(isSensitive: true)`",
+      "secret": true,
+      "snippet": "SiteAnswerContiguousWriter",
+      "use": "A secret whose length you do not know until you have written it, read back as one span, such as for a hash or a cipher.",
+      "watchFor": "Growing copies it into a larger buffer and zeroes the old one, so a span from `WrittenSpan`, `GetSpan` or `GetMemory` is invalid after the next `GetSpan` or `GetMemory`. Never write the writer's own `WrittenSpan` into it.",
+      "dispose": "The writer it returns, with `using`.",
+      "guide": "/guides/grow-a-contiguous-secret/",
+      "behavior": { "pinned": true, "zeroedOnDispose": true, "pooled": true, "takesIsSensitive": true, "acrossAwait": true, "source": "One buffer from `SecureMemoryPool<T>.Shared`, up to 4096 bytes; a pinned array of its own above that", "holds": "`ContiguousBufferWriter<T>`", "length": "What you have written", "contents": "Only what you write is read back", "afterDispose": "Zeroed; a pooled buffer goes back to the pool. Each buffer it outgrew was zeroed when the writer grew" },
+      "evidence": ["ContiguousBufferWriterTests.Grow_WhenSensitive_ZeroesTheOutgrownBuffer", "ContiguousBufferWriterTests.Dispose_WhenSensitive_ZeroesTheBuffer"]
+    },
+    {
+      "id": "pooled-stream",
+      "anchor": "a-pooled-stream",
+      "name": "`BufferFactory.CreatePooledStream(isSensitive: true)`",
+      "secret": true,
+      "snippet": "SiteAnswerPooledStream",
+      "use": "A secret whose length you do not know until you have written it, for an API that reads or writes a `Stream`, such as a serializer.",
+      "watchFor": "It is one buffer, so growing copies it and zeroes the old one. `WrittenSpan` and `WrittenMemory` are invalid after the next write that grows it. Copying it to another stream copies the secret there too.",
+      "dispose": "The stream it returns, with `using`.",
+      "guide": "/guides/grow-a-contiguous-secret/",
+      "behavior": { "pinned": true, "zeroedOnDispose": true, "pooled": true, "takesIsSensitive": true, "acrossAwait": true, "source": "One buffer from `SecureMemoryPool<byte>.Shared`, up to 4096 bytes; a pinned array of its own above that", "holds": "`PooledMemoryStream`", "length": "What you have written", "contents": "Only what you write is read back", "afterDispose": "Zeroed; a pooled buffer goes back to the pool. Each buffer it outgrew was zeroed when the stream grew, and `SetLength` zeroes the bytes it cuts off" },
+      "evidence": ["PooledMemoryStreamTests.Write_PastCapacity_ZeroesTheOutgrownBuffer", "PooledMemoryStreamTests.Dispose_WhenSensitive_ZeroesTheBuffer"]
+    },
+    {
+      "id": "text-builder",
+      "anchor": "a-text-builder",
+      "name": "`new PooledTextBuilder(isSensitive: true)`",
+      "secret": true,
+      "snippet": "SiteAnswerTextBuilder",
+      "use": "Secret text built from parts, in synchronous code, such as a signing input.",
+      "watchFor": "It is a `ref struct`: it cannot cross an `await` or live in a field, and a copy is a second builder, so never copy it. `ToString()` makes a `string`, which nothing can zero.",
+      "dispose": "The builder, with `using`.",
+      "guide": "/guides/grow-a-contiguous-secret/",
+      "behavior": { "pinned": true, "zeroedOnDispose": true, "pooled": true, "takesIsSensitive": true, "acrossAwait": false, "source": "One buffer from `SecureMemoryPool<char>.Shared`, up to 2048 characters (4096 bytes); a pinned array of its own above that, or the `stackalloc` span you give it", "holds": "`PooledTextBuilder`, a `ref struct`", "length": "What you have written", "contents": "Only what you write is read back", "afterDispose": "Zeroed; a pooled buffer goes back to the pool. Each buffer it outgrew was zeroed when the builder grew" },
+      "evidence": ["PooledTextBuilderTests.Append_PastAnInitialSpan_ZeroesTheSpan", "PooledTextBuilderTests.Dispose_WhenSensitive_ZeroesTheBuffer"]
+    },
+    {
       "id": "secure-pool",
       "anchor": "a-memory-pool",
       "name": "`SecureMemoryPool<T>`",
@@ -123,6 +173,19 @@
       "guide": "/guides/verify-a-mac/",
       "behavior": { "pinned": false, "zeroedOnDispose": true, "pooled": false, "takesIsSensitive": false, "acrossAwait": false, "source": "Your own memory", "holds": "`SecureSpanLifetime<T>`, a ref struct", "length": "The span's", "contents": "Whatever you put there", "afterDispose": "Zeroed" },
       "evidence": ["SecureSpanLifetimeTests.Dispose_ZerosMemory_ByteSpan"]
+    },
+    {
+      "id": "secret-holder",
+      "anchor": "a-secret-holder",
+      "name": "`Secret.Create`",
+      "secret": true,
+      "snippet": "SiteAnswerSecretHolder",
+      "use": "A secret you keep in a field or pass around, which must never reach a log, an exception message or the debugger.",
+      "watchFor": "`ToString()` and the debugger show `[REDACTED]`; `Reveal()` reads the value, so keep what it returns short-lived. It lives in memory only: it is not serialization or key storage.",
+      "dispose": "The `Secret<T>` it returns, when you are done with it.",
+      "guide": "/guides/hold-a-secret/",
+      "behavior": { "pinned": true, "zeroedOnDispose": true, "pooled": true, "takesIsSensitive": false, "acrossAwait": true, "source": "`SecureMemoryPool<T>.Shared` up to 4096 bytes; a pinned array of its own above that", "holds": "`Secret<T>`", "length": "Exactly the value's length", "contents": "The value you gave `Create`", "afterDispose": "Zeroed, and back in the pool" },
+      "evidence": ["SecretTests.Dispose_ZeroesTheSecret", "SecretTests.ToString_ReturnsRedacted"]
     },
     {
       "id": "plain-pooled",

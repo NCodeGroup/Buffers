@@ -179,18 +179,25 @@ public class SecureMemoryPool<T> : MemoryPool<T>
 
         if (minBufferSize == 0)
         {
+            SecureMemoryPoolMetrics.RecordRental(SecureMemoryPoolMetrics.Empty);
             return EmptyMemory<T>.Singleton;
         }
 
         var byteCount = minBufferSize == -1 ? PageSize : (long)minBufferSize * Unsafe.SizeOf<T>();
         if (byteCount <= PageSize)
         {
-            return MemoryQueue.TryDequeue(out var pinnedArray)
-                ? new SecureMemory<T>(this, pinnedArray)
-                : new SecureMemory<T>(this, ElementsPerPage);
+            if (MemoryQueue.TryDequeue(out var pinnedArray))
+            {
+                SecureMemoryPoolMetrics.RecordRental(SecureMemoryPoolMetrics.Cache);
+                return new SecureMemory<T>(this, pinnedArray);
+            }
+
+            SecureMemoryPoolMetrics.RecordRental(SecureMemoryPoolMetrics.New);
+            return new SecureMemory<T>(this, ElementsPerPage);
         }
 
         // non-pooled
+        SecureMemoryPoolMetrics.RecordRental(SecureMemoryPoolMetrics.Unpooled);
         return new SecureMemory<T>(null, minBufferSize);
     }
 
@@ -208,6 +215,7 @@ public class SecureMemoryPool<T> : MemoryPool<T>
             return;
 
         MemoryQueue.Enqueue(pinnedArray);
+        SecureMemoryPoolMetrics.RecordReturn();
     }
 
     /// <summary>
@@ -231,7 +239,9 @@ public class SecureMemoryPool<T> : MemoryPool<T>
 
         if (isPressureHigh)
         {
+            var count = MemoryQueue.Count;
             MemoryQueue.Clear();
+            SecureMemoryPoolMetrics.RecordTrimmed(count);
         }
 
         return true;

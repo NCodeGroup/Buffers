@@ -1,6 +1,13 @@
 #nullable enable
+const NCode.Buffers.BufferMetrics.MeterName = "NCode.Buffers" -> string!
 const NCode.Buffers.SecureMemoryPool<T>.DefaultHighPressureThreshold = 0.9 -> double
 const NCode.Buffers.SecureMemoryPool<T>.PageSize = 4096 -> int
+NCode.Buffers.BinaryTextEncoding
+NCode.Buffers.BinaryTextFormat
+NCode.Buffers.BinaryTextFormat.Base64 = 0 -> NCode.Buffers.BinaryTextFormat
+NCode.Buffers.BinaryTextFormat.Base64Url = 1 -> NCode.Buffers.BinaryTextFormat
+NCode.Buffers.BinaryTextFormat.HexLower = 3 -> NCode.Buffers.BinaryTextFormat
+NCode.Buffers.BinaryTextFormat.HexUpper = 2 -> NCode.Buffers.BinaryTextFormat
 NCode.Buffers.BufferExtensions
 NCode.Buffers.BufferExtensions.extension<T>(System.Memory<T>)
 NCode.Buffers.BufferExtensions.extension<T>(System.Memory<T>).GetFixedBufferWriter() -> NCode.Buffers.FixedMemoryBufferWriter<T>!
@@ -8,6 +15,19 @@ NCode.Buffers.BufferExtensions.extension<T>(System.Span<T>)
 NCode.Buffers.BufferExtensions.extension<T>(System.Span<T>).GetFixedBufferWriter() -> NCode.Buffers.FixedSpanBufferWriter<T>
 NCode.Buffers.BufferExtensions.extension<T>(System.Span<T>).GetSecureLifetime() -> NCode.Buffers.SecureSpanLifetime<T>
 NCode.Buffers.BufferFactory
+NCode.Buffers.BufferMetrics
+NCode.Buffers.ContiguousBufferWriter<T>
+NCode.Buffers.ContiguousBufferWriter<T>.Advance(int count) -> void
+NCode.Buffers.ContiguousBufferWriter<T>.Capacity.get -> int
+NCode.Buffers.ContiguousBufferWriter<T>.Dispose() -> void
+NCode.Buffers.ContiguousBufferWriter<T>.FreeCapacity.get -> int
+NCode.Buffers.ContiguousBufferWriter<T>.GetMemory(int sizeHint = 0) -> System.Memory<T>
+NCode.Buffers.ContiguousBufferWriter<T>.GetSpan(int sizeHint = 0) -> System.Span<T>
+NCode.Buffers.ContiguousBufferWriter<T>.IsSensitive.get -> bool
+NCode.Buffers.ContiguousBufferWriter<T>.Reset() -> void
+NCode.Buffers.ContiguousBufferWriter<T>.WrittenCount.get -> int
+NCode.Buffers.ContiguousBufferWriter<T>.WrittenMemory.get -> System.ReadOnlyMemory<T>
+NCode.Buffers.ContiguousBufferWriter<T>.WrittenSpan.get -> System.ReadOnlySpan<T>
 NCode.Buffers.CryptographicOperationsExtensions
 NCode.Buffers.CryptographicOperationsExtensions.extension(System.Security.Cryptography.CryptographicOperations!)
 NCode.Buffers.EmptyMemory<T>
@@ -41,11 +61,38 @@ NCode.Buffers.FixedSpanBufferWriter<T>.WrittenSpan.get -> System.ReadOnlySpan<T>
 NCode.Buffers.MemorySegment<T>
 NCode.Buffers.MemorySegment<T>.Append(System.ReadOnlyMemory<T> memory) -> NCode.Buffers.MemorySegment<T>!
 NCode.Buffers.MemorySegment<T>.MemorySegment(System.ReadOnlyMemory<T> memory) -> void
+NCode.Buffers.PooledMemoryStream
+NCode.Buffers.PooledMemoryStream.IsSensitive.get -> bool
+NCode.Buffers.PooledMemoryStream.WrittenMemory.get -> System.ReadOnlyMemory<byte>
+NCode.Buffers.PooledMemoryStream.WrittenSpan.get -> System.ReadOnlySpan<byte>
+NCode.Buffers.PooledTextBuilder
+NCode.Buffers.PooledTextBuilder.Append(char value) -> void
+NCode.Buffers.PooledTextBuilder.Append(System.ReadOnlySpan<char> value) -> void
+NCode.Buffers.PooledTextBuilder.Append<T>(T value, System.ReadOnlySpan<char> format = default(System.ReadOnlySpan<char>), System.IFormatProvider? provider = null) -> void
+NCode.Buffers.PooledTextBuilder.AppendSpan(int length) -> System.Span<char>
+NCode.Buffers.PooledTextBuilder.Capacity.get -> int
+NCode.Buffers.PooledTextBuilder.Dispose() -> void
+NCode.Buffers.PooledTextBuilder.IsSensitive.get -> bool
+NCode.Buffers.PooledTextBuilder.Length.get -> int
+NCode.Buffers.PooledTextBuilder.PooledTextBuilder() -> void
+NCode.Buffers.PooledTextBuilder.PooledTextBuilder(bool isSensitive, int initialCapacity = 0) -> void
+NCode.Buffers.PooledTextBuilder.PooledTextBuilder(System.Span<char> initialBuffer, bool isSensitive) -> void
+NCode.Buffers.PooledTextBuilder.Reset() -> void
+NCode.Buffers.PooledTextBuilder.WrittenSpan.get -> System.ReadOnlySpan<char>
 NCode.Buffers.RefSpanLease<T>
 NCode.Buffers.RefSpanLease<T>.Dispose() -> void
 NCode.Buffers.RefSpanLease<T>.RefSpanLease() -> void
 NCode.Buffers.RefSpanLease<T>.RefSpanLease(System.IDisposable? owner, System.ReadOnlySpan<T> span) -> void
 NCode.Buffers.RefSpanLease<T>.Span.get -> System.ReadOnlySpan<T>
+NCode.Buffers.Secret
+NCode.Buffers.Secret<T>
+NCode.Buffers.Secret<T>.CopyTo(System.Span<T> destination) -> void
+NCode.Buffers.Secret<T>.Dispose() -> void
+NCode.Buffers.Secret<T>.Equals(NCode.Buffers.Secret<T>? other) -> bool
+NCode.Buffers.Secret<T>.FixedTimeEquals(System.ReadOnlySpan<T> other) -> bool
+NCode.Buffers.Secret<T>.Length.get -> int
+NCode.Buffers.Secret<T>.Reveal() -> System.ReadOnlySpan<T>
+NCode.Buffers.Secret<T>.RevealMemory() -> System.ReadOnlyMemory<T>
 NCode.Buffers.SecureArrayLifetime<T>
 NCode.Buffers.SecureArrayLifetime<T>.Dispose() -> void
 NCode.Buffers.SecureArrayLifetime<T>.Length.get -> int
@@ -53,6 +100,12 @@ NCode.Buffers.SecureArrayLifetime<T>.PinnedArray.get -> T[]!
 NCode.Buffers.SecureArrayLifetime<T>.SecureArrayLifetime() -> void
 NCode.Buffers.SecureArrayLifetime<T>.SecureArrayLifetime(int length) -> void
 NCode.Buffers.SecureEncoding
+NCode.Buffers.SecureEncodingExtensions
+NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!)
+NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentBytes(System.ReadOnlySpan<char> chars, bool isSensitive, out System.Memory<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
+NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentBytes(System.ReadOnlySpan<char> chars, bool isSensitive, out System.Span<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
+NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentChars(System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Memory<char> chars) -> System.Buffers.IMemoryOwner<char>!
+NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentChars(System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Span<char> chars) -> System.Buffers.IMemoryOwner<char>!
 NCode.Buffers.SecureMemoryPool<T>
 NCode.Buffers.SecureMemoryPool<T>.HighPressureThreshold.get -> double
 NCode.Buffers.SecureMemoryPool<T>.HighPressureThreshold.set -> void
@@ -66,6 +119,8 @@ NCode.Buffers.SequenceExtensions
 NCode.Buffers.SequenceExtensions.extension<T>(Nerdbank.Streams.Sequence<T>!)
 NCode.Buffers.SequenceExtensions.extension<T>(Nerdbank.Streams.Sequence<T>!).ConsumeAsContiguousSpan(bool isSensitive, out System.ReadOnlySpan<T> span) -> System.IDisposable!
 NCode.Buffers.SequenceExtensions.extension<T>(Nerdbank.Streams.Sequence<T>!).GetSpanLease(bool isSensitive) -> NCode.Buffers.RefSpanLease<T>
+NCode.Buffers.SequenceExtensions.extension<T>(System.Buffers.ReadOnlySequence<T>)
+NCode.Buffers.SequenceExtensions.extension<T>(System.Buffers.ReadOnlySequence<T>).GetSpanLease(bool isSensitive) -> NCode.Buffers.RefSpanLease<T>
 NCode.Buffers.StringExtensions
 NCode.Buffers.StringExtensions.extension(string!)
 NCode.Buffers.StringExtensions.extension(string!).SplitSegments(char separator) -> NCode.Buffers.StringSegments
@@ -83,9 +138,39 @@ NCode.Buffers.StringSegments.IsEmpty.get -> bool
 NCode.Buffers.StringSegments.Original.get -> System.ReadOnlyMemory<char>
 NCode.Buffers.StringSegments.StringSegments() -> void
 NCode.Buffers.StringSegments.StringSegments(System.ReadOnlyMemory<char> original, int count, System.Buffers.ReadOnlySequenceSegment<char>! first) -> void
+override NCode.Buffers.PooledMemoryStream.CanRead.get -> bool
+override NCode.Buffers.PooledMemoryStream.CanSeek.get -> bool
+override NCode.Buffers.PooledMemoryStream.CanWrite.get -> bool
+override NCode.Buffers.PooledMemoryStream.CopyTo(System.IO.Stream! destination, int bufferSize) -> void
+override NCode.Buffers.PooledMemoryStream.CopyToAsync(System.IO.Stream! destination, int bufferSize, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+override NCode.Buffers.PooledMemoryStream.Flush() -> void
+override NCode.Buffers.PooledMemoryStream.FlushAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+override NCode.Buffers.PooledMemoryStream.Length.get -> long
+override NCode.Buffers.PooledMemoryStream.Position.get -> long
+override NCode.Buffers.PooledMemoryStream.Position.set -> void
+override NCode.Buffers.PooledMemoryStream.Read(byte[]! buffer, int offset, int count) -> int
+override NCode.Buffers.PooledMemoryStream.Read(System.Span<byte> buffer) -> int
+override NCode.Buffers.PooledMemoryStream.ReadAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
+override NCode.Buffers.PooledMemoryStream.ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<int>
+override NCode.Buffers.PooledMemoryStream.ReadByte() -> int
+override NCode.Buffers.PooledMemoryStream.Seek(long offset, System.IO.SeekOrigin origin) -> long
+override NCode.Buffers.PooledMemoryStream.SetLength(long value) -> void
+override NCode.Buffers.PooledMemoryStream.Write(byte[]! buffer, int offset, int count) -> void
+override NCode.Buffers.PooledMemoryStream.Write(System.ReadOnlySpan<byte> buffer) -> void
+override NCode.Buffers.PooledMemoryStream.WriteAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+override NCode.Buffers.PooledMemoryStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+override NCode.Buffers.PooledMemoryStream.WriteByte(byte value) -> void
+override NCode.Buffers.PooledTextBuilder.ToString() -> string!
+override NCode.Buffers.Secret<T>.Equals(object? obj) -> bool
+override NCode.Buffers.Secret<T>.GetHashCode() -> int
+override NCode.Buffers.Secret<T>.ToString() -> string!
 override NCode.Buffers.SecureMemoryPool<T>.Dispose(bool disposing) -> void
 override NCode.Buffers.SecureMemoryPool<T>.MaxBufferSize.get -> int
 override NCode.Buffers.SecureMemoryPool<T>.Rent(int minBufferSize = -1) -> System.Buffers.IMemoryOwner<T>!
+static NCode.Buffers.BinaryTextEncoding.RentDecoded(System.ReadOnlySpan<char> text, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Memory<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
+static NCode.Buffers.BinaryTextEncoding.RentDecoded(System.ReadOnlySpan<char> text, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Span<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
+static NCode.Buffers.BinaryTextEncoding.RentEncoded(System.ReadOnlySpan<byte> bytes, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Memory<char> text) -> System.Buffers.IMemoryOwner<char>!
+static NCode.Buffers.BinaryTextEncoding.RentEncoded(System.ReadOnlySpan<byte> bytes, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Span<char> text) -> System.Buffers.IMemoryOwner<char>!
 static NCode.Buffers.BufferExtensions.GetFixedBufferWriter<T>(this System.Memory<T> memory) -> NCode.Buffers.FixedMemoryBufferWriter<T>!
 static NCode.Buffers.BufferExtensions.GetFixedBufferWriter<T>(this System.Span<T> span) -> NCode.Buffers.FixedSpanBufferWriter<T>
 static NCode.Buffers.BufferExtensions.GetSecureLifetime<T>(this System.Span<T> span) -> NCode.Buffers.SecureSpanLifetime<T>
@@ -93,28 +178,40 @@ static NCode.Buffers.BufferFactory.CreateArrayBufferWriter() -> System.Buffers.A
 static NCode.Buffers.BufferFactory.CreateArrayBufferWriter(int initialCapacity) -> System.Buffers.ArrayBufferWriter<byte>!
 static NCode.Buffers.BufferFactory.CreateArrayBufferWriter<T>() -> System.Buffers.ArrayBufferWriter<T>!
 static NCode.Buffers.BufferFactory.CreateArrayBufferWriter<T>(int initialCapacity) -> System.Buffers.ArrayBufferWriter<T>!
+static NCode.Buffers.BufferFactory.CreateContiguousBufferWriter(bool isSensitive, int initialCapacity = 0) -> NCode.Buffers.ContiguousBufferWriter<byte>!
+static NCode.Buffers.BufferFactory.CreateContiguousBufferWriter<T>(bool isSensitive, int initialCapacity = 0) -> NCode.Buffers.ContiguousBufferWriter<T>!
 static NCode.Buffers.BufferFactory.CreatePinnedArray(int length) -> NCode.Buffers.SecureArrayLifetime<byte>
 static NCode.Buffers.BufferFactory.CreatePinnedArray<T>(int length) -> NCode.Buffers.SecureArrayLifetime<T>
 static NCode.Buffers.BufferFactory.CreatePooledBufferWriter(bool isSensitive, int minimumSpanLength = 0) -> Nerdbank.Streams.Sequence<byte>!
 static NCode.Buffers.BufferFactory.CreatePooledBufferWriter<T>(bool isSensitive, int minimumSpanLength = 0) -> Nerdbank.Streams.Sequence<T>!
+static NCode.Buffers.BufferFactory.CreatePooledStream(bool isSensitive, int initialCapacity = 0) -> NCode.Buffers.PooledMemoryStream!
 static NCode.Buffers.BufferFactory.Rent(int minBufferSize, bool isSensitive, out System.Memory<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!
 static NCode.Buffers.BufferFactory.Rent(int minBufferSize, bool isSensitive, out System.Span<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!
 static NCode.Buffers.BufferFactory.Rent<T>(int minBufferSize, bool isSensitive, out System.Memory<T> buffer) -> System.Buffers.IMemoryOwner<T>!
 static NCode.Buffers.BufferFactory.Rent<T>(int minBufferSize, bool isSensitive, out System.Span<T> buffer) -> System.Buffers.IMemoryOwner<T>!
+static NCode.Buffers.BufferFactory.RentRandom(int length, bool isSensitive, out System.Memory<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!
+static NCode.Buffers.BufferFactory.RentRandom(int length, bool isSensitive, out System.Span<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!
 static NCode.Buffers.CryptographicOperationsExtensions.extension(System.Security.Cryptography.CryptographicOperations!).FixedTimeEquals<T>(System.ReadOnlySpan<T> left, System.ReadOnlySpan<T> right) -> bool
 static NCode.Buffers.CryptographicOperationsExtensions.extension(System.Security.Cryptography.CryptographicOperations!).ZeroMemory<T>(System.Span<T> buffer) -> void
 static NCode.Buffers.CryptographicOperationsExtensions.FixedTimeEquals<T>(System.ReadOnlySpan<T> left, System.ReadOnlySpan<T> right) -> bool
 static NCode.Buffers.CryptographicOperationsExtensions.ZeroMemory<T>(System.Span<T> buffer) -> void
 static NCode.Buffers.EmptyMemory<T>.Singleton.get -> NCode.Buffers.EmptyMemory<T>!
+static NCode.Buffers.Secret.Create<T, TState>(int length, TState state, System.Buffers.SpanAction<T, TState>! action) -> NCode.Buffers.Secret<T>!
+static NCode.Buffers.Secret.Create<T>(System.ReadOnlySpan<T> value) -> NCode.Buffers.Secret<T>!
 static NCode.Buffers.SecureArrayLifetime<T>.Create(int length) -> NCode.Buffers.SecureArrayLifetime<T>
 static NCode.Buffers.SecureArrayLifetime<T>.implicit operator System.Span<T>(NCode.Buffers.SecureArrayLifetime<T> lifetime) -> System.Span<T>
 static NCode.Buffers.SecureArrayLifetime<T>.implicit operator T[]!(NCode.Buffers.SecureArrayLifetime<T> lifetime) -> T[]!
 static NCode.Buffers.SecureEncoding.ASCII.get -> System.Text.ASCIIEncoding!
 static NCode.Buffers.SecureEncoding.UTF8.get -> System.Text.UTF8Encoding!
+static NCode.Buffers.SecureEncodingExtensions.RentBytes(this System.Text.Encoding! encoding, System.ReadOnlySpan<char> chars, bool isSensitive, out System.Memory<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
+static NCode.Buffers.SecureEncodingExtensions.RentBytes(this System.Text.Encoding! encoding, System.ReadOnlySpan<char> chars, bool isSensitive, out System.Span<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
+static NCode.Buffers.SecureEncodingExtensions.RentChars(this System.Text.Encoding! encoding, System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Memory<char> chars) -> System.Buffers.IMemoryOwner<char>!
+static NCode.Buffers.SecureEncodingExtensions.RentChars(this System.Text.Encoding! encoding, System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Span<char> chars) -> System.Buffers.IMemoryOwner<char>!
 static NCode.Buffers.SecureMemoryPool<T>.Shared.get -> NCode.Buffers.SecureMemoryPool<T>!
 static NCode.Buffers.SecureSpanLifetime<T>.implicit operator System.Span<T>(NCode.Buffers.SecureSpanLifetime<T> lifetime) -> System.Span<T>
 static NCode.Buffers.SequenceExtensions.ConsumeAsContiguousSpan<T>(this Nerdbank.Streams.Sequence<T>! buffer, bool isSensitive, out System.ReadOnlySpan<T> span) -> System.IDisposable!
 static NCode.Buffers.SequenceExtensions.GetSpanLease<T>(this Nerdbank.Streams.Sequence<T>! buffer, bool isSensitive) -> NCode.Buffers.RefSpanLease<T>
+static NCode.Buffers.SequenceExtensions.GetSpanLease<T>(this System.Buffers.ReadOnlySequence<T> sequence, bool isSensitive) -> NCode.Buffers.RefSpanLease<T>
 static NCode.Buffers.StringExtensions.SplitSegments(this string! value, char separator) -> NCode.Buffers.StringSegments
 static NCode.Buffers.StringExtensions.SplitSegments(this string! value, System.ReadOnlySpan<char> separator, System.StringComparison comparisonType) -> NCode.Buffers.StringSegments
 static NCode.Buffers.StringExtensions.SplitSegments(this string! value, System.ReadOnlySpan<char> separator) -> NCode.Buffers.StringSegments

@@ -10,7 +10,7 @@ public class RefSpanLeaseTests
     [Fact]
     public void Constructor_WithOwnerAndSpan_Valid()
     {
-        var testData = new byte[] { 1, 2, 3, 4, 5 };
+        byte[] testData = [1, 2, 3, 4, 5];
         using var owner = new TestDisposable();
 
         using var lease = new RefSpanLease<byte>(owner, testData);
@@ -23,7 +23,7 @@ public class RefSpanLeaseTests
     [Fact]
     public void Constructor_WithNullOwner_Valid()
     {
-        var testData = new byte[] { 10, 20, 30 };
+        byte[] testData = [10, 20, 30];
 
         using var lease = new RefSpanLease<byte>(null, testData);
 
@@ -54,7 +54,7 @@ public class RefSpanLeaseTests
     [Fact]
     public void Constructor_FromSlicedSpan_Valid()
     {
-        var testData = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        byte[] testData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         ReadOnlySpan<byte> sliced = testData.AsSpan(3, 4);
 
         using var lease = new RefSpanLease<byte>(null, sliced);
@@ -148,7 +148,7 @@ public class RefSpanLeaseTests
     [Fact]
     public void Span_ReturnsCorrectData()
     {
-        var testData = new byte[] { 0xDE, 0xAD, 0xBE, 0xEF };
+        byte[] testData = [0xDE, 0xAD, 0xBE, 0xEF];
 
         using var lease = new RefSpanLease<byte>(null, testData);
 
@@ -162,7 +162,7 @@ public class RefSpanLeaseTests
     [Fact]
     public void Span_Slice_ReturnsCorrectSubset()
     {
-        var testData = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        byte[] testData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
         using var lease = new RefSpanLease<byte>(null, testData);
 
@@ -176,7 +176,7 @@ public class RefSpanLeaseTests
     [Fact]
     public void Span_ToArray_CreatesIndependentCopy()
     {
-        var testData = new byte[] { 1, 2, 3, 4, 5 };
+        byte[] testData = [1, 2, 3, 4, 5];
 
         using var lease = new RefSpanLease<byte>(null, testData);
 
@@ -194,7 +194,7 @@ public class RefSpanLeaseTests
     [Fact]
     public void Dispose_WithOwner_DisposesOwner()
     {
-        var testData = new byte[] { 1, 2, 3 };
+        byte[] testData = [1, 2, 3];
         var owner = new TestDisposable();
 
         var lease = new RefSpanLease<byte>(owner, testData);
@@ -207,7 +207,7 @@ public class RefSpanLeaseTests
     [Fact]
     public void Dispose_WithNullOwner_DoesNotThrow()
     {
-        var testData = new byte[] { 1, 2, 3 };
+        byte[] testData = [1, 2, 3];
         var lease = new RefSpanLease<byte>(null, testData);
 
         // Should not throw
@@ -217,7 +217,7 @@ public class RefSpanLeaseTests
     [Fact]
     public void Dispose_MultipleCalls_DisposesOwnerEachTime()
     {
-        var testData = new byte[] { 1, 2, 3 };
+        byte[] testData = [1, 2, 3];
         var owner = new TestDisposable();
 
         var lease = new RefSpanLease<byte>(owner, testData);
@@ -232,7 +232,7 @@ public class RefSpanLeaseTests
     [Fact]
     public void Dispose_WithOwnerThatThrows_PropagatesException()
     {
-        var testData = new byte[] { 1, 2, 3 };
+        byte[] testData = [1, 2, 3];
         var owner = new ThrowingDisposable();
 
         var exception = Record.Exception(() =>

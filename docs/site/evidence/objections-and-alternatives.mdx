@@ -82,9 +82,9 @@ memory. <Proof source="Adr1018" /> [What it protects, and what it does not](/sta
 Something, and this page gives no number. A rented buffer up to a page is zeroed whole on every dispose.
 <Proof sample="SiteDisposeZeroesWholePage" /> A larger buffer is a new pinned array each call.
 <Proof test="SecureMemoryPoolTests.Rent_LargeBuffer_IsNotPooled" /> The cache has no limit of its own.
-<Proof source="Adr1015" /> The library records no metrics <Proof source="Metrics.None" /> and ships no benchmarks:
-measure in your workload. [How the buffers work](/concepts/how-the-buffers-work/#what-it-costs) lists each cost with its
-evidence.
+<Proof source="Adr1015" /> The library ships no benchmarks; `SecureMemoryPool<T>` counts its rentals, returns and trims on
+the `NCode.Buffers` meter <Proof source="Metrics.Instruments" />, so measure in your workload.
+[How the buffers work](/concepts/how-the-buffers-work/#what-it-costs) lists each cost with its evidence.
 
 ## "Another dependency"
 

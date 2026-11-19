@@ -15,15 +15,20 @@ public class BufferBehaviorMatrixTests
 {
     private const int Size = 32;
     private const byte Fill = 0xA5;
+    private const char FillChar = 'x';
 
     public static TheoryData<string> OutcomeIds { get; } =
     [
         "rent-span",
         "rent-memory",
         "pooled-writer",
+        "contiguous-writer",
+        "pooled-stream",
+        "text-builder",
         "secure-pool",
         "pinned-array",
         "secure-lifetime",
+        "secret-holder",
         "plain-pooled",
         "array-writer",
         "fixed-span-writer",
@@ -86,6 +91,70 @@ public class BufferBehaviorMatrixTests
         writer.Dispose();
 
         AssertContentsAfterDispose(view[..Size], zeroedOnDispose);
+    }
+
+    private static void CheckContiguousWriter(bool pinned, bool zeroedOnDispose)
+    {
+        SecureMemoryPool<byte>.Shared.MemoryQueue.Clear();
+
+        var writer = BufferFactory.CreateContiguousBufferWriter(
+            isSensitive: true,
+            initialCapacity: Size
+        );
+        var span = writer.GetSpan(Size);
+        span[..Size].Fill(Fill);
+        writer.Advance(Size);
+        var view = writer.WrittenMemory;
+
+        AssertPinned(pinned, view);
+        writer.Dispose();
+
+        AssertContentsAfterDispose(view, zeroedOnDispose);
+    }
+
+    private static void CheckPooledStream(bool pinned, bool zeroedOnDispose)
+    {
+        SecureMemoryPool<byte>.Shared.MemoryQueue.Clear();
+
+        var stream = BufferFactory.CreatePooledStream(isSensitive: true, initialCapacity: Size);
+        var bytes = new byte[Size];
+        bytes.AsSpan().Fill(Fill);
+        stream.Write(bytes);
+        var view = stream.WrittenMemory;
+
+        AssertPinned(pinned, view);
+        stream.Dispose();
+
+        AssertContentsAfterDispose(view, zeroedOnDispose);
+    }
+
+    private static void CheckTextBuilder(bool pinned, bool zeroedOnDispose)
+    {
+        SecureMemoryPool<char>.Shared.MemoryQueue.Clear();
+
+        var builder = new PooledTextBuilder(isSensitive: true, initialCapacity: Size);
+        builder.Append(new string(FillChar, Size));
+        var view = builder.RentedMemory[..Size];
+
+        AssertPinned(pinned, view);
+        builder.Dispose();
+
+        AssertContentsAfterDispose(view, zeroedOnDispose);
+    }
+
+    private static void CheckSecretHolder(bool pinned, bool zeroedOnDispose)
+    {
+        SecureMemoryPool<byte>.Shared.MemoryQueue.Clear();
+
+        var value = new byte[Size];
+        value.AsSpan().Fill(Fill);
+        var secret = Secret.Create<byte>(value);
+        var view = secret.RevealMemory();
+
+        AssertPinned(pinned, view);
+        secret.Dispose();
+
+        AssertContentsAfterDispose(view, zeroedOnDispose);
     }
 
     private static void CheckSecurePool(bool pinned, bool zeroedOnDispose)
@@ -185,7 +254,7 @@ public class BufferBehaviorMatrixTests
     // SecureMemoryPool<byte>.Shared clear its queue first, so the rent allocates a new page. A
     // freshly allocated ordinary array is in generation 0, so GC.MaxGeneration tells a pinned
     // page from an ordinary one.
-    private static void AssertPinned(bool pinned, byte[] array)
+    private static void AssertPinned<T>(bool pinned, T[] array)
     {
         if (!pinned)
             return;
@@ -204,6 +273,26 @@ public class BufferBehaviorMatrixTests
         Assert.True(hasArray);
         Assert.NotNull(segment.Array);
         AssertPinned(pinned, segment.Array);
+    }
+
+    private static void AssertPinned(bool pinned, ReadOnlyMemory<char> memory)
+    {
+        if (!pinned)
+            return;
+
+        var hasArray = MemoryMarshal.TryGetArray(memory, out var segment);
+        Assert.True(hasArray);
+        Assert.NotNull(segment.Array);
+        AssertPinned(pinned, segment.Array);
+    }
+
+    private static void AssertContentsAfterDispose(ReadOnlyMemory<char> view, bool zeroedOnDispose)
+    {
+        Assert.Equal(Size, view.Length);
+
+        var expected = zeroedOnDispose ? '\0' : FillChar;
+        var contents = view.ToArray();
+        Assert.All(contents, value => Assert.Equal(expected, value));
     }
 
     private static void AssertContentsAfterDispose(ReadOnlyMemory<byte> view, bool zeroedOnDispose)
@@ -282,6 +371,18 @@ public class BufferBehaviorMatrixTests
                 break;
             case "pooled-writer":
                 CheckPooledWriter(pinned, zeroedOnDispose);
+                break;
+            case "contiguous-writer":
+                CheckContiguousWriter(pinned, zeroedOnDispose);
+                break;
+            case "pooled-stream":
+                CheckPooledStream(pinned, zeroedOnDispose);
+                break;
+            case "text-builder":
+                CheckTextBuilder(pinned, zeroedOnDispose);
+                break;
+            case "secret-holder":
+                CheckSecretHolder(pinned, zeroedOnDispose);
                 break;
             case "secure-pool":
                 CheckSecurePool(pinned, zeroedOnDispose);
