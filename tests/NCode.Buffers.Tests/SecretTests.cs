@@ -13,6 +13,14 @@ public class SecretTests
 {
     private const int LargeLength = 5000;
 
+    public static TheoryData<byte[], bool> ContentComparisons =>
+        new()
+        {
+            { "s3cr3t"u8.ToArray(), true },
+            { "s3cr3x"u8.ToArray(), false },
+            { "s3cr3t!"u8.ToArray(), false },
+        };
+
     private static void CallMember(Secret<byte> secret, Secret<byte> other, string member)
     {
         switch (member)
@@ -183,21 +191,16 @@ public class SecretTests
 
     #region Equals Tests
 
-    [Fact]
-    public void Equals_ComparesContents()
+    [Theory]
+    [MemberData(nameof(ContentComparisons))]
+    public void Equals_ComparesContents(byte[] other, bool expected)
     {
         using var secret = Secret.Create("s3cr3t"u8);
-        using var equal = Secret.Create("s3cr3t"u8);
-        using var unequal = Secret.Create("s3cr3x"u8);
-        using var longer = Secret.Create("s3cr3t!"u8);
+        using var otherSecret = Secret.Create<byte>(other);
 
-        var isEqual = secret.Equals(equal);
-        var isUnequalEqual = secret.Equals(unequal);
-        var isLongerEqual = secret.Equals(longer);
+        var isEqual = secret.Equals(otherSecret);
 
-        Assert.True(isEqual);
-        Assert.False(isUnequalEqual);
-        Assert.False(isLongerEqual);
+        Assert.Equal(expected, isEqual);
     }
 
     [Fact]
@@ -290,18 +293,15 @@ public class SecretTests
 
     #region FixedTimeEquals Tests
 
-    [Fact]
-    public void FixedTimeEquals_ComparesContents()
+    [Theory]
+    [MemberData(nameof(ContentComparisons))]
+    public void FixedTimeEquals_ComparesContents(byte[] other, bool expected)
     {
         using var secret = Secret.Create("s3cr3t"u8);
 
-        var matchesEqual = secret.FixedTimeEquals("s3cr3t"u8);
-        var matchesDifferent = secret.FixedTimeEquals("s3cr3x"u8);
-        var matchesLonger = secret.FixedTimeEquals("s3cr3t!"u8);
+        var matches = secret.FixedTimeEquals(other);
 
-        Assert.True(matchesEqual);
-        Assert.False(matchesDifferent);
-        Assert.False(matchesLonger);
+        Assert.Equal(expected, matches);
     }
 
     #endregion
