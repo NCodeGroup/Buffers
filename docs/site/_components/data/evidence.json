@@ -1,7 +1,7 @@
 {
   "$comment": "The site's evidence: the tests, source lines and outside pages a claim names, and the claims the ledger on /evidence/guarantees/ lists. A test or source is linked at `commit`, a commit of the default branch, so its line never moves; build/Test-SiteEvidence.ps1, which the gate runs, checks every entry against that commit and the working tree. Text fields take `code` and [links](/x/).",
   "repository": "https://github.com/NCodeGroup/Buffers",
-  "commit": "f605387abef008c0790aa3388a09fbbc9307483a",
+  "commit": "be6934179f97000d43478a8a9a6912341dcc997a",
   "tests": {
     "SecureMemoryTests.Dispose_ZeroesMemory": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryTests.cs",
@@ -61,11 +61,11 @@
     },
     "BufferFactoryTests.CreatePinnedArray_AllocatesOnPinnedObjectHeap": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
-      "line": 249
+      "line": 332
     },
     "BufferFactoryTests.CreatePinnedArray_Byte_ReturnsArrayOfRequestedLength": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
-      "line": 240
+      "line": 323
     },
     "SecureArrayLifetimeTests.ImplicitConversionToArray_ReturnsPinnedArray": {
       "file": "tests/NCode.Buffers.Tests/SecureArrayLifetimeTests.cs",
@@ -85,15 +85,15 @@
     },
     "BufferFactoryTests.CreatePooledBufferWriter_WhenSensitive_RentsWholePagesFromSecurePool": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
-      "line": 284
+      "line": 367
     },
     "BufferFactoryTests.CreatePooledBufferWriter_WhenNotSensitive_RentsFromSharedPool": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
-      "line": 319
+      "line": 402
     },
     "BufferFactoryTests.CreateArrayBufferWriter_Byte_ReturnsEmptyWriter": {
       "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
-      "line": 413
+      "line": 496
     },
     "CryptographicOperationsExtensionsTests.FixedTimeEquals_SameContents_ReturnsTrue": {
       "file": "tests/NCode.Buffers.Tests/CryptographicOperationsExtensionsTests.cs",
@@ -205,7 +205,7 @@
     },
     "ReadmeSamplesTests.ConsumeAsContiguousSpanSample_Runs": {
       "file": "tests/NCode.Buffers.Tests/ReadmeSamplesTests.cs",
-      "line": 194
+      "line": 267
     },
     "ReadmeSamplesTests.QuickStart_ValidSignature_ReturnsTrue": {
       "file": "tests/NCode.Buffers.Tests/ReadmeSamplesTests.cs",
@@ -314,6 +314,70 @@
     "SecureMemoryPoolTests.Rent_WhenDisposed_ThrowsObjectDisposedException": {
       "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolTests.cs",
       "line": 196
+    },
+    "ContiguousBufferWriterTests.Grow_WhenSensitive_ZeroesTheOutgrownBuffer": {
+      "file": "tests/NCode.Buffers.Tests/ContiguousBufferWriterTests.cs",
+      "line": 170
+    },
+    "ContiguousBufferWriterTests.Dispose_WhenSensitive_ZeroesTheBuffer": {
+      "file": "tests/NCode.Buffers.Tests/ContiguousBufferWriterTests.cs",
+      "line": 264
+    },
+    "PooledMemoryStreamTests.Write_PastCapacity_ZeroesTheOutgrownBuffer": {
+      "file": "tests/NCode.Buffers.Tests/PooledMemoryStreamTests.cs",
+      "line": 228
+    },
+    "PooledMemoryStreamTests.Dispose_WhenSensitive_ZeroesTheBuffer": {
+      "file": "tests/NCode.Buffers.Tests/PooledMemoryStreamTests.cs",
+      "line": 421
+    },
+    "PooledTextBuilderTests.Append_PastAnInitialSpan_ZeroesTheSpan": {
+      "file": "tests/NCode.Buffers.Tests/PooledTextBuilderTests.cs",
+      "line": 199
+    },
+    "PooledTextBuilderTests.Dispose_WhenSensitive_ZeroesTheBuffer": {
+      "file": "tests/NCode.Buffers.Tests/PooledTextBuilderTests.cs",
+      "line": 326
+    },
+    "SecretTests.Dispose_ZeroesTheSecret": {
+      "file": "tests/NCode.Buffers.Tests/SecretTests.cs",
+      "line": 212
+    },
+    "SecretTests.ToString_ReturnsRedacted": {
+      "file": "tests/NCode.Buffers.Tests/SecretTests.cs",
+      "line": 98
+    },
+    "BufferFactoryTests.RentRandom_WithSpan_ReturnsRandomBytesOfTheRequestedLength": {
+      "file": "tests/NCode.Buffers.Tests/BufferFactoryTests.cs",
+      "line": 231
+    },
+    "SecureEncodingExtensionsTests.RentBytes_InvalidText_ThrowsEncoderFallbackException": {
+      "file": "tests/NCode.Buffers.Tests/SecureEncodingExtensionsTests.cs",
+      "line": 92
+    },
+    "SecureEncodingExtensionsTests.RentBytes_WhenSensitive_ZeroesTheBytesOnDispose": {
+      "file": "tests/NCode.Buffers.Tests/SecureEncodingExtensionsTests.cs",
+      "line": 118
+    },
+    "BinaryTextEncodingTests.RentDecoded_InvalidText_ThrowsFormatException": {
+      "file": "tests/NCode.Buffers.Tests/BinaryTextEncodingTests.cs",
+      "line": 64
+    },
+    "BinaryTextEncodingTests.RentDecoded_KnownText_ReturnsTheExactBytes": {
+      "file": "tests/NCode.Buffers.Tests/BinaryTextEncodingTests.cs",
+      "line": 17
+    },
+    "SequenceExtensionsTests.ReadOnlySequenceGetSpanLease_MultipleSegments_CopiesIntoARentedBuffer": {
+      "file": "tests/NCode.Buffers.Tests/SequenceExtensionsTests.cs",
+      "line": 1067
+    },
+    "SecretTests.Equals_ComparesContents": {
+      "file": "tests/NCode.Buffers.Tests/SecretTests.cs",
+      "line": 128
+    },
+    "SecureMemoryPoolMetricsTests.Rent_RecordsOneRentalWithItsSource": {
+      "file": "tests/NCode.Buffers.Tests/SecureMemoryPoolMetricsTests.cs",
+      "line": 20
     }
   },
   "samples": {
@@ -571,6 +635,69 @@
     },
     "SitePipelinesUnconsumed": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/PipesAndStreamsSamples.cs"
+    },
+    "SiteAnswerContiguousWriter": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/WhichBufferSamples.cs"
+    },
+    "SiteAnswerPooledStream": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/WhichBufferSamples.cs"
+    },
+    "SiteAnswerTextBuilder": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/WhichBufferSamples.cs"
+    },
+    "SiteAnswerSecretHolder": {
+      "file": "tests/NCode.Buffers.Site.Tests/Start/WhichBufferSamples.cs"
+    },
+    "SiteEncodeSecretUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/EncodeASecretSamples.cs"
+    },
+    "SiteEncodeSecretDecodeKey": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/EncodeASecretSamples.cs"
+    },
+    "SiteEncodeSecretPasswordBytes": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/EncodeASecretSamples.cs"
+    },
+    "SiteEncodeSecretRandomKey": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/EncodeASecretSamples.cs"
+    },
+    "SiteEncodeSecretRejectInvalid": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/EncodeASecretSamples.cs"
+    },
+    "SiteGrowUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/GrowAContiguousSecretSamples.cs"
+    },
+    "SiteGrowContiguousWriter": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/GrowAContiguousSecretSamples.cs"
+    },
+    "SiteGrowPooledStream": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/GrowAContiguousSecretSamples.cs"
+    },
+    "SiteGrowTextBuilder": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/GrowAContiguousSecretSamples.cs"
+    },
+    "SiteHoldUsual": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/HoldASecretSamples.cs"
+    },
+    "SiteHoldSecret": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/HoldASecretSamples.cs"
+    },
+    "SiteHoldReveal": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/HoldASecretSamples.cs"
+    },
+    "SiteHoldCompare": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/HoldASecretSamples.cs"
+    },
+    "SiteHoldCreateInPlace": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/HoldASecretSamples.cs"
+    },
+    "SiteWatchPoolListener": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/WatchTheSecurePoolSamples.cs"
+    },
+    "SiteWatchPoolCheck": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/WatchTheSecurePoolSamples.cs"
+    },
+    "SitePipelinesSequenceLease": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/PipesAndStreamsSamples.cs"
     }
   },
   "sources": {
@@ -593,8 +720,8 @@
     "SecureMemoryPool.Return": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        205,
-        211
+        212,
+        219
       ],
       "match": "internal virtual void Return(T[] pinnedArray)"
     },
@@ -641,8 +768,8 @@
     "BufferFactory.ChoosePool": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
       "lines": [
-        60,
-        61
+        61,
+        62
       ],
       "match": "internal static MemoryPool<T> ChoosePool<T>(bool isSensitive)"
     },
@@ -775,8 +902,8 @@
     "CiGateAndCoverage": {
       "file": ".github/workflows/ci.yml",
       "lines": [
-        50,
-        56
+        52,
+        58
       ],
       "match": "- name: Definition of Done",
       "kind": "process"
@@ -804,8 +931,8 @@
     "SecureMemoryPool.Rent": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        185,
-        194
+        186,
+        201
       ],
       "match": "var byteCount = minBufferSize == -1 ? PageSize"
     },
@@ -869,8 +996,8 @@
     "Architecture.NoFinalizers": {
       "file": "docs/architecture.md",
       "lines": [
-        42,
-        44
+        47,
+        49
       ],
       "match": "Ownership is explicit",
       "kind": "documented"
@@ -878,8 +1005,8 @@
     "Roadmap.NotPlanned": {
       "file": "ROADMAP.md",
       "lines": [
-        30,
-        31
+        32,
+        33
       ],
       "match": "Locking memory into RAM",
       "kind": "documented"
@@ -900,16 +1027,16 @@
     "SequenceExtensions.GetSpanLease.Rent": {
       "file": "src/NCode.Buffers/SequenceExtensions.cs",
       "lines": [
-        82,
-        86
+        200,
+        204
       ],
       "match": "var owner = BufferFactory.Rent("
     },
     "SequenceExtensions.ConsumeAsContiguousSpan.Dispose": {
       "file": "src/NCode.Buffers/SequenceExtensions.cs",
       "lines": [
-        159,
-        162
+        147,
+        150
       ],
       "match": "finally"
     },
@@ -924,24 +1051,24 @@
     "BufferFactory.CreatePooledBufferWriter": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
       "lines": [
-        260,
-        268
+        328,
+        336
       ],
       "match": "public static Sequence<T> CreatePooledBufferWriter<T>("
     },
     "SequenceExtensions.GetSpanLease.Remarks": {
       "file": "src/NCode.Buffers/SequenceExtensions.cs",
       "lines": [
-        48,
-        50
+        49,
+        51
       ],
       "match": "<strong>Single-segment optimization:</strong>"
     },
     "Readme.DecodeIntoABuffer": {
       "file": "README.md",
       "lines": [
-        330,
-        330
+        482,
+        482
       ],
       "match": "A `string` decoded with `SecureEncoding` can't be zeroed.",
       "kind": "documented"
@@ -949,8 +1076,8 @@
     "BufferFactory.RentMemory": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
       "lines": [
-        119,
-        132
+        120,
+        133
       ],
       "match": "/// <remarks>"
     },
@@ -1088,6 +1215,30 @@
       "kind": "documented",
       "label": "ADR-1023"
     },
+    "Adr1027": {
+      "file": "docs/decisions/1027-text-base64-hex-and-random-helpers-rent-their-output-and-return-its-owner.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1027"
+    },
+    "Adr1028": {
+      "file": "docs/decisions/1028-growable-writers-streams-and-text-builders-zero-each-buffer-they-outgrow.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1028"
+    },
+    "Adr1029": {
+      "file": "docs/decisions/1029-secret-t-holds-a-secret-it-never-prints.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1029"
+    },
+    "Adr1030": {
+      "file": "docs/decisions/1030-the-secure-pool-reports-metrics-through-one-static-meter.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1030"
+    },
     "SecureMemoryPool.PageSize": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
@@ -1131,8 +1282,8 @@
     "SecureMemoryPool.TrimMemory": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",
       "lines": [
-        224,
-        238
+        232,
+        248
       ],
       "match": "internal bool TrimMemory()"
     },
@@ -1169,8 +1320,8 @@
     "Changelog.SplitAllocations": {
       "file": "CHANGELOG.md",
       "lines": [
-        180,
-        180
+        227,
+        227
       ],
       "match": "The XML documentation of",
       "kind": "documented"
@@ -1220,13 +1371,13 @@
       "match": "Microsoft.CodeAnalysis.BannedApiAnalyzers",
       "kind": "process"
     },
-    "Metrics.None": {
+    "Metrics.Instruments": {
       "file": "docs/metrics.md",
       "lines": [
         33,
         33
       ],
-      "match": "NCode.Buffers defines no meters",
+      "match": "NCode.Buffers defines one meter",
       "kind": "documented"
     },
     "Governance.Continuity": {
@@ -1294,40 +1445,40 @@
     "Api.BufferFactory": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
       "lines": [
-        51,
-        51
+        52,
+        52
       ],
       "match": "public static class BufferFactory"
     },
     "Api.BufferFactory.Rent": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
       "lines": [
-        76,
-        76
+        77,
+        77
       ],
       "match": "public static IMemoryOwner<T> Rent<T>(int minBufferSize, bool isSensitive, out Span<T> buffer)"
     },
     "Api.BufferFactory.CreatePinnedArray": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
       "lines": [
-        186,
-        186
+        254,
+        254
       ],
       "match": "public static SecureArrayLifetime<T> CreatePinnedArray<T>(int length)"
     },
     "Api.BufferFactory.CreatePooledBufferWriter": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
       "lines": [
-        260,
-        260
+        328,
+        328
       ],
       "match": "public static Sequence<T> CreatePooledBufferWriter<T>("
     },
     "Api.BufferFactory.CreateArrayBufferWriter": {
       "file": "src/NCode.Buffers/BufferFactory.cs",
       "lines": [
-        336,
-        336
+        505,
+        505
       ],
       "match": "public static ArrayBufferWriter<T> CreateArrayBufferWriter<T>()"
     },
@@ -1750,16 +1901,16 @@
     "Api.SequenceExtensions.GetSpanLease": {
       "file": "src/NCode.Buffers/SequenceExtensions.cs",
       "lines": [
-        73,
-        73
+        74,
+        74
       ],
       "match": "public RefSpanLease<T> GetSpanLease(bool isSensitive)"
     },
     "Api.SequenceExtensions.ConsumeAsContiguousSpan": {
       "file": "src/NCode.Buffers/SequenceExtensions.cs",
       "lines": [
-        138,
-        138
+        126,
+        126
       ],
       "match": "public IDisposable ConsumeAsContiguousSpan(bool isSensitive, out ReadOnlySpan<T> span)"
     },

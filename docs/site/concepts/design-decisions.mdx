@@ -143,10 +143,11 @@ pressure or the pool is disposed, and then drops all of them.
 
 **Reason.** No reason is recorded.
 
-**What it costs you.** The cache grows to the largest number of buffers rented at once and keeps them. The library emits
-no metrics, so measure in your workload.
+**What it costs you.** The cache grows to the largest number of buffers rented at once and keeps them.
+`SecureMemoryPool<T>` counts its rentals, returns and the buffers a trim drops on the `NCode.Buffers` meter, so you can
+watch the cache in your workload: [Watch the secure pool with metrics](/guides/watch-the-secure-pool/).
 
-<Proof source="Adr1015" /> <Proof source="Metrics.None" />
+<Proof source="Adr1015" /> <Proof source="Metrics.Instruments" />
 <Proof test="SecureMemoryPoolTests.TrimMemory_WhenHighPressure_ClearsQueue" />
 <Proof test="SecureMemoryPoolTests.Dispose_ClearsMemoryQueue" />
 
