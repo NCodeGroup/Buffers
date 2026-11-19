@@ -119,8 +119,10 @@ public class PooledTextBuilderTests
 
         builder.Append('a');
 
+        var built = builder.ToString();
+
         Assert.True(builder.Capacity >= 256);
-        Assert.Equal("a", builder.ToString());
+        Assert.Equal("a", built);
     }
 
     [Fact]
@@ -131,8 +133,9 @@ public class PooledTextBuilderTests
 
         builder.Append('a');
         builder.Append('b');
+        var built = builder.ToString();
 
-        Assert.Equal("ab", builder.ToString());
+        Assert.Equal("ab", built);
         Assert.Equal(2, builder.Length);
     }
 
@@ -145,8 +148,9 @@ public class PooledTextBuilderTests
         builder.Append('a');
         builder.Append('b');
         builder.Append('c');
+        var built = builder.ToString();
 
-        Assert.Equal("abc", builder.ToString());
+        Assert.Equal("abc", built);
         Assert.True(builder.Capacity >= 3);
     }
 
@@ -158,8 +162,9 @@ public class PooledTextBuilderTests
 
         builder.Append("abc".AsSpan());
         builder.Append("def".AsSpan());
+        var built = builder.ToString();
 
-        Assert.Equal("abcdef", builder.ToString());
+        Assert.Equal("abcdef", built);
     }
 
     [Fact]
@@ -170,8 +175,9 @@ public class PooledTextBuilderTests
 
         builder.Append("hello");
         builder.Append(" world");
+        var built = builder.ToString();
 
-        Assert.Equal("hello world", builder.ToString());
+        Assert.Equal("hello world", built);
     }
 
     [Fact]
@@ -181,8 +187,9 @@ public class PooledTextBuilderTests
         using var builder = new PooledTextBuilder(initial, isSensitive: false);
 
         builder.Append(3.5, "F2", CultureInfo.InvariantCulture);
+        var built = builder.ToString();
 
-        Assert.Equal("3.50", builder.ToString());
+        Assert.Equal("3.50", built);
     }
 
     [Fact]
@@ -192,8 +199,9 @@ public class PooledTextBuilderTests
         using var builder = new PooledTextBuilder(initial, isSensitive: false);
 
         builder.Append(1234567890, default, CultureInfo.InvariantCulture);
+        var built = builder.ToString();
 
-        Assert.Equal("1234567890", builder.ToString());
+        Assert.Equal("1234567890", built);
         Assert.True(builder.Capacity >= 10);
     }
 
@@ -205,9 +213,11 @@ public class PooledTextBuilderTests
 
         builder.Append("abcdefgh");
         builder.Append("ijklmnopqrst");
+        var hasNonZero = initial.ContainsAnyExcept('\0');
+        var built = builder.ToString();
 
-        Assert.False(initial.ContainsAnyExcept('\0'));
-        Assert.Equal("abcdefghijklmnopqrst", builder.ToString());
+        Assert.False(hasNonZero);
+        Assert.Equal("abcdefghijklmnopqrst", built);
     }
 
     [Fact]
@@ -218,9 +228,11 @@ public class PooledTextBuilderTests
 
         builder.Append("abcdefgh");
         builder.Append("ijklmnopqrst");
+        var initialText = new string(initial);
+        var built = builder.ToString();
 
-        Assert.Equal("abcdefgh", new string(initial));
-        Assert.Equal("abcdefghijklmnopqrst", builder.ToString());
+        Assert.Equal("abcdefgh", initialText);
+        Assert.Equal("abcdefghijklmnopqrst", built);
     }
 
     [Fact]
@@ -231,8 +243,9 @@ public class PooledTextBuilderTests
 
         builder.Append("abcdefgh");
         builder.Append(builder.WrittenSpan);
+        var built = builder.ToString();
 
-        Assert.Equal("abcdefghabcdefgh", builder.ToString());
+        Assert.Equal("abcdefghabcdefgh", built);
     }
 
     [Fact]
@@ -242,9 +255,11 @@ public class PooledTextBuilderTests
         using var builder = new PooledTextBuilder(initial, isSensitive: true);
 
         builder.Append(new WritesThenFails());
+        var hasNonZero = initial.ContainsAnyExcept('\0');
+        var built = builder.ToString();
 
-        Assert.False(initial.ContainsAnyExcept('\0'));
-        Assert.Equal("yyyyyyyyyy", builder.ToString());
+        Assert.False(hasNonZero);
+        Assert.Equal("yyyyyyyyyy", built);
     }
 
     [Fact]
@@ -255,8 +270,9 @@ public class PooledTextBuilderTests
 
         builder.Append("abc");
         builder.Append(text);
+        var built = builder.ToString();
 
-        Assert.Equal("abc" + text, builder.ToString());
+        Assert.Equal("abc" + text, built);
         Assert.Equal(1003, builder.Length);
     }
 
@@ -273,10 +289,11 @@ public class PooledTextBuilderTests
 
         var span = builder.AppendSpan(3);
         "xyz".CopyTo(span);
+        var built = builder.ToString();
 
         Assert.Equal(3, span.Length);
         Assert.Equal(5, builder.Length);
-        Assert.Equal("abxyz", builder.ToString());
+        Assert.Equal("abxyz", built);
     }
 
     [Fact]
@@ -288,8 +305,9 @@ public class PooledTextBuilderTests
 
         var span = builder.AppendSpan(5);
         "xyzuv".CopyTo(span);
+        var built = builder.ToString();
 
-        Assert.Equal("abxyzuv", builder.ToString());
+        Assert.Equal("abxyzuv", built);
     }
 
     [Fact]
@@ -316,10 +334,11 @@ public class PooledTextBuilderTests
         builder.Append("secret");
 
         builder.Reset();
+        var hasNonZero = initial.AsSpan().ContainsAnyExcept('\0');
 
         Assert.Equal(0, builder.Length);
         Assert.Equal(8, builder.Capacity);
-        Assert.False(initial.AsSpan().ContainsAnyExcept('\0'));
+        Assert.False(hasNonZero);
     }
 
     #endregion
@@ -332,11 +351,13 @@ public class PooledTextBuilderTests
         var builder = new PooledTextBuilder(isSensitive: true, initialCapacity: 3000);
         builder.Append("secret");
         var memory = builder.RentedMemory;
-        Assert.Equal("secret", new string(memory.Span[..6]));
+        var rentedText = new string(memory.Span[..6]);
+        Assert.Equal("secret", rentedText);
 
         builder.Dispose();
+        var hasNonZero = memory.Span.ContainsAnyExcept('\0');
 
-        Assert.False(memory.Span.ContainsAnyExcept('\0'));
+        Assert.False(hasNonZero);
         Assert.Equal(0, builder.Length);
         Assert.Equal(0, builder.Capacity);
     }
@@ -349,8 +370,9 @@ public class PooledTextBuilderTests
         builder.Append("secret");
 
         builder.Dispose();
+        var hasNonZero = initial.ContainsAnyExcept('\0');
 
-        Assert.False(initial.ContainsAnyExcept('\0'));
+        Assert.False(hasNonZero);
         Assert.Equal(0, builder.Length);
         Assert.Equal(0, builder.Capacity);
     }
@@ -363,8 +385,9 @@ public class PooledTextBuilderTests
         builder.Append("secret");
 
         builder.Dispose();
+        var initialText = new string(initial[..6]);
 
-        Assert.Equal("secret", new string(initial[..6]));
+        Assert.Equal("secret", initialText);
         Assert.Equal(0, builder.Length);
     }
 
@@ -384,12 +407,14 @@ public class PooledTextBuilderTests
             threw = true;
         }
 
+        var hasNonZeroBeforeDispose = initial.AsSpan().ContainsAnyExcept('\0');
         Assert.True(threw);
-        Assert.True(initial.AsSpan().ContainsAnyExcept('\0'));
+        Assert.True(hasNonZeroBeforeDispose);
 
         builder.Dispose();
+        var hasNonZeroAfterDispose = initial.AsSpan().ContainsAnyExcept('\0');
 
-        Assert.False(initial.AsSpan().ContainsAnyExcept('\0'));
+        Assert.False(hasNonZeroAfterDispose);
     }
 
     [Fact]
@@ -413,8 +438,9 @@ public class PooledTextBuilderTests
         builder.Dispose();
 
         builder.Append("def");
+        var built = builder.ToString();
 
-        Assert.Equal("def", builder.ToString());
+        Assert.Equal("def", built);
         builder.Dispose();
     }
 
@@ -428,9 +454,11 @@ public class PooledTextBuilderTests
         Span<char> initial = stackalloc char[8];
         using var builder = new PooledTextBuilder(initial, isSensitive: false);
         builder.Append("abc");
+        var built = builder.ToString();
+        var writtenText = new string(builder.WrittenSpan);
 
-        Assert.Equal("abc", builder.ToString());
-        Assert.Equal("abc", new string(builder.WrittenSpan));
+        Assert.Equal("abc", built);
+        Assert.Equal("abc", writtenText);
     }
 
     #endregion
