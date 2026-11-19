@@ -4,6 +4,7 @@
 - **Date:** 2026-11-19
 - **Deciders:** NCode Group
 - **Supersedes:** project-template ADR-0113, for the rule that meters come from `IMeterFactory`
+- **Amends:** ADR-1015, for its consequence that the library emits no metrics.
 
 ## Context
 
@@ -58,3 +59,5 @@ the name is a public constant, `BufferMetrics.MeterName`.**
 - [Project-template ADR-0113](project-template/0113-metrics-have-one-owner-per-signal-and-bounded-dimensions.md)
 - `AGENTS.md`, which lists this override
 - `docs/metrics.md`, which lists the instruments
+- [ADR-1015](1015-the-secure-pools-cache-has-no-size-limit-and-is-dropped-under-memory-pressure.md): the cache whose
+  rentals, returns and trims the meter counts; this record amends its consequence that the library emits no metrics.
