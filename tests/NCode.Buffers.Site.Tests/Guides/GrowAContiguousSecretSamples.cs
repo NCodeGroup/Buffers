@@ -91,6 +91,8 @@ public class GrowAContiguousSecretSamples
         using Secret<char> connectionString = Secret.Create<char>(builder.WrittenSpan);
         // end-snippet
 
-        Assert.Equal("Server=db;Password=s3cr3t;", new string(connectionString.Reveal()));
+        ReadOnlySpan<char> value = connectionString.Reveal();
+        var text = new string(value);
+        Assert.Equal("Server=db;Password=s3cr3t;", text);
     }
 }

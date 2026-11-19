@@ -36,7 +36,8 @@ public class WatchTheSecurePoolSamples
         using var pool = new SecureMemoryPool<byte>();
         pool.Rent(16).Dispose();
 
-        Assert.True(counts.GetValueOrDefault("ncode.buffers.secure_pool.rentals") >= 1);
+        var rentals = counts.GetValueOrDefault("ncode.buffers.secure_pool.rentals");
+        Assert.True(rentals >= 1);
     }
 
     [Fact]
@@ -65,7 +66,9 @@ public class WatchTheSecurePoolSamples
         listener.RecordObservableInstruments();
         // end-snippet
 
-        Assert.True(counts.GetValueOrDefault("ncode.buffers.secure_pool.rentals") >= 2);
-        Assert.True(counts.GetValueOrDefault("ncode.buffers.secure_pool.returns") >= 1);
+        var rentals = counts.GetValueOrDefault("ncode.buffers.secure_pool.rentals");
+        Assert.True(rentals >= 2);
+        var returns = counts.GetValueOrDefault("ncode.buffers.secure_pool.returns");
+        Assert.True(returns >= 1);
     }
 }

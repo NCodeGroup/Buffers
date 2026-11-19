@@ -48,7 +48,9 @@ public class HoldASecretSamples
         HMACSHA256.HashData(clientSecret.Reveal(), payload, mac);
         // end-snippet
 
-        SecretAssert.Equal(HMACSHA256.HashData("s3cr3t"u8.ToArray(), payload), mac);
+        var key = "s3cr3t"u8.ToArray();
+        var expected = HMACSHA256.HashData(key, payload);
+        SecretAssert.Equal(expected, mac);
     }
 
     [Fact]
@@ -63,7 +65,8 @@ public class HoldASecretSamples
         // end-snippet
 
         Assert.True(matches);
-        Assert.False(stored.FixedTimeEquals("s3cr3x"u8));
+        var matchesOther = stored.FixedTimeEquals("s3cr3x"u8);
+        Assert.False(matchesOther);
     }
 
     [Fact]
@@ -77,6 +80,7 @@ public class HoldASecretSamples
         // end-snippet
 
         Assert.Equal(32, key.Length);
-        Assert.Contains(key.Reveal().ToArray(), b => b != 0);
+        var value = key.Reveal().ToArray();
+        Assert.Contains(value, b => b != 0);
     }
 }
