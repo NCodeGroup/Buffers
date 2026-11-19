@@ -383,15 +383,16 @@ public class PooledMemoryStreamTests
         Assert.Equal(expected, stream.Position);
     }
 
-    [Fact]
-    public void Seek_BeforeBeginning_ThrowsIOException()
+    [Theory]
+    [InlineData(-1L, SeekOrigin.Begin)]
+    [InlineData(-11L, SeekOrigin.End)]
+    public void Seek_BeforeBeginning_ThrowsIOException(long offset, SeekOrigin origin)
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
         var data = new byte[10];
         stream.Write(data);
 
-        Assert.Throws<IOException>(() => stream.Seek(-1, SeekOrigin.Begin));
-        Assert.Throws<IOException>(() => stream.Seek(-11, SeekOrigin.End));
+        Assert.Throws<IOException>(() => stream.Seek(offset, origin));
         Assert.Equal(10, stream.Position);
     }
 

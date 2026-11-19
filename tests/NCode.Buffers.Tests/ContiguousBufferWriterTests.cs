@@ -84,9 +84,53 @@ public class ContiguousBufferWriterTests
         using var writer = BufferFactory.CreateContiguousBufferWriter<int>(isSensitive: false);
 
         Assert.Equal(0, writer.Capacity);
+    }
+
+    #endregion
+
+    #region WrittenCount Property Tests
+
+    [Fact]
+    public void WrittenCount_BeforeFirstWrite_IsZero()
+    {
+        using var writer = BufferFactory.CreateContiguousBufferWriter<int>(isSensitive: false);
+
         Assert.Equal(0, writer.WrittenCount);
+    }
+
+    #endregion
+
+    #region FreeCapacity Property Tests
+
+    [Fact]
+    public void FreeCapacity_BeforeFirstWrite_IsZero()
+    {
+        using var writer = BufferFactory.CreateContiguousBufferWriter<int>(isSensitive: false);
+
         Assert.Equal(0, writer.FreeCapacity);
+    }
+
+    #endregion
+
+    #region WrittenSpan Property Tests
+
+    [Fact]
+    public void WrittenSpan_BeforeFirstWrite_IsEmpty()
+    {
+        using var writer = BufferFactory.CreateContiguousBufferWriter<int>(isSensitive: false);
+
         Assert.True(writer.WrittenSpan.IsEmpty);
+    }
+
+    #endregion
+
+    #region WrittenMemory Property Tests
+
+    [Fact]
+    public void WrittenMemory_BeforeFirstWrite_IsEmpty()
+    {
+        using var writer = BufferFactory.CreateContiguousBufferWriter<int>(isSensitive: false);
+
         Assert.True(writer.WrittenMemory.IsEmpty);
     }
 
