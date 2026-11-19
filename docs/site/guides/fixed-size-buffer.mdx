@@ -4,14 +4,11 @@ description: Write a frame, a header or a token into memory of a size you chose,
 ---
 
 import FixedBufferBars from '@site/components/FixedBufferBars.astro';
-import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Pinned from '@site/components/Pinned.astro';
 import PinNotes from '@site/components/PinNotes.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
-
-<KindLabel kind="how-to" />
 
 This is your situation when your code writes bytes through an `IBufferWriter<byte>`, such as a length-prefixed frame,
 a header or a JSON token, and you know how large the largest output is. The example writes a frame: a 4-byte length,

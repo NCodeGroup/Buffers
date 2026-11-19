@@ -4,11 +4,8 @@ description: Make the build fail on a call to a lenient encoding or a bare buffe
 numbered: true
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
-
-<KindLabel kind="how-to" />
 
 This is your situation when you want the build, and not a reviewer's memory, to keep leaky APIs out of your code. A
 banned-API analyzer turns a call to a banned API into a build error. This repository bans the lenient encodings and

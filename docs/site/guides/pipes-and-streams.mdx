@@ -3,14 +3,11 @@ title: Give pipes and stream readers a pool that cleans up
 description: Make a Pipe, or a PipeReader over a stream, take its buffers from a pool that pins them and zeroes them when the pipe returns them.
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Pinned from '@site/components/Pinned.astro';
 import PinNotes from '@site/components/PinNotes.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
-
-<KindLabel kind="how-to" />
 
 This is your situation when a secret passes through a `Pipe`, or a `PipeReader` reads it from a stream, such as a
 request body that carries a token or a key. The pipe keeps the bytes in buffers it rents from a pool. The examples give

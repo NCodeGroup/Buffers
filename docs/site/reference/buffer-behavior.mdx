@@ -4,11 +4,8 @@ description: For each way of getting memory, whether it is pinned, zeroed and po
 ---
 
 import BufferBehaviorMatrix from '@site/components/BufferBehaviorMatrix.astro';
-import KindLabel from '@site/components/KindLabel.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
-
-<KindLabel kind="reference" />
 
 For each way of getting memory, this page says whether it is pinned, zeroed and pooled, and what you hold. It then
 lists what `SecureMemoryPool<T>` hands out for each request, and how it caches the buffers it takes back.

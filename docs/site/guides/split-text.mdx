@@ -3,14 +3,11 @@ title: Split delimited text without copying substrings
 description: Split a header, a token or a line into its pieces as slices of the original text, so that no string is made for each piece.
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Pinned from '@site/components/Pinned.astro';
 import PinNotes from '@site/components/PinNotes.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
-
-<KindLabel kind="how-to" />
 
 This is your situation when your code splits delimited text, such as a `;`-separated header, a dotted token or a
 comma-separated line, and the pieces are small parts of text you already hold. The example reads a header of

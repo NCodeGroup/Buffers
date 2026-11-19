@@ -3,14 +3,11 @@ title: Reject malformed UTF-8 and ASCII
 description: Decode bytes from a request, a file or a stream so that invalid input throws, instead of becoming a replacement character that makes two different inputs the same string.
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Pinned from '@site/components/Pinned.astro';
 import PinNotes from '@site/components/PinNotes.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
-
-<KindLabel kind="how-to" />
 
 This is your situation when your code turns bytes it did not write into text, such as a request body, a header, a file
 or a stream, and then checks, hashes, compares or stores that text. The example decodes a name from bytes.

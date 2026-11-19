@@ -3,14 +3,11 @@ title: Work with an API that takes or returns byte[]
 description: When an API insists on an array, keep that array from becoming one more copy of the secret that nothing clears.
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Pinned from '@site/components/Pinned.astro';
 import PinNotes from '@site/components/PinNotes.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
-
-<KindLabel kind="how-to" />
 
 This is your situation when an API takes a secret only as a `byte[]`, as `ECParameters.D` does, or hands you one, as
 `ECDiffieHellman.DeriveRawSecretAgreement` does. The example imports an EC private key, then seals a message with a

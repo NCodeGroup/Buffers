@@ -3,15 +3,12 @@ title: Verify a MAC without leaking timing
 description: Check a signature header, a signed cookie or an API key so that neither the time the check takes nor the memory it leaves gives the expected value away.
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Pinned from '@site/components/Pinned.astro';
 import PinNotes from '@site/components/PinNotes.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
 import VerifyAMacTimingModel from '@site/components/VerifyAMacTimingModel.astro';
-
-<KindLabel kind="how-to" />
 
 This is your situation when a request carries a value and its MAC, such as a webhook's signature header, a signed
 cookie or an API key, and your code must say whether they match. The example verifies a webhook's HMAC-SHA256

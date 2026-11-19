@@ -3,13 +3,10 @@ title: Review a change that touches secrets
 description: One checklist per guide, and the text to search a diff for, so a review of code that holds keys or passwords finds the common leaks.
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
 import ReviewChecklist from '@site/components/ReviewChecklist.astro';
-
-<KindLabel kind="how-to" />
 
 This is your situation when you review a change that holds a key, a password or a token. Each guide that sets the
 usual code beside the fix ends with a checklist, and the site's build fails one without it. This page gathers them:

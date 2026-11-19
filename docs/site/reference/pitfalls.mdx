@@ -3,12 +3,9 @@ title: Ways to get it wrong
 description: The mistakes the library lets you make, what each one does, and what to write instead.
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
-
-<KindLabel kind="reference" />
 
 Used as the guides show, a secret lives in memory the collector does not move, for the length of one `using` scope,
 and is overwritten with zeros when that scope ends. <Proof claim="R3" /> <Proof claim="R1" /> This page lists the

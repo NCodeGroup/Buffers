@@ -4,11 +4,8 @@ description: Write a unit test that fails when your code leaves a key or a passw
 numbered: true
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
-
-<KindLabel kind="how-to" />
 
 This is your situation when your code holds a key, a password or a token in a buffer, and you want a test that fails
 when that buffer is not cleared. A buffer that NCode.Buffers owns is overwritten with zeros when it is disposed. The
