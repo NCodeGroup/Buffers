@@ -154,8 +154,10 @@ public class ReadmeSamplesTests
         );
         // end-snippet
 
+        var decoded = chars.ToString();
+
         Assert.Equal("secret"u8, utf8);
-        Assert.Equal("secret", chars.ToString());
+        Assert.Equal("secret", decoded);
     }
 
     [Fact]
@@ -177,8 +179,11 @@ public class ReadmeSamplesTests
         );
         // end-snippet
 
-        Assert.Equal([0xFB, 0xFF, 0x01], bytes.ToArray());
-        Assert.Equal("fbff01", hex.ToString());
+        var decoded = bytes.ToArray();
+        var encoded = hex.ToString();
+
+        Assert.Equal([0xFB, 0xFF, 0x01], decoded);
+        Assert.Equal("fbff01", encoded);
     }
 
     #endregion
@@ -309,7 +314,9 @@ public class ReadmeSamplesTests
         byte[] hash = SHA256.HashData(writer.WrittenSpan);
         // end-snippet
 
-        Assert.Equal(SHA256.HashData("""{"Id":42}"""u8), hash);
+        var expected = SHA256.HashData("""{"Id":42}"""u8);
+
+        Assert.Equal(expected, hash);
     }
 
     [Fact]
@@ -344,7 +351,9 @@ public class ReadmeSamplesTests
         ReadOnlySpan<char> text = builder.WrittenSpan;
         // end-snippet
 
-        Assert.Equal("token-42", text.ToString());
+        var built = text.ToString();
+
+        Assert.Equal("token-42", built);
     }
 
     #endregion
