@@ -16,13 +16,14 @@
     at http://localhost:4321/ by default and follows each change. preview builds as the workflow does and
     serves that build.
 
-    A toolchain clone runs one command at a time: site.mjs says 'This toolchain checkout is in use' when another
-    build is running. Node.js must be on PATH at the version the toolchain's package.json names in engines. Nothing is
-    written into this repository.
+    build, dev and preview use a toolchain clone one at a time, and site.mjs says 'This toolchain checkout is in use'
+    when another is running; check only reads a built site and takes no lock. Node.js must be on PATH at the version
+    the toolchain's package.json names in engines. Nothing is written into this repository.
 .PARAMETER Command
     What to run: build, check, dev or preview.
 .PARAMETER Out
-    The folder build writes the site to and check reads it from; site.mjs refuses a folder inside this repository.
+    The folder build writes the site to and check reads it from. Keep it outside this repository; site.mjs refuses a
+    folder whose path starts with the toolchain's, such as docs-site beside a toolchain named docs.
 .PARAMETER Port
     The port dev and preview serve on; site.mjs picks the default when it is not given.
 .PARAMETER Browser
