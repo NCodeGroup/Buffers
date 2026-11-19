@@ -33,7 +33,10 @@ public static class BinaryTextEncoding
     /// When <see langword="true"/>, the buffer is rented from <see cref="SecureMemoryPool{T}"/>
     /// and securely zeroed when disposed.
     /// </param>
-    /// <param name="bytes">When this method returns, contains a <see cref="Span{T}"/> of exactly the decoded bytes.</param>
+    /// <param name="bytes">
+    /// When this method returns, contains a <see cref="Span{T}"/> of exactly the decoded bytes.
+    /// It is valid until the returned owner is disposed.
+    /// </param>
     /// <returns>
     /// An <see cref="IMemoryOwner{T}"/> that manages the lifetime of the rented buffer.
     /// Dispose this owner to return the buffer to the pool.
@@ -56,20 +59,9 @@ public static class BinaryTextEncoding
         out Span<byte> bytes
     )
     {
-        ValidateFormat(format);
-
-        var maxLength = GetMaxDecodedLength(text.Length, format);
-        var owner = BufferFactory.Rent(maxLength, isSensitive, out bytes);
-        try
-        {
-            bytes = bytes[..Decode(text, format, bytes)];
-            return owner;
-        }
-        catch
-        {
-            owner.Dispose();
-            throw;
-        }
+        var owner = RentDecoded(text, format, isSensitive, out Memory<byte> memory);
+        bytes = memory.Span;
+        return owner;
     }
 
     /// <summary>
@@ -81,7 +73,10 @@ public static class BinaryTextEncoding
     /// When <see langword="true"/>, the buffer is rented from <see cref="SecureMemoryPool{T}"/>
     /// and securely zeroed when disposed.
     /// </param>
-    /// <param name="bytes">When this method returns, contains a <see cref="Memory{T}"/> of exactly the decoded bytes.</param>
+    /// <param name="bytes">
+    /// When this method returns, contains a <see cref="Memory{T}"/> of exactly the decoded bytes.
+    /// It is valid until the returned owner is disposed.
+    /// </param>
     /// <returns>
     /// An <see cref="IMemoryOwner{T}"/> that manages the lifetime of the rented buffer.
     /// Dispose this owner to return the buffer to the pool.
@@ -110,7 +105,8 @@ public static class BinaryTextEncoding
         var owner = BufferFactory.Rent(maxLength, isSensitive, out bytes);
         try
         {
-            bytes = bytes[..Decode(text, format, bytes.Span)];
+            var written = Decode(text, format, bytes.Span);
+            bytes = bytes[..written];
             return owner;
         }
         catch
@@ -129,7 +125,10 @@ public static class BinaryTextEncoding
     /// When <see langword="true"/>, the buffer is rented from <see cref="SecureMemoryPool{T}"/>
     /// and securely zeroed when disposed.
     /// </param>
-    /// <param name="text">When this method returns, contains a <see cref="Span{T}"/> of exactly the encoded text.</param>
+    /// <param name="text">
+    /// When this method returns, contains a <see cref="Span{T}"/> of exactly the encoded text.
+    /// It is valid until the returned owner is disposed.
+    /// </param>
     /// <returns>
     /// An <see cref="IMemoryOwner{T}"/> that manages the lifetime of the rented buffer.
     /// Dispose this owner to return the buffer to the pool.
@@ -149,11 +148,8 @@ public static class BinaryTextEncoding
         out Span<char> text
     )
     {
-        ValidateFormat(format);
-
-        var length = GetEncodedLength(bytes.Length, format);
-        var owner = BufferFactory.Rent(length, isSensitive, out text);
-        text = text[..Encode(bytes, format, text)];
+        var owner = RentEncoded(bytes, format, isSensitive, out Memory<char> memory);
+        text = memory.Span;
         return owner;
     }
 
@@ -166,7 +162,10 @@ public static class BinaryTextEncoding
     /// When <see langword="true"/>, the buffer is rented from <see cref="SecureMemoryPool{T}"/>
     /// and securely zeroed when disposed.
     /// </param>
-    /// <param name="text">When this method returns, contains a <see cref="Memory{T}"/> of exactly the encoded text.</param>
+    /// <param name="text">
+    /// When this method returns, contains a <see cref="Memory{T}"/> of exactly the encoded text.
+    /// It is valid until the returned owner is disposed.
+    /// </param>
     /// <returns>
     /// An <see cref="IMemoryOwner{T}"/> that manages the lifetime of the rented buffer.
     /// Dispose this owner to return the buffer to the pool.
@@ -190,10 +189,16 @@ public static class BinaryTextEncoding
 
         var length = GetEncodedLength(bytes.Length, format);
         var owner = BufferFactory.Rent(length, isSensitive, out text);
-        text = text[..Encode(bytes, format, text.Span)];
+        var written = Encode(bytes, format, text.Span);
+        text = text[..written];
         return owner;
     }
 
+    /// <summary>
+    /// Throws when <paramref name="format"/> is not a defined <see cref="BinaryTextFormat"/> value, so that nothing is rented for it.
+    /// </summary>
+    /// <param name="format">The format to validate.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="format"/> is not a defined <see cref="BinaryTextFormat"/> value.</exception>
     private static void ValidateFormat(BinaryTextFormat format)
     {
         if (!Enum.IsDefined(format))
@@ -204,6 +209,15 @@ public static class BinaryTextEncoding
             );
     }
 
+    /// <summary>
+    /// Gets the largest number of bytes that text of the given length decodes to in the format.
+    /// </summary>
+    /// <param name="textLength">The number of characters in the text.</param>
+    /// <param name="format">
+    /// The text format, which is a defined <see cref="BinaryTextFormat"/> value.
+    /// The switch reads every value it has no arm for as hexadecimal.
+    /// </param>
+    /// <returns>The size of the buffer to rent for decoding.</returns>
     private static int GetMaxDecodedLength(int textLength, BinaryTextFormat format) =>
         format switch
         {
@@ -212,6 +226,17 @@ public static class BinaryTextEncoding
             _ => textLength / 2,
         };
 
+    /// <summary>
+    /// Decodes the text into <paramref name="destination"/>.
+    /// </summary>
+    /// <param name="text">The text to decode.</param>
+    /// <param name="format">
+    /// The text format, which is a defined <see cref="BinaryTextFormat"/> value.
+    /// The switch reads every value it has no arm for as hexadecimal.
+    /// </param>
+    /// <param name="destination">The buffer that receives the decoded bytes.</param>
+    /// <returns>The number of bytes written to <paramref name="destination"/>.</returns>
+    /// <exception cref="FormatException">Thrown when <paramref name="text"/> is not valid in the given format.</exception>
     private static int Decode(
         ReadOnlySpan<char> text,
         BinaryTextFormat format,
@@ -236,6 +261,15 @@ public static class BinaryTextEncoding
         }
     }
 
+    /// <summary>
+    /// Gets the number of characters that bytes of the given length encode to in the format.
+    /// </summary>
+    /// <param name="byteLength">The number of bytes to encode.</param>
+    /// <param name="format">
+    /// The text format, which is a defined <see cref="BinaryTextFormat"/> value.
+    /// The switch reads every value it has no arm for as hexadecimal.
+    /// </param>
+    /// <returns>The size of the buffer to rent for encoding.</returns>
     private static int GetEncodedLength(int byteLength, BinaryTextFormat format) =>
         format switch
         {
@@ -244,6 +278,16 @@ public static class BinaryTextEncoding
             _ => checked(byteLength * 2),
         };
 
+    /// <summary>
+    /// Encodes the bytes into <paramref name="destination"/>.
+    /// </summary>
+    /// <param name="bytes">The bytes to encode.</param>
+    /// <param name="format">
+    /// The text format, which is a defined <see cref="BinaryTextFormat"/> value.
+    /// The switch reads every value it has no arm for as lowercase hexadecimal.
+    /// </param>
+    /// <param name="destination">The buffer that receives the encoded text.</param>
+    /// <returns>The number of characters written to <paramref name="destination"/>.</returns>
     private static int Encode(
         ReadOnlySpan<byte> bytes,
         BinaryTextFormat format,
