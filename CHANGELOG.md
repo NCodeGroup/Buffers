@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.5] - 2026-11-18
+
 ### Changed
 
 - Package validation compares each package with the published 5.2.3 package.
+- The project follows project-template v0.104.0: the package's project website, https://ncodegroup.github.io/Buffers/, comes from `site.url` in `docs/site/site.config.json` instead of a setting in the project file, so it follows the site if it moves ([ADR-0152](docs/decisions/project-template/0152-a-packages-project-page-is-its-documentation-site.md)).
 
 ## [5.2.4] - 2026-11-18
 
@@ -231,7 +234,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.2.4...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.2.5...HEAD
+[5.2.5]: https://github.com/NCodeGroup/Buffers/compare/v5.2.4...v5.2.5
 [5.2.4]: https://github.com/NCodeGroup/Buffers/compare/v5.2.3...v5.2.4
 [5.2.3]: https://github.com/NCodeGroup/Buffers/compare/v5.2.2...v5.2.3
 [5.2.2]: https://github.com/NCodeGroup/Buffers/compare/v5.2.1...v5.2.2
