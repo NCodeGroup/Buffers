@@ -1,0 +1,88 @@
+---
+title: Watch the secure pool with metrics
+description: Count the rentals, returns and trims of SecureMemoryPool<T> with a metrics listener, and tell from the counts when the pool allocates.
+numbered: true
+---
+
+import KindLabel from '@site/components/KindLabel.astro';
+import Proof from '@site/components/Proof.astro';
+import Related from '@site/components/Related.astro';
+
+<KindLabel kind="how-to" />
+
+This is your situation when your service rents buffers from `SecureMemoryPool<T>` and you want to see how it behaves
+under load: how many buffers come from the cache, how many allocate, and whether memory pressure empties the cache.
+The pool reports counts through .NET metrics. You subscribe to them and read the numbers.
+
+You'll use `BufferMetrics.MeterName` · `SecureMemoryPool<T>` · `MeterListener`
+
+## Find the meter
+
+The library has one `Meter` for the whole process. Its name is `NCode.Buffers`, and the constant
+`BufferMetrics.MeterName` holds it. <Proof source="Api.BufferMetrics.MeterName" /> Every `SecureMemoryPool<T>`
+records on that meter, `SecureMemoryPool<T>.Shared` and every pool you create. <Proof source="Adr1030" />
+
+Recording costs nothing until a listener subscribes to the meter.
+
+An OpenTelemetry host subscribes with `AddMeter("NCode.Buffers")`, or with `AddMeter(BufferMetrics.MeterName)`. The
+host's exporter then sends the counts wherever the host sends its other metrics.
+
+## Know the three instruments
+
+Every instrument is a `Counter<long>` with the unit `{buffer}`.
+
+| Instrument | Counts | Attribute |
+| --- | --- | --- |
+| `ncode.buffers.secure_pool.rentals` | Buffers handed out | `ncode.buffers.rental.source` |
+| `ncode.buffers.secure_pool.returns` | Pages returned to the cache | none |
+| `ncode.buffers.secure_pool.trimmed` | Cached pages a trim dropped under memory pressure | none |
+
+The attribute `ncode.buffers.rental.source` says where a rented buffer came from:
+
+- `cache`: a page from the pool's cache.
+- `new`: a new page, because the cache was empty.
+- `unpooled`: a request above 4096 bytes. It gets a pinned array of its own, and the pool never caches it.
+- `empty`: a request of zero bytes.
+
+<Proof test="SecureMemoryPoolMetricsTests.Rent_RecordsOneRentalWithItsSource" />
+
+## Listen to the meter
+
+A `MeterListener` subscribes to the instruments whose meter has that name. The callback adds each measurement to a
+total kept under the instrument's name.
+
+```cs snippet=SiteWatchPoolListener title="PoolWatcher.cs" "BufferMetrics.MeterName"
+```
+
+<Proof sample="SiteWatchPoolListener" />
+
+## Read what the counts mean
+
+A rising `unpooled` count means your code asks for buffers above 4096 bytes. Each one allocates a pinned array, and the
+pool does not cache it. Ask for pages of 4096 bytes or less where you can, or accept the allocation.
+
+A rising `trimmed` count means memory pressure keeps emptying the cache. After a trim, the next rentals find the cache
+empty, so they count as `new` and allocate.
+
+A high `cache` share of the rentals means the pool is reusing its pages, which is what you want.
+
+## Check your work
+
+Create a pool, rent twice and dispose both owners, then read the counts. The listener from the step above must still be
+running.
+
+```cs snippet=SiteWatchPoolCheck title="PoolWatcher.cs"
+```
+
+<Proof sample="SiteWatchPoolCheck" />
+
+The `rentals` total is at least 2, because two rentals happened, and the `returns` total is at least 1, because a
+disposed owner returned its page. The totals can be higher, because the listener counts every secure pool in the
+process.
+
+The library defines no activity sources or spans. The meter is the only telemetry it emits.
+
+<Related>
+- **Look up** [Buffer behavior](/reference/buffer-behavior/)
+- **Understand** [How the buffers work](/concepts/how-the-buffers-work/)
+</Related>
