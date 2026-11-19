@@ -21,6 +21,20 @@ NCode.Buffers.PooledMemoryStream
 NCode.Buffers.PooledMemoryStream.IsSensitive.get -> bool
 NCode.Buffers.PooledMemoryStream.WrittenMemory.get -> System.ReadOnlyMemory<byte>
 NCode.Buffers.PooledMemoryStream.WrittenSpan.get -> System.ReadOnlySpan<byte>
+NCode.Buffers.PooledTextBuilder
+NCode.Buffers.PooledTextBuilder.Append(char value) -> void
+NCode.Buffers.PooledTextBuilder.Append(System.ReadOnlySpan<char> value) -> void
+NCode.Buffers.PooledTextBuilder.Append<T>(T value, System.ReadOnlySpan<char> format = default(System.ReadOnlySpan<char>), System.IFormatProvider? provider = null) -> void
+NCode.Buffers.PooledTextBuilder.AppendSpan(int length) -> System.Span<char>
+NCode.Buffers.PooledTextBuilder.Capacity.get -> int
+NCode.Buffers.PooledTextBuilder.Dispose() -> void
+NCode.Buffers.PooledTextBuilder.IsSensitive.get -> bool
+NCode.Buffers.PooledTextBuilder.Length.get -> int
+NCode.Buffers.PooledTextBuilder.PooledTextBuilder() -> void
+NCode.Buffers.PooledTextBuilder.PooledTextBuilder(bool isSensitive, int initialCapacity = 0) -> void
+NCode.Buffers.PooledTextBuilder.PooledTextBuilder(System.Span<char> initialBuffer, bool isSensitive) -> void
+NCode.Buffers.PooledTextBuilder.Reset() -> void
+NCode.Buffers.PooledTextBuilder.WrittenSpan.get -> System.ReadOnlySpan<char>
 NCode.Buffers.Secret
 NCode.Buffers.Secret<T>
 NCode.Buffers.Secret<T>.CopyTo(System.Span<T> destination) -> void
@@ -60,6 +74,7 @@ override NCode.Buffers.PooledMemoryStream.Write(System.ReadOnlySpan<byte> buffer
 override NCode.Buffers.PooledMemoryStream.WriteAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 override NCode.Buffers.PooledMemoryStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 override NCode.Buffers.PooledMemoryStream.WriteByte(byte value) -> void
+override NCode.Buffers.PooledTextBuilder.ToString() -> string!
 override NCode.Buffers.Secret<T>.Equals(object? obj) -> bool
 override NCode.Buffers.Secret<T>.GetHashCode() -> int
 override NCode.Buffers.Secret<T>.ToString() -> string!
