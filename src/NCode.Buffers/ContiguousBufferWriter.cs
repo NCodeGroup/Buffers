@@ -57,17 +57,17 @@ public sealed class ContiguousBufferWriter<T> : IBufferWriter<T>, IDisposable
 {
     private const int DefaultInitialCapacity = 256;
 
-    private readonly int _initialCapacity;
-    private IMemoryOwner<T>? _owner;
-    private bool _disposed;
+    private int InitialCapacity { get; }
+    private IMemoryOwner<T>? Owner { get; set; }
+    private bool IsDisposed { get; set; }
 
     internal ContiguousBufferWriter(bool isSensitive, int initialCapacity)
     {
         IsSensitive = isSensitive;
-        _initialCapacity = initialCapacity == 0 ? DefaultInitialCapacity : initialCapacity;
+        InitialCapacity = initialCapacity == 0 ? DefaultInitialCapacity : initialCapacity;
     }
 
-    private Memory<T> Buffer => _owner is null ? Memory<T>.Empty : _owner.Memory;
+    private Memory<T> Buffer => Owner is null ? Memory<T>.Empty : Owner.Memory;
 
     /// <summary>
     /// Gets a value that indicates whether the writer rents its buffers from the secure pool, which zeroes them when
@@ -110,7 +110,7 @@ public sealed class ContiguousBufferWriter<T> : IBufferWriter<T>, IDisposable
     {
         get
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
             return Buffer[..WrittenCount];
         }
     }
@@ -129,7 +129,7 @@ public sealed class ContiguousBufferWriter<T> : IBufferWriter<T>, IDisposable
     {
         get
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
             return Buffer.Span[..WrittenCount];
         }
     }
@@ -144,7 +144,7 @@ public sealed class ContiguousBufferWriter<T> : IBufferWriter<T>, IDisposable
     /// </remarks>
     public void Reset()
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
         Debug.Assert(WrittenCount >= 0);
         CryptographicOperationsExtensions.ZeroMemoryOrClear(Buffer.Span[..WrittenCount]);
         WrittenCount = 0;
@@ -167,7 +167,7 @@ public sealed class ContiguousBufferWriter<T> : IBufferWriter<T>, IDisposable
     /// </remarks>
     public void Advance(int count)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
         Debug.Assert(WrittenCount >= 0);
 
         if (count < 0)
@@ -209,9 +209,10 @@ public sealed class ContiguousBufferWriter<T> : IBufferWriter<T>, IDisposable
     /// </remarks>
     public Memory<T> GetMemory(int sizeHint = 0)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
         ArgumentOutOfRangeException.ThrowIfNegative(sizeHint);
-        Grow(Math.Max(sizeHint, 1));
+        var needed = Math.Max(sizeHint, 1);
+        Grow(needed);
         return Buffer[WrittenCount..];
     }
 
@@ -235,9 +236,10 @@ public sealed class ContiguousBufferWriter<T> : IBufferWriter<T>, IDisposable
     /// </remarks>
     public Span<T> GetSpan(int sizeHint = 0)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
         ArgumentOutOfRangeException.ThrowIfNegative(sizeHint);
-        Grow(Math.Max(sizeHint, 1));
+        var needed = Math.Max(sizeHint, 1);
+        Grow(needed);
         return Buffer.Span[WrittenCount..];
     }
 
@@ -246,14 +248,14 @@ public sealed class ContiguousBufferWriter<T> : IBufferWriter<T>, IDisposable
     /// </summary>
     public void Dispose()
     {
-        if (_disposed)
+        if (IsDisposed)
         {
             return;
         }
 
-        _disposed = true;
-        var owner = _owner;
-        _owner = null;
+        IsDisposed = true;
+        var owner = Owner;
+        Owner = null;
         WrittenCount = 0;
         owner?.Dispose();
     }
@@ -267,13 +269,14 @@ public sealed class ContiguousBufferWriter<T> : IBufferWriter<T>, IDisposable
 
         var required = checked(WrittenCount + needed);
         var doubled = (int)Math.Min(2L * Capacity, Array.MaxLength);
-        var newSize = Math.Max(required, Math.Max(_initialCapacity, doubled));
+        var minimum = Math.Max(InitialCapacity, doubled);
+        var newSize = Math.Max(required, minimum);
 
         var owner = BufferFactory.ChoosePool<T>(IsSensitive).Rent(newSize);
         Buffer.Span[..WrittenCount].CopyTo(owner.Memory.Span);
 
-        var previous = _owner;
-        _owner = owner;
+        var previous = Owner;
+        Owner = owner;
         previous?.Dispose();
     }
 }

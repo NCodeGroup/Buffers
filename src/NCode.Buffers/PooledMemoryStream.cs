@@ -51,19 +51,19 @@ public sealed class PooledMemoryStream : Stream
 {
     private const int DefaultInitialCapacity = 256;
 
-    private readonly int _initialCapacity;
-    private IMemoryOwner<byte>? _owner;
-    private int _length;
-    private int _position;
-    private bool _disposed;
+    private int InitialCapacity { get; }
+    private IMemoryOwner<byte>? Owner { get; set; }
+    private int DataLength { get; set; }
+    private int CurrentPosition { get; set; }
+    private bool IsDisposed { get; set; }
 
     internal PooledMemoryStream(bool isSensitive, int initialCapacity)
     {
         IsSensitive = isSensitive;
-        _initialCapacity = initialCapacity == 0 ? DefaultInitialCapacity : initialCapacity;
+        InitialCapacity = initialCapacity == 0 ? DefaultInitialCapacity : initialCapacity;
     }
 
-    private Memory<byte> Buffer => _owner is null ? Memory<byte>.Empty : _owner.Memory;
+    private Memory<byte> Buffer => Owner is null ? Memory<byte>.Empty : Owner.Memory;
 
     internal int Capacity => Buffer.Length;
 
@@ -87,8 +87,8 @@ public sealed class PooledMemoryStream : Stream
     {
         get
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            return Buffer[.._length];
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
+            return Buffer[..DataLength];
         }
     }
 
@@ -105,19 +105,19 @@ public sealed class PooledMemoryStream : Stream
     {
         get
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            return Buffer.Span[.._length];
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
+            return Buffer.Span[..DataLength];
         }
     }
 
     /// <inheritdoc />
-    public override bool CanRead => !_disposed;
+    public override bool CanRead => !IsDisposed;
 
     /// <inheritdoc />
-    public override bool CanSeek => !_disposed;
+    public override bool CanSeek => !IsDisposed;
 
     /// <inheritdoc />
-    public override bool CanWrite => !_disposed;
+    public override bool CanWrite => !IsDisposed;
 
     /// <inheritdoc />
     /// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
@@ -125,8 +125,8 @@ public sealed class PooledMemoryStream : Stream
     {
         get
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            return _length;
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
+            return DataLength;
         }
     }
 
@@ -142,12 +142,12 @@ public sealed class PooledMemoryStream : Stream
     {
         get
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            return _position;
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
+            return CurrentPosition;
         }
         set
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
 
             if (value < 0 || value > Array.MaxLength)
             {
@@ -158,7 +158,7 @@ public sealed class PooledMemoryStream : Stream
                 );
             }
 
-            _position = (int)value;
+            CurrentPosition = (int)value;
         }
     }
 
@@ -171,13 +171,13 @@ public sealed class PooledMemoryStream : Stream
     /// </exception>
     public override long Seek(long offset, SeekOrigin origin)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
 
         var target = origin switch
         {
             SeekOrigin.Begin => offset,
-            SeekOrigin.Current => _position + offset,
-            SeekOrigin.End => _length + offset,
+            SeekOrigin.Current => CurrentPosition + offset,
+            SeekOrigin.End => DataLength + offset,
             _ => throw new ArgumentException(
                 "The origin is not a SeekOrigin value.",
                 nameof(origin)
@@ -200,8 +200,8 @@ public sealed class PooledMemoryStream : Stream
             );
         }
 
-        _position = (int)target;
-        return _position;
+        CurrentPosition = (int)target;
+        return CurrentPosition;
     }
 
     /// <inheritdoc />
@@ -215,7 +215,7 @@ public sealed class PooledMemoryStream : Stream
     /// </remarks>
     public override void SetLength(long value)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
 
         if (value < 0 || value > Array.MaxLength)
         {
@@ -227,17 +227,17 @@ public sealed class PooledMemoryStream : Stream
         }
 
         var newLength = (int)value;
-        if (newLength > _length)
+        if (newLength > DataLength)
         {
             Grow(newLength)?.Dispose();
-            Buffer.Span[_length..newLength].Clear();
+            Buffer.Span[DataLength..newLength].Clear();
         }
         else
         {
-            CryptographicOperationsExtensions.ZeroMemoryOrClear(Buffer.Span[newLength.._length]);
+            CryptographicOperationsExtensions.ZeroMemoryOrClear(Buffer.Span[newLength..DataLength]);
         }
 
-        _length = newLength;
+        DataLength = newLength;
     }
 
     /// <inheritdoc />
@@ -250,23 +250,24 @@ public sealed class PooledMemoryStream : Stream
     public override int Read(byte[] buffer, int offset, int count)
     {
         ValidateBufferArguments(buffer, offset, count);
-        return Read(buffer.AsSpan(offset, count));
+        var span = buffer.AsSpan(offset, count);
+        return Read(span);
     }
 
     /// <inheritdoc />
     /// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
     public override int Read(Span<byte> buffer)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
 
-        var count = Math.Min(buffer.Length, _length - _position);
+        var count = Math.Min(buffer.Length, DataLength - CurrentPosition);
         if (count <= 0)
         {
             return 0;
         }
 
-        Buffer.Span.Slice(_position, count).CopyTo(buffer);
-        _position += count;
+        Buffer.Span.Slice(CurrentPosition, count).CopyTo(buffer);
+        CurrentPosition += count;
         return count;
     }
 
@@ -274,7 +275,8 @@ public sealed class PooledMemoryStream : Stream
     public override void Write(byte[] buffer, int offset, int count)
     {
         ValidateBufferArguments(buffer, offset, count);
-        Write(buffer.AsSpan(offset, count));
+        var span = buffer.AsSpan(offset, count);
+        Write(span);
     }
 
     /// <inheritdoc />
@@ -287,9 +289,9 @@ public sealed class PooledMemoryStream : Stream
     /// </remarks>
     public override void Write(ReadOnlySpan<byte> buffer)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
 
-        var end = (long)_position + buffer.Length;
+        var end = (long)CurrentPosition + buffer.Length;
         if (end > Array.MaxLength)
         {
             throw new IOException("Stream was too long.");
@@ -297,18 +299,18 @@ public sealed class PooledMemoryStream : Stream
 
         var previous = Grow((int)end);
 
-        if (_position > _length)
+        if (CurrentPosition > DataLength)
         {
-            Buffer.Span[_length.._position].Clear();
+            Buffer.Span[DataLength..CurrentPosition].Clear();
         }
 
-        buffer.CopyTo(Buffer.Span[_position..]);
+        buffer.CopyTo(Buffer.Span[CurrentPosition..]);
         previous?.Dispose();
 
-        _position = (int)end;
-        if (_position > _length)
+        CurrentPosition = (int)end;
+        if (CurrentPosition > DataLength)
         {
-            _length = _position;
+            DataLength = CurrentPosition;
         }
     }
 
@@ -316,14 +318,14 @@ public sealed class PooledMemoryStream : Stream
     /// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
     public override int ReadByte()
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
 
-        if (_position >= _length)
+        if (CurrentPosition >= DataLength)
         {
             return -1;
         }
 
-        return Buffer.Span[_position++];
+        return Buffer.Span[CurrentPosition++];
     }
 
     /// <inheritdoc />
@@ -347,7 +349,8 @@ public sealed class PooledMemoryStream : Stream
             return ValueTask.FromCanceled<int>(cancellationToken);
         }
 
-        return new ValueTask<int>(Read(buffer.Span));
+        var read = Read(buffer.Span);
+        return new ValueTask<int>(read);
     }
 #pragma warning restore RS0027
 
@@ -368,7 +371,8 @@ public sealed class PooledMemoryStream : Stream
             return Task.FromCanceled<int>(cancellationToken);
         }
 
-        return Task.FromResult(Read(buffer, offset, count));
+        var read = Read(buffer, offset, count);
+        return Task.FromResult(read);
     }
 
 #pragma warning disable RS0027 // Stream declares these overloads with a default token; the overrides keep it, as MemoryStream's do.
@@ -434,15 +438,15 @@ public sealed class PooledMemoryStream : Stream
     public override void CopyTo(Stream destination, int bufferSize)
     {
         ValidateCopyToArguments(destination, bufferSize);
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
 
-        if (_position >= _length)
+        if (CurrentPosition >= DataLength)
         {
             return;
         }
 
-        destination.Write(Buffer.Span[_position.._length]);
-        _position = _length;
+        destination.Write(Buffer.Span[CurrentPosition..DataLength]);
+        CurrentPosition = DataLength;
     }
 
     /// <inheritdoc />
@@ -467,33 +471,33 @@ public sealed class PooledMemoryStream : Stream
     )
     {
         ValidateCopyToArguments(destination, bufferSize);
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
 
         if (cancellationToken.IsCancellationRequested)
         {
             return Task.FromCanceled(cancellationToken);
         }
 
-        if (_position >= _length)
+        if (CurrentPosition >= DataLength)
         {
             return Task.CompletedTask;
         }
 
-        var start = _position;
-        _position = _length;
-        return destination.WriteAsync(Buffer[start.._length], cancellationToken).AsTask();
+        var start = CurrentPosition;
+        CurrentPosition = DataLength;
+        return destination.WriteAsync(Buffer[start..DataLength], cancellationToken).AsTask();
     }
 
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
-        if (!_disposed)
+        if (!IsDisposed)
         {
-            _disposed = true;
-            var owner = _owner;
-            _owner = null;
-            _length = 0;
-            _position = 0;
+            IsDisposed = true;
+            var owner = Owner;
+            Owner = null;
+            DataLength = 0;
+            CurrentPosition = 0;
             owner?.Dispose();
         }
 
@@ -508,13 +512,14 @@ public sealed class PooledMemoryStream : Stream
         }
 
         var doubled = (int)Math.Min(2L * Capacity, Array.MaxLength);
-        var newSize = Math.Max(required, Math.Max(_initialCapacity, doubled));
+        var minimum = Math.Max(InitialCapacity, doubled);
+        var newSize = Math.Max(required, minimum);
 
         var owner = BufferFactory.ChoosePool<byte>(IsSensitive).Rent(newSize);
-        Buffer.Span[.._length].CopyTo(owner.Memory.Span);
+        Buffer.Span[..DataLength].CopyTo(owner.Memory.Span);
 
-        var previous = _owner;
-        _owner = owner;
+        var previous = Owner;
+        Owner = owner;
         return previous;
     }
 }
