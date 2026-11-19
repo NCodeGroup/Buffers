@@ -1,0 +1,56 @@
+---
+// One entry of data that has too many fields for a table: a card with a title and its fields, each an <EntryField>
+// with its label. `title` takes `code`. `id`, when given, is the card's anchor.
+// Usage:
+//   <EntryCard title="`stackalloc` and `ZeroMemory`">
+//   <EntryField label="Pooled">No</EntryField>
+//   </EntryCard>
+import { inline } from '@site/components/lib/evidence';
+
+interface Props {
+  title: string;
+  id?: string;
+}
+const { title, id } = Astro.props;
+---
+
+<article class="entry not-content" id={id}>
+  <h3 class="entry__title" set:html={inline(title)} />
+  <dl class="entry__fields">
+    <slot />
+  </dl>
+</article>
+
+<style>
+  .entry {
+    scroll-margin-top: calc(var(--sl-nav-height) + var(--nc-space-5));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--nc-space-3);
+    margin-block: var(--nc-space-4);
+    padding: var(--nc-space-4) var(--nc-space-5);
+    border: var(--nc-border-hair) solid var(--nc-color-border);
+    border-radius: var(--nc-radius-panel);
+    background: var(--nc-color-surface);
+    box-shadow: var(--nc-elevation-flush);
+    color: var(--nc-color-text);
+  }
+  .entry:target {
+    border-color: var(--nc-color-primary-text);
+    box-shadow: 0 0 0 1px var(--nc-color-primary-text);
+  }
+  .entry__title {
+    margin: 0;
+    color: var(--nc-color-text);
+    font-size: var(--sl-text-lg);
+    font-stretch: var(--nc-type-heading-stretch);
+    font-weight: 600;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+  .entry__title :global(code) { font-family: var(--nc-font-mono); font-stretch: var(--nc-type-code-stretch); font-size: 0.88em; }
+  .entry__fields { display: grid; gap: var(--nc-space-2); margin: 0; }
+  @media (max-width: 40rem) {
+    .entry { padding: var(--nc-space-4); }
+  }
+</style>

@@ -45,8 +45,9 @@ if (props.claim) {
 <style>
   .proof {
     display: inline-flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.4375rem;
+    gap: 0 0.4375rem;
     max-width: calc(100% - 0.25rem);
     margin-inline-start: 0.25rem;
     padding: 0.0625rem 0.4375rem 0.0625rem 0.3125rem;
@@ -68,19 +69,13 @@ if (props.claim) {
     outline-offset: var(--nc-focus-gap);
   }
   .proof__ref {
-    /* A flex item does not shrink below its content without this, so a long test name would widen the page. */
+    /* A flex item does not shrink below its content without this. A long name wraps, so the whole name shows. */
     min-width: 0;
-    overflow: hidden;
+    overflow-wrap: anywhere;
     font-family: var(--nc-font-mono);
     font-stretch: var(--nc-type-code-stretch);
     font-size: var(--sl-text-2xs);
     font-weight: 500;
     color: var(--nc-color-primary-text);
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
-  /* A card in a card grid is never narrower than its content, and a chip's evidence name does not wrap, so a
-     card holding a long name would widen the page. A card that holds a chip may shrink, and the name ends in an
-     ellipsis. */
-  :global(.card-grid > .card:has(.proof)) { min-width: 0; }
 </style>
