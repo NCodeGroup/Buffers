@@ -120,185 +120,185 @@ CryptographicOperations.ZeroMemory(values);
 
 #### No using statement
 
-**You write** `var key = BufferFactory.CreatePinnedArray(32);`, and `key.Dispose();` after the work, or no call at
+*You write* `var key = BufferFactory.CreatePinnedArray(32);`, and `key.Dispose();` after the work, or no call at
 all.
 
-**What happens** An exception, or an early `return`, leaves before the call, and the key stays in the array. With no
+*What happens:* an exception, or an early `return`, leaves before the call, and the key stays in the array. With no
 call at all, nothing ever zeroes it. <Proof sample="SiteExceptionSkipsClear" /> <Proof sample="SiteNoFinalizer" />
 
-**Why** The memory is zeroed in `Dispose` and nowhere else; there is no finalizer.
+*Why:* the memory is zeroed in `Dispose` and nowhere else; there is no finalizer.
 
-**Write instead** `using var key = …;`, or a `using` statement with its own block. <LeakCard leak="L6" />
+*Write instead:* `using var key = …;`, or a `using` statement with its own block. <LeakCard leak="L6" />
 
 #### Returning the array from inside the scope
 
-**You write** a method that returns `byte[]` and ends with `return key;` inside the `using` scope of a lifetime.
+*You write* a method that returns `byte[]` and ends with `return key;` inside the `using` scope of a lifetime.
 
 ```cs snippet=SiteByteArrayReturnTrap
 ```
 
-**What happens** It compiles, and the caller gets the array after `Dispose` zeroed it: 32 zero bytes, which still
+*What happens:* it compiles, and the caller gets the array after `Dispose` zeroed it: 32 zero bytes, which still
 work as a key, so nothing fails. <Proof sample="SiteByteArrayReturnTrap" />
 
-**Why** A `SecureArrayLifetime<T>` converts to `T[]` without a cast, and the `using` scope ends after the return value
+*Why:* a `SecureArrayLifetime<T>` converts to `T[]` without a cast, and the `using` scope ends after the return value
 is taken.
 
-**Write instead** Return the lifetime itself and let the caller dispose it, as
+*Write instead:* return the lifetime itself and let the caller dispose it, as
 [Ownership](/concepts/ownership/#handing-it-over) shows.
 
 #### Copying a lifetime
 
-**You write** `var copy = key;`, or pass a lifetime by value to a helper that disposes it.
+*You write* `var copy = key;`, or pass a lifetime by value to a helper that disposes it.
 
 ```cs snippet=SitePitfallCopyOfALifetime
 ```
 
-**What happens** Both lifetimes are the same array. Disposing either zeroes the key the other is still using. <Proof sample="SitePitfallCopyOfALifetime" />
+*What happens:* both lifetimes are the same array. Disposing either zeroes the key the other is still using. <Proof sample="SitePitfallCopyOfALifetime" />
 
-**Why** A lifetime is a struct that holds one reference, so a copy is a second owner. `var` takes the lifetime's
+*Why:* a lifetime is a struct that holds one reference, so a copy is a second owner. `var` takes the lifetime's
 type, not `Span<byte>`.
 
-**Write instead** `Span<byte> span = key;` when you want a span, and pass spans, not lifetimes, to code that only
+*Write instead:* `Span<byte> span = key;` when you want a span, and pass spans, not lifetimes, to code that only
 uses the memory.
 
 #### Passing a lifetime as an object
 
-**You write** a lifetime as an argument to a parameter of type `object`: a logger, `string.Format`, interpolation.
+*You write* a lifetime as an argument to a parameter of type `object`: a logger, `string.Format`, interpolation.
 
 ```cs snippet=SitePitfallLifetimeAsObject
 ```
 
-**What happens** The callee gets the key's own array, not a lifetime. Interpolation happens to print only
+*What happens:* the callee gets the key's own array, not a lifetime. Interpolation happens to print only
 `System.Byte[]`, but anything that reads an array's elements reads the key. <Proof sample="SitePitfallLifetimeAsObject" />
 
-**Why** The lifetime converts to `byte[]`, and `byte[]` converts to `object`.
+*Why:* the lifetime converts to `byte[]`, and `byte[]` converts to `object`.
 
-**Write instead** Never pass a lifetime or its array where `object` is expected. Log a length, never a key.
+*Write instead:* never pass a lifetime or its array where `object` is expected. Log a length, never a key.
 
 #### A lifetime over a slice
 
-**You write** `buffer[..32].GetSecureLifetime()` over a buffer that holds a secret beyond the slice.
+*You write* `buffer[..32].GetSecureLifetime()` over a buffer that holds a secret beyond the slice.
 
 ```cs snippet=SitePitfallSliceLifetime
 ```
 
-**What happens** `Dispose` zeroes the 32 bytes of the slice and leaves the rest. <Proof sample="SitePitfallSliceLifetime" />
+*What happens:* `Dispose` zeroes the 32 bytes of the slice and leaves the rest. <Proof sample="SitePitfallSliceLifetime" />
 
-**Why** A `SecureSpanLifetime<T>` zeroes exactly the span it wraps. It does not know the buffer the span came from. <Proof source="SecureSpanLifetime.Dispose" />
+*Why:* a `SecureSpanLifetime<T>` zeroes exactly the span it wraps. It does not know the buffer the span came from. <Proof source="SecureSpanLifetime.Dispose" />
 
-**Write instead** Call `GetSecureLifetime()` on the whole buffer.
+*Write instead:* call `GetSecureLifetime()` on the whole buffer.
 
 #### Expecting GetSecureLifetime to pin
 
-**You write** `array.AsSpan().GetSecureLifetime()` over an ordinary array, as if it were a pinned buffer.
+*You write* `array.AsSpan().GetSecureLifetime()` over an ordinary array, as if it were a pinned buffer.
 
-**What happens** The array is still an ordinary array: the collector can move it while the lifetime wraps it, and
+*What happens:* the array is still an ordinary array: the collector can move it while the lifetime wraps it, and
 `Dispose` zeroes it only where it is by then. <LeakCard leak="L1" />
 
-**Why** `GetSecureLifetime()` wraps the span it is given and does nothing else. <Proof source="BufferExtensions.GetSecureLifetime" />
+*Why:* `GetSecureLifetime()` wraps the span it is given and does nothing else. <Proof source="BufferExtensions.GetSecureLifetime" />
 
-**Write instead** `BufferFactory.CreatePinnedArray` for an array you allocate, or `stackalloc` for a small secret of
+*Write instead:* `BufferFactory.CreatePinnedArray` for an array you allocate, or `stackalloc` for a small secret of
 a fixed size. Wrap an array an API gave you as soon as you get it.
 
 ### Renting
 
 #### Using the whole rented buffer
 
-**You write** `owner.Memory` where you meant the key, after `BufferFactory.Rent(32, isSensitive: true, …)`.
+*You write* `owner.Memory` where you meant the key, after `BufferFactory.Rent(32, isSensitive: true, …)`.
 
-**What happens** `owner.Memory` is the whole rented buffer, 4096 bytes for any request up to one page. Hashing,
+*What happens:* `owner.Memory` is the whole rented buffer, 4096 bytes for any request up to one page. Hashing,
 sending or comparing it processes all 4096. <Proof test="SecureMemoryPoolTests.Rent_SizeLessThanPage_ReturnsPageSizeBuffer" />
 
-**Why** Only the `out` buffer of `Rent` has the length you asked for. <Proof test="BufferFactoryPropertyTests.Rent_WithSpan_ReturnsABufferOfTheExactRequestedLength" />
+*Why:* only the `out` buffer of `Rent` has the length you asked for. <Proof test="BufferFactoryPropertyTests.Rent_WithSpan_ReturnsABufferOfTheExactRequestedLength" />
 
-**Write instead** The `out` buffer, or `owner.Memory[..length]` when you rent from a pool directly.
+*Write instead:* the `out` buffer, or `owner.Memory[..length]` when you rent from a pool directly.
 
 #### Reading a new buffer before writing it
 
-**You write** code that reads, hashes, sends or compares a rented buffer, or a part of it, before writing it.
+*You write* code that reads, hashes, sends or compares a rented buffer, or a part of it, before writing it.
 
-**What happens** You read whatever the memory held: a new buffer is not cleared for you, and it can hold what an
+*What happens:* you read whatever the memory held: a new buffer is not cleared for you, and it can hold what an
 earlier allocation left. <Proof external="AllocateUninitializedArrayDocs" />
 
-**Why** Sensitive buffers are allocated with `GC.AllocateUninitializedArray`, which skips clearing. <Proof source="SecureMemory.Allocate" />
+*Why:* sensitive buffers are allocated with `GC.AllocateUninitializedArray`, which skips clearing. <Proof source="SecureMemory.Allocate" />
 
-**Write instead** Write before you read, and use only the part you wrote.
+*Write instead:* write before you read, and use only the part you wrote.
 
 #### A view kept after Dispose
 
-**You write** a span or a `Memory<T>` from an owner, kept after the owner is disposed.
+*You write* a span or a `Memory<T>` from an owner, kept after the owner is disposed.
 
-**What happens** Nothing throws. A pooled buffer may be another caller's by then, and the view reads and writes their
+*What happens:* nothing throws. A pooled buffer may be another caller's by then, and the view reads and writes their
 data. <Proof sample="SiteOwnershipUseAfterDispose" /> A `SecureArrayLifetime<T>`'s array is nobody else's: the view
 reads zeros. <Proof sample="SiteGuaranteesZeroedThroughAView" />
 
-**Why** A view is not tied to its owner.
+*Why:* a view is not tied to its owner.
 
-**Write instead** Drop every view of the memory when you dispose its owner. [Ownership](/concepts/ownership/) has the
+*Write instead:* drop every view of the memory when you dispose its owner. [Ownership](/concepts/ownership/) has the
 sample.
 
 #### isSensitive false on a secret's path
 
-**You write** `isSensitive: false` for a buffer, a writer, a lease or a copy that holds a secret or anything derived
+*You write* `isSensitive: false` for a buffer, a writer, a lease or a copy that holds a secret or anything derived
 from one.
 
-**What happens** The memory comes from the shared pool: not pinned, not zeroed, and the next caller to rent it can
+*What happens:* the memory comes from the shared pool: not pinned, not zeroed, and the next caller to rent it can
 read what you left. <Proof test="BufferFactoryTests.ChoosePool_WhenNotSensitive_ReturnsSharedPool" />
 <LeakCard leak="L3" />
 
-**Write instead** `isSensitive: true` everywhere a secret's bytes go.
+*Write instead:* `isSensitive: true` everywhere a secret's bytes go.
 
 #### A key kept for the life of the process
 
-**You write** a key rented once and held until the application stops.
+*You write* a key rented once and held until the application stops.
 
-**What happens** Pinning keeps the collector from copying it, and the key is readable for as long as it lives. <Proof claim="R3" />
+*What happens:* pinning keeps the collector from copying it, and the key is readable for as long as it lives. <Proof claim="R3" />
 
-**Write instead** Hold it no longer than you need it, and dispose its holder when the key is replaced.
+*Write instead:* hold it no longer than you need it, and dispose its holder when the key is replaced.
 [Keep a secret across an await, or in a field](/guides/secrets-across-await/) shows the holder.
 
 ### Copies
 
 #### A string of the secret
 
-**You write** `Encoding.UTF8.GetString`, `Convert.ToBase64String`, `Convert.ToHexString`, interpolation or a
+*You write* `Encoding.UTF8.GetString`, `Convert.ToBase64String`, `Convert.ToHexString`, interpolation or a
 deserialized `string` property, for a secret.
 
-**What happens** Each makes a string that your code cannot overwrite. <LeakCard leak="L5" />
+*What happens:* each makes a string that your code cannot overwrite. <LeakCard leak="L5" />
 
-**Write instead** Decode straight into a sensitive buffer, as
+*Write instead:* decode straight into a sensitive buffer, as
 [Read a secret without leaving a string behind](/guides/read-a-secret-without-a-string/) shows.
 
 #### A copy you make
 
-**You write** `ToArray()`, or any call that returns the secret in new memory.
+*You write* `ToArray()`, or any call that returns the secret in new memory.
 
-**What happens** `Dispose` zeroes the original. The copy keeps the key. <Proof sample="SiteCopiesAreNotCleared" />
+*What happens:* `Dispose` zeroes the original. The copy keeps the key. <Proof sample="SiteCopiesAreNotCleared" />
 <LeakCard leak="L9" />
 
-**Write instead** Pass the span; do the work where the secret already is.
+*Write instead:* pass the span; do the work where the secret already is.
 
 #### A writer that grows
 
-**You write** an `ArrayBufferWriter<byte>`, a `MemoryStream` or a `List<byte>` for a secret of unknown length.
+*You write* an `ArrayBufferWriter<byte>`, a `MemoryStream` or a `List<byte>` for a secret of unknown length.
 
-**What happens** Each time it grows, the smaller array is dropped with the first part of the secret in
+*What happens:* each time it grows, the smaller array is dropped with the first part of the secret in
 it. <Proof sample="SiteGrowthLeavesCopies" /> <LeakCard leak="L4" />
 
-**Write instead** `BufferFactory.CreatePooledBufferWriter(isSensitive: true)`, as
+*Write instead:* `BufferFactory.CreatePooledBufferWriter(isSensitive: true)`, as
 [Build a secret of unknown length](/guides/secret-of-unknown-length/) shows.
 
 #### An API object that keeps the key
 
-**You write** a key from a pinned array given to an object, such as `aes.Key = key;`.
+*You write* a key from a pinned array given to an object, such as `aes.Key = key;`.
 
 ```cs snippet=SiteKeySetterCopies
 ```
 
-**What happens** The object copies the key into memory of its own. Disposing your lifetime zeroes your array, not
+*What happens:* the object copies the key into memory of its own. Disposing your lifetime zeroes your array, not
 the object's copy. <Proof sample="SiteKeySetterCopies" />
 
-**Write instead** Prefer the static methods that take the key as a span and return no object, such as
+*Write instead:* prefer the static methods that take the key as a span and return no object, such as
 `HMACSHA256.HashData(key, data, destination)`. When you need an object, keep it in the same scope as the key and
 dispose it there.
 
@@ -306,62 +306,62 @@ dispose it there.
 
 #### A fixed span writer passed by value
 
-**You write** a helper that takes a `FixedSpanBufferWriter<T>` as an ordinary parameter.
+*You write* a helper that takes a `FixedSpanBufferWriter<T>` as an ordinary parameter.
 
 ```cs snippet=SitePitfallWriterByValue
 ```
 
-**What happens** The helper writes into the buffer and advances its own copy. The caller's `WrittenCount` stays at 0,
+*What happens:* the helper writes into the buffer and advances its own copy. The caller's `WrittenCount` stays at 0,
 so the next write lands on top. <Proof sample="SitePitfallWriterByValue" />
 
-**Why** The writer is a mutable struct: a copy has its own position over the same memory.
+*Why:* the writer is a mutable struct: a copy has its own position over the same memory.
 
-**Write instead** Pass it by `ref`.
+*Write instead:* pass it by `ref`.
 
 #### Advancing by the span's length
 
-**You write** `writer.Advance(span.Length)` after `GetSpan(n)`.
+*You write* `writer.Advance(span.Length)` after `GetSpan(n)`.
 
 ```cs snippet=SitePitfallAdvanceBySpanLength
 ```
 
-**What happens** `GetSpan` returns all the free space, not `n` elements, so the writer commits elements you never
+*What happens:* `GetSpan` returns all the free space, not `n` elements, so the writer commits elements you never
 wrote. <Proof sample="SitePitfallAdvanceBySpanLength" />
 
-**Write instead** `Advance` by the number of elements you wrote.
+*Write instead:* `Advance` by the number of elements you wrote.
 
 #### Clear, Reset and a wipe
 
-**You write** `Clear()` to remove a secret from a fixed writer, or `Reset()` after `Clear()`.
+*You write* `Clear()` to remove a secret from a fixed writer, or `Reset()` after `Clear()`.
 
 ```cs snippet=SitePitfallResetAfterClear
 ```
 
-**What happens** `Clear()` sets the position to 0 and touches nothing. `Reset()` zeroes the elements written since the
+*What happens:* `Clear()` sets the position to 0 and touches nothing. `Reset()` zeroes the elements written since the
 last `Clear()` with `CryptographicOperations.ZeroMemory`, or sets them to their default with `Span<T>.Clear()` when the
 element type holds references, and nothing past them. After `Clear()`, that is nothing. <Proof sample="SitePitfallResetAfterClear" /> <Proof source="FixedSpanBufferWriter.Reset" />
 
-**Write instead** To remove a secret, zero the memory you gave the writer: put that memory under a lifetime, or call
+*Write instead:* to remove a secret, zero the memory you gave the writer: put that memory under a lifetime, or call
 `CryptographicOperations.ZeroMemory` on all of it.
 
 #### A fixed writer that is too small
 
-**You write** a `FixedMemoryBufferWriter<byte>` over a buffer smaller than the largest output, given to a serializer.
+*You write* a `FixedMemoryBufferWriter<byte>` over a buffer smaller than the largest output, given to a serializer.
 
-**What happens** When the serializer asks for more space than is free, the writer throws `InvalidOperationException`
+*What happens:* when the serializer asks for more space than is free, the writer throws `InvalidOperationException`
 instead of growing. <Proof claim="R6" />
 
-**Write instead** Size the buffer for the largest output, or use `CreatePooledBufferWriter` when you cannot.
+*Write instead:* size the buffer for the largest output, or use `CreatePooledBufferWriter` when you cannot.
 
 #### A lease or a copy with isSensitive false
 
-**You write** `GetSpanLease(isSensitive: false)` or `ConsumeAsContiguousSpan(isSensitive: false, …)` on a sensitive
+*You write* `GetSpanLease(isSensitive: false)` or `ConsumeAsContiguousSpan(isSensitive: false, …)` on a sensitive
 writer.
 
-**What happens** When the data spans several segments, it is copied into a buffer from the shared pool, which is
+*What happens:* when the data spans several segments, it is copied into a buffer from the shared pool, which is
 neither pinned nor zeroed. <Proof source="SequenceExtensions.GetSpanLease.Rent" />
 
-**Write instead** Pass the writer's own `isSensitive`. [Ownership](/concepts/ownership/#sensitivity-travels-with-the-data)
+*Write instead:* pass the writer's own `isSensitive`. [Ownership](/concepts/ownership/#sensitivity-travels-with-the-data)
 has the rule.
 
 [Serialize into a buffer that must not grow](/guides/fixed-size-buffer/) shows a writer used end to end.
@@ -370,30 +370,30 @@ has the rule.
 
 #### Comparing a MAC the usual way
 
-**You write** `==`, `Equals`, `SequenceEqual` or `StartsWith` on a MAC, a token or a password hash.
+*You write* `==`, `Equals`, `SequenceEqual` or `StartsWith` on a MAC, a token or a password hash.
 
-**What happens** The comparison stops at the first difference, and its time tells where that was. <LeakCard leak="L7" />
+*What happens:* the comparison stops at the first difference, and its time tells where that was. <LeakCard leak="L7" />
 
-**Write instead** `CryptographicOperations.FixedTimeEquals`, as
+*Write instead:* `CryptographicOperations.FixedTimeEquals`, as
 [Verify a MAC without leaking timing](/guides/verify-a-mac/) shows.
 
 #### FixedTimeEquals on values that are not bytes
 
-**You write** `FixedTimeEquals<T>` on `double`, `decimal` or a struct, expecting `==`.
+*You write* `FixedTimeEquals<T>` on `double`, `decimal` or a struct, expecting `==`.
 
 ```cs snippet=SitePitfallCompareBytesNotValues
 ```
 
-**What happens** It compares memory, not values: `0.0` and `-0.0` are equal values with different bytes.
+*What happens:* it compares memory, not values: `0.0` and `-0.0` are equal values with different bytes.
 <Proof sample="SitePitfallCompareBytesNotValues" /> A struct's padding bytes count too: two readings with equal fields
 compare unequal when the bytes between their fields differ. <Proof sample="SitePitfallPaddingBytesCount" />
 
 ```cs snippet=SitePitfallPaddingBytesCount
 ```
 
-**Why** It views both spans as bytes and compares those. <Proof source="FixedTimeEquals" />
+*Why:* it views both spans as bytes and compares those. <Proof source="FixedTimeEquals" />
 
-**Write instead** Compare spans of bytes, or of integer types, whose bytes are their value.
+*Write instead:* compare spans of bytes, or of integer types, whose bytes are their value.
 
 ## A second Dispose
 
