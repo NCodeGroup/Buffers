@@ -2012,7 +2012,7 @@
       ],
       "summary": "The members that make it a seekable, readable and writable `Stream` over one pooled buffer. They copy straight to and from the pooled buffer through no shared array, and the async members complete synchronously. Writing past the end zero-fills the gap, and `SetLength` zeroes the bytes it cuts off. After `Dispose`, `CanRead`, `CanSeek` and `CanWrite` are `false`.",
       "constraint": null,
-      "throws": "`ObjectDisposedException` when the stream has been disposed, except for `CanRead`, `CanSeek` and `CanWrite`. `IOException` when a seek would move the position before the start of the stream, or a write would end past `Array.MaxLength`. `ArgumentOutOfRangeException` when a position or length is negative or more than `Array.MaxLength`.",
+      "throws": "`ObjectDisposedException` when the stream has been disposed, from every member here except `CanRead`, `CanSeek`, `CanWrite`, `Flush` and `FlushAsync`; `ReadAsync` and `WriteAsync` return a canceled task instead when their token is canceled. `IOException` when a seek would move the position before the start of the stream, or a write would end past `Array.MaxLength`. `ArgumentOutOfRangeException` when a position or length is negative or more than `Array.MaxLength`.",
       "page": "/guides/grow-a-contiguous-secret/",
       "source": "Api.PooledMemoryStream",
       "api": [

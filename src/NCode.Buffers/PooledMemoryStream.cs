@@ -28,9 +28,12 @@ namespace NCode.Buffers;
 /// off. A write that would end past <see cref="Array.MaxLength"/> throws <see cref="IOException"/>.
 /// </para>
 /// <para>
-/// <see cref="Dispose(bool)"/> returns the buffer to its pool. After it, <see cref="CanRead"/>, <see cref="CanSeek"/>
-/// and <see cref="CanWrite"/> are <c>false</c>, and every other member except <see cref="IsSensitive"/> throws
-/// <see cref="ObjectDisposedException"/>.
+/// <see cref="Dispose(bool)"/> returns the buffer to its pool, and disposing again does nothing. After it,
+/// <see cref="CanRead"/>, <see cref="CanSeek"/> and <see cref="CanWrite"/> are <c>false</c>, <see cref="IsSensitive"/>
+/// keeps its value, and <see cref="Flush"/> and <see cref="FlushAsync(CancellationToken)"/> still do nothing. The
+/// members that read, write, seek or copy, and those that get or set the length or the position or get the written
+/// bytes, throw <see cref="ObjectDisposedException"/>, except that <c>ReadAsync</c> and <c>WriteAsync</c> return a
+/// canceled task when their token is canceled.
 /// </para>
 /// </remarks>
 /// <example>
@@ -266,7 +269,8 @@ public sealed class PooledMemoryStream : Stream
         }
         else
         {
-            CryptographicOperationsExtensions.ZeroMemoryOrClear(Buffer.Span[newLength..DataLength]);
+            var cut = Buffer.Span[newLength..DataLength];
+            CryptographicOperationsExtensions.ZeroMemoryOrClear(cut);
         }
 
         DataLength = newLength;
@@ -336,7 +340,8 @@ public sealed class PooledMemoryStream : Stream
             Buffer.Span[DataLength..CurrentPosition].Clear();
         }
 
-        buffer.CopyTo(Buffer.Span[CurrentPosition..]);
+        var target = Buffer.Span[CurrentPosition..];
+        buffer.CopyTo(target);
         previous?.Dispose();
 
         CurrentPosition = (int)end;
@@ -481,7 +486,8 @@ public sealed class PooledMemoryStream : Stream
             return;
         }
 
-        destination.Write(Buffer.Span[CurrentPosition..DataLength]);
+        var remaining = Buffer.Span[CurrentPosition..DataLength];
+        destination.Write(remaining);
         CurrentPosition = DataLength;
     }
 
@@ -521,7 +527,9 @@ public sealed class PooledMemoryStream : Stream
 
         var start = CurrentPosition;
         CurrentPosition = DataLength;
-        return destination.WriteAsync(Buffer[start..DataLength], cancellationToken).AsTask();
+        var remaining = Buffer[start..DataLength];
+        var write = destination.WriteAsync(remaining, cancellationToken);
+        return write.AsTask();
     }
 
     /// <inheritdoc />
