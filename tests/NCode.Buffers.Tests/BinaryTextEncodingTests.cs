@@ -5,6 +5,9 @@ using System.Security.Cryptography;
 
 namespace NCode.Buffers.Tests;
 
+// The tests that read the shared secure pool's queue must not run beside other tests that rent from the pool.
+[CollectionDefinition(nameof(BinaryTextEncodingTests), DisableParallelization = true)]
+[Collection(nameof(BinaryTextEncodingTests))]
 public class BinaryTextEncodingTests
 {
     #region RentDecoded Tests
@@ -93,6 +96,54 @@ public class BinaryTextEncodingTests
                 out Memory<byte> _
             );
         });
+    }
+
+    [Fact]
+    public void RentDecoded_InvalidTextWhenSensitive_ReturnsTheZeroedBuffer()
+    {
+        const string text = "4141ZZ";
+        SecureMemoryPool<byte>.Shared.MemoryQueue.Clear();
+
+        Assert.Throws<FormatException>(() =>
+        {
+            using var owner = BinaryTextEncoding.RentDecoded(
+                text,
+                BinaryTextFormat.HexUpper,
+                isSensitive: true,
+                out Span<byte> _
+            );
+        });
+
+        var isReturned = SecureMemoryPool<byte>.Shared.MemoryQueue.TryPeek(out var page);
+        Assert.True(isReturned);
+        Assert.NotNull(page);
+        Span<byte> pageBytes = page;
+        var firstNonZero = pageBytes.IndexOfAnyExcept((byte)0);
+        Assert.Equal(-1, firstNonZero);
+    }
+
+    [Fact]
+    public void RentDecoded_InvalidTextWithMemoryWhenSensitive_ReturnsTheZeroedBuffer()
+    {
+        const string text = "4141ZZ";
+        SecureMemoryPool<byte>.Shared.MemoryQueue.Clear();
+
+        Assert.Throws<FormatException>(() =>
+        {
+            using var owner = BinaryTextEncoding.RentDecoded(
+                text,
+                BinaryTextFormat.HexUpper,
+                isSensitive: true,
+                out Memory<byte> _
+            );
+        });
+
+        var isReturned = SecureMemoryPool<byte>.Shared.MemoryQueue.TryPeek(out var page);
+        Assert.True(isReturned);
+        Assert.NotNull(page);
+        Span<byte> pageBytes = page;
+        var firstNonZero = pageBytes.IndexOfAnyExcept((byte)0);
+        Assert.Equal(-1, firstNonZero);
     }
 
     [Fact]

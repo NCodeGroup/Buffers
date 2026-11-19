@@ -5,6 +5,9 @@ using System.Text;
 
 namespace NCode.Buffers.Tests;
 
+// The tests that read the shared secure pool's queue must not run beside other tests that rent from the pool.
+[CollectionDefinition(nameof(SecureEncodingExtensionsTests), DisableParallelization = true)]
+[Collection(nameof(SecureEncodingExtensionsTests))]
 public class SecureEncodingExtensionsTests
 {
     private sealed class FailingEncoding : Encoding
@@ -21,8 +24,11 @@ public class SecureEncodingExtensionsTests
             int byteIndex
         ) => throw new InvalidOperationException();
 
-        public override int GetBytes(ReadOnlySpan<char> chars, Span<byte> bytes) =>
+        public override int GetBytes(ReadOnlySpan<char> chars, Span<byte> bytes)
+        {
+            bytes.Fill(0x5A);
             throw new InvalidOperationException();
+        }
 
         public override int GetCharCount(byte[] bytes, int index, int count) => count;
 
@@ -36,8 +42,11 @@ public class SecureEncodingExtensionsTests
             int charIndex
         ) => throw new InvalidOperationException();
 
-        public override int GetChars(ReadOnlySpan<byte> bytes, Span<char> chars) =>
+        public override int GetChars(ReadOnlySpan<byte> bytes, Span<char> chars)
+        {
+            chars.Fill('x');
             throw new InvalidOperationException();
+        }
 
         public override int GetMaxByteCount(int charCount) => charCount;
 
@@ -150,6 +159,44 @@ public class SecureEncodingExtensionsTests
         });
     }
 
+    [Fact]
+    public void RentBytes_EncodingThrowsWhileFilling_ReturnsTheZeroedBuffer()
+    {
+        var encoding = new FailingEncoding();
+        SecureMemoryPool<byte>.Shared.MemoryQueue.Clear();
+
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            using var owner = encoding.RentBytes("text", isSensitive: true, out Span<byte> _);
+        });
+
+        var isReturned = SecureMemoryPool<byte>.Shared.MemoryQueue.TryPeek(out var page);
+        Assert.True(isReturned);
+        Assert.NotNull(page);
+        Span<byte> pageBytes = page;
+        var firstNonZero = pageBytes.IndexOfAnyExcept((byte)0);
+        Assert.Equal(-1, firstNonZero);
+    }
+
+    [Fact]
+    public void RentBytes_EncodingThrowsWhileFillingMemory_ReturnsTheZeroedBuffer()
+    {
+        var encoding = new FailingEncoding();
+        SecureMemoryPool<byte>.Shared.MemoryQueue.Clear();
+
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            using var owner = encoding.RentBytes("text", isSensitive: true, out Memory<byte> _);
+        });
+
+        var isReturned = SecureMemoryPool<byte>.Shared.MemoryQueue.TryPeek(out var page);
+        Assert.True(isReturned);
+        Assert.NotNull(page);
+        Span<byte> pageBytes = page;
+        var firstNonZero = pageBytes.IndexOfAnyExcept((byte)0);
+        Assert.Equal(-1, firstNonZero);
+    }
+
     #endregion
 
     #region RentChars Tests
@@ -224,6 +271,44 @@ public class SecureEncodingExtensionsTests
         {
             using var owner = encoding.RentChars("text"u8, isSensitive: true, out Memory<char> _);
         });
+    }
+
+    [Fact]
+    public void RentChars_EncodingThrowsWhileFilling_ReturnsTheZeroedBuffer()
+    {
+        var encoding = new FailingEncoding();
+        SecureMemoryPool<char>.Shared.MemoryQueue.Clear();
+
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            using var owner = encoding.RentChars("text"u8, isSensitive: true, out Span<char> _);
+        });
+
+        var isReturned = SecureMemoryPool<char>.Shared.MemoryQueue.TryPeek(out var page);
+        Assert.True(isReturned);
+        Assert.NotNull(page);
+        Span<char> pageChars = page;
+        var firstNonZero = pageChars.IndexOfAnyExcept('\0');
+        Assert.Equal(-1, firstNonZero);
+    }
+
+    [Fact]
+    public void RentChars_EncodingThrowsWhileFillingMemory_ReturnsTheZeroedBuffer()
+    {
+        var encoding = new FailingEncoding();
+        SecureMemoryPool<char>.Shared.MemoryQueue.Clear();
+
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            using var owner = encoding.RentChars("text"u8, isSensitive: true, out Memory<char> _);
+        });
+
+        var isReturned = SecureMemoryPool<char>.Shared.MemoryQueue.TryPeek(out var page);
+        Assert.True(isReturned);
+        Assert.NotNull(page);
+        Span<char> pageChars = page;
+        var firstNonZero = pageChars.IndexOfAnyExcept('\0');
+        Assert.Equal(-1, firstNonZero);
     }
 
     #endregion
