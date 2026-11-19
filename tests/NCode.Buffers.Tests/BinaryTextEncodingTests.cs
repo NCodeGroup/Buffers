@@ -74,6 +74,27 @@ public class BinaryTextEncodingTests
         });
     }
 
+    [Theory]
+    [InlineData("+/8*", BinaryTextFormat.Base64)]
+    [InlineData("-_8*", BinaryTextFormat.Base64Url)]
+    [InlineData("FBF", BinaryTextFormat.HexUpper)]
+    [InlineData("ZZ", BinaryTextFormat.HexLower)]
+    public void RentDecoded_InvalidTextWithMemory_ThrowsFormatException(
+        string text,
+        BinaryTextFormat format
+    )
+    {
+        Assert.Throws<FormatException>(() =>
+        {
+            using var owner = BinaryTextEncoding.RentDecoded(
+                text,
+                format,
+                isSensitive: true,
+                out Memory<byte> _
+            );
+        });
+    }
+
     [Fact]
     public void RentDecoded_UndefinedFormat_ThrowsArgumentOutOfRangeException()
     {
