@@ -119,10 +119,12 @@ public class SecureEncodingExtensionsTests
     {
         Encoding encoding = null!;
 
-        Assert.Throws<ArgumentNullException>(() =>
+        var exception = Assert.Throws<ArgumentNullException>(() =>
         {
             using var owner = encoding.RentBytes("text", isSensitive: false, out Span<byte> _);
         });
+
+        Assert.Equal("encoding", exception.ParamName);
     }
 
     [Fact]
@@ -254,10 +256,12 @@ public class SecureEncodingExtensionsTests
     {
         Encoding encoding = null!;
 
-        Assert.Throws<ArgumentNullException>(() =>
+        var exception = Assert.Throws<ArgumentNullException>(() =>
         {
             using var owner = encoding.RentChars("text"u8, isSensitive: false, out Span<char> _);
         });
+
+        Assert.Equal("encoding", exception.ParamName);
     }
 
     [Fact]

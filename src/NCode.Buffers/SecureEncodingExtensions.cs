@@ -59,8 +59,6 @@ public static class SecureEncodingExtensions
             out Span<byte> bytes
         )
         {
-            ArgumentNullException.ThrowIfNull(encoding);
-
             var owner = encoding.RentBytes(chars, isSensitive, out Memory<byte> memory);
             bytes = memory.Span;
             return owner;
@@ -151,8 +149,6 @@ public static class SecureEncodingExtensions
             out Span<char> chars
         )
         {
-            ArgumentNullException.ThrowIfNull(encoding);
-
             var owner = encoding.RentChars(bytes, isSensitive, out Memory<char> memory);
             chars = memory.Span;
             return owner;
