@@ -125,52 +125,42 @@ public class ReadASecretWithoutAStringSamples
         string header = Convert.ToBase64String(key);
 
         // begin-snippet: SiteReadSecretBase64
-        // Rent the most the text can decode to, then slice to what was written.
-        using IMemoryOwner<byte> owner = BufferFactory.Rent(
-            Base64.GetMaxDecodedFromUtf8Length(header.Length),
+        // Rented at the most the text can decode to, and sliced to what was written.
+        using IMemoryOwner<byte> owner = BinaryTextEncoding.RentDecoded(
+            header,
+            BinaryTextFormat.Base64,
             isSensitive: true,
-            out Span<byte> buffer
+            out Span<byte> secret
         );
-        if (!Convert.TryFromBase64Chars(header, buffer, out int length))
-            throw new FormatException("The value is not base64.");
-
-        ReadOnlySpan<byte> secret = buffer[..length];
         // end-snippet
 
         SecretAssert.Equal(key, secret);
 
-        // The other decoders the page names write into the same rented buffer, and report what they wrote.
-        buffer.Clear();
-        Assert.True(
-            Base64Url.TryDecodeFromChars(
-                Base64Url.EncodeToString(key),
-                buffer,
-                out length
-            )
+        using IMemoryOwner<byte> urlOwner = BinaryTextEncoding.RentDecoded(
+            Base64Url.EncodeToString(key),
+            BinaryTextFormat.Base64Url,
+            isSensitive: true,
+            out Span<byte> fromBase64Url
         );
-        SecretAssert.Equal(key, buffer[..length]);
+        SecretAssert.Equal(key, fromBase64Url);
 
-        buffer.Clear();
-        OperationStatus status = Base64.DecodeFromUtf8(
-            Encoding.UTF8.GetBytes(header),
-            buffer,
-            out _,
-            out length
-        );
-        Assert.Equal(OperationStatus.Done, status);
-        SecretAssert.Equal(key, buffer[..length]);
-
-        buffer.Clear();
-        status = Convert.FromHexString(
+        using IMemoryOwner<byte> hexOwner = BinaryTextEncoding.RentDecoded(
             Convert.ToHexString(key),
-            buffer,
-            out _,
-            out length
+            BinaryTextFormat.HexUpper,
+            isSensitive: true,
+            out Span<byte> fromHex
         );
-        Assert.Equal(OperationStatus.Done, status);
-        SecretAssert.Equal(key, buffer[..length]);
+        SecretAssert.Equal(key, fromHex);
 
-        Assert.False(Convert.TryFromBase64Chars("not base64!", buffer, out _));
+        Assert.Throws<FormatException>(() =>
+        {
+            using IMemoryOwner<byte> invalid = BinaryTextEncoding.RentDecoded(
+                "not base64!",
+                BinaryTextFormat.Base64,
+                isSensitive: true,
+                out Span<byte> _
+            );
+        });
     }
 
     [Fact]

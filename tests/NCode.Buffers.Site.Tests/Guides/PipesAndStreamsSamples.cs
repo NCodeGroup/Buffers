@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Security.Cryptography;
 using NCode.Buffers;
 
 namespace SiteSamples.Guides;
@@ -104,6 +105,33 @@ public class PipesAndStreamsSamples
         Assert.True(heldWithOneEnd);
         bool memoryHasData = memory.Span.ContainsAnyExcept((byte)0);
         Assert.False(memoryHasData);
+    }
+
+    [Fact]
+    public async Task SitePipelinesSequenceLeaseSample_Runs()
+    {
+        var pipe = new Pipe();
+        byte[] key = RandomNumberGenerator.GetBytes(32);
+        byte[] secret = new byte[4096];
+        for (int i = 0; i < secret.Length; i++)
+            secret[i] = (byte)(i % 251);
+        byte[] mac = new byte[HMACSHA256.HashSizeInBytes];
+
+        await pipe.Writer.WriteAsync(secret.AsMemory(0, 2048));
+        await pipe.Writer.WriteAsync(secret.AsMemory(2048));
+        await pipe.Writer.CompleteAsync();
+
+        // begin-snippet: SitePipelinesSequenceLease
+        ReadResult result = await pipe.Reader.ReadAsync();
+        using (var lease = result.Buffer.GetSpanLease(isSensitive: true))
+        {
+            HMACSHA256.HashData(key, lease.Span, mac);
+        }
+        pipe.Reader.AdvanceTo(result.Buffer.End);
+        // end-snippet
+
+        pipe.Reader.Complete();
+        SecretAssert.Equal(HMACSHA256.HashData(key, secret), mac);
     }
 
     [Fact]
