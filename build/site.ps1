@@ -12,22 +12,22 @@
     includes that is not there, a component that reads a token the brand does not offer, or a guide without its
     headings. check loads each page of that build at 1440, 1280, 1024 and 390 px, as the documentation site workflow
     does, and names every element that leaves its content column or hides content sideways, in the Chromium-based
-    browser -Browser or DOCS_BROWSER names, or the one 'npm run browser' installs in the toolchain. dev serves the site
-    at http://localhost:4321/ by default and follows each change. preview builds as the workflow does and
-    serves that build.
+    browser that -Browser, DOCS_BROWSER or CHROME_BIN names, in that order, or the one 'npm run browser' installs in
+    the toolchain. dev serves the site at http://localhost:4321/ by default and follows each change. preview builds as
+    the workflow does and serves that build.
 
     build, dev and preview use a toolchain clone one at a time, and site.mjs says 'This toolchain checkout is in use'
     when another is running; check only reads a built site and takes no lock. Node.js must be on PATH at the version
-    the toolchain's package.json names in engines. Nothing is written into this repository.
+    the toolchain's .node-version names. Nothing is written into this repository.
 .PARAMETER Command
     What to run: build, check, dev or preview.
 .PARAMETER Out
-    The folder build writes the site to and check reads it from. Keep it outside this repository; site.mjs refuses a
-    folder whose path starts with the toolchain's, such as docs-site beside a toolchain named docs.
+    The folder build writes the site to and check reads it from. Keep it outside this repository; build and preview
+    refuse a folder whose path starts with the toolchain's, such as docs-site beside a toolchain named docs.
 .PARAMETER Port
     The port dev and preview serve on; site.mjs picks the default when it is not given.
 .PARAMETER Browser
-    The Chromium-based browser check uses, as a path or a command name; DOCS_BROWSER names one too.
+    The Chromium-based browser check uses, as a path or a command name; DOCS_BROWSER or CHROME_BIN names one too.
 .PARAMETER Toolchain
     The folder of the NCodeGroup/docs clone; by default a folder named docs beside the main checkout.
 .EXAMPLE
@@ -64,7 +64,7 @@ if (-not (Test-Path -LiteralPath $site -PathType Leaf)) {
     exit 1
 }
 if (-not (Get-Command node -CommandType Application -ErrorAction SilentlyContinue)) {
-    Write-Output "Site: FAILED. Node.js is not on PATH: install the version the toolchain's package.json names in engines."
+    Write-Output "Site: FAILED. Node.js is not on PATH: install the version the toolchain's .node-version names."
     exit 1
 }
 $arguments = @($site, $Command, $root)
