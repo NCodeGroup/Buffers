@@ -11,6 +11,8 @@ NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentByte
 NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentBytes(System.ReadOnlySpan<char> chars, bool isSensitive, out System.Span<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
 NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentChars(System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Memory<char> chars) -> System.Buffers.IMemoryOwner<char>!
 NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentChars(System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Span<char> chars) -> System.Buffers.IMemoryOwner<char>!
+NCode.Buffers.SequenceExtensions.extension<T>(System.Buffers.ReadOnlySequence<T>)
+NCode.Buffers.SequenceExtensions.extension<T>(System.Buffers.ReadOnlySequence<T>).GetSpanLease(bool isSensitive) -> NCode.Buffers.RefSpanLease<T>
 static NCode.Buffers.BinaryTextEncoding.RentDecoded(System.ReadOnlySpan<char> text, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Memory<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
 static NCode.Buffers.BinaryTextEncoding.RentDecoded(System.ReadOnlySpan<char> text, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Span<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
 static NCode.Buffers.BinaryTextEncoding.RentEncoded(System.ReadOnlySpan<byte> bytes, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Memory<char> text) -> System.Buffers.IMemoryOwner<char>!
@@ -21,3 +23,4 @@ static NCode.Buffers.SecureEncodingExtensions.RentBytes(this System.Text.Encodin
 static NCode.Buffers.SecureEncodingExtensions.RentBytes(this System.Text.Encoding! encoding, System.ReadOnlySpan<char> chars, bool isSensitive, out System.Span<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
 static NCode.Buffers.SecureEncodingExtensions.RentChars(this System.Text.Encoding! encoding, System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Memory<char> chars) -> System.Buffers.IMemoryOwner<char>!
 static NCode.Buffers.SecureEncodingExtensions.RentChars(this System.Text.Encoding! encoding, System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Span<char> chars) -> System.Buffers.IMemoryOwner<char>!
+static NCode.Buffers.SequenceExtensions.GetSpanLease<T>(this System.Buffers.ReadOnlySequence<T> sequence, bool isSensitive) -> NCode.Buffers.RefSpanLease<T>

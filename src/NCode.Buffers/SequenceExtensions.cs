@@ -43,6 +43,7 @@ public static class SequenceExtensions
         /// A <see cref="RefSpanLease{T}"/> that provides access to the sequence data as a contiguous <see cref="ReadOnlySpan{T}"/>.
         /// The caller must dispose the lease to release the underlying resources.
         /// </returns>
+        /// <exception cref="OverflowException">The sequence is longer than <see cref="int.MaxValue"/> elements and must be copied.</exception>
         /// <remarks>
         /// <para>
         /// <strong>Single-segment optimization:</strong> When the sequence consists of a single segment,
@@ -72,20 +73,7 @@ public static class SequenceExtensions
         [PublicAPI]
         public RefSpanLease<T> GetSpanLease(bool isSensitive)
         {
-            var sequence = buffer.AsReadOnlySequence;
-            if (sequence.IsSingleSegment)
-            {
-                return new RefSpanLease<T>(owner: null, sequence.First.Span);
-            }
-
-            Debug.Assert(buffer.Length <= int.MaxValue, "Sequence length exceeds int.MaxValue.");
-            var owner = BufferFactory.Rent(
-                (int)buffer.Length,
-                isSensitive,
-                out Span<T> destination
-            );
-            sequence.CopyTo(destination);
-            return new RefSpanLease<T>(owner, destination);
+            return buffer.AsReadOnlySequence.GetSpanLease(isSensitive);
         }
 
         /// <summary>
@@ -160,6 +148,62 @@ public static class SequenceExtensions
             {
                 buffer.Dispose();
             }
+        }
+    }
+
+    /// <typeparam name="T">The type of elements in the sequence. Must be an unmanaged value type.</typeparam>
+    extension<T>(ReadOnlySequence<T> sequence)
+        where T : unmanaged
+    {
+        /// <summary>
+        /// Gets a <see cref="RefSpanLease{T}"/> that provides access to the underlying data as a contiguous <see cref="ReadOnlySpan{T}"/>.
+        /// </summary>
+        /// <param name="isSensitive">
+        /// When <see langword="true"/>, if a buffer must be rented, it will be allocated from <see cref="SecureMemoryPool{T}"/>
+        /// and securely zeroed when disposed. When <see langword="false"/>, the buffer is rented from <see cref="MemoryPool{T}.Shared"/>.
+        /// </param>
+        /// <returns>
+        /// A <see cref="RefSpanLease{T}"/> that provides access to the sequence data as a contiguous <see cref="ReadOnlySpan{T}"/>.
+        /// The caller must dispose the lease to release the underlying resources.
+        /// </returns>
+        /// <exception cref="OverflowException">The sequence is longer than <see cref="int.MaxValue"/> elements and must be copied.</exception>
+        /// <remarks>
+        /// <para>
+        /// <strong>Single-segment optimization:</strong> When the sequence consists of a single segment,
+        /// the span is returned directly with no owner, meaning no additional memory allocation occurs and disposing the lease leaves the sequence untouched.
+        /// The caller retains ownership of the memory behind the sequence, which must remain valid while using the span.
+        /// </para>
+        /// <para>
+        /// <strong>Multi-segment handling:</strong> When the sequence spans multiple segments, a buffer is rented
+        /// and the data is copied into it. The original sequence remains valid and unchanged.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var first = new MemorySegment&lt;byte&gt;(new byte[] { 1, 2, 3 });
+        /// var last = first.Append(new byte[] { 4, 5, 6 });
+        /// var sequence = new ReadOnlySequence&lt;byte&gt;(first, 0, last, last.Memory.Length);
+        ///
+        /// using var lease = sequence.GetSpanLease(isSensitive: true);
+        /// ProcessData(lease.Span);
+        /// // Lease is disposed, rented buffer (if any) is securely zeroed
+        /// </code>
+        /// </example>
+        [PublicAPI]
+        public RefSpanLease<T> GetSpanLease(bool isSensitive)
+        {
+            if (sequence.IsSingleSegment)
+            {
+                return new RefSpanLease<T>(owner: null, sequence.First.Span);
+            }
+
+            var owner = BufferFactory.Rent(
+                checked((int)sequence.Length),
+                isSensitive,
+                out Span<T> destination
+            );
+            sequence.CopyTo(destination);
+            return new RefSpanLease<T>(owner, destination);
         }
     }
 }
