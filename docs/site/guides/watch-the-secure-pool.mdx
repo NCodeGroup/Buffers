@@ -11,8 +11,6 @@ This is your situation when your service rents buffers from `SecureMemoryPool<T>
 under load: how many buffers come from the cache, how many allocate, and whether memory pressure empties the cache.
 The pool reports counts through .NET metrics. You subscribe to them and read the numbers.
 
-You'll use `BufferMetrics.MeterName` · `SecureMemoryPool<T>` · `MeterListener`
-
 ## Find the meter
 
 The library has one `Meter` for the whole process. Its name is `NCode.Buffers`, and the constant

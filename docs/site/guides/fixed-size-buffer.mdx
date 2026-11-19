@@ -14,9 +14,6 @@ This is your situation when your code writes bytes through an `IBufferWriter<byt
 a header or a JSON token, and you know how large the largest output is. The example writes a frame: a 4-byte length,
 then the payload.
 
-You'll use `GetFixedBufferWriter()` · `FixedSpanBufferWriter<T>` · `FixedMemoryBufferWriter<T>` · `stackalloc` ·
-`BufferFactory.Rent` · `Utf8JsonWriter`
-
 ## The usual code
 
 It writes into an `ArrayBufferWriter<byte>` with an initial size. The size is where the buffer starts, not where it

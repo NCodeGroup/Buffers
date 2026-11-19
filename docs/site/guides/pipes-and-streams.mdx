@@ -13,8 +13,6 @@ This is your situation when a secret passes through a `Pipe`, or a `PipeReader` 
 request body that carries a token or a key. The pipe keeps the bytes in buffers it rents from a pool. The examples give
 it a pool that zeroes them.
 
-You'll use `SecureMemoryPool<byte>` · `PipeOptions` · `StreamPipeReaderOptions`
-
 ## The usual code
 
 A pipe made without options. The writer copies the secret in, the reader reads it back.

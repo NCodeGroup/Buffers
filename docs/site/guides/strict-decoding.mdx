@@ -12,9 +12,6 @@ import Related from '@site/components/Related.astro';
 This is your situation when your code turns bytes it did not write into text, such as a request body, a header, a file
 or a stream, and then checks, hashes, compares or stores that text. The example decodes a name from bytes.
 
-You'll use `SecureEncoding.UTF8` · `SecureEncoding.ASCII` · `DecoderFallbackException` · `StreamReader` ·
-`Utf8.IsValid` · `Ascii.IsValid`
-
 ## The usual code
 
 It decodes with the standard encoding. Input that is not valid UTF-8 does not fail: each bad byte becomes a

@@ -13,9 +13,6 @@ This is your situation when your code splits delimited text, such as a `;`-separ
 comma-separated line, and the pieces are small parts of text you already hold. The example reads a header of
 `name=value` pairs.
 
-You'll use `SplitSegments` · `StringSegments` · `ReadOnlyMemory<char>` · `MemorySegment<T>` · `BufferFactory.Rent` ·
-`Utf8JsonReader`
-
 ## The usual code
 
 It calls `Split`, which returns an array of strings, and splits each piece again.

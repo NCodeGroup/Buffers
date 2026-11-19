@@ -11,8 +11,6 @@ This is your situation when your code holds a key, a password or a token in a bu
 when that buffer is not cleared. A buffer that NCode.Buffers owns is overwritten with zeros when it is disposed. The
 test hands the code a buffer it can read afterwards, runs the code, and checks that every byte is zero.
 
-You'll use `BufferFactory.CreatePinnedArray` · `GetSecureLifetime()` · `SecureMemoryPool<T>` · `ContainsAnyExcept`
-
 ## Give the test a buffer it can see
 
 The code under test needs a place to put its secret that the test can look at afterwards. There are two ways to give

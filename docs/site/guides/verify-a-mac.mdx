@@ -14,9 +14,6 @@ This is your situation when a request carries a value and its MAC, such as a web
 cookie or an API key, and your code must say whether they match. The example verifies a webhook's HMAC-SHA256
 signature, sent as hex.
 
-You'll use `HMACSHA256.HashData` · `stackalloc` · `GetSecureLifetime()` · `Convert.FromHexString` ·
-`CryptographicOperations.FixedTimeEquals`
-
 ## The usual code
 
 It computes the expected MAC, writes it as hex, and compares the two strings.

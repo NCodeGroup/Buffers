@@ -13,8 +13,6 @@ This is your situation when an API takes a secret only as a `byte[]`, as `ECPara
 `ECDiffieHellman.DeriveRawSecretAgreement` does. The example imports an EC private key, then seals a message with a
 key derived from an ECDH shared secret.
 
-You'll use `BufferFactory.CreatePinnedArray` · `GetSecureLifetime()` · `BufferFactory.Rent` · `HKDF.DeriveKey`
-
 ## The usual code
 
 Each secret gets an array: the one the API wants, the one it returns, and the one the next call returns.
