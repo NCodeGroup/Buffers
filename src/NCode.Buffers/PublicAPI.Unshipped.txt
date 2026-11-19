@@ -1,3 +1,13 @@
 #nullable enable
+NCode.Buffers.SecureEncodingExtensions
+NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!)
+NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentBytes(System.ReadOnlySpan<char> chars, bool isSensitive, out System.Memory<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
+NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentBytes(System.ReadOnlySpan<char> chars, bool isSensitive, out System.Span<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
+NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentChars(System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Memory<char> chars) -> System.Buffers.IMemoryOwner<char>!
+NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentChars(System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Span<char> chars) -> System.Buffers.IMemoryOwner<char>!
 static NCode.Buffers.BufferFactory.RentRandom(int length, bool isSensitive, out System.Memory<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!
 static NCode.Buffers.BufferFactory.RentRandom(int length, bool isSensitive, out System.Span<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!
+static NCode.Buffers.SecureEncodingExtensions.RentBytes(this System.Text.Encoding! encoding, System.ReadOnlySpan<char> chars, bool isSensitive, out System.Memory<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
+static NCode.Buffers.SecureEncodingExtensions.RentBytes(this System.Text.Encoding! encoding, System.ReadOnlySpan<char> chars, bool isSensitive, out System.Span<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
+static NCode.Buffers.SecureEncodingExtensions.RentChars(this System.Text.Encoding! encoding, System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Memory<char> chars) -> System.Buffers.IMemoryOwner<char>!
+static NCode.Buffers.SecureEncodingExtensions.RentChars(this System.Text.Encoding! encoding, System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Span<char> chars) -> System.Buffers.IMemoryOwner<char>!
