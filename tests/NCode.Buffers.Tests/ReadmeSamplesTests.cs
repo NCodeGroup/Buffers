@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 using System.Buffers;
+using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -378,14 +380,31 @@ public class ReadmeSamplesTests
     #region Metrics Tests
 
     [Fact]
-    public void PoolMetrics_MeterName_IsNCodeBuffers()
+    public void PoolMetrics_Listener_CountsARental()
     {
         // begin-snippet: PoolMetrics
-        const string meterName = BufferMetrics.MeterName;
-        // Subscribe with OpenTelemetry: builder.WithMetrics(m => m.AddMeter(meterName));
+        var totals = new ConcurrentDictionary<string, long>();
+
+        using var listener = new MeterListener();
+        listener.InstrumentPublished = (instrument, l) =>
+        {
+            if (instrument.Meter.Name == BufferMetrics.MeterName)
+            {
+                l.EnableMeasurementEvents(instrument);
+            }
+        };
+        listener.SetMeasurementEventCallback<long>(
+            (instrument, value, tags, state) =>
+                totals.AddOrUpdate(instrument.Name, value, (_, total) => total + value)
+        );
+        listener.Start();
         // end-snippet
 
-        Assert.Equal("NCode.Buffers", meterName);
+        using var pool = new SecureMemoryPool<byte>();
+        pool.Rent(16).Dispose();
+
+        var rentals = totals.GetValueOrDefault("ncode.buffers.secure_pool.rentals");
+        Assert.True(rentals >= 1);
     }
 
     #endregion

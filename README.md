@@ -431,12 +431,25 @@ string text = secret.ToString(); // [REDACTED]
 
 ### Metrics
 
-`SecureMemoryPool<T>` reports its rentals, returns and trimmed buffers through a `System.Diagnostics.Metrics` meter named by `BufferMetrics.MeterName`. [docs/metrics.md](docs/metrics.md) lists each instrument.
+`SecureMemoryPool<T>` reports its rentals, returns and trimmed buffers through a `System.Diagnostics.Metrics` meter named by `BufferMetrics.MeterName`. [docs/metrics.md](docs/metrics.md) lists each instrument. Subscribe to the meter by that name, with OpenTelemetry's `AddMeter(BufferMetrics.MeterName)` or a `MeterListener`:
 
 <!-- snippet: PoolMetrics -->
 ```cs
-const string meterName = BufferMetrics.MeterName;
-// Subscribe with OpenTelemetry: builder.WithMetrics(m => m.AddMeter(meterName));
+var totals = new ConcurrentDictionary<string, long>();
+
+using var listener = new MeterListener();
+listener.InstrumentPublished = (instrument, l) =>
+{
+    if (instrument.Meter.Name == BufferMetrics.MeterName)
+    {
+        l.EnableMeasurementEvents(instrument);
+    }
+};
+listener.SetMeasurementEventCallback<long>(
+    (instrument, value, tags, state) =>
+        totals.AddOrUpdate(instrument.Name, value, (_, total) => total + value)
+);
+listener.Start();
 ```
 <!-- endSnippet -->
 
