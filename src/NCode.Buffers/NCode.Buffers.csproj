@@ -6,7 +6,7 @@
     <PackageProjectUrl>https://ncodegroup.github.io/Buffers/</PackageProjectUrl>
     <!-- Every pack is checked for compatibility with the last package on nuget.org (ADR-1001); raise-baseline.yml raises it after each release (project-template ADR-0150). -->
     <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>5.2.2</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>5.2.3</PackageValidationBaselineVersion>
   </PropertyGroup>
   <ItemGroup>
     <!-- Build-time only: the attributes are [Conditional("JETBRAINS_ANNOTATIONS")], so none reaches the assembly, and PrivateAssets keeps the package out of the nuspec (ADR-1022). -->
