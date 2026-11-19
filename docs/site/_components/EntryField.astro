@@ -1,0 +1,44 @@
+---
+// One labelled field of an <EntryCard>. Its content is the field's value, Markdown and components such as <Proof>.
+// `label` takes `code`.
+// Usage: <EntryField label="Cleared">In your `finally` <Proof sample="SiteAlternativeStackByHand" /></EntryField>
+import { inline } from '@site/components/lib/evidence';
+
+interface Props {
+  label: string;
+}
+const { label } = Astro.props;
+---
+
+<div class="field">
+  <dt class="field__label" set:html={inline(label)} />
+  <dd class="field__value"><slot /></dd>
+</div>
+
+<style>
+  .field { display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: var(--nc-space-4); }
+  .field__label {
+    padding-top: 0.1875rem;
+    font-size: 0.6875rem;
+    font-stretch: var(--nc-type-label-stretch);
+    font-weight: 600;
+    letter-spacing: var(--nc-type-label-tracking);
+    text-transform: uppercase;
+    color: var(--nc-color-text-muted);
+  }
+  .field__label :global(code) { font-family: var(--nc-font-mono); text-transform: none; letter-spacing: 0; }
+  .field__value { margin: 0; font-size: var(--sl-text-sm); line-height: 1.5; overflow-wrap: anywhere; }
+  .field__value :global(p) { margin: 0; }
+  .field__value :global(code) {
+    padding: 0.06em 0.3em;
+    border: var(--nc-border-hair) solid var(--nc-color-border);
+    border-radius: var(--nc-radius-plate);
+    background: var(--nc-color-surface-sunken);
+    font-size: 0.88em;
+    font-family: var(--nc-font-mono);
+    font-stretch: var(--nc-type-code-stretch);
+  }
+  @media (max-width: 40rem) {
+    .field { grid-template-columns: minmax(0, 1fr); gap: var(--nc-space-1); }
+  }
+</style>
