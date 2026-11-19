@@ -188,7 +188,8 @@ public class ContiguousBufferWriterTests
     [Fact]
     public void Grow_WhenNotSensitive_KeepsWrittenData()
     {
-        // Larger than the maximum array length that ArrayPool<T>.Shared caches, so no parallel test can rent the old array.
+        // ArrayPool<T>.Shared, behind MemoryPool<T>.Shared, doesn't clear an array it takes back, and no other test of this
+        // project rents a non-sensitive byte array in this size's bucket, so the old array still holds the written bytes.
         const int initialCapacity = 2_000_000;
         using var writer = BufferFactory.CreateContiguousBufferWriter(
             isSensitive: false,
@@ -302,7 +303,7 @@ public class ContiguousBufferWriterTests
     }
 
     [Fact]
-    public void Dispose_ThenMembers_ThrowObjectDisposedException()
+    public void Dispose_ThenSizes_AreZero()
     {
         var writer = BufferFactory.CreateContiguousBufferWriter(isSensitive: true);
         _ = writer.GetSpan(10);
@@ -310,28 +311,70 @@ public class ContiguousBufferWriterTests
 
         writer.Dispose();
 
-        Assert.Throws<ObjectDisposedException>(() =>
-        {
-            _ = writer.GetSpan();
-        });
-        Assert.Throws<ObjectDisposedException>(() =>
-        {
-            _ = writer.GetMemory();
-        });
-        Assert.Throws<ObjectDisposedException>(() => writer.Advance(0));
-        Assert.Throws<ObjectDisposedException>(() => writer.Reset());
-        Assert.Throws<ObjectDisposedException>(() =>
-        {
-            _ = writer.WrittenSpan.Length;
-        });
-        Assert.Throws<ObjectDisposedException>(() =>
-        {
-            _ = writer.WrittenMemory.Length;
-        });
         Assert.Equal(0, writer.Capacity);
         Assert.Equal(0, writer.WrittenCount);
         Assert.Equal(0, writer.FreeCapacity);
+    }
+
+    [Fact]
+    public void Dispose_ThenIsSensitive_KeepsItsValue()
+    {
+        var writer = BufferFactory.CreateContiguousBufferWriter(isSensitive: true);
+        _ = writer.GetSpan(10);
+        writer.Advance(5);
+
+        writer.Dispose();
+
         Assert.True(writer.IsSensitive);
+    }
+
+    [Theory]
+    [InlineData("GetSpan")]
+    [InlineData("GetMemory")]
+    [InlineData("Advance")]
+    [InlineData("Reset")]
+    [InlineData("WrittenSpan")]
+    [InlineData("WrittenMemory")]
+    public void Dispose_ThenMember_ThrowsObjectDisposedException(string member)
+    {
+        var writer = BufferFactory.CreateContiguousBufferWriter(isSensitive: true);
+        _ = writer.GetSpan(10);
+        writer.Advance(5);
+
+        writer.Dispose();
+
+        Assert.Throws<ObjectDisposedException>(() => CallMember(writer, member));
+    }
+
+    private static void CallMember(ContiguousBufferWriter<byte> writer, string member)
+    {
+        switch (member)
+        {
+            case "GetSpan":
+                _ = writer.GetSpan();
+                break;
+            case "GetMemory":
+                _ = writer.GetMemory();
+                break;
+            case "Advance":
+                writer.Advance(0);
+                break;
+            case "Reset":
+                writer.Reset();
+                break;
+            case "WrittenSpan":
+                _ = writer.WrittenSpan.Length;
+                break;
+            case "WrittenMemory":
+                _ = writer.WrittenMemory.Length;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(member),
+                    member,
+                    "No call is written for the member."
+                );
+        }
     }
 
     #endregion
