@@ -132,14 +132,65 @@ public class SecretTests
         using var unequal = Secret.Create("s3cr3x"u8);
         using var longer = Secret.Create("s3cr3t!"u8);
 
-        Assert.True(secret.Equals(equal));
-        Assert.False(secret.Equals(unequal));
-        Assert.False(secret.Equals(longer));
-        Assert.False(secret.Equals((Secret<byte>?)null));
-        Assert.True(secret.Equals(secret));
-        Assert.True(secret.Equals((object)equal));
-        Assert.False(secret.Equals((object)"s3cr3t"));
-        Assert.False(secret.Equals((object?)null));
+        var isEqual = secret.Equals(equal);
+        var isUnequalEqual = secret.Equals(unequal);
+        var isLongerEqual = secret.Equals(longer);
+
+        Assert.True(isEqual);
+        Assert.False(isUnequalEqual);
+        Assert.False(isLongerEqual);
+    }
+
+    [Fact]
+    public void Equals_Null_ReturnsFalse()
+    {
+        using var secret = Secret.Create("s3cr3t"u8);
+
+        var isEqual = secret.Equals((Secret<byte>?)null);
+
+        Assert.False(isEqual);
+    }
+
+    [Fact]
+    public void Equals_SameInstance_ReturnsTrue()
+    {
+        using var secret = Secret.Create("s3cr3t"u8);
+
+        var isEqual = secret.Equals(secret);
+
+        Assert.True(isEqual);
+    }
+
+    [Fact]
+    public void EqualsObject_EqualSecret_ReturnsTrue()
+    {
+        using var secret = Secret.Create("s3cr3t"u8);
+        using var equal = Secret.Create("s3cr3t"u8);
+
+        var isEqual = secret.Equals((object)equal);
+
+        Assert.True(isEqual);
+    }
+
+    [Fact]
+    public void EqualsObject_NotASecret_ReturnsFalse()
+    {
+        using var secret = Secret.Create("s3cr3t"u8);
+        const string text = "s3cr3t";
+
+        var isEqual = secret.Equals((object)text);
+
+        Assert.False(isEqual);
+    }
+
+    [Fact]
+    public void EqualsObject_Null_ReturnsFalse()
+    {
+        using var secret = Secret.Create("s3cr3t"u8);
+
+        var isEqual = secret.Equals((object?)null);
+
+        Assert.False(isEqual);
     }
 
     [Fact]
@@ -253,25 +304,54 @@ public class SecretTests
         Assert.Null(exception);
     }
 
-    [Fact]
-    public void Dispose_ThenMembers_ThrowObjectDisposedException()
+    [Theory]
+    [InlineData("Reveal")]
+    [InlineData("RevealMemory")]
+    [InlineData("CopyTo")]
+    [InlineData("FixedTimeEquals")]
+    [InlineData("EqualsOther")]
+    [InlineData("OtherEquals")]
+    public void Dispose_ThenMember_ThrowsObjectDisposedException(string member)
     {
         var secret = Secret.Create("s3cr3t"u8);
         using var other = Secret.Create("s3cr3t"u8);
         secret.Dispose();
 
-        Assert.Throws<ObjectDisposedException>(() =>
+        Assert.Throws<ObjectDisposedException>(() => CallMember(secret, other, member));
+    }
+
+    private static void CallMember(Secret<byte> secret, Secret<byte> other, string member)
+    {
+        switch (member)
         {
-            _ = secret.Reveal().Length;
-        });
-        Assert.Throws<ObjectDisposedException>(() => secret.RevealMemory());
-        Assert.Throws<ObjectDisposedException>(() => secret.CopyTo(new byte[6]));
-        Assert.Throws<ObjectDisposedException>(() =>
-        {
-            _ = secret.FixedTimeEquals("s3cr3t"u8);
-        });
-        Assert.Throws<ObjectDisposedException>(() => secret.Equals(other));
-        Assert.Throws<ObjectDisposedException>(() => other.Equals(secret));
+            case "Reveal":
+                _ = secret.Reveal().Length;
+                break;
+            case "RevealMemory":
+                _ = secret.RevealMemory();
+                break;
+            case "CopyTo":
+            {
+                var destination = new byte[6];
+                secret.CopyTo(destination);
+                break;
+            }
+            case "FixedTimeEquals":
+                _ = secret.FixedTimeEquals("s3cr3t"u8);
+                break;
+            case "EqualsOther":
+                _ = secret.Equals(other);
+                break;
+            case "OtherEquals":
+                _ = other.Equals(secret);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(member),
+                    member,
+                    "No call is written for the member."
+                );
+        }
     }
 
     #endregion
