@@ -49,22 +49,54 @@ namespace NCode.Buffers;
 [PublicAPI]
 public sealed class PooledMemoryStream : Stream
 {
-    private const int DefaultInitialCapacity = 256;
-
+    /// <summary>
+    /// Gets the size of the first buffer, and the least a growth rents.
+    /// </summary>
     private int InitialCapacity { get; }
+
+    /// <summary>
+    /// Gets or sets the owner of the current buffer, or <see langword="null"/> before the first rental and after
+    /// <see cref="Dispose(bool)"/>.
+    /// </summary>
     private IMemoryOwner<byte>? Owner { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of bytes in the stream.
+    /// </summary>
     private int DataLength { get; set; }
+
+    /// <summary>
+    /// Gets or sets the position, which may be past <see cref="DataLength"/>.
+    /// </summary>
     private int CurrentPosition { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value that indicates whether <see cref="Dispose(bool)"/> has run.
+    /// </summary>
     private bool IsDisposed { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PooledMemoryStream"/> class.
+    /// </summary>
+    /// <param name="isSensitive">Whether the stream rents its buffers from the secure pool.</param>
+    /// <param name="initialCapacity">
+    /// The size of the first buffer, or 0 to use the default size.
+    /// <c>BufferFactory.CreatePooledStream</c> checks the arguments.
+    /// </param>
     internal PooledMemoryStream(bool isSensitive, int initialCapacity)
     {
         IsSensitive = isSensitive;
-        InitialCapacity = initialCapacity == 0 ? DefaultInitialCapacity : initialCapacity;
+        InitialCapacity = initialCapacity == 0 ? BufferGrowth.DefaultCapacity : initialCapacity;
     }
 
+    /// <summary>
+    /// Gets the current buffer, or an empty memory when there is none.
+    /// </summary>
     private Memory<byte> Buffer => Owner is null ? Memory<byte>.Empty : Owner.Memory;
 
+    /// <summary>
+    /// Gets the length of the current buffer, or 0 when the stream has none.
+    /// </summary>
     internal int Capacity => Buffer.Length;
 
     /// <summary>
@@ -331,7 +363,11 @@ public sealed class PooledMemoryStream : Stream
     /// <inheritdoc />
     /// <exception cref="ObjectDisposedException">The stream has been disposed.</exception>
     /// <exception cref="IOException">The write would end past <see cref="Array.MaxLength"/>.</exception>
-    public override void WriteByte(byte value) => Write(new ReadOnlySpan<byte>(in value));
+    public override void WriteByte(byte value)
+    {
+        var span = new ReadOnlySpan<byte>(in value);
+        Write(span);
+    }
 
 #pragma warning disable RS0027 // Stream declares these overloads with a default token; the overrides keep it, as MemoryStream's do.
     /// <inheritdoc />
@@ -504,6 +540,15 @@ public sealed class PooledMemoryStream : Stream
         base.Dispose(disposing);
     }
 
+    /// <summary>
+    /// Rents a buffer of at least <paramref name="required"/> bytes when the current one is smaller, copies the
+    /// stream's bytes into it and makes it current.
+    /// </summary>
+    /// <param name="required">The number of bytes the buffer must hold.</param>
+    /// <returns>
+    /// The previous owner, which the caller disposes once it no longer reads the old buffer, or
+    /// <see langword="null"/> when the buffer did not grow.
+    /// </returns>
     private IMemoryOwner<byte>? Grow(int required)
     {
         if (required <= Capacity)
@@ -511,11 +556,9 @@ public sealed class PooledMemoryStream : Stream
             return null;
         }
 
-        var doubled = (int)Math.Min(2L * Capacity, Array.MaxLength);
-        var minimum = Math.Max(InitialCapacity, doubled);
-        var newSize = Math.Max(required, minimum);
-
-        var owner = BufferFactory.ChoosePool<byte>(IsSensitive).Rent(newSize);
+        var newSize = BufferGrowth.GetNewSize(required, Capacity, InitialCapacity);
+        var pool = BufferFactory.ChoosePool<byte>(IsSensitive);
+        var owner = pool.Rent(newSize);
         Buffer.Span[..DataLength].CopyTo(owner.Memory.Span);
 
         var previous = Owner;
