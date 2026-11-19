@@ -1,7 +1,8 @@
 ---
 // Proof on a claim: a small mark after a sentence that states a behavior, saying how it is known and
 // linking to the evidence. The mark is the kind's glyph, linked. It shows a claim's id or a source's own `label`
-// from evidence.json; any other evidence is named in its tooltip and to a screen reader. Name exactly one of:
+// from evidence.json; any other evidence is named in its tooltip and to a screen reader. A row of marks on a line of
+// its own starts with the label "Evidence". Name exactly one of:
 //   claim="R1"     a row of the ledger on /evidence/guarantees/; the mark shows the row's kind and number
 //   test="Class.Method", sample="SiteKey", source="Id", external="Id"   one piece of evidence from evidence.json
 // `kind` overrides the kind the evidence implies, such as kind="asserted" on a source.
@@ -72,5 +73,15 @@ const tip = `${kindLabel(kind)}: ${spoken}`;
     font-weight: 500;
     color: var(--nc-color-text-secondary);
     white-space: nowrap;
+  }
+  /* A row of marks on a line of its own, after a code block, a list, a table or a paragraph, starts with a label,
+     so its glyphs never stand alone. */
+  :global(.sl-markdown-content > :not(.proof) + .proof)::before {
+    content: 'Evidence';
+    margin-inline-end: 0.25rem;
+    font-family: var(--nc-font-sans);
+    font-size: var(--sl-text-2xs);
+    font-weight: 600;
+    color: var(--nc-color-text-muted);
   }
 </style>
