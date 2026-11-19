@@ -3,12 +3,9 @@ title: Ways to get it wrong
 description: The mistakes the library lets you make, what each one does, and what to write instead.
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
-
-<KindLabel kind="reference" />
 
 Used as the guides show, a secret lives in memory the collector does not move, for the length of one `using` scope,
 and is overwritten with zeros when that scope ends. <Proof claim="R3" /> <Proof claim="R1" /> This page lists the
@@ -138,8 +135,7 @@ is taken.
 ```cs snippet=SitePitfallCopyOfALifetime
 ```
 
-**What happens** Both lifetimes are the same array. Disposing either zeroes the key the other is still using.
-<Proof sample="SitePitfallCopyOfALifetime" />
+**What happens** Both lifetimes are the same array. Disposing either zeroes the key the other is still using. <Proof sample="SitePitfallCopyOfALifetime" />
 
 **Why** A lifetime is a struct that holds one reference, so a copy is a second owner. `var` takes the lifetime's
 type, not `Span<byte>`.
@@ -170,8 +166,7 @@ uses the memory.
 
 **What happens** `Dispose` zeroes the 32 bytes of the slice and leaves the rest. <Proof sample="SitePitfallSliceLifetime" />
 
-**Why** A `SecureSpanLifetime<T>` zeroes exactly the span it wraps. It does not know the buffer the span came from.
-<Proof source="SecureSpanLifetime.Dispose" />
+**Why** A `SecureSpanLifetime<T>` zeroes exactly the span it wraps. It does not know the buffer the span came from. <Proof source="SecureSpanLifetime.Dispose" />
 
 **Write instead** Call `GetSecureLifetime()` on the whole buffer.
 
@@ -196,8 +191,7 @@ a fixed size. Wrap an array an API gave you as soon as you get it.
 **What happens** `owner.Memory` is the whole rented buffer, 4096 bytes for any request up to one page. Hashing,
 sending or comparing it processes all 4096. <Proof test="SecureMemoryPoolTests.Rent_SizeLessThanPage_ReturnsPageSizeBuffer" />
 
-**Why** Only the `out` buffer of `Rent` has the length you asked for.
-<Proof test="BufferFactoryPropertyTests.Rent_WithSpan_ReturnsABufferOfTheExactRequestedLength" />
+**Why** Only the `out` buffer of `Rent` has the length you asked for. <Proof test="BufferFactoryPropertyTests.Rent_WithSpan_ReturnsABufferOfTheExactRequestedLength" />
 
 **Write instead** The `out` buffer, or `owner.Memory[..length]` when you rent from a pool directly.
 
@@ -208,8 +202,7 @@ sending or comparing it processes all 4096. <Proof test="SecureMemoryPoolTests.R
 **What happens** You read whatever the memory held: a new buffer is not cleared for you, and it can hold what an
 earlier allocation left. <Proof external="AllocateUninitializedArrayDocs" />
 
-**Why** Sensitive buffers are allocated with `GC.AllocateUninitializedArray`, which skips clearing.
-<Proof source="SecureMemory.Allocate" />
+**Why** Sensitive buffers are allocated with `GC.AllocateUninitializedArray`, which skips clearing. <Proof source="SecureMemory.Allocate" />
 
 **Write instead** Write before you read, and use only the part you wrote.
 
@@ -241,8 +234,7 @@ read what you left. <Proof test="BufferFactoryTests.ChoosePool_WhenNotSensitive_
 
 **You write** a key rented once and held until the application stops.
 
-**What happens** Pinning keeps the collector from copying it, and the key is readable for as long as it lives.
-<Proof claim="R3" />
+**What happens** Pinning keeps the collector from copying it, and the key is readable for as long as it lives. <Proof claim="R3" />
 
 **Write instead** Hold it no longer than you need it, and dispose its holder when the key is replaced.
 [Keep a secret across an await, or in a field](/guides/secrets-across-await/) shows the holder.
@@ -272,8 +264,8 @@ deserialized `string` property, for a secret.
 
 **You write** an `ArrayBufferWriter<byte>`, a `MemoryStream` or a `List<byte>` for a secret of unknown length.
 
-**What happens** Each time it grows, the smaller array is dropped with the first part of the secret in it.
-<Proof sample="SiteGrowthLeavesCopies" /> <LeakCard leak="L4" />
+**What happens** Each time it grows, the smaller array is dropped with the first part of the secret in
+it. <Proof sample="SiteGrowthLeavesCopies" /> <LeakCard leak="L4" />
 
 **Write instead** `BufferFactory.CreatePooledBufferWriter(isSensitive: true)`, as
 [Build a secret of unknown length](/guides/secret-of-unknown-length/) shows.
@@ -329,8 +321,7 @@ wrote. <Proof sample="SitePitfallAdvanceBySpanLength" />
 
 **What happens** `Clear()` sets the position to 0 and touches nothing. `Reset()` zeroes the elements written since the
 last `Clear()` with `CryptographicOperations.ZeroMemory`, or sets them to their default with `Span<T>.Clear()` when the
-element type holds references, and nothing past them. After `Clear()`, that is nothing.
-<Proof sample="SitePitfallResetAfterClear" /> <Proof source="FixedSpanBufferWriter.Reset" />
+element type holds references, and nothing past them. After `Clear()`, that is nothing. <Proof sample="SitePitfallResetAfterClear" /> <Proof source="FixedSpanBufferWriter.Reset" />
 
 **Write instead** To remove a secret, zero the memory you gave the writer: put that memory under a lifetime, or call
 `CryptographicOperations.ZeroMemory` on all of it.

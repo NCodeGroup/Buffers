@@ -4,17 +4,12 @@ description: Make the build fail on a call to a lenient encoding or a bare buffe
 numbered: true
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
-
-<KindLabel kind="how-to" />
 
 This is your situation when you want the build, and not a reviewer's memory, to keep leaky APIs out of your code. A
 banned-API analyzer turns a call to a banned API into a build error. This repository bans the lenient encodings and
 the bare pools in its own shipping code, and the steps below copy that setup. <Proof source="Adr1003" />
-
-You'll use `Microsoft.CodeAnalysis.BannedApiAnalyzers` · `BannedSymbols.txt` · `AdditionalFiles` · `RS0030`
 
 ## Reference the analyzer
 
@@ -59,8 +54,7 @@ leave your test projects out:
 ```
 
 The analyzer's help says the files have to be added to any project that references the package.
-<Proof external="BannedApiAnalyzersHelp" /> This repository binds its two files the same way.
-<Proof source="DirectoryBuildProps.BannedFiles" />
+<Proof external="BannedApiAnalyzersHelp" /> This repository binds its two files the same way. <Proof source="DirectoryBuildProps.BannedFiles" />
 
 Test projects keep the standard APIs, so that a test can compare the library's output against them.
 

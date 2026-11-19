@@ -3,20 +3,15 @@ title: Reject malformed UTF-8 and ASCII
 description: Decode bytes from a request, a file or a stream so that invalid input throws, instead of becoming a replacement character that makes two different inputs the same string.
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Pinned from '@site/components/Pinned.astro';
 import PinNotes from '@site/components/PinNotes.astro';
+import Pitfalls from '@site/components/Pitfalls.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
 
-<KindLabel kind="how-to" />
-
 This is your situation when your code turns bytes it did not write into text, such as a request body, a header, a file
 or a stream, and then checks, hashes, compares or stores that text. The example decodes a name from bytes.
-
-You'll use `SecureEncoding.UTF8` · `SecureEncoding.ASCII` · `DecoderFallbackException` · `StreamReader` ·
-`Utf8.IsValid` · `Ascii.IsValid`
 
 ## The usual code
 
@@ -61,8 +56,7 @@ code decides what an invalid input means.
 </PinNotes>
 
 Valid input decodes as it does with the standard encoding: the sample returns `café` for the bytes of `café`.
-Neither `SecureEncoding.UTF8` nor `SecureEncoding.ASCII` writes a byte order mark when it encodes.
-<Proof test="SecureEncodingTests.UTF8_HasNoPreamble" /> <Proof test="SecureEncodingTests.ASCII_HasNoPreamble" />
+Neither `SecureEncoding.UTF8` nor `SecureEncoding.ASCII` writes a byte order mark when it encodes. <Proof test="SecureEncodingTests.UTF8_HasNoPreamble" /> <Proof test="SecureEncodingTests.ASCII_HasNoPreamble" />
 
 ### Reading a stream
 
@@ -81,8 +75,7 @@ mark.
 
 </PinNotes>
 
-Invalid bytes in the stream throw `DecoderFallbackException` from `ReadToEnd()`, as they do from `GetString`.
-<Proof sample="SiteStrictDecodingStreamReader" />
+Invalid bytes in the stream throw `DecoderFallbackException` from `ReadToEnd()`, as they do from `GetString`. <Proof sample="SiteStrictDecodingStreamReader" />
 
 ### ASCII
 
@@ -95,8 +88,7 @@ the byte with a question mark and goes on. <Proof source="SecureEncoding.ASCII" 
 
 <Proof sample="SiteStrictAscii" />
 
-`SecureEncoding.UTF8` also throws on text it cannot encode, such as a high surrogate with no low surrogate after it.
-<Proof test="SecureEncodingTests.UTF8_EncodeUnpairedHighSurrogate_ThrowsEncoderFallbackException" />
+`SecureEncoding.UTF8` also throws on text it cannot encode, such as a high surrogate with no low surrogate after it. <Proof test="SecureEncodingTests.UTF8_EncodeUnpairedHighSurrogate_ThrowsEncoderFallbackException" />
 
 ### When you only need to know
 
@@ -123,27 +115,36 @@ does. Five are invalid, and the sixth is the valid `é`.
 | `C3 A9` | `é` | `é` |
 
 The first two rows decode to the same string with the standard encoding. The third is an overlong form of `/`, the
-fourth is a surrogate code point, and the fifth is a sequence cut short. The sample asserts every row.
-<Proof sample="SiteStrictExamplesTable" />
+fourth is a surrogate code point, and the fifth is a sequence cut short. The sample asserts every row. <Proof sample="SiteStrictExamplesTable" />
 
 ## Pitfalls
 
 [Ways to get it wrong](/reference/pitfalls/) has more, each with its evidence.
 
-- **Decoding again with the standard encoding.** *You write* a `catch` that calls `Encoding.UTF8.GetString` on the
-  same bytes. *What happens:* the input you rejected becomes a string anyway, with replacement characters in it.
-  <LeakCard leak="L8" /> <Proof sample="SiteLenientDecodingCollision" /> *Write instead:* reject the input, as the
-  sample does.
-- **A lenient encoding that looks strict.** *You write* `new UTF8Encoding()` or `Encoding.GetEncoding("utf-8")`.
-  *What happens:* the repository bans both outside test projects, and names `SecureEncoding` instead.
-  <Proof source="BannedEncoding" /> *Write instead:* `SecureEncoding.UTF8` or `SecureEncoding.ASCII`.
-- **Letting a byte order mark choose the encoding.** *You write* a `StreamReader` that looks for a mark. *What
-  happens:* a stream that starts with `FF FE` is decoded as the encoding the mark names, so the encoding you chose
-  does not apply. <Proof sample="SiteStrictDecodingStreamReader" /> *Write instead:* pass
-  `detectEncodingFromByteOrderMarks: false`.
-- **Logging the exception.** *You write* the whole `DecoderFallbackException` into a log. *What happens:* its
-  `BytesUnknown` holds the bytes it rejected, which are part of the input. <Proof sample="SiteStrictDecodingReject" />
-  *Write instead:* log that the input was invalid, and not the exception or its bytes.
+<Pitfalls>
+
+- **Decoding again with the standard encoding.**
+  - *You write* a `catch` that calls `Encoding.UTF8.GetString` on the same bytes.
+  - *What happens:* the input you rejected becomes a string anyway, with replacement characters in
+    it. <Proof sample="SiteLenientDecodingCollision" /> <LeakCard leak="L8" />
+  - *Write instead:* reject the input, as the sample does.
+- **A lenient encoding that looks strict.**
+  - *You write* `new UTF8Encoding()` or `Encoding.GetEncoding("utf-8")`.
+  - *What happens:* the repository bans both outside test projects, and names `SecureEncoding` instead.
+    <Proof source="BannedEncoding" />
+  - *Write instead:* `SecureEncoding.UTF8` or `SecureEncoding.ASCII`.
+- **Letting a byte order mark choose the encoding.**
+  - *You write* a `StreamReader` that looks for a mark.
+  - *What happens:* a stream that starts with `FF FE` is decoded as the encoding the mark names, so the encoding you
+    chose does not apply. <Proof sample="SiteStrictDecodingStreamReader" />
+  - *Write instead:* pass `detectEncodingFromByteOrderMarks: false`.
+- **Logging the exception.**
+  - *You write* the whole `DecoderFallbackException` into a log.
+  - *What happens:* its `BytesUnknown` holds the bytes it rejected, which are part of the input.
+    <Proof sample="SiteStrictDecodingReject" />
+  - *Write instead:* log that the input was invalid, and not the exception or its bytes.
+
+</Pitfalls>
 
 ## What this does not fix
 

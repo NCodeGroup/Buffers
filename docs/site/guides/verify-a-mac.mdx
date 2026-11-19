@@ -3,22 +3,17 @@ title: Verify a MAC without leaking timing
 description: Check a signature header, a signed cookie or an API key so that neither the time the check takes nor the memory it leaves gives the expected value away.
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Pinned from '@site/components/Pinned.astro';
 import PinNotes from '@site/components/PinNotes.astro';
+import Pitfalls from '@site/components/Pitfalls.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
 import VerifyAMacTimingModel from '@site/components/VerifyAMacTimingModel.astro';
 
-<KindLabel kind="how-to" />
-
 This is your situation when a request carries a value and its MAC, such as a webhook's signature header, a signed
 cookie or an API key, and your code must say whether they match. The example verifies a webhook's HMAC-SHA256
 signature, sent as hex.
-
-You'll use `HMACSHA256.HashData` · `stackalloc` · `GetSecureLifetime()` · `Convert.FromHexString` ·
-`CryptographicOperations.FixedTimeEquals`
 
 ## The usual code
 
@@ -69,8 +64,7 @@ compared in fixed time.
 </PinNotes>
 
 For spans of bytes, the call is .NET's own `CryptographicOperations.FixedTimeEquals`; for any other unmanaged type,
-NCode.Buffers' `FixedTimeEquals<T>` views both spans as bytes and calls it.
-<Proof source="FixedTimeEquals" /> <Proof external="FixedTimeEqualsDocs" />
+NCode.Buffers' `FixedTimeEquals<T>` views both spans as bytes and calls it. <Proof source="FixedTimeEquals" /> <Proof external="FixedTimeEqualsDocs" />
 
 ## If the secret is text
 
@@ -91,28 +85,41 @@ behind](/guides/read-a-secret-without-a-string/) reads one into a buffer instead
 
 [Ways to get it wrong](/reference/pitfalls/) has more, each with its evidence.
 
-- **Encoding the expected value.** *You write* `Convert.ToHexString(expected)`, and compare strings. *What
-  happens:* a string of the expected MAC exists, which nothing can erase. <LeakCard leak="L5" /> *Write instead:*
-  decode the value you received, and compare bytes. [A string of the secret](/reference/pitfalls/#a-string-of-the-secret)
-- **Decoding before you check the length.** *You write* the length check after decoding, or none. *What happens:* a
-  value of the wrong length fills part of the buffer, or does not fit. *Write instead:* check the length first, so it
-  is a plain `false`, as the sample does. <Proof sample="SiteVerifyMacWebhook" />
-- **Expecting the length to stay hidden.** *You write* a comparison of values whose length is a secret. *What
-  happens:* spans of different lengths return `false` at once.
-  <Proof test="CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentLengths_ReturnsFalse" /> *Write
-  instead:* compare values of one fixed length, such as the MACs of the two.
-- **Comparing values that have more than one encoding.** *You write* `FixedTimeEquals<T>` on `double` values or a
-  struct with padding. *What happens:* it compares bytes, not values, so equal values can compare unequal.
-  <Proof sample="SitePitfallCompareBytesNotValues" /> <Proof sample="SitePitfallPaddingBytesCount" /> *Write
-  instead:* spans of bytes, characters or integers.
-  [FixedTimeEquals on values that are not bytes](/reference/pitfalls/#fixedtimeequals-on-values-that-are-not-bytes)
-- **Comparing a digital signature by hand.** *You write* code that signs the data again and compares signatures.
-  *What happens:* an ECDSA signature differs each time, so there is no expected value. *Write instead:* the
-  algorithm's `VerifyData`, which answers `true` or `false`. <Proof sample="SiteVerifySignature" />
-  <Proof external="EcdsaVerifyDataDocs" />
-- **Leaving the MAC key in an ordinary array.** *You write* the MAC key into a long-lived `byte[]`. *What happens:*
-  nothing clears it. <LeakCard leak="L2" /> *Write instead:* a rented sensitive buffer, as [Keep a secret across an
-  await, or in a field](/guides/secrets-across-await/) holds one.
+<Pitfalls>
+
+- **Encoding the expected value.**
+  - *You write* `Convert.ToHexString(expected)`, and compare strings.
+  - *What happens:* a string of the expected MAC exists, which nothing can erase. <LeakCard leak="L5" />
+  - *Write instead:* decode the value you received, and compare bytes.
+    [A string of the secret](/reference/pitfalls/#a-string-of-the-secret)
+- **Decoding before you check the length.**
+  - *You write* the length check after decoding, or none.
+  - *What happens:* a value of the wrong length fills part of the buffer, or does not fit.
+  - *Write instead:* check the length first, so it is a plain `false`, as the sample does.
+    <Proof sample="SiteVerifyMacWebhook" />
+- **Expecting the length to stay hidden.**
+  - *You write* a comparison of values whose length is a secret.
+  - *What happens:* spans of different lengths return `false` at once.
+    <Proof test="CryptographicOperationsExtensionsTests.FixedTimeEquals_DifferentLengths_ReturnsFalse" />
+  - *Write instead:* compare values of one fixed length, such as the MACs of the two.
+- **Comparing values that have more than one encoding.**
+  - *You write* `FixedTimeEquals<T>` on `double` values or a struct with padding.
+  - *What happens:* it compares bytes, not values, so equal values can compare unequal.
+    <Proof sample="SitePitfallCompareBytesNotValues" /> <Proof sample="SitePitfallPaddingBytesCount" />
+  - *Write instead:* spans of bytes, characters or integers.
+    [FixedTimeEquals on values that are not bytes](/reference/pitfalls/#fixedtimeequals-on-values-that-are-not-bytes)
+- **Comparing a digital signature by hand.**
+  - *You write* code that signs the data again and compares signatures.
+  - *What happens:* an ECDSA signature differs each time, so there is no expected value.
+  - *Write instead:* the algorithm's `VerifyData`, which answers `true` or `false`.
+    <Proof sample="SiteVerifySignature" /> <Proof external="EcdsaVerifyDataDocs" />
+- **Leaving the MAC key in an ordinary array.**
+  - *You write* the MAC key into a long-lived `byte[]`.
+  - *What happens:* nothing clears it. <LeakCard leak="L2" />
+  - *Write instead:* a rented sensitive buffer, as
+    [Keep a secret across an await, or in a field](/guides/secrets-across-await/) holds one.
+
+</Pitfalls>
 
 ## What this does not fix
 

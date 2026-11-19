@@ -3,21 +3,15 @@ title: Split delimited text without copying substrings
 description: Split a header, a token or a line into its pieces as slices of the original text, so that no string is made for each piece.
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import LeakCard from '@site/components/LeakCard.astro';
 import Pinned from '@site/components/Pinned.astro';
 import PinNotes from '@site/components/PinNotes.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
 
-<KindLabel kind="how-to" />
-
 This is your situation when your code splits delimited text, such as a `;`-separated header, a dotted token or a
 comma-separated line, and the pieces are small parts of text you already hold. The example reads a header of
 `name=value` pairs.
-
-You'll use `SplitSegments` · `StringSegments` · `ReadOnlyMemory<char>` · `MemorySegment<T>` · `BufferFactory.Rent` ·
-`Utf8JsonReader`
 
 ## The usual code
 
@@ -34,7 +28,7 @@ It calls `Split`, which returns an array of strings, and splits each piece again
 
 1. An array, and a new string for each of the three pieces.
 2. Another array and two more strings for the first piece. Each call allocates its own. If the text is a secret, none
-   of these strings can be erased. <LeakCard leak="L5" /> <Proof sample="SiteSplitTextUsual" />
+   of these strings can be erased. <Proof sample="SiteSplitTextUsual" /> <LeakCard leak="L5" />
 
 </PinNotes>
 
@@ -60,8 +54,7 @@ and copy the slices as spans.
 The sample asserts that `lang` finds `en`, that `missing` finds nothing, and that `" lang=en"`, with a leading space,
 does not match `lang`. The pieces are not trimmed. <Proof sample="SiteSplitTextHeader" />
 
-The pieces are the same as `string.Split` gives: the count of segments equals the length of the array.
-<Proof test="StringSegmentsPropertyTests.Split_WhenCounting_CountMatchesStringSplit" />
+The pieces are the same as `string.Split` gives: the count of segments equals the length of the array. <Proof test="StringSegmentsPropertyTests.Split_WhenCounting_CountMatchesStringSplit" />
 
 ### A dotted token
 
@@ -72,8 +65,7 @@ the dot and the payload, with no string joined to make it.
 ```
 
 This splits a token; it does not validate one. The sample asserts that `aaa.bbb.ccc` gives the signing input
-`aaa.bbb` and the signature `ccc`, and that a token of two parts, or of four, is refused.
-<Proof sample="SiteSplitTextToken" />
+`aaa.bbb` and the signature `ccc`, and that a token of two parts, or of four, is refused. <Proof sample="SiteSplitTextToken" />
 
 ### Walking the pieces
 
@@ -123,34 +115,42 @@ the reader finds the value `42`. <Proof sample="SiteSequenceSplitJson" /> <Proof
 
 ### A piece turned into a string
 
-*You write* `segment.Memory.ToString()` to compare or log a piece. *What happens:* `ToString` on a
-`ReadOnlyMemory<char>` makes a new string, which nothing can erase. <LeakCard leak="L5" /> *Write instead:* compare
-the span, as `FindValue` does, and copy a piece into a buffer you own when you must keep it.
+*You write* `segment.Memory.ToString()` to compare or log a piece.
+
+*What happens:* `ToString` on a `ReadOnlyMemory<char>` makes a new string, which nothing can erase. <LeakCard leak="L5" />
+
+*Write instead:* compare the span, as `FindValue` does, and copy a piece into a buffer you own when you must keep it.
 
 ### Pieces that are not trimmed
 
-*You write* a name comparison for `lang` against a header that has a space after the `;`. *What happens:* the piece is
-` lang=en`, and its name is ` lang`, so nothing matches. <Proof sample="SiteSplitTextHeader" /> *Write instead:* trim
-the span you compare, with `Trim()` on a `ReadOnlySpan<char>`, which makes no string.
+*You write* a name comparison for `lang` against a header that has a space after the `;`.
+
+*What happens:* the piece is ` lang=en`, and its name is ` lang`, so nothing matches. <Proof sample="SiteSplitTextHeader" />
+
+*Write instead:* trim the span you compare, with `Trim()` on a `ReadOnlySpan<char>`, which makes no string.
 
 ### Every piece keeps the whole original alive
 
-*You write* code that keeps one piece, such as a value, after the call. *What happens:* the piece is a slice of the
-original, so the original stays reachable for as long as the piece does. The pieces hold no separator, and together
-with the separators they cover the original. <Proof test="StringSegmentsPropertyTests.Split_WhenSlicing_SegmentsHoldNoSeparatorAndCoverTheOriginal" />
+*You write* code that keeps one piece, such as a value, after the call.
+
+*What happens:* the piece is a slice of the original, so the original stays reachable for as long as the piece does.
+The pieces hold no separator, and together with the separators they cover the original. <Proof test="StringSegmentsPropertyTests.Split_WhenSlicing_SegmentsHoldNoSeparatorAndCoverTheOriginal" />
+
 *Write instead:* copy the piece into a buffer sized for it when it outlives the original.
 
 ### Secret text in an ordinary string
 
-*You write* `Split` on a string that holds a secret. *What happens:* the original and every piece are strings.
-<LeakCard leak="L5" /> *Write instead:* hold the secret in a sensitive buffer and split the buffer.
+*You write* `Split` on a string that holds a secret.
+
+*What happens:* the original and every piece are strings. <LeakCard leak="L5" />
+
+*Write instead:* hold the secret in a sensitive buffer and split the buffer.
 
 ```cs snippet=SiteSplitTextOverSensitiveBuffer title="Credentials.cs"
 ```
 
 The pieces are slices of the rented buffer, not copies. The sample asserts that each piece lies inside `buffer`, and
-that after `Dispose` a kept view of the buffer holds only zeros. <Proof claim="R1" />
-<Proof sample="SiteSplitTextOverSensitiveBuffer" />
+that after `Dispose` a kept view of the buffer holds only zeros. <Proof claim="R1" /> <Proof sample="SiteSplitTextOverSensitiveBuffer" />
 
 ## What this does not fix
 

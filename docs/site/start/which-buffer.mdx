@@ -4,12 +4,9 @@ description: Answer at most four questions about the data in front of you, and g
 ---
 
 import BufferCard from '@site/components/BufferCard.astro';
-import KindLabel from '@site/components/KindLabel.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
 import WhichBuffer from '@site/components/WhichBuffer.astro';
-
-<KindLabel kind="how-to" />
 
 Pick the buffer for the data in front of you. Answer the questions, and the card for your buffer is marked below,
 with its call, what to watch for and what you dispose. The answers stay in the page's address, so you can paste a
@@ -177,8 +174,7 @@ Every buffer, side by side: [Buffer behavior, sizes and pooling](/reference/buff
 
 ## Which calls ask whether it is a secret
 
-`isSensitive` has no default value, so a call that can go either way makes you say which.
-<Proof source="PublicApi.IsSensitive" /> <Proof source="PublicApi.SequenceIsSensitive" />
+`isSensitive` has no default value, so a call that can go either way makes you say which. <Proof source="PublicApi.IsSensitive" /> <Proof source="PublicApi.SequenceIsSensitive" />
 
 | Call | `isSensitive` |
 | --- | --- |
@@ -190,9 +186,7 @@ Every buffer, side by side: [Buffer behavior, sizes and pooling](/reference/buff
 | `Secret.Create` | None: always pinned, and zeroed on dispose |
 | `GetSecureLifetime()` | None: always zeroed on dispose, and never pinned |
 
-The tests that assert which pool each value chooses:
-<Proof test="BufferFactoryTests.ChoosePool_WhenSensitive_ReturnsSecureSharedPool" />
-<Proof test="BufferFactoryTests.ChoosePool_WhenNotSensitive_ReturnsSharedPool" />
+The tests that assert which pool each value chooses: <Proof test="BufferFactoryTests.ChoosePool_WhenSensitive_ReturnsSecureSharedPool" /> <Proof test="BufferFactoryTests.ChoosePool_WhenNotSensitive_ReturnsSharedPool" />
 
 ## Helpers you will meet
 

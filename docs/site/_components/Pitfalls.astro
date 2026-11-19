@@ -1,0 +1,48 @@
+---
+// The pitfalls list of a guide: one item per pitfall, each a bold title above its three labeled lines.
+// Write a Markdown list inside it; each item is a bold title and three nested items, one per label, in this order.
+// A Proof or LeakCard at the end of a line stays at the end of that line. No props.
+// Usage:
+//   <Pitfalls>
+//
+//   - **Keeping the owner and the span apart.**
+//     - *You write* a method that returns the `Span<byte>` and lets the owner go out of scope.
+//     - *What happens:* the owner is never disposed, so the buffer is never zeroed.
+//     - *Write instead:* keep the owner in the scope that uses the span, and dispose it there.
+//
+//   </Pitfalls>
+---
+
+<div class="pitfalls">
+  <slot />
+</div>
+
+<style>
+  .pitfalls > :global(ul) {
+    display: grid;
+    /* minmax(0, …): an item never widens past the column, whatever unbreakable text it holds. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--nc-space-5);
+    margin: var(--nc-space-4) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .pitfalls > :global(ul > li) { margin: 0; }
+  .pitfalls > :global(ul > li > ul) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--nc-space-2);
+    margin: var(--nc-space-2) 0 0;
+    padding-inline-start: var(--nc-space-4);
+    border-inline-start: var(--nc-border-hair) solid var(--nc-color-border);
+    list-style: none;
+  }
+  .pitfalls > :global(ul > li > ul > li) { margin: 0; }
+  .pitfalls :global(li > p) { margin: 0; }
+  .pitfalls > :global(ul > li > ul > li > em:first-child),
+  .pitfalls > :global(ul > li > ul > li > p:first-child > em:first-child) {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--nc-color-text-secondary);
+  }
+</style>

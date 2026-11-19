@@ -8,8 +8,11 @@ interface Props {
   kind: Kind;
   /** A short qualifier after the label, such as "through the generation the collector reports". */
   note?: string;
-  /** `tag` (default) is a plate; `bare` is the glyph and the word, for use inside a link. */
-  variant?: 'tag' | 'bare';
+  /**
+   * `tag` (default) is a plate; `bare` is the glyph and the word, for use inside a link. `glyph` is the glyph alone,
+   * for a <Proof> mark, whose link names the kind in its tooltip.
+   */
+  variant?: 'tag' | 'bare' | 'glyph';
 }
 const { kind, note, variant = 'tag' } = Astro.props;
 ---
@@ -23,8 +26,8 @@ const { kind, note, variant = 'tag' } = Astro.props;
     {kind === 'illustration' && <path d="M2 10 2.4 8 8 2.4 9.6 4 4 9.6Z" />}
     {kind === 'process' && <><circle cx="2.6" cy="6" r="1.4" /><circle cx="9.4" cy="6" r="1.4" /><path d="M4 6h4" /></>}
   </svg>
-  <span class="kind__label">{kindLabel(kind)}</span>
-  {note && <span class="kind__note">{note}</span>}
+  {variant !== 'glyph' && <span class="kind__label">{kindLabel(kind)}</span>}
+  {variant !== 'glyph' && note && <span class="kind__note">{note}</span>}
 </span>
 
 <style>

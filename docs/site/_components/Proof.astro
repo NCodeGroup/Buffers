@@ -1,12 +1,14 @@
 ---
 // Proof on a claim: a small mark after a sentence that states a behavior, saying how it is known and
-// linking to the evidence. Name exactly one of:
+// linking to the evidence. The mark is the kind's glyph, linked. It shows a claim's id or a source's own `label`
+// from evidence.json; any other evidence is named in its tooltip and to a screen reader. A row of marks on a line of
+// its own starts with the label "Evidence". Name exactly one of:
 //   claim="R1"     a row of the ledger on /evidence/guarantees/; the mark shows the row's kind and number
 //   test="Class.Method", sample="SiteKey", source="Id", external="Id"   one piece of evidence from evidence.json
 // `kind` overrides the kind the evidence implies, such as kind="asserted" on a source.
 // Usage: Dispose overwrites the buffer with zeros. <Proof claim="R1" />
 import KindMark from '@site/components/KindMark.astro';
-import { claim as findClaim, claimHref, resolve, type Kind } from '@site/components/lib/evidence';
+import { claim as findClaim, claimHref, evidence, kindLabel, resolve, type Kind } from '@site/components/lib/evidence';
 
 interface Props {
   claim?: string;
@@ -19,49 +21,45 @@ interface Props {
 const props = Astro.props;
 let kind: Kind;
 let href: string;
-let text: string;
+let shown: string | undefined;
 let spoken: string;
 let external = false;
 if (props.claim) {
   const row = findClaim(props.claim);
   kind = props.kind ?? (row.kind as Kind);
   href = claimHref(props.claim);
-  text = row.id;
+  shown = row.id;
   spoken = `${row.id}, ${row.title}: the evidence on the guarantees page`;
 } else {
   const link = resolve(props);
   kind = link.kind;
   href = link.href;
-  text = link.label;
+  shown = props.source ? (evidence.sources as Record<string, { label?: string }>)[props.source]?.label : undefined;
   spoken = `${link.what} ${link.context ? `${link.context} ` : ''}${link.label}`;
   external = true;
 }
+const tip = `${kindLabel(kind)}: ${spoken}`;
 ---
 
-<a class="proof not-content" href={href} aria-label={spoken} {...(external ? { rel: 'noopener' } : {})}>
-  <KindMark kind={kind} variant="bare" /><span class:list={['proof__ref', !props.claim && 'proof__ref--code']}>{text}</span>
+<a class="proof not-content" href={href} aria-label={spoken} title={tip} {...(external ? { rel: 'noopener' } : {})}>
+  <KindMark kind={kind} variant="glyph" />{shown && <span class="proof__ref">{shown}</span>}
 </a>
 
 <style>
   .proof {
     display: inline-flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 0 0.4375rem;
-    max-width: calc(100% - 0.25rem);
-    margin-inline-start: 0.25rem;
-    padding: 0.0625rem 0.4375rem 0.0625rem 0.3125rem;
-    border: var(--nc-border-hair) solid var(--nc-color-border);
+    gap: 0.1875rem;
+    margin-inline-start: 0.125rem;
+    padding: 0.125rem 0.1875rem;
     border-radius: var(--nc-radius-plate);
-    background: var(--nc-color-surface);
     color: var(--nc-color-text-secondary);
     text-decoration: none;
     vertical-align: 0.0625em;
-    line-height: 1.3;
-    transition: border-color var(--nc-dur-quick) var(--nc-ease-out), background-color var(--nc-dur-quick) var(--nc-ease-out);
+    line-height: 1;
+    transition: background-color var(--nc-dur-quick) var(--nc-ease-out);
   }
   .proof:hover {
-    border-color: var(--nc-color-border-strong);
     background: var(--nc-color-control-hover);
   }
   .proof:focus-visible {
@@ -69,13 +67,21 @@ if (props.claim) {
     outline-offset: var(--nc-focus-gap);
   }
   .proof__ref {
-    /* A flex item does not shrink below its content without this. A long name wraps, so the whole name shows. */
-    min-width: 0;
-    overflow-wrap: anywhere;
     font-family: var(--nc-font-mono);
     font-stretch: var(--nc-type-code-stretch);
     font-size: var(--sl-text-2xs);
     font-weight: 500;
-    color: var(--nc-color-primary-text);
+    color: var(--nc-color-text-secondary);
+    white-space: nowrap;
+  }
+  /* A row of marks on a line of its own, after a code block, a list, a table or a paragraph, starts with a label,
+     so its glyphs never stand alone. */
+  :global(.sl-markdown-content > :not(.proof) + .proof)::before {
+    content: 'Evidence';
+    margin-inline-end: 0.25rem;
+    font-family: var(--nc-font-sans);
+    font-size: var(--sl-text-2xs);
+    font-weight: 600;
+    color: var(--nc-color-text-muted);
   }
 </style>

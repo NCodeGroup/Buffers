@@ -5,11 +5,8 @@ description: The objections a reviewer raises against NCode.Buffers, where each 
 
 import EntryCard from '@site/components/EntryCard.astro';
 import EntryField from '@site/components/EntryField.astro';
-import KindLabel from '@site/components/KindLabel.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
-
-<KindLabel kind="explanation" />
 
 ## In short
 
@@ -24,8 +21,7 @@ Right for a live process. A secret in use is readable, and whatever can read you
 there. The library does not stop that, and [What it protects, and what it does not](/start/limits/) says so.
 
 What the library changes is how long a secret lasts and in how many places. A buffer is zeroed when you dispose it, so
-a dump taken later, a page written to disk later or the next renter of a pooled buffer finds zeros where the key was.
-<Proof claim="R1" />
+a dump taken later, a page written to disk later or the next renter of a pooled buffer finds zeros where the key was. <Proof claim="R1" />
 
 ## "The JIT doesn't remove `Array.Clear`"
 
@@ -60,8 +56,7 @@ This is a stack buffer by hand:
 Both do what they say, and both keep the discipline in your code: a `try` and a `finally` at every site that holds a
 key. The library adds three things. A pool, so a buffer that is rented often is not allocated each time. A `using`,
 which zeroes on every way out of a block without a `finally` you write. And the build-time bans, which make the leaky
-alternatives fail to compile in your project: [Ban the leaky APIs](/guides/ban-leaky-apis/).
-<Proof source="BannedBuffers" />
+alternatives fail to compile in your project: [Ban the leaky APIs](/guides/ban-leaky-apis/). <Proof source="BannedBuffers" />
 
 ## "Why not `SecureString`?"
 
@@ -104,8 +99,7 @@ library bans the other buffer and encoding APIs in its own code to keep it that 
 One maintainer, and the page says so. `GOVERNANCE.md` names who does what and how decisions are made.
 <Proof source="Governance" /> One person holds owner access to the organization and to the nuget.org package, and the
 file says that continuity needs a second owner of both. What it does give is that everything is in the organization,
-with no knowledge held elsewhere, and that publishing uses trusted publishing, with no stored key to hand over.
-<Proof source="Governance.Continuity" />
+with no knowledge held elsewhere, and that publishing uses trusted publishing, with no stored key to hand over. <Proof source="Governance.Continuity" />
 
 ## "How do I verify the package?"
 

@@ -4,13 +4,10 @@ description: Each requirement the library accepts, the test that fails when it s
 ---
 
 import EvidenceKinds from '@site/components/EvidenceKinds.astro';
-import KindLabel from '@site/components/KindLabel.astro';
 import Ledger from '@site/components/Ledger.astro';
 import LedgerRow from '@site/components/LedgerRow.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
-
-<KindLabel kind="reference" />
 
 This page lists what NCode.Buffers claims about its own behavior, one row per requirement. Each row names the tests
 that fail when the claim stops being true, the lines of source that make it true, and what the evidence does not
@@ -88,8 +85,7 @@ A test of zeroing keeps a view of the memory, disposes the owner, and reads the 
 ```cs snippet=SiteGuaranteesZeroedThroughAView title="How a test sees that memory was zeroed"
 ```
 
-Both are tests in the repository, and this page includes them from there.
-<Proof sample="SiteGuaranteesPinnedGeneration" /> <Proof sample="SiteGuaranteesZeroedThroughAView" />
+Both are tests in the repository, and this page includes them from there. <Proof sample="SiteGuaranteesPinnedGeneration" /> <Proof sample="SiteGuaranteesZeroedThroughAView" />
 
 ## What tests cannot prove
 

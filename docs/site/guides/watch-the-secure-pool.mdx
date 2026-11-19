@@ -4,17 +4,12 @@ description: Count the rentals, returns and trims of SecureMemoryPool<T> with a 
 numbered: true
 ---
 
-import KindLabel from '@site/components/KindLabel.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
-
-<KindLabel kind="how-to" />
 
 This is your situation when your service rents buffers from `SecureMemoryPool<T>` and you want to see how it behaves
 under load: how many buffers come from the cache, how many allocate, and whether memory pressure empties the cache.
 The pool reports counts through .NET metrics. You subscribe to them and read the numbers.
-
-You'll use `BufferMetrics.MeterName` · `SecureMemoryPool<T>` · `MeterListener`
 
 ## Find the meter
 
