@@ -77,12 +77,17 @@ Pick the row that matches your data and where the buffer lives. `Rent` and the `
 
 ### For secrets
 
-Each of these zeroes its memory on dispose, and all but `GetSecureLifetime`, which wraps memory you already have, pin it so the GC never copies it. `Rent` and `CreatePooledBufferWriter` take `isSensitive: true`; `SecureMemoryPool<T>`, `CreatePinnedArray` and `GetSecureLifetime` take no such argument, because they always give you the secure kind.
+Each of these zeroes its memory on dispose, and all but `GetSecureLifetime`, which wraps memory you already have, pin it so the GC never copies it. `Rent`, `CreatePooledBufferWriter`, `RentRandom`, `RentBytes`, `RentChars`, `RentDecoded`, `RentEncoded`, the growable buffers and `PooledTextBuilder` take `isSensitive: true`; `SecureMemoryPool<T>`, `CreatePinnedArray`, `GetSecureLifetime` and `Secret.Create` take no such argument, because they always give you the secure kind.
 
 | API | Use it when | Pooled |
 |---|---|---|
 | `Rent` | You need a temporary buffer for a key, password or other secret | Yes¹ |
 | `CreatePooledBufferWriter` | You write a secret whose length you don't know up front | Yes¹ |
+| `RentRandom`, `RentBytes`, `RentDecoded` | You make a key from random bytes, text, Base64 or hex | Yes¹ |
+| `CreateContiguousBufferWriter` | You write a secret of unknown length that must end up in one span | Yes¹ |
+| `CreatePooledStream` | An API writes or reads the secret through a `Stream` | Yes¹ |
+| `PooledTextBuilder` | You build secret text from parts | Yes¹ |
+| `Secret<T>` | You keep a secret in a field without it reaching a log | Yes¹ |
 | `SecureMemoryPool<T>` | An API takes a `MemoryPool<T>` | Yes¹ |
 | `CreatePinnedArray` | An API needs a `T[]`, within one synchronous scope | No |
 | `GetSecureLifetime` | You already have the memory, usually `stackalloc` | No |
@@ -96,6 +101,7 @@ Nothing here is pinned or zeroed.
 | API | Use it when | Pooled |
 |---|---|---|
 | `Rent`, `CreatePooledBufferWriter` | You want pooled buffers: pass `isSensitive: false` | Yes |
+| `CreateContiguousBufferWriter`, `CreatePooledStream`, `PooledTextBuilder` | You want a pooled buffer that grows: pass `isSensitive: false` | Yes |
 | `CreateArrayBufferWriter` | You want a simple growable writer | No |
 | `FixedSpanBufferWriter<T>` | You write into a fixed-size span, such as `stackalloc`, in synchronous code | No |
 | `FixedMemoryBufferWriter<T>` | You write into fixed-size `Memory<T>` and keep the writer in a field or across `await` | No |
@@ -156,6 +162,17 @@ using var secure = stackBuffer.GetSecureLifetime();
 ```
 <!-- endSnippet -->
 
+#### Random bytes
+
+`BufferFactory.RentRandom` fills a rented buffer from `RandomNumberGenerator`.
+
+<!-- snippet: RandomKey -->
+```cs
+// 32 random bytes in a pinned, pooled buffer that is zeroed on dispose.
+using var owner = BufferFactory.RentRandom(32, isSensitive: true, out Span<byte> key);
+```
+<!-- endSnippet -->
+
 ### Buffer writers
 
 #### FixedSpanBufferWriter&lt;T&gt;
@@ -185,6 +202,55 @@ using (var json = new Utf8JsonWriter(writer))
     JsonSerializer.Serialize(json, new { Id = 42, Name = "example" });
 }
 await stream.WriteAsync(writer.WrittenMemory);
+```
+<!-- endSnippet -->
+
+### Growable buffers
+
+#### ContiguousBufferWriter&lt;T&gt;
+
+An `IBufferWriter<T>` from `BufferFactory.CreateContiguousBufferWriter` that keeps its data in one span. With `isSensitive: true`, it zeroes each buffer it outgrows.
+
+<!-- snippet: ContiguousWriter -->
+```cs
+using var writer = BufferFactory.CreateContiguousBufferWriter(isSensitive: true);
+using (var json = new Utf8JsonWriter(writer))
+{
+    JsonSerializer.Serialize(json, new { Id = 42 });
+}
+
+// The written data is always one span, so it can be hashed without a copy.
+byte[] hash = SHA256.HashData(writer.WrittenSpan);
+```
+<!-- endSnippet -->
+
+#### PooledMemoryStream
+
+A seekable, read-write `Stream` over one pooled buffer, from `BufferFactory.CreatePooledStream`. With `isSensitive: true`, it zeroes the buffers it outgrows and the bytes `SetLength` cuts off.
+
+<!-- snippet: PooledStream -->
+```cs
+using var stream = BufferFactory.CreatePooledStream(isSensitive: true);
+stream.Write("payload"u8);
+stream.Position = 0;
+
+Span<byte> buffer = stackalloc byte[7];
+int read = stream.Read(buffer);
+```
+<!-- endSnippet -->
+
+#### PooledTextBuilder
+
+A `ref struct` text builder that can start in a `stackalloc` span. It can't cross an `await`, you must never copy it, and `ToString()` makes a `string` that can't be zeroed.
+
+<!-- snippet: TextBuilder -->
+```cs
+// Starts in a stack buffer, and moves to a pooled one only if the text outgrows it.
+Span<char> start = stackalloc char[64];
+using var builder = new PooledTextBuilder(start, isSensitive: true);
+builder.Append("token-");
+builder.Append(42);
+ReadOnlySpan<char> text = builder.WrittenSpan;
 ```
 <!-- endSnippet -->
 
@@ -233,6 +299,22 @@ using var owner = writer.ConsumeAsContiguousSpan(
     out ReadOnlySpan<byte> span
 );
 Process(span);
+```
+<!-- endSnippet -->
+
+#### ReadOnlySequence&lt;T&gt; leases
+
+`GetSpanLease` also works on a `ReadOnlySequence<T>`. It reads the sequence as one span and copies only when the sequence spans several segments.
+
+<!-- snippet: ReadOnlySequenceLease -->
+```cs
+var first = new MemorySegment<byte>("pay"u8.ToArray());
+var last = first.Append("load"u8.ToArray());
+var sequence = new ReadOnlySequence<byte>(first, 0, last, last.Memory.Length);
+
+// The data spans two segments, so it is copied into a rented buffer.
+using var lease = sequence.GetSpanLease(isSensitive: true);
+Process(lease.Span);
 ```
 <!-- endSnippet -->
 
@@ -289,6 +371,73 @@ catch (DecoderFallbackException)
 ```
 <!-- endSnippet -->
 
+#### Text to and from a rented buffer
+
+`RentBytes` and `RentChars` on an `Encoding` encode or decode into a rented buffer of the exact length, so a secret never passes through a `string` or an unpooled array.
+
+<!-- snippet: EncodeText -->
+```cs
+// Encode text to UTF-8 bytes in a rented buffer, and decode the bytes back to chars.
+using var bytesOwner = SecureEncoding.UTF8.RentBytes(
+    "secret",
+    isSensitive: true,
+    out Span<byte> utf8
+);
+using var charsOwner = SecureEncoding.UTF8.RentChars(
+    utf8,
+    isSensitive: true,
+    out Span<char> chars
+);
+```
+<!-- endSnippet -->
+
+#### Base64, Base64url and hex
+
+`BinaryTextEncoding.RentDecoded` and `RentEncoded` convert between bytes and Base64, Base64url, or upper or lower case hex text, with `BinaryTextFormat` choosing the format. Invalid text throws `FormatException` after the rental is returned.
+
+<!-- snippet: DecodeBinaryText -->
+```cs
+// Decode Base64Url text to bytes, then encode the bytes as lowercase hex.
+using var bytesOwner = BinaryTextEncoding.RentDecoded(
+    "-_8B",
+    BinaryTextFormat.Base64Url,
+    isSensitive: true,
+    out Span<byte> bytes
+);
+using var textOwner = BinaryTextEncoding.RentEncoded(
+    bytes,
+    BinaryTextFormat.HexLower,
+    isSensitive: true,
+    out Span<char> hex
+);
+```
+<!-- endSnippet -->
+
+### Secret holder
+
+#### Secret&lt;T&gt;
+
+`Secret.Create` copies a secret into a pinned, pooled buffer that `Dispose` zeroes, and returns a `Secret<T>` that you keep in a field. `ToString()` and the debugger show `[REDACTED]`, so the value doesn't reach a log; `Reveal()` reads it. `Equals` compares in fixed time.
+
+<!-- snippet: SecretHolder -->
+```cs
+using var secret = Secret.Create("hunter2"u8);
+ReadOnlySpan<byte> value = secret.Reveal();
+string text = secret.ToString(); // [REDACTED]
+```
+<!-- endSnippet -->
+
+### Metrics
+
+`SecureMemoryPool<T>` reports its rentals, returns and trimmed buffers through a `System.Diagnostics.Metrics` meter named by `BufferMetrics.MeterName`. [docs/metrics.md](docs/metrics.md) lists each instrument.
+
+<!-- snippet: PoolMetrics -->
+```cs
+const string meterName = BufferMetrics.MeterName;
+// Subscribe with OpenTelemetry: builder.WithMetrics(m => m.AddMeter(meterName));
+```
+<!-- endSnippet -->
+
 ### CryptographicOperations extensions
 
 `ZeroMemory<T>` and `FixedTimeEquals<T>` work on spans of any unmanaged type, a value type without reference fields at any depth; a `T` with references doesn't compile. These are C# 14 extension members on `CryptographicOperations`, which a project compiles with by default on any framework this package targets; a project that sets an older `LangVersion` calls them on `CryptographicOperationsExtensions` instead, as the sample's last line does.
@@ -321,6 +470,7 @@ CryptographicOperationsExtensions.ZeroMemory(sensitiveData);
 
 - Does: `Dispose` zeroes the whole underlying buffer with `CryptographicOperations.ZeroMemory`, which the JIT doesn't remove. That includes the part beyond the slice `Rent` returned.
 - Does: zero a pooled buffer before another caller can rent it.
+- Does: with `isSensitive: true`, the growable writer, stream and text builder zero each buffer they outgrow.
 - Does not: run without `Dispose`. There is no finalizer, so always use `using`.
 - Does not: clear copies, such as a `string`, a `ToArray()` result, or a buffer rented with `isSensitive: false`.
 - A newly allocated buffer is not zeroed when rented, so write before you read.
@@ -330,6 +480,7 @@ CryptographicOperationsExtensions.ZeroMemory(sensitiveData);
 
 - `FixedTimeEquals` takes the same time for any contents of equal length, but returns `false` at once when the lengths differ, so it doesn't hide the length.
 - A `string` decoded with `SecureEncoding` can't be zeroed. Decode a secret into a sensitive buffer with `GetChars(ReadOnlySpan<byte>, Span<char>)` instead.
+- `Secret<T>.ToString()` and the debugger show `[REDACTED]`; `Equals` compares in fixed time and reveals only the length.
 
 ### References
 
