@@ -13,6 +13,40 @@ public class SecretTests
 {
     private const int LargeLength = 5000;
 
+    private static void CallMember(Secret<byte> secret, Secret<byte> other, string member)
+    {
+        switch (member)
+        {
+            case "Reveal":
+                _ = secret.Reveal().Length;
+                break;
+            case "RevealMemory":
+                _ = secret.RevealMemory();
+                break;
+            case "CopyTo":
+            {
+                var destination = new byte[6];
+                secret.CopyTo(destination);
+                break;
+            }
+            case "FixedTimeEquals":
+                _ = secret.FixedTimeEquals("s3cr3t"u8);
+                break;
+            case "EqualsOther":
+                _ = secret.Equals(other);
+                break;
+            case "OtherEquals":
+                _ = other.Equals(secret);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(member),
+                    member,
+                    "No call is written for the member."
+                );
+        }
+    }
+
     #region Create Tests
 
     [Fact]
@@ -99,12 +133,31 @@ public class SecretTests
     {
         using var secret = Secret.Create("s3cr3t"u8);
 
+        var text = secret.ToString();
+
+        Assert.Equal("[REDACTED]", text);
+    }
+
+    [Fact]
+    public void ToString_WhenInterpolated_ReturnsRedacted()
+    {
+        using var secret = Secret.Create("s3cr3t"u8);
+
+        var text = $"{secret}";
+
+        Assert.Equal("[REDACTED]", text);
+    }
+
+    [Fact]
+    public void ToString_OfAnAnonymousTypeHoldingIt_HidesTheValue()
+    {
+        using var secret = Secret.Create("s3cr3t"u8);
         var wrapped = new { Name = secret };
 
-        Assert.Equal("[REDACTED]", secret.ToString());
-        Assert.Equal("[REDACTED]", $"{secret}");
-        Assert.Contains("[REDACTED]", wrapped.ToString());
-        Assert.DoesNotContain("s3cr3t", wrapped.ToString());
+        var text = wrapped.ToString();
+
+        Assert.Contains("[REDACTED]", text);
+        Assert.DoesNotContain("s3cr3t", text);
     }
 
     #endregion
@@ -318,40 +371,6 @@ public class SecretTests
         secret.Dispose();
 
         Assert.Throws<ObjectDisposedException>(() => CallMember(secret, other, member));
-    }
-
-    private static void CallMember(Secret<byte> secret, Secret<byte> other, string member)
-    {
-        switch (member)
-        {
-            case "Reveal":
-                _ = secret.Reveal().Length;
-                break;
-            case "RevealMemory":
-                _ = secret.RevealMemory();
-                break;
-            case "CopyTo":
-            {
-                var destination = new byte[6];
-                secret.CopyTo(destination);
-                break;
-            }
-            case "FixedTimeEquals":
-                _ = secret.FixedTimeEquals("s3cr3t"u8);
-                break;
-            case "EqualsOther":
-                _ = secret.Equals(other);
-                break;
-            case "OtherEquals":
-                _ = other.Equals(secret);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(member),
-                    member,
-                    "No call is written for the member."
-                );
-        }
     }
 
     #endregion
