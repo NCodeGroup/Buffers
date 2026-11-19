@@ -4,6 +4,7 @@ description: The mistakes the library lets you make, what each one does, and wha
 ---
 
 import LeakCard from '@site/components/LeakCard.astro';
+import Pitfalls from '@site/components/Pitfalls.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
 
@@ -36,22 +37,39 @@ Before you merge, run through [Review a change that touches secrets](/guides/rev
 These are compile errors, so they cost nothing at run time. Each was compiled by hand with the C# 14 compiler, and
 CS9260 with C# 13.
 
-- **CS0121.** `out var` in a call to `BufferFactory.Rent`: the `Span<T>` and `Memory<T>` overloads differ only in the
-  `out` type. **Write instead:** the type: `out Span<byte> key` or `out Memory<byte> key`.
-- **CS4007.** A span, a lifetime or a lease still in use after an `await`. **Write instead:** the `Memory<T>` overload
-  of `Rent`, a block that ends before the `await`, or a synchronous helper.
-- **CS8345.** A field whose type is a lifetime, a lease or `FixedSpanBufferWriter<T>`. **Write instead:** hold an
-  `IMemoryOwner<T>`; use `FixedMemoryBufferWriter<T>`.
-- **CS8175.** A lifetime used inside a lambda. **Write instead:** pass the span to the code as a parameter.
-- **CS8377.** An element type that is or holds a reference, a nullable value type, or a type parameter that is only
-  `struct`. **Write instead:** an unmanaged type, and `where T : unmanaged` on a type parameter of your own, as
-  [R8](/evidence/guarantees/#unmanaged-only) says.
-- **CS1503, CS0029.** A `FixedSpanBufferWriter<T>` where an `IBufferWriter<T>` is expected. **Write instead:**
-  `FixedMemoryBufferWriter<T>`.
-- **CS1929.** `Write(…)` called on a `FixedSpanBufferWriter<T>`. **Write instead:** copy into `writer.GetSpan(n)`,
-  then `writer.Advance(n)`.
-- **CS9260.** `CryptographicOperations.ZeroMemory` on a span of anything but bytes, in a project on a language
-  version before C# 14 (checked with C# 13). **Write instead:** `CryptographicOperationsExtensions.ZeroMemory(span)`.
+<Pitfalls>
+
+- **CS0121.**
+  - *You write* `out var` in a call to `BufferFactory.Rent`: the `Span<T>` and `Memory<T>` overloads differ only in
+    the `out` type.
+  - *Write instead:* the type: `out Span<byte> key` or `out Memory<byte> key`.
+- **CS4007.**
+  - *You write* a span, a lifetime or a lease still in use after an `await`.
+  - *Write instead:* the `Memory<T>` overload of `Rent`, a block that ends before the `await`, or a synchronous
+    helper.
+- **CS8345.**
+  - *You write* a field whose type is a lifetime, a lease or `FixedSpanBufferWriter<T>`.
+  - *Write instead:* hold an `IMemoryOwner<T>`; use `FixedMemoryBufferWriter<T>`.
+- **CS8175.**
+  - *You write* a lifetime used inside a lambda.
+  - *Write instead:* pass the span to the code as a parameter.
+- **CS8377.**
+  - *You write* an element type that is or holds a reference, a nullable value type, or a type parameter that is
+    only `struct`.
+  - *Write instead:* an unmanaged type, and `where T : unmanaged` on a type parameter of your own, as
+    [R8](/evidence/guarantees/#unmanaged-only) says.
+- **CS1503, CS0029.**
+  - *You write* a `FixedSpanBufferWriter<T>` where an `IBufferWriter<T>` is expected.
+  - *Write instead:* `FixedMemoryBufferWriter<T>`.
+- **CS1929.**
+  - *You write* `Write(…)` called on a `FixedSpanBufferWriter<T>`.
+  - *Write instead:* copy into `writer.GetSpan(n)`, then `writer.Advance(n)`.
+- **CS9260.**
+  - *You write* `CryptographicOperations.ZeroMemory` on a span of anything but bytes, in a project on a language
+    version before C# 14 (checked with C# 13).
+  - *Write instead:* `CryptographicOperationsExtensions.ZeroMemory(span)`.
+
+</Pitfalls>
 
 What each looks like, with the start of the compiler's message:
 
