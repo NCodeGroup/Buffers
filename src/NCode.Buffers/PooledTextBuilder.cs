@@ -52,9 +52,15 @@ namespace NCode.Buffers;
 [PublicAPI]
 public ref struct PooledTextBuilder
 {
-    private const int MinimumGrowCapacity = 256;
-
+    /// <summary>
+    /// Gets or sets the owner of the rented buffer, or <see langword="null"/> when the builder writes to the caller's
+    /// span or has no buffer.
+    /// </summary>
     private IMemoryOwner<char>? Owner { get; set; }
+
+    /// <summary>
+    /// Gets or sets the buffer the builder writes to.
+    /// </summary>
     private Span<char> Chars { get; set; }
 
     /// <summary>
@@ -81,7 +87,8 @@ public ref struct PooledTextBuilder
 
         if (initialCapacity > 0)
         {
-            Owner = BufferFactory.ChoosePool<char>(isSensitive).Rent(initialCapacity);
+            var pool = BufferFactory.ChoosePool<char>(isSensitive);
+            Owner = pool.Rent(initialCapacity);
             Chars = Owner.Memory.Span;
         }
     }
@@ -134,6 +141,12 @@ public ref struct PooledTextBuilder
     /// </remarks>
     public readonly ReadOnlySpan<char> WrittenSpan => Chars[..Length];
 
+    /// <summary>
+    /// Gets the whole rented buffer, or an empty memory when the builder writes to the caller's span or has no buffer.
+    /// </summary>
+    /// <remarks>
+    /// Only tests read it, to check what the builder leaves in its rented buffer.
+    /// </remarks>
     internal readonly ReadOnlyMemory<char> RentedMemory =>
         Owner is null ? ReadOnlyMemory<char>.Empty : Owner.Memory;
 
@@ -250,14 +263,19 @@ public ref struct PooledTextBuilder
     /// </remarks>
     public override readonly string ToString() => new(Chars[..Length]);
 
+    /// <summary>
+    /// Rents a larger buffer, copies the written part and then <paramref name="append"/> into it, and releases the old
+    /// buffer.
+    /// </summary>
+    /// <param name="needed">The number of characters that must fit after the written part.</param>
+    /// <param name="append">The characters to copy into the new buffer after the written part, or empty.</param>
     private void Grow(int needed, ReadOnlySpan<char> append = default)
     {
         var required = checked(Length + needed);
-        var doubled = (int)Math.Min(2L * Chars.Length, Array.MaxLength);
-        var minimum = Math.Max(MinimumGrowCapacity, doubled);
-        var newSize = Math.Max(required, minimum);
+        var newSize = BufferGrowth.GetNewSize(required, Chars.Length, BufferGrowth.DefaultCapacity);
 
-        var owner = BufferFactory.ChoosePool<char>(IsSensitive).Rent(newSize);
+        var pool = BufferFactory.ChoosePool<char>(IsSensitive);
+        var owner = pool.Rent(newSize);
         var chars = owner.Memory.Span;
 
         Chars[..Length].CopyTo(chars);
@@ -270,6 +288,13 @@ public ref struct PooledTextBuilder
         Length += append.Length;
     }
 
+    /// <summary>
+    /// Releases a buffer: disposes its owner, or zeroes the caller's span when there is no owner and the builder is
+    /// sensitive.
+    /// </summary>
+    /// <param name="owner">The owner of the rented buffer, or <see langword="null"/> when there is none.</param>
+    /// <param name="chars">The buffer to zero when there is no owner.</param>
+    /// <param name="isSensitive"><see langword="true"/> when the builder zeroes the caller's span.</param>
     private static void ReleaseBuffer(IMemoryOwner<char>? owner, Span<char> chars, bool isSensitive)
     {
         if (owner is null)
