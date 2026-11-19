@@ -142,6 +142,15 @@ public class SecretTests
         Assert.False(secret.Equals((object?)null));
     }
 
+    [Fact]
+    public void Equals_SameInstanceAfterDispose_ThrowsObjectDisposedException()
+    {
+        var secret = Secret.Create("s3cr3t"u8);
+        secret.Dispose();
+
+        Assert.Throws<ObjectDisposedException>(() => secret.Equals(secret));
+    }
+
     #endregion
 
     #region GetHashCode Tests
