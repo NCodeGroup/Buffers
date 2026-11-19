@@ -6,6 +6,7 @@ description: Decode bytes from a request, a file or a stream so that invalid inp
 import LeakCard from '@site/components/LeakCard.astro';
 import Pinned from '@site/components/Pinned.astro';
 import PinNotes from '@site/components/PinNotes.astro';
+import Pitfalls from '@site/components/Pitfalls.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
 
@@ -120,20 +121,30 @@ fourth is a surrogate code point, and the fifth is a sequence cut short. The sam
 
 [Ways to get it wrong](/reference/pitfalls/) has more, each with its evidence.
 
-- **Decoding again with the standard encoding.** *You write* a `catch` that calls `Encoding.UTF8.GetString` on the
-  same bytes. *What happens:* the input you rejected becomes a string anyway, with replacement characters in it.
-  <LeakCard leak="L8" /> <Proof sample="SiteLenientDecodingCollision" /> *Write instead:* reject the input, as the
-  sample does.
-- **A lenient encoding that looks strict.** *You write* `new UTF8Encoding()` or `Encoding.GetEncoding("utf-8")`.
-  *What happens:* the repository bans both outside test projects, and names `SecureEncoding` instead.
-  <Proof source="BannedEncoding" /> *Write instead:* `SecureEncoding.UTF8` or `SecureEncoding.ASCII`.
-- **Letting a byte order mark choose the encoding.** *You write* a `StreamReader` that looks for a mark. *What
-  happens:* a stream that starts with `FF FE` is decoded as the encoding the mark names, so the encoding you chose
-  does not apply. <Proof sample="SiteStrictDecodingStreamReader" /> *Write instead:* pass
-  `detectEncodingFromByteOrderMarks: false`.
-- **Logging the exception.** *You write* the whole `DecoderFallbackException` into a log. *What happens:* its
-  `BytesUnknown` holds the bytes it rejected, which are part of the input. <Proof sample="SiteStrictDecodingReject" />
-  *Write instead:* log that the input was invalid, and not the exception or its bytes.
+<Pitfalls>
+
+- **Decoding again with the standard encoding.**
+  - *You write* a `catch` that calls `Encoding.UTF8.GetString` on the same bytes.
+  - *What happens:* the input you rejected becomes a string anyway, with replacement characters in it.
+    <LeakCard leak="L8" /> <Proof sample="SiteLenientDecodingCollision" />
+  - *Write instead:* reject the input, as the sample does.
+- **A lenient encoding that looks strict.**
+  - *You write* `new UTF8Encoding()` or `Encoding.GetEncoding("utf-8")`.
+  - *What happens:* the repository bans both outside test projects, and names `SecureEncoding` instead.
+    <Proof source="BannedEncoding" />
+  - *Write instead:* `SecureEncoding.UTF8` or `SecureEncoding.ASCII`.
+- **Letting a byte order mark choose the encoding.**
+  - *You write* a `StreamReader` that looks for a mark.
+  - *What happens:* a stream that starts with `FF FE` is decoded as the encoding the mark names, so the encoding you
+    chose does not apply. <Proof sample="SiteStrictDecodingStreamReader" />
+  - *Write instead:* pass `detectEncodingFromByteOrderMarks: false`.
+- **Logging the exception.**
+  - *You write* the whole `DecoderFallbackException` into a log.
+  - *What happens:* its `BytesUnknown` holds the bytes it rejected, which are part of the input.
+    <Proof sample="SiteStrictDecodingReject" />
+  - *Write instead:* log that the input was invalid, and not the exception or its bytes.
+
+</Pitfalls>
 
 ## What this does not fix
 
