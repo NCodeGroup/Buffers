@@ -37,8 +37,14 @@ internal static class SecureMemoryPoolMetrics
     /// </summary>
     internal const string Empty = "empty";
 
+    /// <summary>
+    /// Gets the one meter, named <see cref="BufferMetrics.MeterName"/>, that owns the instruments.
+    /// </summary>
     private static Meter Meter { get; } = new(BufferMetrics.MeterName);
 
+    /// <summary>
+    /// Gets the counter of rentals, tagged with the source of each.
+    /// </summary>
     private static Counter<long> Rentals { get; } =
         Meter.CreateCounter<long>(
             "ncode.buffers.secure_pool.rentals",
@@ -46,6 +52,9 @@ internal static class SecureMemoryPoolMetrics
             "The number of buffers the secure memory pool rented."
         );
 
+    /// <summary>
+    /// Gets the counter of buffers returned to the pool's cache.
+    /// </summary>
     private static Counter<long> Returns { get; } =
         Meter.CreateCounter<long>(
             "ncode.buffers.secure_pool.returns",
@@ -53,6 +62,9 @@ internal static class SecureMemoryPoolMetrics
             "The number of buffers returned to the secure memory pool's cache."
         );
 
+    /// <summary>
+    /// Gets the counter of cached buffers that a high-pressure trim dropped.
+    /// </summary>
     private static Counter<long> Trimmed { get; } =
         Meter.CreateCounter<long>(
             "ncode.buffers.secure_pool.trimmed",
@@ -64,8 +76,11 @@ internal static class SecureMemoryPoolMetrics
     /// Records one rental.
     /// </summary>
     /// <param name="source">One of <see cref="Cache"/>, <see cref="New"/>, <see cref="Unpooled"/> or <see cref="Empty"/>.</param>
-    internal static void RecordRental(string source) =>
-        Rentals.Add(1, new KeyValuePair<string, object?>(SourceTag, source));
+    internal static void RecordRental(string source)
+    {
+        var tag = new KeyValuePair<string, object?>(SourceTag, source);
+        Rentals.Add(1, tag);
+    }
 
     /// <summary>
     /// Records one buffer returned to the pool's cache.
