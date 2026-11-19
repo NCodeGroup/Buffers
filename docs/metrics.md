@@ -30,7 +30,8 @@ Built-in instruments and spans of .NET and ASP.NET Core are not listed unless th
 
 ## Meters and Instruments
 
-NCode.Buffers defines one meter, NCode.Buffers (BufferMetrics.MeterName), created once per process ([ADR-1030](decisions/1030-the-secure-pool-reports-metrics-through-one-static-meter.md)).
+NCode.Buffers defines one meter, `NCode.Buffers` (`BufferMetrics.MeterName`), created once per process
+([ADR-1030](decisions/1030-the-secure-pool-reports-metrics-through-one-static-meter.md)).
 
 | Name | Type | Unit | Attributes and their values | Owner |
 | --- | --- | --- | --- | --- |

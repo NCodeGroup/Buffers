@@ -1,8 +1,8 @@
 # Architecture
 
 NCode.Buffers is one assembly, `NCode.Buffers`, shipped as one NuGet package. It has no runtime state beyond the
-memory pools it creates and one `Meter`, starts no threads, performs no I/O and opens no network connection. It depends on
-Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers return.
+memory pools it creates and one `Meter`, starts no threads, performs no I/O and opens no network connection. It
+depends on Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers return.
 
 ## Components
 
