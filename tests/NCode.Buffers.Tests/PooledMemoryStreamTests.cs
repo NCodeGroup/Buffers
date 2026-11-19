@@ -969,7 +969,9 @@ public class PooledMemoryStreamTests
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
 
-        Assert.Throws<ArgumentNullException>(() => stream.CopyTo(null!));
+        var exception = Assert.Throws<ArgumentNullException>(() => stream.CopyTo(null!));
+
+        Assert.Equal("destination", exception.ParamName);
     }
 
     [Fact]
@@ -1036,10 +1038,12 @@ public class PooledMemoryStreamTests
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
 
-        Assert.Throws<ArgumentNullException>(() =>
+        var exception = Assert.Throws<ArgumentNullException>(() =>
         {
             _ = stream.CopyToAsync(null!, CancellationToken.None);
         });
+
+        Assert.Equal("destination", exception.ParamName);
     }
 
     [Fact]

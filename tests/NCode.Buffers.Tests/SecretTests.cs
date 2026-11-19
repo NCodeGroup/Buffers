@@ -314,7 +314,9 @@ public class SecretTests
         using var secret = Secret.Create("s3cr3t"u8);
         var destination = new byte[3];
 
-        Assert.Throws<ArgumentException>(() => secret.CopyTo(destination));
+        var exception = Assert.Throws<ArgumentException>(() => secret.CopyTo(destination));
+
+        Assert.Equal("destination", exception.ParamName);
     }
 
     [Fact]
