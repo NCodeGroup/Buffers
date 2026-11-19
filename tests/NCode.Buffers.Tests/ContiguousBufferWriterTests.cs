@@ -5,6 +5,10 @@ using System.Runtime.InteropServices;
 
 namespace NCode.Buffers.Tests;
 
+// Grow_WhenNotSensitive_KeepsWrittenData reads an array after the shared pool takes it back, so the class runs alone,
+// after the parallel test classes.
+[CollectionDefinition(nameof(ContiguousBufferWriterTests), DisableParallelization = true)]
+[Collection(nameof(ContiguousBufferWriterTests))]
 public class ContiguousBufferWriterTests
 {
     private static ArraySegment<byte> GetArray(ReadOnlyMemory<byte> memory)
@@ -12,6 +16,37 @@ public class ContiguousBufferWriterTests
         Assert.True(MemoryMarshal.TryGetArray(memory, out var segment));
         Assert.NotNull(segment.Array);
         return segment;
+    }
+
+    private static void CallMember(ContiguousBufferWriter<byte> writer, string member)
+    {
+        switch (member)
+        {
+            case "GetSpan":
+                _ = writer.GetSpan();
+                break;
+            case "GetMemory":
+                _ = writer.GetMemory();
+                break;
+            case "Advance":
+                writer.Advance(0);
+                break;
+            case "Reset":
+                writer.Reset();
+                break;
+            case "WrittenSpan":
+                _ = writer.WrittenSpan.Length;
+                break;
+            case "WrittenMemory":
+                _ = writer.WrittenMemory.Length;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(member),
+                    member,
+                    "No call is written for the member."
+                );
+        }
     }
 
     #region Create Tests
@@ -188,8 +223,8 @@ public class ContiguousBufferWriterTests
     [Fact]
     public void Grow_WhenNotSensitive_KeepsWrittenData()
     {
-        // ArrayPool<T>.Shared, behind MemoryPool<T>.Shared, doesn't clear an array it takes back, and no other test of this
-        // project rents a non-sensitive byte array in this size's bucket, so the old array still holds the written bytes.
+        // ArrayPool<T>.Shared, behind MemoryPool<T>.Shared, doesn't clear an array it takes back, and the
+        // class runs alone, so nothing rents the old array before the test reads it.
         const int initialCapacity = 2_000_000;
         using var writer = BufferFactory.CreateContiguousBufferWriter(
             isSensitive: false,
@@ -344,37 +379,6 @@ public class ContiguousBufferWriterTests
         writer.Dispose();
 
         Assert.Throws<ObjectDisposedException>(() => CallMember(writer, member));
-    }
-
-    private static void CallMember(ContiguousBufferWriter<byte> writer, string member)
-    {
-        switch (member)
-        {
-            case "GetSpan":
-                _ = writer.GetSpan();
-                break;
-            case "GetMemory":
-                _ = writer.GetMemory();
-                break;
-            case "Advance":
-                writer.Advance(0);
-                break;
-            case "Reset":
-                writer.Reset();
-                break;
-            case "WrittenSpan":
-                _ = writer.WrittenSpan.Length;
-                break;
-            case "WrittenMemory":
-                _ = writer.WrittenMemory.Length;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(member),
-                    member,
-                    "No call is written for the member."
-                );
-        }
     }
 
     #endregion
