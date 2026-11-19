@@ -1057,8 +1057,11 @@ public class SequenceExtensionsTests
 
         using var lease = sequence.GetSpanLease(isSensitive: false);
 
-        Assert.True(lease.Span.Overlaps(array));
-        Assert.True(lease.Span.SequenceEqual(array));
+        var overlaps = lease.Span.Overlaps(array);
+        var matches = lease.Span.SequenceEqual(array);
+
+        Assert.True(overlaps);
+        Assert.True(matches);
     }
 
     [Theory]
@@ -1077,9 +1080,13 @@ public class SequenceExtensionsTests
         using var lease = sequence.GetSpanLease(isSensitive);
 
         byte[] expected = [1, 2, 3, 4, 5, 6];
-        Assert.True(lease.Span.SequenceEqual(expected));
-        Assert.False(lease.Span.Overlaps(firstArray));
-        Assert.False(lease.Span.Overlaps(lastArray));
+        var matches = lease.Span.SequenceEqual(expected);
+        var overlapsFirst = lease.Span.Overlaps(firstArray);
+        var overlapsLast = lease.Span.Overlaps(lastArray);
+
+        Assert.True(matches);
+        Assert.False(overlapsFirst);
+        Assert.False(overlapsLast);
     }
 
     [Fact]
@@ -1096,11 +1103,13 @@ public class SequenceExtensionsTests
         var lease = sequence.GetSpanLease(isSensitive: true);
         var copy = lease.Span;
         Assert.Equal(segmentLength * 2, copy.Length);
-        Assert.All(copy.ToArray(), value => Assert.Equal(0xAB, value));
+        var beforeDispose = copy.ToArray();
+        Assert.All(beforeDispose, value => Assert.Equal(0xAB, value));
 
         lease.Dispose();
 
-        Assert.All(copy.ToArray(), value => Assert.Equal(0, value));
+        var afterDispose = copy.ToArray();
+        Assert.All(afterDispose, value => Assert.Equal(0, value));
         Assert.All(firstArray, value => Assert.Equal(0xAB, value));
     }
 

@@ -237,7 +237,9 @@ public class BufferFactoryTests
 
         Assert.Equal(length, a.Length);
         Assert.Equal(length, b.Length);
-        Assert.False(a.SequenceEqual(b));
+        var areEqual = a.SequenceEqual(b);
+
+        Assert.False(areEqual);
     }
 
     [Fact]
@@ -252,7 +254,9 @@ public class BufferFactoryTests
         );
 
         Assert.Equal(length, buffer.Length);
-        Assert.True(buffer.Span.ContainsAnyExcept((byte)0));
+        var hasNonZero = buffer.Span.ContainsAnyExcept((byte)0);
+
+        Assert.True(hasNonZero);
     }
 
     [Fact]
@@ -283,7 +287,7 @@ public class BufferFactoryTests
     {
         using var owner = BufferFactory.RentRandom(0, isSensitive: true, out Span<byte> buffer);
 
-        Assert.Empty(buffer.ToArray());
+        Assert.True(buffer.IsEmpty);
     }
 
     [Fact]
