@@ -374,6 +374,75 @@ public static class BufferFactory
     ) => CreatePooledBufferWriter<byte>(isSensitive, minimumSpanLength);
 
     /// <summary>
+    /// Creates a new <see cref="ContiguousBufferWriter{T}"/> that keeps everything written in one contiguous buffer.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the buffer. Must be an unmanaged type.</typeparam>
+    /// <param name="isSensitive">When <c>true</c>, the writer rents its buffers from <see cref="SecureMemoryPool{T}"/>,
+    /// which pins them and zeroes them when they are disposed, including the old buffer on every growth.</param>
+    /// <param name="initialCapacity">The size of the first buffer the writer rents, which is also the smallest size
+    /// it rents when it grows. A value of 0 (the default) uses 256 elements.</param>
+    /// <returns>
+    /// A new <see cref="ContiguousBufferWriter{T}"/>. It rents no buffer until the first call to
+    /// <see cref="ContiguousBufferWriter{T}.GetSpan"/> or <see cref="ContiguousBufferWriter{T}.GetMemory"/>.
+    /// </returns>
+    /// <remarks>
+    /// Use this method instead of <see cref="CreatePooledBufferWriter{T}"/> when the consumer needs the written data
+    /// as a single span or memory rather than as a sequence.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// using var writer = BufferFactory.CreateContiguousBufferWriter&lt;byte&gt;(isSensitive: true, initialCapacity: 64);
+    /// var span = writer.GetSpan(16);
+    /// // Write data to span
+    /// writer.Advance(16);
+    /// // Access the written data as one span
+    /// ReadOnlySpan&lt;byte&gt; data = writer.WrittenSpan;
+    /// // All memory is securely zeroed when writer is disposed
+    /// </code>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="initialCapacity"/> is negative.</exception>
+    public static ContiguousBufferWriter<T> CreateContiguousBufferWriter<T>(
+        bool isSensitive,
+        int initialCapacity = 0
+    )
+        where T : unmanaged
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(initialCapacity);
+        return new ContiguousBufferWriter<T>(isSensitive, initialCapacity);
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="ContiguousBufferWriter{T}"/> of bytes that keeps everything written in one contiguous buffer.
+    /// </summary>
+    /// <param name="isSensitive">When <c>true</c>, the writer rents its buffers from <see cref="SecureMemoryPool{T}"/>,
+    /// which pins them and zeroes them when they are disposed, including the old buffer on every growth.</param>
+    /// <param name="initialCapacity">The size of the first buffer the writer rents, which is also the smallest size
+    /// it rents when it grows. A value of 0 (the default) uses 256 elements.</param>
+    /// <returns>
+    /// A new <see cref="ContiguousBufferWriter{T}"/> of <see cref="byte"/>. It rents no buffer until the first call to
+    /// <see cref="ContiguousBufferWriter{T}.GetSpan"/> or <see cref="ContiguousBufferWriter{T}.GetMemory"/>.
+    /// </returns>
+    /// <remarks>
+    /// This is a convenience overload for the common case of working with byte buffers.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// using var writer = BufferFactory.CreateContiguousBufferWriter(isSensitive: true, initialCapacity: 64);
+    /// var span = writer.GetSpan(16);
+    /// // Write sensitive byte data to span
+    /// writer.Advance(16);
+    /// // Access the written data as one span
+    /// ReadOnlySpan&lt;byte&gt; data = writer.WrittenSpan;
+    /// // All memory is securely zeroed when writer is disposed
+    /// </code>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="initialCapacity"/> is negative.</exception>
+    public static ContiguousBufferWriter<byte> CreateContiguousBufferWriter(
+        bool isSensitive,
+        int initialCapacity = 0
+    ) => CreateContiguousBufferWriter<byte>(isSensitive, initialCapacity);
+
+    /// <summary>
     /// Creates a new <see cref="ArrayBufferWriter{T}"/> with the default initial capacity.
     /// </summary>
     /// <typeparam name="T">The type of elements in the buffer. Must be a value type.</typeparam>
