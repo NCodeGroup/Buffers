@@ -56,18 +56,20 @@ public class SecretTests
 
         using var secret = Secret.Create<byte>(value);
         value[0] = 99;
+        var revealed = secret.Reveal().ToArray();
 
         Assert.Equal(4, secret.Length);
-        Assert.Equal<byte>([1, 2, 3, 4], secret.Reveal().ToArray());
+        Assert.Equal<byte>([1, 2, 3, 4], revealed);
     }
 
     [Fact]
     public void Create_Empty_HasLengthZero()
     {
         using var secret = Secret.Create<byte>([]);
+        var isEmpty = secret.Reveal().IsEmpty;
 
         Assert.Equal(0, secret.Length);
-        Assert.True(secret.Reveal().IsEmpty);
+        Assert.True(isEmpty);
     }
 
     [Fact]
@@ -80,9 +82,10 @@ public class SecretTests
                 span[i] = (byte)(seed + i);
             }
         });
+        var value = secret.Reveal().ToArray();
 
         Assert.Equal(4, secret.Length);
-        Assert.Equal<byte>([7, 8, 9, 10], secret.Reveal().ToArray());
+        Assert.Equal<byte>([7, 8, 9, 10], value);
     }
 
     [Fact]
@@ -120,7 +123,10 @@ public class SecretTests
             })
         );
 
-        Assert.True(SecureMemoryPool<byte>.Shared.MemoryQueue.TryPeek(out var page));
+        var isReturned = SecureMemoryPool<byte>.Shared.MemoryQueue.TryPeek(out var page);
+
+        Assert.True(isReturned);
+        Assert.NotNull(page);
         Assert.All(page, b => Assert.Equal(0, b));
     }
 
@@ -275,7 +281,9 @@ public class SecretTests
     {
         using var secret = Secret.Create("s3cr3t"u8);
 
-        Assert.Equal(6, secret.GetHashCode());
+        var hashCode = secret.GetHashCode();
+
+        Assert.Equal(6, hashCode);
     }
 
     #endregion
@@ -287,9 +295,13 @@ public class SecretTests
     {
         using var secret = Secret.Create("s3cr3t"u8);
 
-        Assert.True(secret.FixedTimeEquals("s3cr3t"u8));
-        Assert.False(secret.FixedTimeEquals("s3cr3x"u8));
-        Assert.False(secret.FixedTimeEquals("s3cr3t!"u8));
+        var matchesEqual = secret.FixedTimeEquals("s3cr3t"u8);
+        var matchesDifferent = secret.FixedTimeEquals("s3cr3x"u8);
+        var matchesLonger = secret.FixedTimeEquals("s3cr3t!"u8);
+
+        Assert.True(matchesEqual);
+        Assert.False(matchesDifferent);
+        Assert.False(matchesLonger);
     }
 
     #endregion
@@ -312,8 +324,9 @@ public class SecretTests
         var destination = new byte[6];
 
         secret.CopyTo(destination);
+        var expected = "s3cr3t"u8.ToArray();
 
-        Assert.Equal("s3cr3t"u8.ToArray(), destination);
+        Assert.Equal(expected, destination);
     }
 
     #endregion
@@ -325,7 +338,10 @@ public class SecretTests
     {
         using var secret = Secret.Create("s3cr3t"u8);
 
-        Assert.Equal("s3cr3t"u8.ToArray(), secret.RevealMemory().ToArray());
+        var expected = "s3cr3t"u8.ToArray();
+        var value = secret.RevealMemory().ToArray();
+
+        Assert.Equal(expected, value);
     }
 
     #endregion
@@ -339,11 +355,13 @@ public class SecretTests
         Array.Fill(value, (byte)0xA5);
         var secret = Secret.Create<byte>(value);
         var memory = secret.RevealMemory();
-        Assert.All(memory.ToArray(), b => Assert.Equal(0xA5, b));
+        var before = memory.ToArray();
+        Assert.All(before, b => Assert.Equal(0xA5, b));
 
         secret.Dispose();
+        var after = memory.ToArray();
 
-        Assert.All(memory.ToArray(), b => Assert.Equal(0, b));
+        Assert.All(after, b => Assert.Equal(0, b));
     }
 
     [Fact]
