@@ -25,6 +25,60 @@ public class PooledMemoryStreamTests
         return segment.Array.AsSpan(segment.Offset, segment.Count);
     }
 
+    private static void CallMember(PooledMemoryStream stream, string member)
+    {
+        var bytes = new byte[1];
+
+        switch (member)
+        {
+            case "Length":
+                _ = stream.Length;
+                break;
+            case "GetPosition":
+                _ = stream.Position;
+                break;
+            case "SetPosition":
+                stream.Position = 0;
+                break;
+            case "Seek":
+                _ = stream.Seek(0, SeekOrigin.Begin);
+                break;
+            case "SetLength":
+                stream.SetLength(0);
+                break;
+            case "ReadArray":
+                _ = stream.Read(bytes, 0, 1);
+                break;
+            case "ReadSpan":
+            {
+                Span<byte> span = bytes;
+                _ = stream.Read(span);
+                break;
+            }
+            case "WriteArray":
+                stream.Write(bytes, 0, 1);
+                break;
+            case "WriteSpan":
+            {
+                ReadOnlySpan<byte> data = bytes;
+                stream.Write(data);
+                break;
+            }
+            case "WrittenSpan":
+                _ = stream.WrittenSpan;
+                break;
+            case "WrittenMemory":
+                _ = stream.WrittenMemory;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(member),
+                    member,
+                    "No call is written for the member."
+                );
+        }
+    }
+
     #region Constructor Tests
 
     [Fact]
@@ -366,7 +420,7 @@ public class PooledMemoryStreamTests
 
     #endregion
 
-    #region Position Tests
+    #region Position Property Tests
 
     [Fact]
     public void Position_Negative_ThrowsArgumentOutOfRangeException()
@@ -562,60 +616,6 @@ public class PooledMemoryStreamTests
         Assert.Throws<ObjectDisposedException>(() => CallMember(stream, member));
     }
 
-    private static void CallMember(PooledMemoryStream stream, string member)
-    {
-        var bytes = new byte[1];
-
-        switch (member)
-        {
-            case "Length":
-                _ = stream.Length;
-                break;
-            case "GetPosition":
-                _ = stream.Position;
-                break;
-            case "SetPosition":
-                stream.Position = 0;
-                break;
-            case "Seek":
-                _ = stream.Seek(0, SeekOrigin.Begin);
-                break;
-            case "SetLength":
-                stream.SetLength(0);
-                break;
-            case "ReadArray":
-                _ = stream.Read(bytes, 0, 1);
-                break;
-            case "ReadSpan":
-            {
-                Span<byte> span = bytes;
-                _ = stream.Read(span);
-                break;
-            }
-            case "WriteArray":
-                stream.Write(bytes, 0, 1);
-                break;
-            case "WriteSpan":
-            {
-                ReadOnlySpan<byte> data = bytes;
-                stream.Write(data);
-                break;
-            }
-            case "WrittenSpan":
-                _ = stream.WrittenSpan;
-                break;
-            case "WrittenMemory":
-                _ = stream.WrittenMemory;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(member),
-                    member,
-                    "No call is written for the member."
-                );
-        }
-    }
-
     [Fact]
     public void Dispose_Twice_DoesNothing()
     {
@@ -644,17 +644,24 @@ public class PooledMemoryStreamTests
     #region Flush Tests
 
     [Fact]
-    public void Flush_DoesNothing()
+    public void Flush_WhenOpen_KeepsTheWrittenBytes()
     {
-        var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
         stream.Write([1, 2, 3]);
 
         stream.Flush();
 
         var written = stream.WrittenSpan.ToArray();
         Assert.Equal<byte>([1, 2, 3], written);
+    }
 
+    [Fact]
+    public void Flush_AfterDispose_DoesNotThrow()
+    {
+        var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        stream.Write([1, 2, 3]);
         stream.Dispose();
+
         var exception = Record.Exception(stream.Flush);
 
         Assert.Null(exception);
@@ -898,6 +905,17 @@ public class PooledMemoryStreamTests
         var task = stream.FlushAsync(canceled);
 
         Assert.True(task.IsCanceled);
+    }
+
+    [Fact]
+    public void FlushAsync_AfterDispose_CompletesSuccessfully()
+    {
+        var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        stream.Dispose();
+
+        var task = stream.FlushAsync(CancellationToken.None);
+
+        Assert.True(task.IsCompletedSuccessfully);
     }
 
     #endregion
