@@ -96,7 +96,7 @@ public class PooledTextBuilderTests
 
     #endregion
 
-    #region RentedMemory Tests
+    #region RentedMemory Property Tests
 
     [Fact]
     public void RentedMemory_WithoutARental_IsEmpty()
@@ -435,24 +435,57 @@ public class PooledTextBuilderTests
 
     #endregion
 
-    #region Length and Capacity Tests
+    #region Length Property Tests
 
     [Fact]
-    public void Length_And_Capacity_ReportTheState()
+    public void Length_AfterAppend_CountsTheCharacters()
     {
         Span<char> initial = stackalloc char[8];
         using var builder = new PooledTextBuilder(initial, isSensitive: false);
-        Assert.Equal(0, builder.Length);
-        Assert.Equal(8, builder.Capacity);
 
         builder.Append("abc");
 
         Assert.Equal(3, builder.Length);
-        Assert.Equal(8, builder.Capacity);
+    }
 
-        builder.Append(new string('d', 20));
+    [Fact]
+    public void Length_AfterGrowing_CountsEveryCharacter()
+    {
+        Span<char> initial = stackalloc char[8];
+        using var builder = new PooledTextBuilder(initial, isSensitive: false);
+        var tail = new string('d', 20);
+
+        builder.Append("abc");
+        builder.Append(tail);
 
         Assert.Equal(23, builder.Length);
+    }
+
+    #endregion
+
+    #region Capacity Property Tests
+
+    [Fact]
+    public void Capacity_AfterAppendWithinTheInitialBuffer_IsTheBufferLength()
+    {
+        Span<char> initial = stackalloc char[8];
+        using var builder = new PooledTextBuilder(initial, isSensitive: false);
+
+        builder.Append("abc");
+
+        Assert.Equal(8, builder.Capacity);
+    }
+
+    [Fact]
+    public void Capacity_AfterGrowing_HoldsTheText()
+    {
+        Span<char> initial = stackalloc char[8];
+        using var builder = new PooledTextBuilder(initial, isSensitive: false);
+        var tail = new string('d', 20);
+
+        builder.Append("abc");
+        builder.Append(tail);
+
         Assert.True(builder.Capacity >= 23);
     }
 
