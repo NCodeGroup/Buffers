@@ -13,7 +13,7 @@
     headings. check loads each page of that build at 1440, 1280, 1024 and 390 px, as the documentation site workflow
     does, and names every element that leaves its content column or hides content sideways, in the Chromium-based
     browser -Browser or DOCS_BROWSER names, or the one 'npm run browser' installs in the toolchain. dev serves the site
-    at http://localhost:4321/Buffers/ by default and follows each change. preview builds as the workflow does and
+    at http://localhost:4321/ by default and follows each change. preview builds as the workflow does and
     serves that build.
 
     A toolchain clone runs one command at a time: site.mjs says 'This toolchain checkout is in use' when another
