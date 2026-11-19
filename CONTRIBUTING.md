@@ -6,6 +6,7 @@ Issues and pull requests are welcome. [README.md](README.md) explains the projec
 
 - Git, and PowerShell 7 (`pwsh`): every command here runs from the repository root in PowerShell 7.
 - The .NET SDK that [global.json](global.json) selects, and the runtime of each older .NET a test project targets, which `./build/Get-TestRuntimes.ps1` names. `./build/Install-Dotnet.ps1` installs both beside the .NET that runs `dotnet`, or into the folder `-InstallDir` names; run it as an administrator, or with `sudo`, when .NET is installed system-wide.
+- For the documentation site only: [NCodeGroup/docs](https://github.com/NCodeGroup/docs) cloned into a folder named `docs` beside the main checkout and set up as its README says, and Node.js on `PATH`, at the version its `package.json` names in `engines`.
 - On Windows, `git config --global core.longpaths true`, once: a plan's worktree under `.claude/worktrees/` can pass Windows' 260-character path limit.
 
 ## Set Up
@@ -22,7 +23,8 @@ Then run `dotnet tool restore`, which installs the CSharpier and MarkdownSnippet
 | Test | `dotnet test` |
 | Format | `dotnet csharpier format .` |
 | Copy the README samples from the tests | `dotnet mdsnippets` |
-| Serve the documentation site, with [NCodeGroup/docs](https://github.com/NCodeGroup/docs) cloned beside this repository | `npm --prefix ../docs run dev '--' .` |
+| Serve the documentation site | `./build/site.ps1 dev` |
+| Build the documentation site, then check its layout | `./build/site.ps1 build -Out <folder>`, then `./build/site.ps1 check -Out <folder> -Browser <path>` |
 | The full gate | `./build/gate.ps1` |
 | The local gate before a push | `./build/gate.ps1 -Fast` |
 | Only the tests a filter matches | `./build/gate.ps1 -Fast -Filter 'FullyQualifiedName~OrderStore'` |
@@ -103,7 +105,7 @@ The site's own components are in `docs/site/_components/`, each with its usage i
 
 A component is laid out for a content column of about 36rem, its width in a 1280-pixel window beside the sidebar and the "On this page" panel, and never sets a `min-width` wider than that. Data with more than three or four fields, or with long identifiers, is one card per entry with each field labelled, not a table that scrolls sideways: `ApiMap.astro` and `BufferBehaviorMatrix.astro` draw their data that way, and a page writes its own entries as `EntryCard.astro` cards that hold an `EntryField.astro` per field. A Markdown table must fit the column too.
 
-To see the result, clone NCodeGroup/docs beside this repository and set it up as its README says. From this repository's root, `npm --prefix ../docs run dev '--' .` then serves the site at `http://localhost:4321/Buffers/`, and `npm --prefix ../docs run site '--' build . --out <folder>` builds it into a folder outside this repository and stops on a sample key no test defines, a file a page includes that is not there, a component that reads a token the brand does not offer, or a guide without its headings. `npm --prefix ../docs run site '--' check . --out <folder>` then loads each page of that build at 1440, 1280, 1024 and 390 px, as the documentation site workflow does, and names every element that leaves its content column or hides content sideways, a Markdown table included. The `--` is quoted so PowerShell passes it to npm. None of these commands writes into this repository. The gate does not build the site; the documentation site workflow does, on every pull request.
+To see the result, clone NCodeGroup/docs into a folder named `docs` beside the main checkout and set it up as its README says, with Node.js on `PATH`. `./build/site.ps1 dev` then serves the site at `http://localhost:4321/Buffers/`, and `./build/site.ps1 build -Out <folder>` builds it into a folder outside this repository and stops on a sample key no test defines, a file a page includes that is not there, a component that reads a token the brand does not offer, or a guide without its headings. `./build/site.ps1 check -Out <folder> -Browser <path>` then loads each page of that build at 1440, 1280, 1024 and 390 px, as the documentation site workflow does, and names every element that leaves its content column or hides content sideways, a Markdown table included; `-Browser` names a Chromium-based browser, such as Google Chrome or Microsoft Edge, and can be left out once `npm run browser` has run in the toolchain. The script runs the toolchain's `scripts/site.mjs` with `node`, from the main checkout and from a plan's worktree under `.claude/worktrees/` alike, and `-Toolchain <folder>` names a clone elsewhere; a toolchain clone runs one command at a time. None of these commands writes into this repository. The gate does not build the site; the documentation site workflow does, on every pull request.
 
 ## Conventions
 
