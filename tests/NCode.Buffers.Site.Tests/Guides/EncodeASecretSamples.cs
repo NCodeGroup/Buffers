@@ -122,7 +122,10 @@ public class EncodeASecretSamples
         }
         // end-snippet
 
-        Assert.True(IsValidKey("-__-AQ"));
-        Assert.False(IsValidKey("not base64url!"));
+        var acceptsKey = IsValidKey("-__-AQ");
+        var acceptsText = IsValidKey("not base64url!");
+
+        Assert.True(acceptsKey);
+        Assert.False(acceptsText);
     }
 }

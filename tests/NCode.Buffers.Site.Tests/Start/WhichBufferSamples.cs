@@ -139,7 +139,9 @@ public class WhichBufferSamples
         using Secret<byte> secret = Secret.Create("s3cr3t"u8);
         // end-snippet
 
-        Assert.Equal("[REDACTED]", secret.ToString());
+        var text = secret.ToString();
+
+        Assert.Equal("[REDACTED]", text);
     }
 
     [Fact]
