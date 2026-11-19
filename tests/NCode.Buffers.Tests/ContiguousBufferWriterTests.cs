@@ -11,11 +11,14 @@ namespace NCode.Buffers.Tests;
 [Collection(nameof(ContiguousBufferWriterTests))]
 public class ContiguousBufferWriterTests
 {
-    private static ArraySegment<byte> GetArray(ReadOnlyMemory<byte> memory)
+    private static byte[] GetArray(ReadOnlyMemory<byte> memory, out int offset)
     {
-        Assert.True(MemoryMarshal.TryGetArray(memory, out var segment));
-        Assert.NotNull(segment.Array);
-        return segment;
+        var hasArray = MemoryMarshal.TryGetArray(memory, out var segment);
+        Assert.True(hasArray);
+        var array = segment.Array;
+        Assert.NotNull(array);
+        offset = segment.Offset;
+        return array;
     }
 
     private static void CallMember(ContiguousBufferWriter<byte> writer, string member)
@@ -156,8 +159,10 @@ public class ContiguousBufferWriterTests
 
         Assert.Equal(expected.Length, writer.WrittenCount);
         Assert.True(writer.Capacity >= expected.Length);
-        Assert.Equal(expected, writer.WrittenSpan.ToArray());
-        Assert.Equal(expected, writer.WrittenMemory.ToArray());
+        var writtenFromSpan = writer.WrittenSpan.ToArray();
+        Assert.Equal(expected, writtenFromSpan);
+        var writtenFromMemory = writer.WrittenMemory.ToArray();
+        Assert.Equal(expected, writtenFromMemory);
     }
 
     #endregion
@@ -193,12 +198,15 @@ public class ContiguousBufferWriterTests
         );
         _ = writer.GetSpan(10);
         var capacity = writer.Capacity;
-        var segment = GetArray(writer.GetMemory(10));
+        var memoryBefore = writer.GetMemory(10);
+        var arrayBefore = GetArray(memoryBefore, out _);
 
         _ = writer.GetSpan(10);
 
         Assert.Equal(capacity, writer.Capacity);
-        Assert.Same(segment.Array, GetArray(writer.GetMemory(10)).Array);
+        var memoryAfter = writer.GetMemory(10);
+        var arrayAfter = GetArray(memoryAfter, out _);
+        Assert.Same(arrayBefore, arrayAfter);
     }
 
     [Fact]
@@ -210,14 +218,16 @@ public class ContiguousBufferWriterTests
         );
         writer.GetSpan(10)[..10].Fill(0xAB);
         writer.Advance(10);
-        var segment = GetArray(writer.WrittenMemory);
-        var oldArray = segment.Array!;
+        var oldArray = GetArray(writer.WrittenMemory, out _);
         Assert.Equal(0xAB, oldArray[0]);
+        var expected = new byte[10];
+        Array.Fill(expected, (byte)0xAB);
 
         _ = writer.GetSpan(6000);
 
         Assert.All(oldArray, x => Assert.Equal(0, x));
-        Assert.Equal(Enumerable.Repeat((byte)0xAB, 10), writer.WrittenSpan.ToArray());
+        var written = writer.WrittenSpan.ToArray();
+        Assert.Equal(expected, written);
     }
 
     [Fact]
@@ -232,12 +242,15 @@ public class ContiguousBufferWriterTests
         );
         writer.GetSpan(10)[..10].Fill(0xAB);
         writer.Advance(10);
-        var oldArray = GetArray(writer.WrittenMemory).Array!;
+        var oldArray = GetArray(writer.WrittenMemory, out _);
+        var expected = new byte[10];
+        Array.Fill(expected, (byte)0xAB);
 
         _ = writer.GetSpan(3_000_000);
 
         Assert.Equal(0xAB, oldArray[0]);
-        Assert.Equal(Enumerable.Repeat((byte)0xAB, 10), writer.WrittenSpan.ToArray());
+        var written = writer.WrittenSpan.ToArray();
+        Assert.Equal(expected, written);
     }
 
     #endregion
@@ -281,15 +294,16 @@ public class ContiguousBufferWriterTests
         writer.GetSpan(10)[..10].Fill(0xAB);
         writer.Advance(10);
         var capacity = writer.Capacity;
-        var segment = GetArray(writer.WrittenMemory);
-        Assert.Equal(0xAB, segment.Array![segment.Offset]);
+        var array = GetArray(writer.WrittenMemory, out var offset);
+        Assert.Equal(0xAB, array[offset]);
 
         writer.Reset();
 
         Assert.Equal(0, writer.WrittenCount);
         Assert.Equal(capacity, writer.Capacity);
         Assert.True(writer.WrittenSpan.IsEmpty);
-        Assert.All(segment.Array.AsSpan(segment.Offset, 10).ToArray(), x => Assert.Equal(0, x));
+        var head = array.AsSpan(offset, 10).ToArray();
+        Assert.All(head, x => Assert.Equal(0, x));
     }
 
     #endregion
@@ -305,7 +319,7 @@ public class ContiguousBufferWriterTests
         );
         writer.GetSpan(10)[..10].Fill(0xAB);
         writer.Advance(10);
-        var array = GetArray(writer.WrittenMemory).Array!;
+        var array = GetArray(writer.WrittenMemory, out _);
         Assert.Equal(0xAB, array[0]);
 
         writer.Dispose();
