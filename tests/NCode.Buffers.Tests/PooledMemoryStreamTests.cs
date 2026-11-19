@@ -626,7 +626,9 @@ public class PooledMemoryStreamTests
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
 
-        await stream.WriteAsync(new byte[] { 1, 2, 3 }.AsMemory(), CancellationToken.None);
+        byte[] data = [1, 2, 3];
+
+        await stream.WriteAsync(data.AsMemory(), CancellationToken.None);
 
         Assert.Equal(3, stream.Position);
         Assert.Equal<byte>([1, 2, 3], stream.WrittenSpan.ToArray());
@@ -636,7 +638,7 @@ public class PooledMemoryStreamTests
     public async Task WriteAsync_WithoutAToken_Writes()
     {
         using PooledMemoryStream stream = BufferFactory.CreatePooledStream(isSensitive: false);
-        var data = new byte[] { 1, 2, 3 };
+        byte[] data = [1, 2, 3];
 
         await stream.WriteAsync(data.AsMemory());
 
@@ -647,9 +649,10 @@ public class PooledMemoryStreamTests
     public async Task WriteAsync_Array_Writes()
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        byte[] data = [1, 2, 3, 4];
 
 #pragma warning disable CA1835 // The test deliberately calls the array overload.
-        await stream.WriteAsync(new byte[] { 1, 2, 3, 4 }, 1, 2, CancellationToken.None);
+        await stream.WriteAsync(data, 1, 2, CancellationToken.None);
 #pragma warning restore CA1835
 
         Assert.Equal(2, stream.Position);
@@ -688,11 +691,9 @@ public class PooledMemoryStreamTests
     public void WriteAsync_Canceled_ReturnsACanceledTask()
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        byte[] data = [1, 2, 3];
 
-        var task = stream.WriteAsync(
-            new byte[] { 1, 2, 3 }.AsMemory(),
-            new CancellationToken(canceled: true)
-        );
+        var task = stream.WriteAsync(data.AsMemory(), new CancellationToken(canceled: true));
 
         Assert.True(task.IsCanceled);
         Assert.Equal(0, stream.Length);
@@ -702,13 +703,9 @@ public class PooledMemoryStreamTests
     public void WriteAsync_ArrayCanceled_ReturnsACanceledTask()
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
+        byte[] data = [1, 2, 3];
 
-        var task = stream.WriteAsync(
-            new byte[] { 1, 2, 3 },
-            0,
-            3,
-            new CancellationToken(canceled: true)
-        );
+        var task = stream.WriteAsync(data, 0, 3, new CancellationToken(canceled: true));
 
         Assert.True(task.IsCanceled);
         Assert.Equal(0, stream.Length);

@@ -172,7 +172,7 @@ public class BufferExtensionsTests
         Span<byte> buffer = stackalloc byte[256];
         var writer = buffer.GetFixedBufferWriter();
 
-        var testData = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        byte[] testData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         var span = writer.GetSpan(testData.Length);
         testData.CopyTo(span);
         writer.Advance(testData.Length);
@@ -353,7 +353,7 @@ public class BufferExtensionsTests
         Memory<byte> buffer = new byte[100];
         var writer = buffer.GetFixedBufferWriter();
 
-        var testData = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        byte[] testData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         var span = writer.GetSpan(testData.Length);
         testData.CopyTo(span);
         writer.Advance(testData.Length);
