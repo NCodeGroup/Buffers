@@ -87,4 +87,5 @@ override in `AGENTS.md`.
 | [ADR-1022](1022-jetbrains-annotations-is-a-build-time-reference-not-a-package-dependency.md) | JetBrains.Annotations is a build-time reference, not a package dependency (amends 1017) | Accepted |
 | [ADR-1023](1023-the-shared-secure-pool-ignores-dispose.md) | The shared secure pool ignores Dispose (amends 1015) | Accepted |
 | [ADR-1024](1024-ncodegroup-docs-releases-are-taken-without-a-cooldown-during-the-build-out.md) | NCodeGroup/docs releases are taken without a cooldown during the build-out (supersedes project-template 0009 for NCodeGroup/docs) | Accepted |
-| [ADR-1025](1025-the-documentation-site-is-published-to-github-pages-from-the-default-branch.md) | The documentation site is published to GitHub Pages from the default branch (amends 1009) | Accepted |
+| [ADR-1025](1025-the-documentation-site-is-published-to-github-pages-from-the-default-branch.md) | The documentation site is published to GitHub Pages from the default branch (amends 1009) | Accepted (amended by 1026) |
+| [ADR-1026](1026-the-documentation-site-is-served-at-buffers-ncode-io.md) | The documentation site is served at buffers.ncode.io (amends 1025) | Accepted |

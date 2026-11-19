@@ -4,7 +4,7 @@ name: Documentation site
 # request and every push to the default branch, so a page that names a sample key no test defines, links to a page that
 # does not exist, or has an element that leaves its content column at 1440, 1280, 1024 or 390 px, fails here. The build
 # is kept for a week as the github-pages artifact, which a reviewer can download and browse. A run on the default
-# branch also publishes it to GitHub Pages, at https://ncodegroup.github.io/Buffers/ (ADR-1025): the repository's
+# branch also publishes it to GitHub Pages, at https://buffers.ncode.io/ (ADR-1025, ADR-1026): the repository's
 # Pages source is GitHub Actions, and the github-pages environment takes deployments from the default branch only.
 # The toolchain is pinned by commit, which selects its workflow, packages and theme together.
 on:

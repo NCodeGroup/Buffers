@@ -19,7 +19,7 @@
   <a href="https://www.bestpractices.dev/projects/16727"><img alt="OpenSSF Best Practices" src="https://www.bestpractices.dev/projects/16727/badge"></a>
 </p>
 
-The [documentation site](https://ncodegroup.github.io/Buffers/) has a quick start, a guide for each task, the concepts behind the buffers, the evidence for each guarantee and a reference for every public member.
+The [documentation site](https://buffers.ncode.io/) has a quick start, a guide for each task, the concepts behind the buffers, the evidence for each guarantee and a reference for every public member.
 
 ## Installation
 
