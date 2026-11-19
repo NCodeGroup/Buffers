@@ -54,9 +54,8 @@ public ref struct PooledTextBuilder
 {
     private const int MinimumGrowCapacity = 256;
 
-    private IMemoryOwner<char>? _owner;
-    private Span<char> _chars;
-    private int _length;
+    private IMemoryOwner<char>? Owner { get; set; }
+    private Span<char> Chars { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PooledTextBuilder"/> struct with a rented buffer.
@@ -69,21 +68,21 @@ public ref struct PooledTextBuilder
     /// The number of characters to rent up front. When it is 0, the builder rents its first buffer on the first append.
     /// </param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="initialCapacity"/> is negative.</exception>
-#pragma warning disable RS0027 // The (Span<char>, bool) constructor has the same number of parameters but can't take the optional one (D7).
+#pragma warning disable RS0027 // Only this constructor takes the optional capacity: the span constructor's buffer already sets it.
     public PooledTextBuilder(bool isSensitive, int initialCapacity = 0)
 #pragma warning restore RS0027
     {
         ArgumentOutOfRangeException.ThrowIfNegative(initialCapacity);
 
         IsSensitive = isSensitive;
-        _owner = null;
-        _chars = default;
-        _length = 0;
+        Owner = null;
+        Chars = default;
+        Length = 0;
 
         if (initialCapacity > 0)
         {
-            _owner = BufferFactory.ChoosePool<char>(isSensitive).Rent(initialCapacity);
-            _chars = _owner.Memory.Span;
+            Owner = BufferFactory.ChoosePool<char>(isSensitive).Rent(initialCapacity);
+            Chars = Owner.Memory.Span;
         }
     }
 
@@ -101,9 +100,9 @@ public ref struct PooledTextBuilder
     public PooledTextBuilder(Span<char> initialBuffer, bool isSensitive)
     {
         IsSensitive = isSensitive;
-        _owner = null;
-        _chars = initialBuffer;
-        _length = 0;
+        Owner = null;
+        Chars = initialBuffer;
+        Length = 0;
     }
 
     /// <summary>
@@ -117,13 +116,13 @@ public ref struct PooledTextBuilder
     /// Gets the number of characters that have been written.
     /// </summary>
     /// <value>The count of characters written so far. It is 0 after <see cref="Reset"/> and <see cref="Dispose"/>.</value>
-    public readonly int Length => _length;
+    public int Length { get; private set; }
 
     /// <summary>
     /// Gets the number of characters the current buffer can hold.
     /// </summary>
     /// <value>The length of the current buffer. It is 0 when the builder has no buffer.</value>
-    public readonly int Capacity => _chars.Length;
+    public readonly int Capacity => Chars.Length;
 
     /// <summary>
     /// Gets a <see cref="ReadOnlySpan{T}"/> of the characters that have been written.
@@ -133,10 +132,10 @@ public ref struct PooledTextBuilder
     /// The returned span is not valid after an append that grows the buffer, after <see cref="Reset"/>, or after
     /// <see cref="Dispose"/>. It is valid as the argument of an append to the same builder.
     /// </remarks>
-    public readonly ReadOnlySpan<char> WrittenSpan => _chars[.._length];
+    public readonly ReadOnlySpan<char> WrittenSpan => Chars[..Length];
 
     internal readonly ReadOnlyMemory<char> RentedMemory =>
-        _owner is null ? ReadOnlyMemory<char>.Empty : _owner.Memory;
+        Owner is null ? ReadOnlyMemory<char>.Empty : Owner.Memory;
 
     /// <summary>
     /// Appends a character, growing the buffer if needed.
@@ -144,12 +143,12 @@ public ref struct PooledTextBuilder
     /// <param name="value">The character to append.</param>
     public void Append(char value)
     {
-        if (_length == _chars.Length)
+        if (Length == Chars.Length)
         {
             Grow(1);
         }
 
-        _chars[_length++] = value;
+        Chars[Length++] = value;
     }
 
     /// <summary>
@@ -158,14 +157,14 @@ public ref struct PooledTextBuilder
     /// <param name="value">The characters to append. It may be <see cref="WrittenSpan"/> of this builder.</param>
     public void Append(ReadOnlySpan<char> value)
     {
-        if (value.Length > _chars.Length - _length)
+        if (value.Length > Chars.Length - Length)
         {
             Grow(value.Length, value);
             return;
         }
 
-        value.CopyTo(_chars[_length..]);
-        _length += value.Length;
+        value.CopyTo(Chars[Length..]);
+        Length += value.Length;
     }
 
     /// <summary>
@@ -186,12 +185,12 @@ public ref struct PooledTextBuilder
         where T : ISpanFormattable
     {
         int written;
-        while (!value.TryFormat(_chars[_length..], out written, format, provider))
+        while (!value.TryFormat(Chars[Length..], out written, format, provider))
         {
-            Grow(_chars.Length - _length + 1);
+            Grow(Chars.Length - Length + 1);
         }
 
-        _length += written;
+        Length += written;
     }
 
     /// <summary>
@@ -207,13 +206,13 @@ public ref struct PooledTextBuilder
     {
         ArgumentOutOfRangeException.ThrowIfNegative(length);
 
-        if (length > _chars.Length - _length)
+        if (length > Chars.Length - Length)
         {
             Grow(length);
         }
 
-        var span = _chars.Slice(_length, length);
-        _length += length;
+        var span = Chars.Slice(Length, length);
+        Length += length;
         return span;
     }
 
@@ -222,8 +221,8 @@ public ref struct PooledTextBuilder
     /// </summary>
     public void Reset()
     {
-        CryptographicOperationsExtensions.ZeroMemoryOrClear(_chars[.._length]);
-        _length = 0;
+        CryptographicOperationsExtensions.ZeroMemoryOrClear(Chars[..Length]);
+        Length = 0;
     }
 
     /// <summary>
@@ -235,10 +234,10 @@ public ref struct PooledTextBuilder
     /// </remarks>
     public void Dispose()
     {
-        ReleaseBuffer(_owner, _chars, IsSensitive);
-        _owner = null;
-        _chars = default;
-        _length = 0;
+        ReleaseBuffer(Owner, Chars, IsSensitive);
+        Owner = null;
+        Chars = default;
+        Length = 0;
     }
 
     /// <summary>
@@ -249,25 +248,26 @@ public ref struct PooledTextBuilder
     /// A <see cref="string"/> can't be zeroed, so the copy stays in memory until the garbage collector reclaims it,
     /// even when the builder is sensitive. Use <see cref="WrittenSpan"/> for sensitive text.
     /// </remarks>
-    public override readonly string ToString() => new(_chars[.._length]);
+    public override readonly string ToString() => new(Chars[..Length]);
 
     private void Grow(int needed, ReadOnlySpan<char> append = default)
     {
-        var required = checked(_length + needed);
-        var doubled = (int)Math.Min(2L * _chars.Length, Array.MaxLength);
-        var newSize = Math.Max(required, Math.Max(MinimumGrowCapacity, doubled));
+        var required = checked(Length + needed);
+        var doubled = (int)Math.Min(2L * Chars.Length, Array.MaxLength);
+        var minimum = Math.Max(MinimumGrowCapacity, doubled);
+        var newSize = Math.Max(required, minimum);
 
         var owner = BufferFactory.ChoosePool<char>(IsSensitive).Rent(newSize);
         var chars = owner.Memory.Span;
 
-        _chars[.._length].CopyTo(chars);
-        append.CopyTo(chars[_length..]);
+        Chars[..Length].CopyTo(chars);
+        append.CopyTo(chars[Length..]);
 
-        ReleaseBuffer(_owner, _chars, IsSensitive);
+        ReleaseBuffer(Owner, Chars, IsSensitive);
 
-        _owner = owner;
-        _chars = chars;
-        _length += append.Length;
+        Owner = owner;
+        Chars = chars;
+        Length += append.Length;
     }
 
     private static void ReleaseBuffer(IMemoryOwner<char>? owner, Span<char> chars, bool isSensitive)
