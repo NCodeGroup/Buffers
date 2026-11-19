@@ -90,3 +90,4 @@ override in `AGENTS.md`.
 | [ADR-1025](1025-the-documentation-site-is-published-to-github-pages-from-the-default-branch.md) | The documentation site is published to GitHub Pages from the default branch (amends 1009) | Accepted (amended by 1026) |
 | [ADR-1026](1026-the-documentation-site-is-served-at-buffers-ncode-io.md) | The documentation site is served at buffers.ncode.io (amends 1025) | Accepted |
 | [ADR-1027](1027-text-base64-hex-and-random-helpers-rent-their-output-and-return-its-owner.md) | Text, Base64, hex and random helpers rent their output and return its owner | Accepted |
+| [ADR-1028](1028-growable-writers-streams-and-text-builders-zero-each-buffer-they-outgrow.md) | Growable writers, streams and text builders zero each buffer they outgrow | Accepted |
