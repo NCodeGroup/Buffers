@@ -443,6 +443,38 @@ public static class BufferFactory
     ) => CreateContiguousBufferWriter<byte>(isSensitive, initialCapacity);
 
     /// <summary>
+    /// Creates a new <see cref="PooledMemoryStream"/>, a seekable, readable and writable <see cref="Stream"/> over one
+    /// pooled buffer.
+    /// </summary>
+    /// <param name="isSensitive">When <c>true</c>, the stream rents its buffers from <see cref="SecureMemoryPool{T}"/>,
+    /// which pins them and zeroes them when they are disposed, including the old buffer on every growth.</param>
+    /// <param name="initialCapacity">The size of the first buffer the stream rents, which is also the smallest size
+    /// it rents when it grows. A value of 0 (the default) uses 256 bytes.</param>
+    /// <returns>
+    /// A new <see cref="PooledMemoryStream"/>. It rents no buffer until the first write or call to
+    /// <see cref="PooledMemoryStream.SetLength"/> that needs room.
+    /// </returns>
+    /// <remarks>
+    /// Use this method instead of <see cref="MemoryStream"/> when the stream holds sensitive data or should not
+    /// allocate its buffer on the managed heap.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// using var stream = BufferFactory.CreatePooledStream(isSensitive: true, initialCapacity: 64);
+    /// stream.Write("secret"u8);
+    /// // Access the written data as one span
+    /// ReadOnlySpan&lt;byte&gt; data = stream.WrittenSpan;
+    /// // All memory is securely zeroed when the stream is disposed
+    /// </code>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="initialCapacity"/> is negative.</exception>
+    public static PooledMemoryStream CreatePooledStream(bool isSensitive, int initialCapacity = 0)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(initialCapacity);
+        return new PooledMemoryStream(isSensitive, initialCapacity);
+    }
+
+    /// <summary>
     /// Creates a new <see cref="ArrayBufferWriter{T}"/> with the default initial capacity.
     /// </summary>
     /// <typeparam name="T">The type of elements in the buffer. Must be a value type.</typeparam>
