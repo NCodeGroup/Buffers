@@ -193,7 +193,8 @@ const kinds: Record<string, { kind: string; text: string }> = {
   /* Below the width of four stops, each lane becomes a card of four labeled stops, two by two. */
   @media (max-width: 52rem) {
     .timeline { padding: var(--nc-space-4); }
-    .timeline__row--head { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    /* Hidden but still read aloud: without padding the row is a 1 px box, which leaves the layout alone. */
+    .timeline__row--head { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
     .timeline__row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--nc-space-3) var(--nc-space-4); }
     .timeline__label { display: flex; align-items: center; gap: var(--nc-space-2); font-size: 0.6875rem; color: var(--nc-color-on-screen-muted); }
     .timeline__label :global(code) { font-family: var(--nc-font-mono); }

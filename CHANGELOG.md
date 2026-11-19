@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.4] - 2026-11-18
+
+### Changed
+
+- The documentation site is built with NCodeGroup/docs v0.15.0, taken the day it was released, whose build loads every page at 1440, 1280, 1024 and 390 pixels wide and fails an element that leaves the page's content column or hides part of its content sideways; every page passes it ([#105](https://github.com/NCodeGroup/Buffers/issues/105), [ADR-1024](docs/decisions/1024-ncodegroup-docs-releases-are-taken-without-a-cooldown-during-the-build-out.md)).
+- An evidence link on the documentation site shows the whole name of the test, sample or source it opens, wrapping a long name, where it cut the name short with an ellipsis ([#105](https://github.com/NCodeGroup/Buffers/issues/105)).
+- The objections page sets the six ways to hold a secret side by side as a card per way, each field labelled, where a table hid most of its columns behind a sideways scroll ([#105](https://github.com/NCodeGroup/Buffers/issues/105)).
+- The quick start's output wraps its lines instead of scrolling sideways, and on a phone the review checklist and the ownership timeline fit the page's width ([#105](https://github.com/NCodeGroup/Buffers/issues/105)).
+- The home page's hero takes its single column beside the sidebar from the documentation toolchain, and looks as it did ([#106](https://github.com/NCodeGroup/Buffers/issues/106)).
+
 ## [5.2.3] - 2026-11-18
 
 ### Changed
@@ -217,7 +227,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.2.3...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.2.4...HEAD
+[5.2.4]: https://github.com/NCodeGroup/Buffers/compare/v5.2.3...v5.2.4
 [5.2.3]: https://github.com/NCodeGroup/Buffers/compare/v5.2.2...v5.2.3
 [5.2.2]: https://github.com/NCodeGroup/Buffers/compare/v5.2.1...v5.2.2
 [5.2.1]: https://github.com/NCodeGroup/Buffers/compare/v5.2.0...v5.2.1

@@ -3,6 +3,8 @@ title: Objections and alternatives
 description: The objections a reviewer raises against NCode.Buffers, where each is right, and what the library answers with its evidence, then the other ways to hold a secret side by side.
 ---
 
+import EntryCard from '@site/components/EntryCard.astro';
+import EntryField from '@site/components/EntryField.astro';
 import KindLabel from '@site/components/KindLabel.astro';
 import Proof from '@site/components/Proof.astro';
 import Related from '@site/components/Related.astro';
@@ -14,7 +16,7 @@ import Related from '@site/components/Related.astro';
 - **Each heading is an objection.** It is worded as a reviewer would word it.
 - **Each answer starts with where the objection is right.** The answer that follows rests on a test, a compiled
   sample, a source line or a page outside this repository.
-- **The table at the end sets the alternatives side by side.** Read it to choose, not to be sold.
+- **The cards at the end set the alternatives side by side.** Read them to choose, not to be sold.
 
 ## "An attacker who can read memory has already won"
 
@@ -40,7 +42,7 @@ elements that hold references sets them to default with `Span<T>.Clear()`.
 
 ## "I can do it by hand"
 
-Right. A pinned array and a stack buffer are a few lines each, and both are in the table below. This is a pinned array
+Right. A pinned array and a stack buffer are a few lines each, and both are among the cards below. This is a pinned array
 by hand:
 
 ```cs snippet=SiteAlternativePinnedArrayByHand title="PinnedArrayByHand.cs"
@@ -121,16 +123,56 @@ credential service holds the key, and your code holds an opaque handle. That is 
 
 ## Compared
 
-Six ways to hold a secret. A cell says what the approach gives you, not what it can be made to give with enough care.
+Six ways to hold a secret, one card each. A field says what the approach gives you, not what it can be made to give
+with enough care.
 
-| Approach | Moved by the collector | Cleared | Pooled | Across `await` | What it needs |
-| --- | --- | --- | --- | --- | --- |
-| `new byte[]` and `Array.Clear` | Can be: it is not pinned <Proof claim="R3" /> | When your code runs it, on every path | No | Yes | A `try` and a `finally` at every site |
-| `ArrayPool<byte>.Shared` with `clearArray: true` | Can be: its arrays are not pinned | When you return the array with `clearArray: true`; otherwise "the array's contents are left unchanged" <Proof external="ArrayPoolReturnDocs" /> | Yes | Yes | `clearArray: true` on every `Return`, and a `Return` on every path |
-| `stackalloc` and `ZeroMemory` | No: "isn't subject to garbage collection" <Proof external="StackallocDocs" /> | In your `finally` <Proof sample="SiteAlternativeStackByHand" /> | No | No: a span "can only be stored on the stack" <Proof external="SpanStackOnlyDocs" /> | A small, fixed size, and a `finally` |
-| A pinned array by hand | No: it is on the pinned heap <Proof sample="SiteAlternativePinnedArrayByHand" /> | In your `finally` | No | Yes | `GC.AllocateArray` with `pinned: true`, and a `finally` |
-| `SecureString` | Its memory is not pinned <Proof external="SecureStringCopies" /> | Not the string you build it from | No | Yes | A recommendation against new use <Proof external="SecureStringNotForNewCode" /> |
-| `Rent` with `isSensitive: true` | No: it is on the pinned heap <Proof claim="R3" /> | On `Dispose`, the whole buffer <Proof claim="R1" /> | Yes, up to a page <Proof claim="R2" /> | Yes, as `Memory<byte>` <Proof sample="SiteAcrossAwaitMemory" /> | A `using` around the owner |
+<EntryCard title="`new byte[]` and `Array.Clear`">
+<EntryField label="Moved by the collector">Can be: it is not pinned <Proof claim="R3" /></EntryField>
+<EntryField label="Cleared">When your code runs it, on every path</EntryField>
+<EntryField label="Pooled">No</EntryField>
+<EntryField label="Across `await`">Yes</EntryField>
+<EntryField label="What it needs">A `try` and a `finally` at every site</EntryField>
+</EntryCard>
+
+<EntryCard title="`ArrayPool<byte>.Shared` with `clearArray: true`">
+<EntryField label="Moved by the collector">Can be: its arrays are not pinned</EntryField>
+<EntryField label="Cleared">When you return the array with `clearArray: true`; otherwise "the array's contents are left unchanged" <Proof external="ArrayPoolReturnDocs" /></EntryField>
+<EntryField label="Pooled">Yes</EntryField>
+<EntryField label="Across `await`">Yes</EntryField>
+<EntryField label="What it needs">`clearArray: true` on every `Return`, and a `Return` on every path</EntryField>
+</EntryCard>
+
+<EntryCard title="`stackalloc` and `ZeroMemory`">
+<EntryField label="Moved by the collector">No: "isn't subject to garbage collection" <Proof external="StackallocDocs" /></EntryField>
+<EntryField label="Cleared">In your `finally` <Proof sample="SiteAlternativeStackByHand" /></EntryField>
+<EntryField label="Pooled">No</EntryField>
+<EntryField label="Across `await`">No: a span "can only be stored on the stack" <Proof external="SpanStackOnlyDocs" /></EntryField>
+<EntryField label="What it needs">A small, fixed size, and a `finally`</EntryField>
+</EntryCard>
+
+<EntryCard title="A pinned array by hand">
+<EntryField label="Moved by the collector">No: it is on the pinned heap <Proof sample="SiteAlternativePinnedArrayByHand" /></EntryField>
+<EntryField label="Cleared">In your `finally`</EntryField>
+<EntryField label="Pooled">No</EntryField>
+<EntryField label="Across `await`">Yes</EntryField>
+<EntryField label="What it needs">`GC.AllocateArray` with `pinned: true`, and a `finally`</EntryField>
+</EntryCard>
+
+<EntryCard title="`SecureString`">
+<EntryField label="Moved by the collector">Its memory is not pinned <Proof external="SecureStringCopies" /></EntryField>
+<EntryField label="Cleared">Not the string you build it from</EntryField>
+<EntryField label="Pooled">No</EntryField>
+<EntryField label="Across `await`">Yes</EntryField>
+<EntryField label="What it needs">A recommendation against new use <Proof external="SecureStringNotForNewCode" /></EntryField>
+</EntryCard>
+
+<EntryCard title="`Rent` with `isSensitive: true`">
+<EntryField label="Moved by the collector">No: it is on the pinned heap <Proof claim="R3" /></EntryField>
+<EntryField label="Cleared">On `Dispose`, the whole buffer <Proof claim="R1" /></EntryField>
+<EntryField label="Pooled">Yes, up to a page <Proof claim="R2" /></EntryField>
+<EntryField label="Across `await`">Yes, as `Memory<byte>` <Proof sample="SiteAcrossAwaitMemory" /></EntryField>
+<EntryField label="What it needs">A `using` around the owner</EntryField>
+</EntryCard>
 
 <Related>
 - **Understand** [What it protects, and what it does not](/start/limits/)
