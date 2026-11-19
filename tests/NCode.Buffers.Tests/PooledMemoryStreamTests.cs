@@ -10,12 +10,17 @@ public class PooledMemoryStreamTests
     // Buffers above 4096 bytes are never cached by the secure pool, so no parallel test can rent them.
     private const int UncachedSize = 5000;
 
-    private static void AssertFilled(ReadOnlySpan<byte> span, byte expected) =>
-        Assert.Equal(-1, span.IndexOfAnyExcept(expected));
+    private static void AssertFilled(ReadOnlySpan<byte> span, byte expected)
+    {
+        var index = span.IndexOfAnyExcept(expected);
+
+        Assert.Equal(-1, index);
+    }
 
     private static Span<byte> GetArraySpan(ReadOnlyMemory<byte> memory)
     {
-        Assert.True(MemoryMarshal.TryGetArray(memory, out var segment));
+        var hasArray = MemoryMarshal.TryGetArray(memory, out var segment);
+        Assert.True(hasArray);
         Assert.NotNull(segment.Array);
         return segment.Array.AsSpan(segment.Offset, segment.Count);
     }
@@ -77,20 +82,26 @@ public class PooledMemoryStreamTests
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: true);
 
-        stream.Write("hello"u8.ToArray(), 0, 5);
+        var hello = "hello"u8.ToArray();
+        stream.Write(hello, 0, 5);
         stream.Write(" world"u8);
         stream.Position = 0;
 
         var buffer = new byte[11];
-        Assert.Equal(5, stream.Read(buffer, 0, 5));
+        var firstCount = stream.Read(buffer, 0, 5);
         Span<byte> rest = buffer.AsSpan(5);
-        Assert.Equal(6, stream.Read(rest));
+        var secondCount = stream.Read(rest);
 
-        Assert.Equal("hello world"u8.ToArray(), buffer);
+        var expected = "hello world"u8.ToArray();
+        var writtenFromSpan = stream.WrittenSpan.ToArray();
+        var writtenFromMemory = stream.WrittenMemory.ToArray();
+        Assert.Equal(5, firstCount);
+        Assert.Equal(6, secondCount);
+        Assert.Equal(expected, buffer);
         Assert.Equal(11, stream.Length);
         Assert.Equal(11, stream.Position);
-        Assert.Equal("hello world"u8.ToArray(), stream.WrittenSpan.ToArray());
-        Assert.Equal("hello world"u8.ToArray(), stream.WrittenMemory.ToArray());
+        Assert.Equal(expected, writtenFromSpan);
+        Assert.Equal(expected, writtenFromMemory);
     }
 
     [Fact]
@@ -102,9 +113,11 @@ public class PooledMemoryStreamTests
         stream.Position = 0;
 
         var buffer = new byte[5];
-        Assert.Equal(5, stream.Read(buffer, 0, buffer.Length));
+        var count = stream.Read(buffer, 0, buffer.Length);
 
-        Assert.Equal("hello"u8.ToArray(), buffer);
+        var expected = "hello"u8.ToArray();
+        Assert.Equal(5, count);
+        Assert.Equal(expected, buffer);
     }
 
     [Fact]
@@ -115,7 +128,9 @@ public class PooledMemoryStreamTests
 
         var buffer = new byte[4];
 
-        Assert.Equal(0, stream.Read(buffer, 0, buffer.Length));
+        var count = stream.Read(buffer, 0, buffer.Length);
+
+        Assert.Equal(0, count);
         Assert.Equal(3, stream.Position);
     }
 
@@ -128,7 +143,9 @@ public class PooledMemoryStreamTests
 
         var buffer = new byte[4];
 
-        Assert.Equal(0, stream.Read(buffer, 0, buffer.Length));
+        var count = stream.Read(buffer, 0, buffer.Length);
+
+        Assert.Equal(0, count);
         Assert.Equal(10, stream.Position);
     }
 
@@ -139,7 +156,9 @@ public class PooledMemoryStreamTests
 
         var buffer = new byte[4];
 
-        Assert.Equal(0, stream.Read(buffer, 0, buffer.Length));
+        var count = stream.Read(buffer, 0, buffer.Length);
+
+        Assert.Equal(0, count);
     }
 
     [Fact]
@@ -212,7 +231,8 @@ public class PooledMemoryStreamTests
         stream.Write([1, 2, 3]);
 
         Assert.Equal(9, stream.Length);
-        Assert.Equal<byte>([0x5A, 0x5A, 0, 0, 0, 0, 1, 2, 3], stream.WrittenSpan.ToArray());
+        var written = stream.WrittenSpan.ToArray();
+        Assert.Equal<byte>([0x5A, 0x5A, 0, 0, 0, 0, 1, 2, 3], written);
     }
 
     [Fact]
@@ -223,7 +243,8 @@ public class PooledMemoryStreamTests
 
         stream.Write([1]);
 
-        Assert.Equal<byte>([0, 0, 0, 0, 1], stream.WrittenSpan.ToArray());
+        var written = stream.WrittenSpan.ToArray();
+        Assert.Equal<byte>([0, 0, 0, 0, 1], written);
     }
 
     [Fact]
@@ -237,7 +258,8 @@ public class PooledMemoryStreamTests
 
         Assert.Equal(5, stream.Length);
         Assert.Equal(3, stream.Position);
-        Assert.Equal<byte>([1, 9, 9, 4, 5], stream.WrittenSpan.ToArray());
+        var written = stream.WrittenSpan.ToArray();
+        Assert.Equal<byte>([1, 9, 9, 4, 5], written);
     }
 
     [Fact]
@@ -254,7 +276,9 @@ public class PooledMemoryStreamTests
     public void Write_ItsOwnWrittenSpanWhileGrowing_CopiesTheData()
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: true);
-        stream.Write(Enumerable.Repeat((byte)0x5A, 3000).ToArray());
+        var data = new byte[3000];
+        Array.Fill(data, (byte)0x5A);
+        stream.Write(data);
 
         stream.Write(stream.WrittenSpan);
 
@@ -269,7 +293,9 @@ public class PooledMemoryStreamTests
             isSensitive: true,
             initialCapacity: UncachedSize
         );
-        stream.Write(Enumerable.Repeat((byte)0x5A, UncachedSize).ToArray());
+        var data = new byte[UncachedSize];
+        Array.Fill(data, (byte)0x5A);
+        stream.Write(data);
         var oldBytes = GetArraySpan(stream.WrittenMemory);
         AssertFilled(oldBytes, 0x5A);
 
@@ -293,7 +319,8 @@ public class PooledMemoryStreamTests
     public void Seek_EachOrigin_MovesThePosition(SeekOrigin origin, long offset, long expected)
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
-        stream.Write(new byte[10]);
+        var data = new byte[10];
+        stream.Write(data);
         stream.Position = 5;
 
         var result = stream.Seek(offset, origin);
@@ -306,7 +333,8 @@ public class PooledMemoryStreamTests
     public void Seek_BeforeBeginning_ThrowsIOException()
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
-        stream.Write(new byte[10]);
+        var data = new byte[10];
+        stream.Write(data);
 
         Assert.Throws<IOException>(() => stream.Seek(-1, SeekOrigin.Begin));
         Assert.Throws<IOException>(() => stream.Seek(-11, SeekOrigin.End));
@@ -387,10 +415,8 @@ public class PooledMemoryStreamTests
 
         Assert.Equal(10, stream.Length);
         Assert.Equal(2, stream.Position);
-        Assert.Equal<byte>(
-            [0x5A, 0x5A, 0x5A, 0x5A, 0, 0, 0, 0, 0, 0],
-            stream.WrittenSpan.ToArray()
-        );
+        var written = stream.WrittenSpan.ToArray();
+        Assert.Equal<byte>([0x5A, 0x5A, 0x5A, 0x5A, 0, 0, 0, 0, 0, 0], written);
     }
 
     [Fact]
@@ -413,7 +439,8 @@ public class PooledMemoryStreamTests
         stream.SetLength(100_000);
 
         Assert.Equal(100_000, stream.Length);
-        Assert.Equal<byte>([1, 2, 3, 0], stream.WrittenSpan[..4].ToArray());
+        var head = stream.WrittenSpan[..4].ToArray();
+        Assert.Equal<byte>([1, 2, 3, 0], head);
         AssertFilled(stream.WrittenSpan[3..], 0);
     }
 
@@ -424,7 +451,9 @@ public class PooledMemoryStreamTests
             isSensitive: true,
             initialCapacity: UncachedSize
         );
-        stream.Write(Enumerable.Repeat((byte)0x5A, UncachedSize).ToArray());
+        var data = new byte[UncachedSize];
+        Array.Fill(data, (byte)0x5A);
+        stream.Write(data);
         var array = GetArraySpan(stream.WrittenMemory);
 
         stream.SetLength(1000);
@@ -442,7 +471,8 @@ public class PooledMemoryStreamTests
 
         stream.SetLength(3);
 
-        Assert.Equal<byte>([1, 2, 3], stream.WrittenSpan.ToArray());
+        var written = stream.WrittenSpan.ToArray();
+        Assert.Equal<byte>([1, 2, 3], written);
     }
 
     [Fact]
@@ -478,7 +508,9 @@ public class PooledMemoryStreamTests
             isSensitive: true,
             initialCapacity: UncachedSize
         );
-        stream.Write(Enumerable.Repeat((byte)0x5A, UncachedSize).ToArray());
+        var data = new byte[UncachedSize];
+        Array.Fill(data, (byte)0x5A);
+        stream.Write(data);
         var array = GetArraySpan(stream.WrittenMemory);
         AssertFilled(array, 0x5A);
 
@@ -619,7 +651,8 @@ public class PooledMemoryStreamTests
 
         stream.Flush();
 
-        Assert.Equal<byte>([1, 2, 3], stream.WrittenSpan.ToArray());
+        var written = stream.WrittenSpan.ToArray();
+        Assert.Equal<byte>([1, 2, 3], written);
 
         stream.Dispose();
         var exception = Record.Exception(stream.Flush);
@@ -638,8 +671,11 @@ public class PooledMemoryStreamTests
         stream.Write([7, 8]);
         stream.Position = 0;
 
-        Assert.Equal(7, stream.ReadByte());
-        Assert.Equal(8, stream.ReadByte());
+        var first = stream.ReadByte();
+        var second = stream.ReadByte();
+
+        Assert.Equal(7, first);
+        Assert.Equal(8, second);
         Assert.Equal(2, stream.Position);
     }
 
@@ -649,7 +685,9 @@ public class PooledMemoryStreamTests
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
         stream.Write([7]);
 
-        Assert.Equal(-1, stream.ReadByte());
+        var value = stream.ReadByte();
+
+        Assert.Equal(-1, value);
         Assert.Equal(1, stream.Position);
     }
 
@@ -658,7 +696,9 @@ public class PooledMemoryStreamTests
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
 
-        Assert.Equal(-1, stream.ReadByte());
+        var value = stream.ReadByte();
+
+        Assert.Equal(-1, value);
     }
 
     [Fact]
@@ -679,7 +719,8 @@ public class PooledMemoryStreamTests
         stream.WriteByte(2);
 
         Assert.Equal(2, stream.Position);
-        Assert.Equal<byte>([1, 2], stream.WrittenSpan.ToArray());
+        var written = stream.WrittenSpan.ToArray();
+        Assert.Equal<byte>([1, 2], written);
     }
 
     #endregion
@@ -693,8 +734,9 @@ public class PooledMemoryStreamTests
         stream.Write([1, 2, 3]);
         stream.Position = 1;
         var buffer = new byte[4];
+        var memory = buffer.AsMemory();
 
-        var count = await stream.ReadAsync(buffer.AsMemory(), CancellationToken.None);
+        var count = await stream.ReadAsync(memory, CancellationToken.None);
 
         Assert.Equal(2, count);
         Assert.Equal<byte>([2, 3, 0, 0], buffer);
@@ -708,8 +750,9 @@ public class PooledMemoryStreamTests
         stream.Write([1, 2, 3]);
         stream.Position = 0;
         var buffer = new byte[4];
+        var memory = buffer.AsMemory();
 
-        var count = await stream.ReadAsync(buffer.AsMemory());
+        var count = await stream.ReadAsync(memory);
 
         Assert.Equal(3, count);
     }
@@ -737,11 +780,13 @@ public class PooledMemoryStreamTests
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
 
         byte[] data = [1, 2, 3];
+        var memory = data.AsMemory();
 
-        await stream.WriteAsync(data.AsMemory(), CancellationToken.None);
+        await stream.WriteAsync(memory, CancellationToken.None);
 
         Assert.Equal(3, stream.Position);
-        Assert.Equal<byte>([1, 2, 3], stream.WrittenSpan.ToArray());
+        var written = stream.WrittenSpan.ToArray();
+        Assert.Equal<byte>([1, 2, 3], written);
     }
 
     [Fact]
@@ -749,8 +794,9 @@ public class PooledMemoryStreamTests
     {
         using PooledMemoryStream stream = BufferFactory.CreatePooledStream(isSensitive: false);
         byte[] data = [1, 2, 3];
+        var memory = data.AsMemory();
 
-        await stream.WriteAsync(data.AsMemory());
+        await stream.WriteAsync(memory);
 
         Assert.Equal(3, stream.Length);
     }
@@ -766,7 +812,8 @@ public class PooledMemoryStreamTests
 #pragma warning restore CA1835
 
         Assert.Equal(2, stream.Position);
-        Assert.Equal<byte>([2, 3], stream.WrittenSpan.ToArray());
+        var written = stream.WrittenSpan.ToArray();
+        Assert.Equal<byte>([2, 3], written);
     }
 
     [Fact]
@@ -776,8 +823,10 @@ public class PooledMemoryStreamTests
         stream.Write([1, 2, 3]);
         stream.Position = 0;
         var buffer = new byte[3];
+        var memory = buffer.AsMemory();
+        var canceled = new CancellationToken(canceled: true);
 
-        var task = stream.ReadAsync(buffer.AsMemory(), new CancellationToken(canceled: true));
+        var task = stream.ReadAsync(memory, canceled);
 
         Assert.True(task.IsCanceled);
         Assert.Equal(0, stream.Position);
@@ -790,8 +839,9 @@ public class PooledMemoryStreamTests
         stream.Write([1, 2, 3]);
         stream.Position = 0;
         var buffer = new byte[3];
+        var canceled = new CancellationToken(canceled: true);
 
-        var task = stream.ReadAsync(buffer, 0, 3, new CancellationToken(canceled: true));
+        var task = stream.ReadAsync(buffer, 0, 3, canceled);
 
         Assert.True(task.IsCanceled);
         Assert.Equal(0, stream.Position);
@@ -802,8 +852,10 @@ public class PooledMemoryStreamTests
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
         byte[] data = [1, 2, 3];
+        var memory = data.AsMemory();
+        var canceled = new CancellationToken(canceled: true);
 
-        var task = stream.WriteAsync(data.AsMemory(), new CancellationToken(canceled: true));
+        var task = stream.WriteAsync(memory, canceled);
 
         Assert.True(task.IsCanceled);
         Assert.Equal(0, stream.Length);
@@ -814,8 +866,9 @@ public class PooledMemoryStreamTests
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
         byte[] data = [1, 2, 3];
+        var canceled = new CancellationToken(canceled: true);
 
-        var task = stream.WriteAsync(data, 0, 3, new CancellationToken(canceled: true));
+        var task = stream.WriteAsync(data, 0, 3, canceled);
 
         Assert.True(task.IsCanceled);
         Assert.Equal(0, stream.Length);
@@ -831,7 +884,8 @@ public class PooledMemoryStreamTests
         await task;
 
         Assert.True(task.IsCompletedSuccessfully);
-        Assert.Equal<byte>([1, 2, 3], stream.WrittenSpan.ToArray());
+        var written = stream.WrittenSpan.ToArray();
+        Assert.Equal<byte>([1, 2, 3], written);
     }
 
     [Fact]
@@ -839,7 +893,9 @@ public class PooledMemoryStreamTests
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
 
-        var task = stream.FlushAsync(new CancellationToken(canceled: true));
+        var canceled = new CancellationToken(canceled: true);
+
+        var task = stream.FlushAsync(canceled);
 
         Assert.True(task.IsCanceled);
     }
@@ -858,7 +914,8 @@ public class PooledMemoryStreamTests
 
         stream.CopyTo(destination);
 
-        Assert.Equal<byte>([3, 4, 5], destination.ToArray());
+        var copied = destination.ToArray();
+        Assert.Equal<byte>([3, 4, 5], copied);
         Assert.Equal(5, stream.Position);
     }
 
@@ -921,7 +978,8 @@ public class PooledMemoryStreamTests
 
         await stream.CopyToAsync(destination, CancellationToken.None);
 
-        Assert.Equal<byte>([3, 4, 5], destination.ToArray());
+        var copied = destination.ToArray();
+        Assert.Equal<byte>([3, 4, 5], copied);
         Assert.Equal(5, stream.Position);
     }
 
@@ -946,8 +1004,9 @@ public class PooledMemoryStreamTests
         stream.Write([1, 2, 3]);
         stream.Position = 0;
         using var destination = new MemoryStream();
+        var canceled = new CancellationToken(canceled: true);
 
-        var task = stream.CopyToAsync(destination, new CancellationToken(canceled: true));
+        var task = stream.CopyToAsync(destination, canceled);
 
         Assert.True(task.IsCanceled);
         Assert.Equal(0, destination.Length);
@@ -1024,7 +1083,11 @@ public class PooledMemoryStreamTests
         public override ValueTask WriteAsync(
             ReadOnlyMemory<byte> buffer,
             CancellationToken cancellationToken = default
-        ) => ValueTask.FromException(new IOException());
+        )
+        {
+            var exception = new IOException();
+            return ValueTask.FromException(exception);
+        }
     }
 
     #endregion
