@@ -42,14 +42,28 @@ namespace NCode.Buffers;
 public sealed class Secret<T> : IDisposable, IEquatable<Secret<T>>
     where T : unmanaged
 {
+    /// <summary>
+    /// The text that <see cref="ToString"/> and the debugger show in place of the secret.
+    /// </summary>
     private const string RedactedText = "[REDACTED]";
 
+    /// <summary>
+    /// The owner of the sensitive rental, or <see langword="null"/> once the secret is disposed.
+    /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private IMemoryOwner<T>? _owner;
 
+    /// <summary>
+    /// Gets the elements of the secret in the rental.
+    /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private Memory<T> Value { get; }
 
+    /// <summary>
+    /// Initializes a secret that takes ownership of a sensitive rental, which <c>Secret.Create</c> rents and fills.
+    /// </summary>
+    /// <param name="owner">The owner of the sensitive rental, which this secret disposes.</param>
+    /// <param name="memory">The elements of the secret in the rental.</param>
     internal Secret(IMemoryOwner<T> owner, Memory<T> memory)
     {
         _owner = owner;
@@ -140,23 +154,31 @@ public sealed class Secret<T> : IDisposable, IEquatable<Secret<T>>
     /// <param name="other">The secret to compare to.</param>
     /// <returns>
     /// <see langword="true"/> when <paramref name="other"/> is this instance, or has the same length and contents;
-    /// <see langword="false"/> when <paramref name="other"/> is <see langword="null"/>.
+    /// <see langword="false"/> when <paramref name="other"/> is <see langword="null"/>, also after this instance is
+    /// disposed.
     /// </returns>
-    /// <exception cref="ObjectDisposedException">This instance or <paramref name="other"/> is disposed.</exception>
+    /// <exception cref="ObjectDisposedException">
+    /// <paramref name="other"/> is not <see langword="null"/>, and this instance or <paramref name="other"/> is
+    /// disposed, also when <paramref name="other"/> is this instance.
+    /// </exception>
     public bool Equals(Secret<T>? other)
     {
         if (other is null)
             return false;
 
+        var value = Reveal();
+
         if (ReferenceEquals(this, other))
             return true;
 
-        var value = Reveal();
         var otherValue = other.Reveal();
         return CryptographicOperationsExtensions.FixedTimeEquals(value, otherValue);
     }
 
     /// <inheritdoc />
+    /// <exception cref="ObjectDisposedException">
+    /// <paramref name="obj"/> is a <see cref="Secret{T}"/>, and this instance or <paramref name="obj"/> is disposed.
+    /// </exception>
     public override bool Equals(object? obj)
     {
         return Equals(obj as Secret<T>);
