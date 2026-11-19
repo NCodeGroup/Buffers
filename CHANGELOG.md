@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.1] - 2026-11-19
+
 ### Changed
 
 - Package validation compares each package with the published 5.3.0 package.
+- The documentation site reads more calmly: an evidence mark is its kind's glyph, which names the evidence on hover and to a screen reader and writes out only a ledger row or a record such as `ADR-1027`; pages open without the page-kind label, and guides without the "You'll use" line; each guide's pitfalls give what you write, what happens and what to write instead a line each; and the sidebar's guide groups start closed, with one-line labels.
 
 ## [5.3.0] - 2026-11-19
 
@@ -262,7 +265,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.3.0...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.3.1...HEAD
+[5.3.1]: https://github.com/NCodeGroup/Buffers/compare/v5.3.0...v5.3.1
 [5.3.0]: https://github.com/NCodeGroup/Buffers/compare/v5.2.5...v5.3.0
 [5.2.5]: https://github.com/NCodeGroup/Buffers/compare/v5.2.4...v5.2.5
 [5.2.4]: https://github.com/NCodeGroup/Buffers/compare/v5.2.3...v5.2.4
