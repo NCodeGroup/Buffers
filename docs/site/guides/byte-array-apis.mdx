@@ -89,8 +89,8 @@ Both versions import the same key and seal a message the other side opens: their
     [Passing a lifetime as an object](/reference/pitfalls/#passing-a-lifetime-as-an-object)
 - **Forgetting the copy the API keeps.**
   - *You write* `aes.Key = key;` and dispose the lifetime.
-  - *What happens:* the setter copies the array, and zeroing your array leaves that copy in the `Aes` object.
-    <Proof sample="SiteKeySetterCopies" />
+  - *What happens:* the setter copies the array, and zeroing your array leaves that copy in the `Aes`
+    object. <Proof sample="SiteKeySetterCopies" />
 
     ```cs snippet=SiteKeySetterCopies title="The setter copies"
     ```

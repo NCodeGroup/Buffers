@@ -30,8 +30,8 @@ stops.
 
 1. A buffer of 256 bytes. It is a starting size.
 2. A 300-byte frame does not fit, so the writer allocates a larger array and copies the bytes written so far into it.
-   The smaller array is dropped with those bytes in it, and nothing clears it. <LeakCard leak="L4" />
-   <Proof sample="SiteFixedBufferUsual" />
+   The smaller array is dropped with those bytes in it, and nothing clears it. <Proof sample="SiteFixedBufferUsual" />
+   <LeakCard leak="L4" />
 
 </PinNotes>
 
