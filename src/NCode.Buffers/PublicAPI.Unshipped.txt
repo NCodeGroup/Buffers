@@ -13,6 +13,8 @@ NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentChar
 NCode.Buffers.SecureEncodingExtensions.extension(System.Text.Encoding!).RentChars(System.ReadOnlySpan<byte> bytes, bool isSensitive, out System.Span<char> chars) -> System.Buffers.IMemoryOwner<char>!
 static NCode.Buffers.BinaryTextEncoding.RentDecoded(System.ReadOnlySpan<char> text, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Memory<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
 static NCode.Buffers.BinaryTextEncoding.RentDecoded(System.ReadOnlySpan<char> text, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Span<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!
+static NCode.Buffers.BinaryTextEncoding.RentEncoded(System.ReadOnlySpan<byte> bytes, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Memory<char> text) -> System.Buffers.IMemoryOwner<char>!
+static NCode.Buffers.BinaryTextEncoding.RentEncoded(System.ReadOnlySpan<byte> bytes, NCode.Buffers.BinaryTextFormat format, bool isSensitive, out System.Span<char> text) -> System.Buffers.IMemoryOwner<char>!
 static NCode.Buffers.BufferFactory.RentRandom(int length, bool isSensitive, out System.Memory<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!
 static NCode.Buffers.BufferFactory.RentRandom(int length, bool isSensitive, out System.Span<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!
 static NCode.Buffers.SecureEncodingExtensions.RentBytes(this System.Text.Encoding! encoding, System.ReadOnlySpan<char> chars, bool isSensitive, out System.Memory<byte> bytes) -> System.Buffers.IMemoryOwner<byte>!

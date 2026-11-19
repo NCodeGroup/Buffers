@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Buffers.Text;
+using System.Diagnostics;
 using JetBrains.Annotations;
 
 namespace NCode.Buffers;
@@ -125,6 +126,86 @@ public static class BinaryTextEncoding
         }
     }
 
+    /// <summary>
+    /// Encodes the bytes into a rented buffer that holds exactly the encoded text.
+    /// </summary>
+    /// <param name="bytes">The bytes to encode.</param>
+    /// <param name="format">The text format to produce.</param>
+    /// <param name="isSensitive">
+    /// When <see langword="true"/>, the buffer is rented from <see cref="SecureMemoryPool{T}"/>
+    /// and securely zeroed when disposed.
+    /// </param>
+    /// <param name="text">When this method returns, contains a <see cref="Span{T}"/> of exactly the encoded text.</param>
+    /// <returns>
+    /// An <see cref="IMemoryOwner{T}"/> that manages the lifetime of the rented buffer.
+    /// Dispose this owner to return the buffer to the pool.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="format"/> is not a defined <see cref="BinaryTextFormat"/> value.</exception>
+    /// <example>
+    /// <code>
+    /// var key = SHA256.HashData("data"u8);
+    /// using var owner = BinaryTextEncoding.RentEncoded(key, BinaryTextFormat.HexLower, isSensitive: true, out Span&lt;char&gt; text);
+    /// var length = text.Length;
+    /// </code>
+    /// </example>
+    public static IMemoryOwner<char> RentEncoded(
+        ReadOnlySpan<byte> bytes,
+        BinaryTextFormat format,
+        bool isSensitive,
+        out Span<char> text
+    )
+    {
+        ValidateFormat(format);
+
+        var owner = BufferFactory.Rent(
+            GetEncodedLength(bytes.Length, format),
+            isSensitive,
+            out text
+        );
+        text = text[..Encode(bytes, format, text)];
+        return owner;
+    }
+
+    /// <summary>
+    /// Encodes the bytes into a rented buffer that holds exactly the encoded text, returning it as <see cref="Memory{T}"/>.
+    /// </summary>
+    /// <param name="bytes">The bytes to encode.</param>
+    /// <param name="format">The text format to produce.</param>
+    /// <param name="isSensitive">
+    /// When <see langword="true"/>, the buffer is rented from <see cref="SecureMemoryPool{T}"/>
+    /// and securely zeroed when disposed.
+    /// </param>
+    /// <param name="text">When this method returns, contains a <see cref="Memory{T}"/> of exactly the encoded text.</param>
+    /// <returns>
+    /// An <see cref="IMemoryOwner{T}"/> that manages the lifetime of the rented buffer.
+    /// Dispose this owner to return the buffer to the pool.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="format"/> is not a defined <see cref="BinaryTextFormat"/> value.</exception>
+    /// <example>
+    /// <code>
+    /// var key = SHA256.HashData("data"u8);
+    /// using var owner = BinaryTextEncoding.RentEncoded(key, BinaryTextFormat.HexLower, isSensitive: true, out Memory&lt;char&gt; text);
+    /// var length = text.Length;
+    /// </code>
+    /// </example>
+    public static IMemoryOwner<char> RentEncoded(
+        ReadOnlySpan<byte> bytes,
+        BinaryTextFormat format,
+        bool isSensitive,
+        out Memory<char> text
+    )
+    {
+        ValidateFormat(format);
+
+        var owner = BufferFactory.Rent(
+            GetEncodedLength(bytes.Length, format),
+            isSensitive,
+            out text
+        );
+        text = text[..Encode(bytes, format, text.Span)];
+        return owner;
+    }
+
     private static void ValidateFormat(BinaryTextFormat format)
     {
         if (!Enum.IsDefined(format))
@@ -164,6 +245,50 @@ public static class BinaryTextEncoding
                 if (status != OperationStatus.Done)
                     throw new FormatException("The text is not valid hexadecimal.");
                 return hexWritten;
+        }
+    }
+
+    private static int GetEncodedLength(int byteLength, BinaryTextFormat format) =>
+        format switch
+        {
+            BinaryTextFormat.Base64 => Base64.GetMaxEncodedToUtf8Length(byteLength),
+            BinaryTextFormat.Base64Url => Base64Url.GetEncodedLength(byteLength),
+            _ => checked(byteLength * 2),
+        };
+
+    private static int Encode(
+        ReadOnlySpan<byte> bytes,
+        BinaryTextFormat format,
+        Span<char> destination
+    )
+    {
+        switch (format)
+        {
+            case BinaryTextFormat.Base64:
+                var base64Success = Convert.TryToBase64Chars(
+                    bytes,
+                    destination,
+                    out var base64Written
+                );
+                Debug.Assert(base64Success);
+                return base64Written;
+
+            case BinaryTextFormat.Base64Url:
+                return Base64Url.EncodeToChars(bytes, destination);
+
+            case BinaryTextFormat.HexUpper:
+                var upperSuccess = Convert.TryToHexString(bytes, destination, out var upperWritten);
+                Debug.Assert(upperSuccess);
+                return upperWritten;
+
+            default:
+                var lowerSuccess = Convert.TryToHexStringLower(
+                    bytes,
+                    destination,
+                    out var lowerWritten
+                );
+                Debug.Assert(lowerSuccess);
+                return lowerWritten;
         }
     }
 }
