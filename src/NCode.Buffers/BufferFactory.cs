@@ -161,7 +161,7 @@ public static class BufferFactory
     /// <param name="length">The exact length of the buffer needed.</param>
     /// <param name="isSensitive">When <c>true</c>, the buffer will be pinned during its lifetime and securely zeroed when returned.
     /// When <c>false</c>, this implementation delegates to <see cref="MemoryPool{T}.Shared"/>.</param>
-    /// <param name="buffer">When this method returns, contains a <see cref="Span{T}"/> of exactly <paramref name="length"/> random bytes.</param>
+    /// <param name="buffer">When this method returns, contains a <see cref="Span{T}"/> of exactly <paramref name="length"/> random bytes. It is valid until the returned owner is disposed.</param>
     /// <returns>
     /// An <see cref="IMemoryOwner{T}"/> that manages the lifetime of the rented buffer.
     /// Dispose this owner to return the buffer to the pool.
@@ -180,9 +180,8 @@ public static class BufferFactory
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="length"/> is negative.</exception>
     public static IMemoryOwner<byte> RentRandom(int length, bool isSensitive, out Span<byte> buffer)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(length);
-        var owner = Rent(length, isSensitive, out buffer);
-        RandomNumberGenerator.Fill(buffer);
+        var owner = RentRandom(length, isSensitive, out Memory<byte> memory);
+        buffer = memory.Span;
         return owner;
     }
 
@@ -193,7 +192,7 @@ public static class BufferFactory
     /// <param name="length">The exact length of the buffer needed.</param>
     /// <param name="isSensitive">When <c>true</c>, the buffer will be pinned during its lifetime and securely zeroed when returned.
     /// When <c>false</c>, this implementation delegates to <see cref="MemoryPool{T}.Shared"/>.</param>
-    /// <param name="buffer">When this method returns, contains a <see cref="Memory{T}"/> of exactly <paramref name="length"/> random bytes.</param>
+    /// <param name="buffer">When this method returns, contains a <see cref="Memory{T}"/> of exactly <paramref name="length"/> random bytes. It is valid until the returned owner is disposed.</param>
     /// <returns>
     /// An <see cref="IMemoryOwner{T}"/> that manages the lifetime of the rented buffer.
     /// Dispose this owner to return the buffer to the pool.
