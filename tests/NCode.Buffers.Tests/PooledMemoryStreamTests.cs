@@ -159,7 +159,7 @@ public class PooledMemoryStreamTests
     }
 
     [Fact]
-    public void NotSensitive_WriteThenRead_RoundTrips()
+    public void Read_AfterWriteWhenNotSensitive_ReturnsTheWrittenBytes()
     {
         using var stream = BufferFactory.CreatePooledStream(isSensitive: false);
 

@@ -113,15 +113,24 @@ public class PooledTextBuilderTests
     #region Append Tests
 
     [Fact]
-    public void Default_Append_RentsAndAppends()
+    public void Append_WithoutInitialBuffer_RentsTheDefaultCapacity()
     {
+        const int defaultCapacity = 256;
         using var builder = new PooledTextBuilder(isSensitive: false);
 
         builder.Append('a');
 
+        Assert.True(builder.Capacity >= defaultCapacity);
+    }
+
+    [Fact]
+    public void Append_WithoutInitialBuffer_AppendsTheText()
+    {
+        using var builder = new PooledTextBuilder(isSensitive: false);
+
+        builder.Append('a');
         var built = builder.ToString();
 
-        Assert.True(builder.Capacity >= 256);
         Assert.Equal("a", built);
     }
 
@@ -148,10 +157,22 @@ public class PooledTextBuilderTests
         builder.Append('a');
         builder.Append('b');
         builder.Append('c');
+
+        Assert.True(builder.Capacity >= 3);
+    }
+
+    [Fact]
+    public void Append_Char_PastCapacity_KeepsTheText()
+    {
+        Span<char> initial = stackalloc char[2];
+        using var builder = new PooledTextBuilder(initial, isSensitive: false);
+
+        builder.Append('a');
+        builder.Append('b');
+        builder.Append('c');
         var built = builder.ToString();
 
         Assert.Equal("abc", built);
-        Assert.True(builder.Capacity >= 3);
     }
 
     [Fact]
