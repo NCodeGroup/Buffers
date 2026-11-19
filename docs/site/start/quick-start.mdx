@@ -30,8 +30,7 @@ tab](https://www.nuget.org/packages/NCode.Buffers#supportedframeworks-body-tab) 
 from the project file:
 [![Target framework](https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fraw.githubusercontent.com%2FNCodeGroup%2FBuffers%2Fmain%2Fsrc%2FNCode.Buffers%2FNCode.Buffers.csproj&query=%2F%2FTargetFramework%20%7C%20%2F%2FTargetFrameworks&label=target&logo=dotnet&color=512BD4)](https://www.nuget.org/packages/NCode.Buffers#supportedframeworks-body-tab)
 
-It brings one dependency, Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers return.
-<Proof source="PackageDependencies" />
+It brings one dependency, Nerdbank.Streams, whose `Sequence<T>` the pooled buffer writers return. <Proof source="PackageDependencies" />
 
 Versions, support and how to verify the package: [The package](/evidence/package/).
 
@@ -88,8 +87,7 @@ them.
 ```cs snippet=SiteRentLengths title="Two lengths"
 ```
 
-Work with `key`. Filling, hashing or comparing `keyOwner.Memory` would take in all 4096 bytes.
-<Proof sample="SiteRentLengths" /> <Proof test="BufferFactoryPropertyTests.Rent_WithSpan_ReturnsABufferOfTheExactRequestedLength" />
+Work with `key`. Filling, hashing or comparing `keyOwner.Memory` would take in all 4096 bytes. <Proof sample="SiteRentLengths" /> <Proof test="BufferFactoryPropertyTests.Rent_WithSpan_ReturnsABufferOfTheExactRequestedLength" />
 
 <QuickStartMemory view="stills" />
 

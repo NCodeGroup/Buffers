@@ -60,8 +60,7 @@ and copy the slices as spans.
 The sample asserts that `lang` finds `en`, that `missing` finds nothing, and that `" lang=en"`, with a leading space,
 does not match `lang`. The pieces are not trimmed. <Proof sample="SiteSplitTextHeader" />
 
-The pieces are the same as `string.Split` gives: the count of segments equals the length of the array.
-<Proof test="StringSegmentsPropertyTests.Split_WhenCounting_CountMatchesStringSplit" />
+The pieces are the same as `string.Split` gives: the count of segments equals the length of the array. <Proof test="StringSegmentsPropertyTests.Split_WhenCounting_CountMatchesStringSplit" />
 
 ### A dotted token
 
@@ -72,8 +71,7 @@ the dot and the payload, with no string joined to make it.
 ```
 
 This splits a token; it does not validate one. The sample asserts that `aaa.bbb.ccc` gives the signing input
-`aaa.bbb` and the signature `ccc`, and that a token of two parts, or of four, is refused.
-<Proof sample="SiteSplitTextToken" />
+`aaa.bbb` and the signature `ccc`, and that a token of two parts, or of four, is refused. <Proof sample="SiteSplitTextToken" />
 
 ### Walking the pieces
 
@@ -149,8 +147,7 @@ with the separators they cover the original. <Proof test="StringSegmentsProperty
 ```
 
 The pieces are slices of the rented buffer, not copies. The sample asserts that each piece lies inside `buffer`, and
-that after `Dispose` a kept view of the buffer holds only zeros. <Proof claim="R1" />
-<Proof sample="SiteSplitTextOverSensitiveBuffer" />
+that after `Dispose` a kept view of the buffer holds only zeros. <Proof claim="R1" /> <Proof sample="SiteSplitTextOverSensitiveBuffer" />
 
 ## What this does not fix
 

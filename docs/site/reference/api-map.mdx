@@ -12,8 +12,7 @@ import Related from '@site/components/Related.astro';
 
 This page lists every public type and member of the package, grouped as the README groups them. Each row gives the
 signature, the element type it accepts, what it throws, the page that explains it and the source line. The gate fails
-when this map and `PublicAPI.Shipped.txt` differ, so a member that ships has a row here.
-<Proof source="CiGateAndCoverage" />
+when this map and `PublicAPI.Shipped.txt` differ, so a member that ships has a row here. <Proof source="CiGateAndCoverage" />
 
 ## Secure memory
 
@@ -55,8 +54,7 @@ not pin, zero or rent a secure buffer. <Proof source="Adr1006" />
 ## Thread safety
 
 Only two members are documented as safe to share across threads: `SecureMemoryPool<T>.Shared` and
-`EmptyMemory<T>.Singleton`. <Proof source="Api.SecureMemoryPool.Shared.ThreadSafe" />
-<Proof source="Api.EmptyMemory.Singleton.ThreadSafe" />
+`EmptyMemory<T>.Singleton`. <Proof source="Api.SecureMemoryPool.Shared.ThreadSafe" /> <Proof source="Api.EmptyMemory.Singleton.ThreadSafe" />
 
 ## Terms
 

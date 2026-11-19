@@ -62,8 +62,7 @@ The writer works over memory you already have, such as a `stackalloc` span. It c
 
 </PinNotes>
 
-The sample writes `hello` and asserts the nine bytes: the length 5 as four bytes, big-endian, then the payload.
-<Proof sample="SiteFixedBufferFrame" />
+The sample writes `hello` and asserts the nine bytes: the length 5 as four bytes, big-endian, then the payload. <Proof sample="SiteFixedBufferFrame" />
 
 ### Over a sensitive rental
 
@@ -132,8 +131,7 @@ on the first. <Proof sample="SitePitfallWriterByValue" /> *Write instead:* pass 
 ```
 
 *What happens:* the 4 bytes already written stay in the buffer. *Write instead:* call `Reset()` where you catch the
-failure. It zeroes the 4 bytes and sets the count to 0. <Proof sample="SiteFixedBufferPartialWrite" />
-<Proof source="FixedSpanBufferWriter.Reset" />
+failure. It zeroes the 4 bytes and sets the count to 0. <Proof sample="SiteFixedBufferPartialWrite" /> <Proof source="FixedSpanBufferWriter.Reset" />
 
 ### Advancing by the span's length
 

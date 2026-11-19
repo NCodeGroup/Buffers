@@ -111,9 +111,7 @@ pooled buffer that is never disposed never returns to the pool.
 **What it costs you.** A 32-byte secret holds a 4096-byte pinned buffer, and `Dispose` zeroes all of it. Every request
 above a page allocates. `owner.Memory` is 4096 bytes for a small request.
 
-<Proof source="Adr1012" /> <Proof source="SecureMemoryPool.PageSize" />
-<Proof test="SecureMemoryPoolTests.Rent_SizeLessThanPage_ReturnsPageSizeBuffer" />
-<Proof test="SecureMemoryPoolTests.Rent_SizeMoreThanPage_ReturnsExactSizeBuffer" />
+<Proof source="Adr1012" /> <Proof source="SecureMemoryPool.PageSize" /> <Proof test="SecureMemoryPoolTests.Rent_SizeLessThanPage_ReturnsPageSizeBuffer" /> <Proof test="SecureMemoryPoolTests.Rent_SizeMoreThanPage_ReturnsExactSizeBuffer" />
 
 ### Pinned memory is allocated uninitialized
 
@@ -147,9 +145,7 @@ pressure or the pool is disposed, and then drops all of them.
 `SecureMemoryPool<T>` counts its rentals, returns and the buffers a trim drops on the `NCode.Buffers` meter, so you can
 watch the cache in your workload: [Watch the secure pool with metrics](/guides/watch-the-secure-pool/).
 
-<Proof source="Adr1015" /> <Proof source="Metrics.Instruments" />
-<Proof test="SecureMemoryPoolTests.TrimMemory_WhenHighPressure_ClearsQueue" />
-<Proof test="SecureMemoryPoolTests.Dispose_ClearsMemoryQueue" />
+<Proof source="Adr1015" /> <Proof source="Metrics.Instruments" /> <Proof test="SecureMemoryPoolTests.TrimMemory_WhenHighPressure_ClearsQueue" /> <Proof test="SecureMemoryPoolTests.Dispose_ClearsMemoryQueue" />
 
 ### The shared pool ignores `Dispose`
 

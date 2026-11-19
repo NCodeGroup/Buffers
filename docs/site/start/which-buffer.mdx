@@ -177,8 +177,7 @@ Every buffer, side by side: [Buffer behavior, sizes and pooling](/reference/buff
 
 ## Which calls ask whether it is a secret
 
-`isSensitive` has no default value, so a call that can go either way makes you say which.
-<Proof source="PublicApi.IsSensitive" /> <Proof source="PublicApi.SequenceIsSensitive" />
+`isSensitive` has no default value, so a call that can go either way makes you say which. <Proof source="PublicApi.IsSensitive" /> <Proof source="PublicApi.SequenceIsSensitive" />
 
 | Call | `isSensitive` |
 | --- | --- |
@@ -190,9 +189,7 @@ Every buffer, side by side: [Buffer behavior, sizes and pooling](/reference/buff
 | `Secret.Create` | None: always pinned, and zeroed on dispose |
 | `GetSecureLifetime()` | None: always zeroed on dispose, and never pinned |
 
-The tests that assert which pool each value chooses:
-<Proof test="BufferFactoryTests.ChoosePool_WhenSensitive_ReturnsSecureSharedPool" />
-<Proof test="BufferFactoryTests.ChoosePool_WhenNotSensitive_ReturnsSharedPool" />
+The tests that assert which pool each value chooses: <Proof test="BufferFactoryTests.ChoosePool_WhenSensitive_ReturnsSecureSharedPool" /> <Proof test="BufferFactoryTests.ChoosePool_WhenNotSensitive_ReturnsSharedPool" />
 
 ## Helpers you will meet
 

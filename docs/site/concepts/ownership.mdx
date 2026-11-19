@@ -27,8 +27,7 @@ keeps pointing there after the owner is done.
 
 Microsoft's `Memory<T>` guidelines draw the same line, one owner per buffer: "If you have an
 IMemoryOwner&lt;T&gt; reference, you must at some point dispose of it or transfer its ownership (but not both)".
-<Proof external="MemoryOwnershipRule7" /> NCode.Buffers follows it, and overwrites the secret on `Dispose`.
-<Proof source="ArchitectureDesignRules" />
+<Proof external="MemoryOwnershipRule7" /> NCode.Buffers follows it, and overwrites the secret on `Dispose`. <Proof source="ArchitectureDesignRules" />
 
 ## Five owners
 
