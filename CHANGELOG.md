@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Package validation compares each package with the published 5.2.5 package.
+- The documentation site is served at https://buffers.ncode.io/, and the READMEs and the package's project website link there; GitHub Pages redirects every page at https://ncodegroup.github.io/Buffers/ to it ([ADR-1026](docs/decisions/1026-the-documentation-site-is-served-at-buffers-ncode-io.md)).
 
 ## [5.2.5] - 2026-11-18
 

@@ -1,6 +1,6 @@
 # 1025. The documentation site is published to GitHub Pages from the default branch
 
-- **Status:** Accepted
+- **Status:** Accepted (amended by 1026)
 - **Date:** 2026-11-18
 - **Deciders:** NCode Group
 - **Amends:** ADR-1009, for where the site is published and for the API reference it leaves to [#56](https://github.com/NCodeGroup/Buffers/issues/56).
