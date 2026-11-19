@@ -34,7 +34,8 @@ public class GrowAContiguousSecretSamples
         Assert.NotNull(before.Array);
         Assert.NotNull(after.Array);
         Assert.NotSame(before.Array, after.Array);
-        SecretAssert.Equal(first, before.Array.AsSpan(0, first.Length));
+        var firstCopy = before.Array.AsSpan(0, first.Length);
+        SecretAssert.Equal(first, firstCopy);
     }
 
     [Fact]

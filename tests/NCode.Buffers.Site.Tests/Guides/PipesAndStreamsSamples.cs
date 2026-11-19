@@ -117,8 +117,10 @@ public class PipesAndStreamsSamples
             secret[i] = (byte)(i % 251);
         byte[] mac = new byte[HMACSHA256.HashSizeInBytes];
 
-        await pipe.Writer.WriteAsync(secret.AsMemory(0, 2048));
-        await pipe.Writer.WriteAsync(secret.AsMemory(2048));
+        var head = secret.AsMemory(0, 2048);
+        await pipe.Writer.WriteAsync(head);
+        var tail = secret.AsMemory(2048);
+        await pipe.Writer.WriteAsync(tail);
         await pipe.Writer.CompleteAsync();
 
         // begin-snippet: SitePipelinesSequenceLease
@@ -131,7 +133,8 @@ public class PipesAndStreamsSamples
         // end-snippet
 
         pipe.Reader.Complete();
-        SecretAssert.Equal(HMACSHA256.HashData(key, secret), mac);
+        byte[] expected = HMACSHA256.HashData(key, secret);
+        SecretAssert.Equal(expected, mac);
     }
 
     [Fact]

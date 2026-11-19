@@ -136,16 +136,18 @@ public class ReadASecretWithoutAStringSamples
 
         SecretAssert.Equal(key, secret);
 
+        string base64Url = Base64Url.EncodeToString(key);
         using IMemoryOwner<byte> urlOwner = BinaryTextEncoding.RentDecoded(
-            Base64Url.EncodeToString(key),
+            base64Url,
             BinaryTextFormat.Base64Url,
             isSensitive: true,
             out Span<byte> fromBase64Url
         );
         SecretAssert.Equal(key, fromBase64Url);
 
+        string hex = Convert.ToHexString(key);
         using IMemoryOwner<byte> hexOwner = BinaryTextEncoding.RentDecoded(
-            Convert.ToHexString(key),
+            hex,
             BinaryTextFormat.HexUpper,
             isSensitive: true,
             out Span<byte> fromHex
