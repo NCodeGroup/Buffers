@@ -225,6 +225,89 @@ public class BufferFactoryTests
 
     #endregion
 
+    #region RentRandom Tests
+
+    [Fact]
+    public void RentRandom_WithSpan_ReturnsRandomBytesOfTheRequestedLength()
+    {
+        const int length = 32;
+
+        using var first = BufferFactory.RentRandom(length, isSensitive: true, out Span<byte> a);
+        using var second = BufferFactory.RentRandom(length, isSensitive: true, out Span<byte> b);
+
+        Assert.Equal(length, a.Length);
+        Assert.Equal(length, b.Length);
+        Assert.False(a.SequenceEqual(b));
+    }
+
+    [Fact]
+    public void RentRandom_WithMemory_ReturnsTheRequestedLength()
+    {
+        const int length = 32;
+
+        using var owner = BufferFactory.RentRandom(
+            length,
+            isSensitive: true,
+            out Memory<byte> buffer
+        );
+
+        Assert.Equal(length, buffer.Length);
+        Assert.True(buffer.Span.ContainsAnyExcept((byte)0));
+    }
+
+    [Fact]
+    public void RentRandom_WhenSensitive_RentsSecureMemory()
+    {
+        using var owner = BufferFactory.RentRandom(16, isSensitive: true, out Span<byte> _);
+
+        Assert.IsType<SecureMemory<byte>>(owner);
+    }
+
+    [Fact]
+    public void RentRandom_WhenNotSensitive_ReturnsTheRequestedLength()
+    {
+        const int length = 16;
+
+        using var owner = BufferFactory.RentRandom(
+            length,
+            isSensitive: false,
+            out Span<byte> buffer
+        );
+
+        Assert.Equal(length, buffer.Length);
+        Assert.False(owner is SecureMemory<byte>);
+    }
+
+    [Fact]
+    public void RentRandom_ZeroLength_ReturnsAnEmptyBuffer()
+    {
+        using var owner = BufferFactory.RentRandom(0, isSensitive: true, out Span<byte> buffer);
+
+        Assert.Empty(buffer.ToArray());
+    }
+
+    [Fact]
+    public void RentRandom_NegativeLengthWithSpan_ThrowsArgumentOutOfRangeException()
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            BufferFactory.RentRandom(-1, isSensitive: true, out Span<byte> _)
+        );
+
+        Assert.Equal("length", exception.ParamName);
+    }
+
+    [Fact]
+    public void RentRandom_NegativeLengthWithMemory_ThrowsArgumentOutOfRangeException()
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            BufferFactory.RentRandom(-1, isSensitive: true, out Memory<byte> _)
+        );
+
+        Assert.Equal("length", exception.ParamName);
+    }
+
+    #endregion
+
     #region CreatePinnedArray Tests
 
     [Fact]

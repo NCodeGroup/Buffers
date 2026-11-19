@@ -4,6 +4,7 @@
 #pragma warning disable RS0030 // BufferFactory is the sanctioned wrapper over the shared pools and buffer writers that BannedSymbols.Buffers.txt bans (ADR-1003).
 
 using System.Buffers;
+using System.Security.Cryptography;
 using JetBrains.Annotations;
 using Nerdbank.Streams;
 
@@ -153,6 +154,73 @@ public static class BufferFactory
         bool isSensitive,
         out Memory<byte> buffer
     ) => Rent<byte>(minBufferSize, isSensitive, out buffer);
+
+    /// <summary>
+    /// Rents a byte buffer of exactly the requested length and fills it with cryptographically strong random bytes.
+    /// </summary>
+    /// <param name="length">The exact length of the buffer needed.</param>
+    /// <param name="isSensitive">When <c>true</c>, the buffer will be pinned during its lifetime and securely zeroed when returned.
+    /// When <c>false</c>, this implementation delegates to <see cref="MemoryPool{T}.Shared"/>.</param>
+    /// <param name="buffer">When this method returns, contains a <see cref="Span{T}"/> of exactly <paramref name="length"/> random bytes.</param>
+    /// <returns>
+    /// An <see cref="IMemoryOwner{T}"/> that manages the lifetime of the rented buffer.
+    /// Dispose this owner to return the buffer to the pool.
+    /// </returns>
+    /// <remarks>
+    /// Use this method for values such as nonces and salts, which are random but not secret,
+    /// by passing <c>false</c> for <paramref name="isSensitive"/>.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// using var owner = BufferFactory.RentRandom(32, isSensitive: true, out Span&lt;byte&gt; buffer);
+    /// // buffer holds 32 random bytes
+    /// // Memory is automatically zeroed when owner is disposed
+    /// </code>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="length"/> is negative.</exception>
+    public static IMemoryOwner<byte> RentRandom(int length, bool isSensitive, out Span<byte> buffer)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
+        var owner = Rent(length, isSensitive, out buffer);
+        RandomNumberGenerator.Fill(buffer);
+        return owner;
+    }
+
+    /// <summary>
+    /// Rents a byte buffer of exactly the requested length and fills it with cryptographically strong random bytes,
+    /// returning it as <see cref="Memory{T}"/>.
+    /// </summary>
+    /// <param name="length">The exact length of the buffer needed.</param>
+    /// <param name="isSensitive">When <c>true</c>, the buffer will be pinned during its lifetime and securely zeroed when returned.
+    /// When <c>false</c>, this implementation delegates to <see cref="MemoryPool{T}.Shared"/>.</param>
+    /// <param name="buffer">When this method returns, contains a <see cref="Memory{T}"/> of exactly <paramref name="length"/> random bytes.</param>
+    /// <returns>
+    /// An <see cref="IMemoryOwner{T}"/> that manages the lifetime of the rented buffer.
+    /// Dispose this owner to return the buffer to the pool.
+    /// </returns>
+    /// <remarks>
+    /// Use this overload when you need a <see cref="Memory{T}"/> instead of a <see cref="Span{T}"/>,
+    /// such as when passing the buffer to asynchronous methods.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// using var owner = BufferFactory.RentRandom(32, isSensitive: true, out Memory&lt;byte&gt; buffer);
+    /// // buffer holds 32 random bytes
+    /// // Memory is automatically zeroed when owner is disposed
+    /// </code>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="length"/> is negative.</exception>
+    public static IMemoryOwner<byte> RentRandom(
+        int length,
+        bool isSensitive,
+        out Memory<byte> buffer
+    )
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
+        var owner = Rent(length, isSensitive, out buffer);
+        RandomNumberGenerator.Fill(buffer.Span);
+        return owner;
+    }
 
     /// <summary>
     /// Creates a pinned array of the specified type wrapped in a <see cref="SecureArrayLifetime{T}"/> that securely zeroes the memory upon disposal.

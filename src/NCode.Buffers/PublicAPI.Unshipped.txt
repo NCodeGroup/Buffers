@@ -1,1 +1,3 @@
 #nullable enable
+static NCode.Buffers.BufferFactory.RentRandom(int length, bool isSensitive, out System.Memory<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!
+static NCode.Buffers.BufferFactory.RentRandom(int length, bool isSensitive, out System.Span<byte> buffer) -> System.Buffers.IMemoryOwner<byte>!
