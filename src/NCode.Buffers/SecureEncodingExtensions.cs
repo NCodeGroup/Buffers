@@ -61,7 +61,8 @@ public static class SecureEncodingExtensions
         {
             ArgumentNullException.ThrowIfNull(encoding);
 
-            var owner = BufferFactory.Rent(encoding.GetByteCount(chars), isSensitive, out bytes);
+            var byteCount = encoding.GetByteCount(chars);
+            var owner = BufferFactory.Rent(byteCount, isSensitive, out bytes);
             try
             {
                 bytes = bytes[..encoding.GetBytes(chars, bytes)];
@@ -108,7 +109,8 @@ public static class SecureEncodingExtensions
         {
             ArgumentNullException.ThrowIfNull(encoding);
 
-            var owner = BufferFactory.Rent(encoding.GetByteCount(chars), isSensitive, out bytes);
+            var byteCount = encoding.GetByteCount(chars);
+            var owner = BufferFactory.Rent(byteCount, isSensitive, out bytes);
             try
             {
                 bytes = bytes[..encoding.GetBytes(chars, bytes.Span)];
@@ -156,7 +158,8 @@ public static class SecureEncodingExtensions
         {
             ArgumentNullException.ThrowIfNull(encoding);
 
-            var owner = BufferFactory.Rent(encoding.GetCharCount(bytes), isSensitive, out chars);
+            var charCount = encoding.GetCharCount(bytes);
+            var owner = BufferFactory.Rent(charCount, isSensitive, out chars);
             try
             {
                 chars = chars[..encoding.GetChars(bytes, chars)];
@@ -204,7 +207,8 @@ public static class SecureEncodingExtensions
         {
             ArgumentNullException.ThrowIfNull(encoding);
 
-            var owner = BufferFactory.Rent(encoding.GetCharCount(bytes), isSensitive, out chars);
+            var charCount = encoding.GetCharCount(bytes);
+            var owner = BufferFactory.Rent(charCount, isSensitive, out chars);
             try
             {
                 chars = chars[..encoding.GetChars(bytes, chars.Span)];

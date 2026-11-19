@@ -58,11 +58,8 @@ public static class BinaryTextEncoding
     {
         ValidateFormat(format);
 
-        var owner = BufferFactory.Rent(
-            GetMaxDecodedLength(text.Length, format),
-            isSensitive,
-            out bytes
-        );
+        var maxLength = GetMaxDecodedLength(text.Length, format);
+        var owner = BufferFactory.Rent(maxLength, isSensitive, out bytes);
         try
         {
             bytes = bytes[..Decode(text, format, bytes)];
@@ -109,11 +106,8 @@ public static class BinaryTextEncoding
     {
         ValidateFormat(format);
 
-        var owner = BufferFactory.Rent(
-            GetMaxDecodedLength(text.Length, format),
-            isSensitive,
-            out bytes
-        );
+        var maxLength = GetMaxDecodedLength(text.Length, format);
+        var owner = BufferFactory.Rent(maxLength, isSensitive, out bytes);
         try
         {
             bytes = bytes[..Decode(text, format, bytes.Span)];
@@ -157,11 +151,8 @@ public static class BinaryTextEncoding
     {
         ValidateFormat(format);
 
-        var owner = BufferFactory.Rent(
-            GetEncodedLength(bytes.Length, format),
-            isSensitive,
-            out text
-        );
+        var length = GetEncodedLength(bytes.Length, format);
+        var owner = BufferFactory.Rent(length, isSensitive, out text);
         text = text[..Encode(bytes, format, text)];
         return owner;
     }
@@ -197,11 +188,8 @@ public static class BinaryTextEncoding
     {
         ValidateFormat(format);
 
-        var owner = BufferFactory.Rent(
-            GetEncodedLength(bytes.Length, format),
-            isSensitive,
-            out text
-        );
+        var length = GetEncodedLength(bytes.Length, format);
+        var owner = BufferFactory.Rent(length, isSensitive, out text);
         text = text[..Encode(bytes, format, text.Span)];
         return owner;
     }

@@ -37,25 +37,28 @@ internal static class SecureMemoryPoolMetrics
     /// </summary>
     internal const string Empty = "empty";
 
-    private static readonly Meter Meter = new(BufferMetrics.MeterName);
+    private static Meter Meter { get; } = new(BufferMetrics.MeterName);
 
-    private static readonly Counter<long> Rentals = Meter.CreateCounter<long>(
-        "ncode.buffers.secure_pool.rentals",
-        "{buffer}",
-        "The number of buffers the secure memory pool rented."
-    );
+    private static Counter<long> Rentals { get; } =
+        Meter.CreateCounter<long>(
+            "ncode.buffers.secure_pool.rentals",
+            "{buffer}",
+            "The number of buffers the secure memory pool rented."
+        );
 
-    private static readonly Counter<long> Returns = Meter.CreateCounter<long>(
-        "ncode.buffers.secure_pool.returns",
-        "{buffer}",
-        "The number of buffers returned to the secure memory pool's cache."
-    );
+    private static Counter<long> Returns { get; } =
+        Meter.CreateCounter<long>(
+            "ncode.buffers.secure_pool.returns",
+            "{buffer}",
+            "The number of buffers returned to the secure memory pool's cache."
+        );
 
-    private static readonly Counter<long> Trimmed = Meter.CreateCounter<long>(
-        "ncode.buffers.secure_pool.trimmed",
-        "{buffer}",
-        "The number of cached buffers the secure memory pool dropped when memory pressure was high."
-    );
+    private static Counter<long> Trimmed { get; } =
+        Meter.CreateCounter<long>(
+            "ncode.buffers.secure_pool.trimmed",
+            "{buffer}",
+            "The number of cached buffers the secure memory pool dropped when memory pressure was high."
+        );
 
     /// <summary>
     /// Records one rental.
