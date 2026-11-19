@@ -15,9 +15,9 @@ copy of the content first.
 
 The BCL's `ValueStringBuilder`, which builds text in a pooled or stack buffer, is internal, so callers can't use it.
 
-`Stream`'s base `Read(Span<byte>)`, `Write(ReadOnlySpan<byte>)`, `ReadByte`, `WriteByte` and `CopyTo` copy through
-`ArrayPool<byte>.Shared` arrays, which nothing zeroes. A stream that holds a secret and doesn't override them leaks
-the secret into the shared pool.
+`Stream`'s base `Read(Span<byte>)`, `Write(ReadOnlySpan<byte>)` and `CopyTo` copy through arrays rented from
+`ArrayPool<byte>.Shared`, and its base `ReadByte` and `WriteByte` copy through a new one-byte array. Nothing zeroes
+either, so a stream that holds a secret and doesn't override them leaves the secret in memory.
 
 ## Decision
 
@@ -29,8 +29,8 @@ the old owner, which zeroes the old buffer when the writer is sensitive.**
   `GetMemory`, and grows to the largest of the required size, its initial capacity or 256, and twice its capacity,
   capped at `Array.MaxLength`. `Reset` zeroes the written part and keeps the buffer.
 - `PooledMemoryStream` is a seekable, readable and writable `Stream` over one such buffer. It grows the same way, and it
-  overrides every `Stream` member that the base class implements through `ArrayPool<byte>.Shared`. Writing past the
-  end zero-fills the gap, and `SetLength` zeroes the bytes it cuts off.
+  overrides `Read`, `Write`, `ReadByte`, `WriteByte`, `CopyTo` and the async members, whose base versions copy through
+  arrays that nothing zeroes. Writing past the end zero-fills the gap, and `SetLength` zeroes the bytes it cuts off.
 - `PooledTextBuilder` is a `ref struct` that builds text in a caller's `Span<char>` or in a rented buffer. It grows the
   same way, and leaving a caller's span zeroes all of it, not only the written part, when it is sensitive.
 - A growth rents the new buffer and copies into it before it releases the old one, so an input that is the writer's own
