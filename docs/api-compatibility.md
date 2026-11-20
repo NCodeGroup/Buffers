@@ -41,8 +41,11 @@ does the same by hand.
 
 An intended break in a new major version is recorded with
 `dotnet pack src/NCode.Buffers -p:ApiCompatGenerateSuppressionFile=true`, which writes
-`src/NCode.Buffers/CompatibilitySuppressions.xml`. That file is reviewed like the API diff and deleted when the baseline moves
-to the new major's first release.
+`src/NCode.Buffers/CompatibilitySuppressions.xml`. That file is reviewed like the API diff. When `./build/Update-Baseline.ps1`
+raises the baseline to the new major's first release, it removes the baseline suppressions, the entries with
+`<IsBaselineSuppression>true</IsBaselineSuppression>` and the `PKV006` and `PKV007` entries for a dropped target framework,
+which then match nothing and which package validation rejects as unnecessary. It keeps any suppression between the package's
+own target frameworks and deletes the file when nothing is left. Remove them the same way when you raise the baseline by hand.
 
 ## Hand-editing PublicAPI files
 
