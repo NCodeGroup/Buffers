@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.2] - 2026-11-19
+
+### Added
+
+- `build/site.ps1` builds, layout-checks and serves the documentation site with the NCodeGroup/docs toolchain cloned beside the main checkout, from the main checkout and from a plan's worktree alike, and runs the toolchain with `node`, so no option passes through npm; `AGENTS.md` and `CONTRIBUTING.md` give its commands ([#116](https://github.com/NCodeGroup/Buffers/issues/116)).
+
 ### Changed
 
 - Package validation compares each package with the published 5.3.1 package.
+- The documentation site's "Ways to get it wrong" page gives each pitfall what you write, what happens, why and what to write instead a line each, as the guides do, and lists its compiler errors as the guides list their pitfalls ([#115](https://github.com/NCodeGroup/Buffers/issues/115)).
 
 ## [5.3.1] - 2026-11-19
 
@@ -269,7 +276,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.3.1...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.3.2...HEAD
+[5.3.2]: https://github.com/NCodeGroup/Buffers/compare/v5.3.1...v5.3.2
 [5.3.1]: https://github.com/NCodeGroup/Buffers/compare/v5.3.0...v5.3.1
 [5.3.0]: https://github.com/NCodeGroup/Buffers/compare/v5.2.5...v5.3.0
 [5.2.5]: https://github.com/NCodeGroup/Buffers/compare/v5.2.4...v5.2.5
