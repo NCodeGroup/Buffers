@@ -207,7 +207,7 @@ The [silver criteria](https://www.bestpractices.dev/en/criteria/1), 55 in all.
 | `crypto_certificate_verification` | MUST | yes | no | **Check**: N/A without TLS; otherwise Met when nothing turns certificate verification off ([Checks](#checks)). |
 | `crypto_verification_private` | MUST | yes | no | **Check**: the same evidence. |
 | `signed_releases` | MUST | yes | no | **Met**: nuget.org signs each package, and each release carries build provenance; [SECURITY.md](../SECURITY.md#verify-a-package) says how to verify both. |
-| `version_tags_signed` | SUGGESTED | no | no | **Check**: Met while the repository is public: `.github/workflows/tag-release.yml` signs each release tag with gitsign, and [SECURITY.md](../SECURITY.md#verify-a-release), Verify a Release, says how to check it ([ADR-0028](decisions/project-template/0028-github-releases-are-immutable-and-their-tags-signed.md)); a private repository's tags stay unsigned. |
+| `version_tags_signed` | SUGGESTED | no | no | **Check**: Met while the repository is public and `AGENTS.md`'s Landing section says `release: tag` or `release: tag+release`: `.github/workflows/tag-release.yml` then signs each release tag with gitsign, and [SECURITY.md](../SECURITY.md#verify-a-release), Verify a Release, says how to check it ([ADR-0028](decisions/project-template/0028-github-releases-are-immutable-and-their-tags-signed.md)); a private repository's tags stay unsigned. |
 | `input_validation` | MUST | yes | no | **Check**: list the entry points that take untrusted input and the checks each one makes. |
 | `hardening` | SHOULD | yes | no | **Check**: name the hardening in place, such as least-privilege workflow tokens, path guards and scoped credentials. |
 | `assurance_case` | MUST | no | yes | **Check**: [assurance-case.md](assurance-case.md); Met once its threat model, trust boundary, principles and weaknesses are written. |
@@ -330,7 +330,7 @@ RULES
 - Before saving each level, show me a table of criterion, answer and evidence, grouped into: from ANSWERS, from the map that you verified, and left open. List the MUST criteria that keep that level from being earned. Save only after I say "go". Never claim a level: report what the site shows.
 
 STEPS
-1. Find an existing entry: open https://www.bestpractices.dev/en/projects?q=NCode.Buffers. Text search matches names and descriptions, not repository URLs. If the project is there, note its number and go to step 3.
+1. Find an existing entry: open https://www.bestpractices.dev/projects.json?url=https%3A%2F%2Fgithub.com%2FOWNER%2FREPO (the project's address, URL-encoded, without /en/), which lists a registered project's id. If it lists one, note its number and go to step 3. Otherwise open https://www.bestpractices.dev/en/projects?q=NCode.Buffers; text search matches names and descriptions, not repository URLs. If the project is there, note its number and go to step 3.
 2. Register: open https://www.bestpractices.dev/en/projects/new, choose OWNER/REPO under "Select a GitHub repository", set the home page to the repository URL unless I give another, keep the Metal series, and submit. Wait for the redirect to /en/projects/<number>/passing/edit; autofill takes about 10 seconds.
 3. For each level (passing, silver, gold), open /en/projects/<number>/<level>/edit, click "Expand all panels" and read the form with JavaScript:
    - each criterion's radios are project[<id>_status], with values Met, Unmet, N/A and ?;

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The project follows project-template v0.108.0: `/run-issues-all-in` runs a whole set of issues as one plan and one draft pull request, `/best-practices` reports OpenSSF Scorecard results and answers for the default branch, and `build/Update-Baseline.ps1` removes baseline suppressions when it raises the baseline to a new major version ([ADR-0032](docs/decisions/project-template/0032-a-plan-is-released-only-when-it-changes-what-a-release-ships.md), [ADR-0033](docs/decisions/project-template/0033-an-all-in-run-lifts-the-autopilots-limits-on-the-maintainers-word.md), [ADR-0153](docs/decisions/project-template/0153-best-practices-reports-scorecard-and-answers-for-the-default-branch.md)).
 - Package validation compares each package with the published 5.3.2 package.
 
 ## [5.3.2] - 2026-11-19

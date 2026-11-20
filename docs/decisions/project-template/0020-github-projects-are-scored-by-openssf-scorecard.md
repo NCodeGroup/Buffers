@@ -1,6 +1,6 @@
 # 0020. A GitHub project is scored by OpenSSF Scorecard
 
-- **Status:** Accepted (amended by 0022 and 0025)
+- **Status:** Accepted (amended by 0022, 0025 and 0153)
 - **Date:** 2026-11-14
 
 ## Context
@@ -32,12 +32,12 @@ The table lists each check, what the template does for it and what needs a perso
 | Vulnerabilities | Dependency and vulnerability scanning is configured. | Fix the findings it reports. |
 | CI-Tests | Pull requests run the CI workflow. | Nothing. |
 | Maintained | Scheduled automation keeps the repository active. | Keep committing and answering issues. |
-| Signed-Releases | `publish.yml` calls `release-provenance.yml`, attaching packages, a signed `<tag>.intoto.jsonl` and an SBOM ([ADR-0139](0139-releases-carry-build-provenance.md), [ADR-0151](0151-release-follow-ups-are-jobs-publish-calls.md)). | The last five releases with assets are averaged: delete older unsigned assets (packages stay on nuget.org) or wait five releases. |
+| Signed-Releases | `publish.yml` calls `release-provenance.yml`, attaching packages, a signed `<tag>.intoto.jsonl` and an SBOM ([ADR-0139](0139-releases-carry-build-provenance.md), [ADR-0151](0151-release-follow-ups-are-jobs-publish-calls.md)). | The last five releases with assets are averaged: delete older unsigned assets (packages stay on nuget.org) or wait five releases. `release-provenance.yml`'s `workflow_dispatch` backfills a release only while the Publish run's `packages` artifact is kept (14 days); never attest packages downloaded from a registry, which claims a build the workflow never ran. |
 | Packaging | `publish.yml` publishes the packages. | The first successful `publish.yml` run. |
 | Branch-Protection | The ruleset blocks deletion and force pushes, requires a pull request, up-to-date checks and resolved conversations, and allows no bypass, so it applies to administrators. As this project's `code-review.yml` passes `approve: true`, it also requires one approval, dismisses stale approvals and requires approval of the last push ([ADR-0022](0022-ncode-reviews-approval-gates-the-merge.md)), which passes tier 2, and tier 2 gates every later tier: the score is about 8. It never requires approval of the last push without an approval. | Tier 4 needs two approvals and code owners. |
 | Code-Review | Any non-author approval counts, a bot's included: NCode Review approves a clean review ([ADR-0022](0022-ncode-reviews-approval-gates-the-merge.md)). | Approve each bot's pull request, which NCode Review skips; the score rises toward 10 over the last 30 commits. |
 | Contributors | None. | Contributors from other organizations. |
-| Fuzzing | A .NET project adds FsCheck property tests to its test project. | Write the property tests. |
+| Fuzzing | Nothing: the template adds no property tests or package. | Write property tests with the stack's property-test library, for .NET `FsCheck.Xunit` with `[Property(Replay = Seed)]`, which Scorecard detects. |
 | CII-Best-Practices | The six documents ([ADR-0023](0023-a-project-ships-the-documents-the-best-practices-silver-level-asks-for.md)) and `docs/best-practices-criteria.md`, which maps every criterion to the answer to expect and its evidence ([ADR-0025](0025-every-best-practices-criterion-is-mapped-in-a-template-owned-page.md)). | Register at https://www.bestpractices.dev: in progress 2, passing 5, silver 7, gold 10; silver needs `access_continuity`, a second owner of the organization and the package registry; gold needs two-person review, two unassociated contributors, the organization's two-factor settings and a security review. |
 
 ## Options considered
