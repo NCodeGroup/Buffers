@@ -31,7 +31,7 @@ jobs:
       pages: write # reads the site's URL, and creates the deployment
       id-token: write # proves to GitHub Pages where the deployment comes from
     # Taken the day it is released, not after ADR-0009's cooldown, while the toolchain is built out (ADR-1024).
-    uses: NCodeGroup/docs/.github/workflows/site.yml@dc34a95304fd9f750b911b1ca6f41f1a21a7918c # v0.15.0
+    uses: NCodeGroup/docs/.github/workflows/site.yml@bf9e9a603ddd7e194eebd6b216e5f71c11a5c7cb # v0.16.0
     with:
       content-path: docs/site
       deploy: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
