@@ -15,6 +15,7 @@ public class BinaryTextEncodingTests
     [Theory]
     [InlineData("+/8B", BinaryTextFormat.Base64)]
     [InlineData("-_8B", BinaryTextFormat.Base64Url)]
+    [InlineData("-_8B", BinaryTextFormat.Base64UrlStrict)]
     [InlineData("FBFF01", BinaryTextFormat.HexUpper)]
     [InlineData("fbff01", BinaryTextFormat.HexLower)]
     public void RentDecoded_KnownText_ReturnsTheExactBytes(string text, BinaryTextFormat format)
@@ -48,6 +49,70 @@ public class BinaryTextEncodingTests
         Assert.Equal<byte>([0xFB, 0xFF, 0x01], actual);
     }
 
+    [Theory]
+    [InlineData("", "")]
+    [InlineData("AA", "00")]
+    [InlineData("AQ", "01")]
+    [InlineData("AAE", "0001")]
+    [InlineData("QUJD", "414243")]
+    [InlineData("-_8B", "FBFF01")]
+    public void RentDecoded_Base64UrlStrictCanonicalText_ReturnsTheBytes(
+        string text,
+        string expectedHex
+    )
+    {
+        using var owner = BinaryTextEncoding.RentDecoded(
+            text,
+            BinaryTextFormat.Base64UrlStrict,
+            isSensitive: false,
+            out Span<byte> bytes
+        );
+
+        Assert.Equal<byte>(Convert.FromHexString(expectedHex), bytes.ToArray());
+    }
+
+    [Theory]
+    [InlineData("AA==")]
+    [InlineData("AAA=")]
+    [InlineData("AA=")]
+    [InlineData("A A")]
+    [InlineData(" AA")]
+    [InlineData("AA\n")]
+    [InlineData("AR")]
+    [InlineData("AAB")]
+    [InlineData("A")]
+    [InlineData("AAAAA")]
+    [InlineData("+/8B")]
+    public void RentDecoded_Base64UrlStrictNonCanonicalText_ThrowsFormatException(string text)
+    {
+        Assert.Throws<FormatException>(() =>
+        {
+            using var owner = BinaryTextEncoding.RentDecoded(
+                text,
+                BinaryTextFormat.Base64UrlStrict,
+                isSensitive: false,
+                out Span<byte> _
+            );
+        });
+    }
+
+    [Theory]
+    [InlineData("AA==")]
+    [InlineData("AA=")]
+    [InlineData("A A")]
+    [InlineData("AA\n")]
+    public void RentDecoded_Base64UrlPaddedOrSpacedText_Decodes(string text)
+    {
+        using var owner = BinaryTextEncoding.RentDecoded(
+            text,
+            BinaryTextFormat.Base64Url,
+            isSensitive: false,
+            out Span<byte> bytes
+        );
+
+        Assert.Equal<byte>([0x00], bytes.ToArray());
+    }
+
     [Fact]
     public void RentDecoded_Base64WithWhitespace_Decodes()
     {
@@ -68,6 +133,7 @@ public class BinaryTextEncodingTests
     [Theory]
     [InlineData("+/8*", BinaryTextFormat.Base64)]
     [InlineData("-_8*", BinaryTextFormat.Base64Url)]
+    [InlineData("-_8*", BinaryTextFormat.Base64UrlStrict)]
     [InlineData("FBF", BinaryTextFormat.HexUpper)]
     [InlineData("ZZ", BinaryTextFormat.HexLower)]
     public void RentDecoded_InvalidText_ThrowsFormatException(string text, BinaryTextFormat format)
@@ -86,6 +152,7 @@ public class BinaryTextEncodingTests
     [Theory]
     [InlineData("+/8*", BinaryTextFormat.Base64)]
     [InlineData("-_8*", BinaryTextFormat.Base64Url)]
+    [InlineData("-_8*", BinaryTextFormat.Base64UrlStrict)]
     [InlineData("FBF", BinaryTextFormat.HexUpper)]
     [InlineData("ZZ", BinaryTextFormat.HexLower)]
     public void RentDecoded_InvalidTextWithMemory_ThrowsFormatException(
@@ -201,6 +268,7 @@ public class BinaryTextEncodingTests
     [Theory]
     [InlineData("+/8B", BinaryTextFormat.Base64)]
     [InlineData("-_8B", BinaryTextFormat.Base64Url)]
+    [InlineData("-_8B", BinaryTextFormat.Base64UrlStrict)]
     [InlineData("FBFF01", BinaryTextFormat.HexUpper)]
     [InlineData("fbff01", BinaryTextFormat.HexLower)]
     public void RentEncoded_KnownBytes_ReturnsTheExactText(string expected, BinaryTextFormat format)
@@ -235,6 +303,7 @@ public class BinaryTextEncodingTests
     [Theory]
     [InlineData(BinaryTextFormat.Base64)]
     [InlineData(BinaryTextFormat.Base64Url)]
+    [InlineData(BinaryTextFormat.Base64UrlStrict)]
     [InlineData(BinaryTextFormat.HexUpper)]
     [InlineData(BinaryTextFormat.HexLower)]
     public void RentEncoded_EmptyBytes_ReturnsEmpty(BinaryTextFormat format)
@@ -276,6 +345,11 @@ public class BinaryTextEncodingTests
     [InlineData(BinaryTextFormat.Base64Url, 2)]
     [InlineData(BinaryTextFormat.Base64Url, 3)]
     [InlineData(BinaryTextFormat.Base64Url, 64)]
+    [InlineData(BinaryTextFormat.Base64UrlStrict, 0)]
+    [InlineData(BinaryTextFormat.Base64UrlStrict, 1)]
+    [InlineData(BinaryTextFormat.Base64UrlStrict, 2)]
+    [InlineData(BinaryTextFormat.Base64UrlStrict, 3)]
+    [InlineData(BinaryTextFormat.Base64UrlStrict, 64)]
     [InlineData(BinaryTextFormat.HexUpper, 0)]
     [InlineData(BinaryTextFormat.HexUpper, 1)]
     [InlineData(BinaryTextFormat.HexUpper, 2)]
