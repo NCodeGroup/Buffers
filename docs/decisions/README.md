@@ -93,3 +93,4 @@ override in `AGENTS.md`.
 | [ADR-1028](1028-growable-writers-streams-and-text-builders-zero-each-buffer-they-outgrow.md) | Growable writers, streams and text builders zero each buffer they outgrow | Accepted |
 | [ADR-1029](1029-secret-t-holds-a-secret-it-never-prints.md) | Secret<T> holds a secret it never prints | Accepted |
 | [ADR-1030](1030-the-secure-pool-reports-metrics-through-one-static-meter.md) | The secure pool reports metrics through one static meter (supersedes project-template 0113 for the meter's source; amends 1015) | Accepted |
+| [ADR-1031](1031-a-strict-base64url-format-decodes-only-the-canonical-unpadded-text-jose-requires.md) | A strict Base64url format decodes only the canonical unpadded text JOSE requires | Accepted |
