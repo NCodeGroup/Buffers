@@ -25,10 +25,18 @@ namespace NCode.Buffers;
 public static class BinaryTextEncoding
 {
     /// <summary>
-    /// The message of the <see cref="FormatException"/> thrown for text that is not strict Base64url.
+    /// The message of the <see cref="FormatException"/> thrown for strict Base64url text that holds a character
+    /// outside the URL-safe alphabet.
     /// </summary>
-    private const string StrictBase64UrlMessage =
-        "The text is not strict Base64url: only the unpadded URL-safe alphabet, with no padding, whitespace or unused bits set.";
+    internal const string StrictBase64UrlAlphabetMessage =
+        "The text is not strict Base64url: it holds a character outside the URL-safe alphabet, such as padding or whitespace.";
+
+    /// <summary>
+    /// The message of the <see cref="FormatException"/> thrown for strict Base64url text that doesn't decode to whole
+    /// bytes with no unused bit set.
+    /// </summary>
+    internal const string StrictBase64UrlLengthMessage =
+        "The text is not strict Base64url: its length leaves one character over, or its last character has unused bits set.";
 
     /// <summary>
     /// Gets the characters that strict Base64url text may contain.
@@ -268,7 +276,7 @@ public static class BinaryTextEncoding
 
             case BinaryTextFormat.Base64UrlStrict:
                 if (text.ContainsAnyExcept(Base64UrlAlphabet))
-                    throw new FormatException(StrictBase64UrlMessage);
+                    throw new FormatException(StrictBase64UrlAlphabetMessage);
                 var strictStatus = Base64Url.DecodeFromChars(
                     text,
                     destination,
@@ -277,7 +285,7 @@ public static class BinaryTextEncoding
                     isFinalBlock: true
                 );
                 if (strictStatus != OperationStatus.Done)
-                    throw new FormatException(StrictBase64UrlMessage);
+                    throw new FormatException(StrictBase64UrlLengthMessage);
                 return strictWritten;
 
             default:

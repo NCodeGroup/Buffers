@@ -81,14 +81,12 @@ public class BinaryTextEncodingTests
     [InlineData("A A")]
     [InlineData(" AA")]
     [InlineData("AA\n")]
-    [InlineData("AR")]
-    [InlineData("AAB")]
-    [InlineData("A")]
-    [InlineData("AAAAA")]
     [InlineData("+/8B")]
-    public void RentDecoded_Base64UrlStrictNonCanonicalText_ThrowsFormatException(string text)
+    public void RentDecoded_Base64UrlStrictTextOutsideTheAlphabet_ThrowsTheAlphabetMessage(
+        string text
+    )
     {
-        Assert.Throws<FormatException>(() =>
+        var exception = Assert.Throws<FormatException>(() =>
         {
             using var owner = BinaryTextEncoding.RentDecoded(
                 text,
@@ -97,6 +95,30 @@ public class BinaryTextEncodingTests
                 out Span<byte> _
             );
         });
+
+        Assert.Equal(BinaryTextEncoding.StrictBase64UrlAlphabetMessage, exception.Message);
+    }
+
+    [Theory]
+    [InlineData("AR")]
+    [InlineData("AAB")]
+    [InlineData("A")]
+    [InlineData("AAAAA")]
+    public void RentDecoded_Base64UrlStrictTextWithBitsOrACharacterOver_ThrowsTheLengthMessage(
+        string text
+    )
+    {
+        var exception = Assert.Throws<FormatException>(() =>
+        {
+            using var owner = BinaryTextEncoding.RentDecoded(
+                text,
+                BinaryTextFormat.Base64UrlStrict,
+                isSensitive: false,
+                out Span<byte> _
+            );
+        });
+
+        Assert.Equal(BinaryTextEncoding.StrictBase64UrlLengthMessage, exception.Message);
     }
 
     [Theory]
