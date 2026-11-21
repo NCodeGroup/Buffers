@@ -18,7 +18,7 @@
     <Product>NCode.Buffers</Product>
     <Authors>NCode Group</Authors>
     <Company>NCode Group</Company>
-    <Copyright>Copyright © $([System.DateTime]::Now.Year) NCode Group</Copyright>
+    <Copyright>Copyright © NCode Group</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
