@@ -12,13 +12,15 @@ name: Code review
 # records each posted finding's outcome, with no model call. It needs no environment: the app's key is an organization
 # secret, and the code-review environment holds none; it only lets Anthropic's federation rule trust the review job.
 #
-# approve: true (v1.4.0 on) approves a pull request whose review leaves no blocker or should-fix finding open;
-# tools/Set-RepositoryBaseline.ps1 in the project template then requires one approval. A push dismisses it, so comment
-# /review after one; a maintainer approves a bot's pull request, which NCode Review skips.
-# docs/decisions/project-template/0022-ncode-reviews-approval-gates-the-merge.md says why. v1.4.2 was released on
-# 2026-11-17, under the three days ADR-0009 waits: approve needs v1.4.0 on, and v1.4.2 is the first of those whose
-# action.yml loads (NCodeGroup/code-review#221), so it is pinned by that record's commented exception, and this
-# sentence goes once 2026-11-20 has passed (NCodeGroup/project-template#392).
+# approve: true approves a pull request whose review leaves no blocker or should-fix finding open, which Scorecard's
+# Code-Review check counts. GitHub counts an approval toward a ruleset's required approval only from a reviewer that can
+# write, so from v1.5.0 on the approval is submitted by the NCode Review Approver, an app with Contents: write whose
+# token, minted after the review, can only write pull requests; approver-private-key passes its key, which
+# tools/Enable-CodeReview.ps1 -ApproverPrivateKeyPath stores in the code-review environment. A push dismisses the
+# approval, so comment /review after one; a maintainer approves a bot's pull request, which NCode Review skips.
+# docs/decisions/project-template/0022-ncode-reviews-approval-gates-the-merge.md and
+# 0036-a-required-approval-is-met-by-ncode-reviews-approver-app.md say why. v1.5.0 was released on 2026-11-21, under the
+# three days ADR-0009 waits; it is pinned on the maintainer's word.
 #
 # pull_request_target and issue_comment both run this file from the default branch, so a pull request can't change its
 # own review. The engine fetches its code only to read it: nothing from it is built, run or installed.
@@ -81,12 +83,15 @@ jobs:
           persist-credentials: false
 
       - name: Review
-        uses: NCodeGroup/code-review@da82720a1fb582551e8d460ddd277f3cdc8b43f1 # v1.4.2
+        uses: NCodeGroup/code-review@a4cdf65d2450e4e1b2b92ed53430ceb8026d4f97 # v1.5.0
         with:
           app-private-key: ${{ secrets.NCODE_REVIEW_APP_PRIVATE_KEY }}
           bedrock-api-key: ${{ secrets.AWS_BEARER_TOKEN_BEDROCK }}
-          # A review that leaves no blocker or should-fix finding open approves the pull request.
+          # A review that leaves no blocker or should-fix finding open approves the pull request. The NCode Review
+          # Approver submits the approval, so it meets the ruleset's required approval; the key is a secret of the
+          # code-review environment, which only the default branch can deploy to.
           approve: true
+          approver-private-key: ${{ secrets.NCODE_REVIEW_APPROVER_PRIVATE_KEY }}
 
   outcomes:
     # A closed pull request, merged or not, whoever closed it (a merge queue merges as a bot) and whatever its labels:
@@ -107,6 +112,6 @@ jobs:
       pull-requests: read
     steps:
       - name: Record the outcomes
-        uses: NCodeGroup/code-review@da82720a1fb582551e8d460ddd277f3cdc8b43f1 # v1.4.2
+        uses: NCodeGroup/code-review@a4cdf65d2450e4e1b2b92ed53430ceb8026d4f97 # v1.5.0
         with:
           app-private-key: ${{ secrets.NCODE_REVIEW_APP_PRIVATE_KEY }}

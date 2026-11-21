@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Package validation compares each package with the published 5.4.0 package.
-- The project follows project-template v0.111.0: the build's `Copyright` carries no year taken from the build machine's clock, so a rebuild of a release's tag produces the same packages, `ci.yml` builds the packages twice and compares them in a `reproducible-build` job, and `raise-baseline.yml` pushes `baseline-<version>` and opens an issue whose link opens the pull request ([ADR-0154](docs/decisions/project-template/0154-a-library-build-takes-nothing-from-the-clock-and-ci-builds-it-twice.md), [ADR-0036](docs/decisions/project-template/0036-a-required-approval-is-met-by-ncode-reviews-approver-app.md)).
+- The project follows project-template v0.111.0: the build's `Copyright` carries no year taken from the build machine's clock, so a rebuild of a release's tag produces the same packages, `ci.yml` builds the packages twice and compares them in a `reproducible-build` job, `code-review.yml` pins NCode Review v1.5.0 and passes the approver key, and `raise-baseline.yml` pushes `baseline-<version>` and opens an issue whose link opens the pull request ([ADR-0154](docs/decisions/project-template/0154-a-library-build-takes-nothing-from-the-clock-and-ci-builds-it-twice.md), [ADR-0036](docs/decisions/project-template/0036-a-required-approval-is-met-by-ncode-reviews-approver-app.md)).
 
 ## [5.4.0] - 2026-11-20
 
