@@ -1,6 +1,6 @@
 # 0150. A workflow raises the package validation baseline after each release
 
-- **Status:** Accepted (amended by 0022 and 0151)
+- **Status:** Accepted (amended by 0022, 0034, 0036 and 0151)
 - **Date:** 2026-11-15
 - **Amends:** 0147
 
@@ -44,7 +44,7 @@ succeeds, so the raise cannot run in the release itself.
 ## Consequences
 
 - The first set of the baseline stays manual.
-- A GitLab library runs the script by hand.
+- A GitLab library's `raise-baseline` job needs that token; without it, run the script by hand.
 - A merge of the pull request needs CI to pass, as any change does.
 - The same setting lets any workflow's token approve a pull request, which counts where NCode Review's approval is
   required ([ADR-0022](0022-ncode-reviews-approval-gates-the-merge.md)); no template workflow approves, and this one
