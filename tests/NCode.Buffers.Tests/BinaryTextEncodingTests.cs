@@ -68,7 +68,10 @@ public class BinaryTextEncodingTests
             out Span<byte> bytes
         );
 
-        Assert.Equal<byte>(Convert.FromHexString(expectedHex), bytes.ToArray());
+        var expected = Convert.FromHexString(expectedHex);
+        var actual = bytes.ToArray();
+
+        Assert.Equal<byte>(expected, actual);
     }
 
     [Theory]
@@ -110,7 +113,9 @@ public class BinaryTextEncodingTests
             out Span<byte> bytes
         );
 
-        Assert.Equal<byte>([0x00], bytes.ToArray());
+        var actual = bytes.ToArray();
+
+        Assert.Equal<byte>([0x00], actual);
     }
 
     [Fact]
