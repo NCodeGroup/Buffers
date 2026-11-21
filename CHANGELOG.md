@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Package validation compares each package with the published 5.5.0 package.
+
 ### Fixed
 
 - The publishing workflow grants its baseline job `contents: write` and `issues: write`, the permissions `raise-baseline.yml` declares, so its run starts and the release's packages reach nuget.org ([NCodeGroup/project-template#467](https://github.com/NCodeGroup/project-template/pull/467)).
