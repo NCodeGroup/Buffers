@@ -1,6 +1,6 @@
 # 1010. Site samples are compiled tests in a project of their own, included by key when the site is built
 
-- **Status:** Accepted
+- **Status:** Accepted (amended by 1032)
 - **Date:** 2026-11-15
 - **Deciders:** NCode Group
 - **Amends:** ADR-1005, items 2 and 3, and adds a rule for the keys of its samples.

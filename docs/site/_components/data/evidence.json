@@ -663,6 +663,9 @@
     "SiteEncodeSecretRejectInvalid": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/EncodeASecretSamples.cs"
     },
+    "SiteEncodeSecretStrictBase64Url": {
+      "file": "tests/NCode.Buffers.Site.Tests/Guides/EncodeASecretSamples.cs"
+    },
     "SiteGrowUsual": {
       "file": "tests/NCode.Buffers.Site.Tests/Guides/GrowAContiguousSecretSamples.cs"
     },
@@ -1238,6 +1241,12 @@
       "branch": "main",
       "kind": "documented",
       "label": "ADR-1030"
+    },
+    "Adr1031": {
+      "file": "docs/decisions/1031-a-strict-base64url-format-decodes-only-the-canonical-unpadded-text-jose-requires.md",
+      "branch": "main",
+      "kind": "documented",
+      "label": "ADR-1031"
     },
     "SecureMemoryPool.PageSize": {
       "file": "src/NCode.Buffers/SecureMemoryPool.cs",

@@ -1844,9 +1844,10 @@
         "Base64 = 0",
         "Base64Url = 1",
         "HexUpper = 2",
-        "HexLower = 3"
+        "HexLower = 3",
+        "Base64UrlStrict = 4"
       ],
-      "summary": "A text representation of binary data: standard Base64 with padding (`Base64`), URL-safe Base64 without padding (`Base64Url`), and hexadecimal with uppercase (`HexUpper`) or lowercase (`HexLower`) digits.",
+      "summary": "A text representation of binary data: standard Base64 with padding (`Base64`), URL-safe Base64 without padding (`Base64Url`, which also decodes padded or spaced text), canonical unpadded URL-safe Base64 as JOSE requires (`Base64UrlStrict`), and hexadecimal with uppercase (`HexUpper`) or lowercase (`HexLower`) digits.",
       "constraint": null,
       "throws": null,
       "page": "/guides/encode-a-secret/",
@@ -1855,6 +1856,7 @@
         "NCode.Buffers.BinaryTextFormat",
         "NCode.Buffers.BinaryTextFormat.Base64 = 0 -> NCode.Buffers.BinaryTextFormat",
         "NCode.Buffers.BinaryTextFormat.Base64Url = 1 -> NCode.Buffers.BinaryTextFormat",
+        "NCode.Buffers.BinaryTextFormat.Base64UrlStrict = 4 -> NCode.Buffers.BinaryTextFormat",
         "NCode.Buffers.BinaryTextFormat.HexLower = 3 -> NCode.Buffers.BinaryTextFormat",
         "NCode.Buffers.BinaryTextFormat.HexUpper = 2 -> NCode.Buffers.BinaryTextFormat"
       ]

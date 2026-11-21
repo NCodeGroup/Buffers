@@ -395,7 +395,7 @@ using var charsOwner = SecureEncoding.UTF8.RentChars(
 
 #### Base64, Base64url and hex
 
-`BinaryTextEncoding.RentDecoded` and `RentEncoded` convert between bytes and Base64, Base64url, or upper or lower case hex text, with `BinaryTextFormat` choosing the format. Invalid text throws `FormatException` after the rental is returned.
+`BinaryTextEncoding.RentDecoded` and `RentEncoded` convert between bytes and Base64, Base64url, or upper or lower case hex text, with `BinaryTextFormat` choosing the format. `Base64UrlStrict` decodes only the canonical unpadded Base64url JOSE requires, and refuses `=` padding, whitespace and unused bits set in the last character. Invalid text throws `FormatException` after the rental is returned.
 
 <!-- snippet: DecodeBinaryText -->
 ```cs

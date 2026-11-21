@@ -7,10 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.4.0] - 2026-11-20
+
+### Added
+
+- `BinaryTextFormat.Base64UrlStrict` decodes only the canonical unpadded Base64url JOSE requires (RFC 7515 section 2): `BinaryTextEncoding.RentDecoded` throws `FormatException` for `=` padding, whitespace, a character outside the URL-safe alphabet or a final character with unused bits set, and `RentEncoded` writes the same text as `Base64Url` ([#123](https://github.com/NCodeGroup/Buffers/issues/123), [ADR-1031](docs/decisions/1031-a-strict-base64url-format-decodes-only-the-canonical-unpadded-text-jose-requires.md)).
+
 ### Changed
 
 - The project follows project-template v0.108.0: `/run-issues-all-in` runs a whole set of issues as one plan and one draft pull request, `/best-practices` reports OpenSSF Scorecard results and answers for the default branch, and `build/Update-Baseline.ps1` removes baseline suppressions when it raises the baseline to a new major version ([ADR-0032](docs/decisions/project-template/0032-a-plan-is-released-only-when-it-changes-what-a-release-ships.md), [ADR-0033](docs/decisions/project-template/0033-an-all-in-run-lifts-the-autopilots-limits-on-the-maintainers-word.md), [ADR-0153](docs/decisions/project-template/0153-best-practices-reports-scorecard-and-answers-for-the-default-branch.md)).
 - Package validation compares each package with the published 5.3.2 package.
+- The documentation of `BinaryTextFormat.Base64Url` says that decoding also accepts `=` padding and whitespace, and the README and the documentation site's guides to turning a secret between text and bytes and to reading a secret without a string name `Base64UrlStrict` ([#123](https://github.com/NCodeGroup/Buffers/issues/123)).
 
 ## [5.3.2] - 2026-11-19
 
@@ -281,7 +288,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.3.2...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.4.0...HEAD
+[5.4.0]: https://github.com/NCodeGroup/Buffers/compare/v5.3.2...v5.4.0
 [5.3.2]: https://github.com/NCodeGroup/Buffers/compare/v5.3.1...v5.3.2
 [5.3.1]: https://github.com/NCodeGroup/Buffers/compare/v5.3.0...v5.3.1
 [5.3.0]: https://github.com/NCodeGroup/Buffers/compare/v5.2.5...v5.3.0
