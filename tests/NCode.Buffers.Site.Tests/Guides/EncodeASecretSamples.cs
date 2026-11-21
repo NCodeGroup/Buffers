@@ -100,6 +100,33 @@ public class EncodeASecretSamples
     }
 
     [Fact]
+    public void SiteEncodeSecretStrictBase64UrlSample_Runs()
+    {
+        const string text = "-__-AQ";
+
+        // begin-snippet: SiteEncodeSecretStrictBase64Url
+        // A JWK's key is unpadded Base64url with one spelling (RFC 7515); any other spelling throws.
+        using var keyOwner = BinaryTextEncoding.RentDecoded(
+            text,
+            BinaryTextFormat.Base64UrlStrict,
+            isSensitive: true,
+            out Span<byte> key
+        );
+        // end-snippet
+
+        SecretAssert.Equal([0xFB, 0xFF, 0xFE, 0x01], key);
+        Assert.Throws<FormatException>(() =>
+        {
+            using var padded = BinaryTextEncoding.RentDecoded(
+                "-__-AQ==",
+                BinaryTextFormat.Base64UrlStrict,
+                isSensitive: true,
+                out Span<byte> _
+            );
+        });
+    }
+
+    [Fact]
     public void SiteEncodeSecretRejectInvalidSample_Runs()
     {
         // begin-snippet: SiteEncodeSecretRejectInvalid
