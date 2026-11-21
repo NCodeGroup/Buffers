@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.5.0] - 2026-11-21
+
 ### Changed
 
 - Package validation compares each package with the published 5.4.0 package.
+- The project follows project-template v0.111.0: the build's `Copyright` carries no year taken from the build machine's clock, so a rebuild of a release's tag produces the same packages, `ci.yml` builds the packages twice and compares them in a `reproducible-build` job, and `raise-baseline.yml` pushes `baseline-<version>` and opens an issue whose link opens the pull request ([ADR-0154](docs/decisions/project-template/0154-a-library-build-takes-nothing-from-the-clock-and-ci-builds-it-twice.md), [ADR-0036](docs/decisions/project-template/0036-a-required-approval-is-met-by-ncode-reviews-approver-app.md)).
 
 ## [5.4.0] - 2026-11-20
 
@@ -292,7 +295,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release after consolidating several projects into NCode.Buffers.
 
-[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.4.0...HEAD
+[Unreleased]: https://github.com/NCodeGroup/Buffers/compare/v5.5.0...HEAD
+[5.5.0]: https://github.com/NCodeGroup/Buffers/compare/v5.4.0...v5.5.0
 [5.4.0]: https://github.com/NCodeGroup/Buffers/compare/v5.3.2...v5.4.0
 [5.3.2]: https://github.com/NCodeGroup/Buffers/compare/v5.3.1...v5.3.2
 [5.3.1]: https://github.com/NCodeGroup/Buffers/compare/v5.3.0...v5.3.1
