@@ -72,7 +72,7 @@ override in `AGENTS.md`.
 | [ADR-1007](1007-a-workflow-raises-the-package-validation-baseline-after-each-release.md) | A workflow raises the package validation baseline after each release | Superseded by 0150 |
 | [ADR-1008](1008-release-follow-ups-are-jobs-publish-calls.md) | Release follow-ups are jobs that publish.yml calls | Superseded by 0151 |
 | [ADR-1009](1009-the-documentation-site-is-narrative-guides-built-by-a-shared-toolchain-outside-this-repository.md) | The documentation site is narrative guides, built by a shared toolchain outside this repository | Accepted (amended by 1025) |
-| [ADR-1010](1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md) | Site samples are compiled tests in a project of their own, included by key when the site is built (amends 1005) | Accepted |
+| [ADR-1010](1010-site-samples-are-compiled-tests-in-a-project-of-their-own-included-by-key-when-the-site-is-built.md) | Site samples are compiled tests in a project of their own, included by key when the site is built (amends 1005) | Accepted (amended by 1032) |
 | [ADR-1011](1011-buffers-have-no-finalizer-and-are-zeroed-only-by-dispose.md) | Buffers have no finalizer and are zeroed only by Dispose | Accepted |
 | [ADR-1012](1012-the-secure-pool-caches-buffers-of-one-4096-byte-page.md) | The secure pool caches buffers of one 4096-byte page | Accepted |
 | [ADR-1013](1013-pinned-buffers-are-allocated-without-being-cleared.md) | Pinned buffers are allocated without being cleared | Accepted |
@@ -94,3 +94,4 @@ override in `AGENTS.md`.
 | [ADR-1029](1029-secret-t-holds-a-secret-it-never-prints.md) | Secret<T> holds a secret it never prints | Accepted |
 | [ADR-1030](1030-the-secure-pool-reports-metrics-through-one-static-meter.md) | The secure pool reports metrics through one static meter (supersedes project-template 0113 for the meter's source; amends 1015) | Accepted |
 | [ADR-1031](1031-a-strict-base64url-format-decodes-only-the-canonical-unpadded-text-jose-requires.md) | A strict Base64url format decodes only the canonical unpadded text JOSE requires | Accepted |
+| [ADR-1032](1032-the-site-samples-run-one-at-a-time.md) | The site samples run one at a time (amends 1010) | Accepted |
