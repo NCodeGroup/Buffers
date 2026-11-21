@@ -25,6 +25,19 @@ namespace NCode.Buffers;
 public static class BinaryTextEncoding
 {
     /// <summary>
+    /// The message of the <see cref="FormatException"/> thrown for text that is not strict Base64url.
+    /// </summary>
+    private const string StrictBase64UrlMessage =
+        "The text is not strict Base64url: only the unpadded URL-safe alphabet, with no padding, whitespace or unused bits set.";
+
+    /// <summary>
+    /// The characters that strict Base64url text may contain.
+    /// </summary>
+    private static readonly SearchValues<char> Base64UrlAlphabet = SearchValues.Create(
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+    );
+
+    /// <summary>
     /// Decodes the text into a rented buffer that holds exactly the decoded bytes.
     /// </summary>
     /// <param name="text">The text to decode.</param>
@@ -222,7 +235,8 @@ public static class BinaryTextEncoding
         format switch
         {
             BinaryTextFormat.Base64 => Base64.GetMaxDecodedFromUtf8Length(textLength),
-            BinaryTextFormat.Base64Url => Base64Url.GetMaxDecodedLength(textLength),
+            BinaryTextFormat.Base64Url or BinaryTextFormat.Base64UrlStrict =>
+                Base64Url.GetMaxDecodedLength(textLength),
             _ => textLength / 2,
         };
 
@@ -253,6 +267,20 @@ public static class BinaryTextEncoding
             case BinaryTextFormat.Base64Url:
                 return Base64Url.DecodeFromChars(text, destination);
 
+            case BinaryTextFormat.Base64UrlStrict:
+                if (text.ContainsAnyExcept(Base64UrlAlphabet))
+                    throw new FormatException(StrictBase64UrlMessage);
+                var strictStatus = Base64Url.DecodeFromChars(
+                    text,
+                    destination,
+                    out _,
+                    out var strictWritten,
+                    isFinalBlock: true
+                );
+                if (strictStatus != OperationStatus.Done)
+                    throw new FormatException(StrictBase64UrlMessage);
+                return strictWritten;
+
             default:
                 var status = Convert.FromHexString(text, destination, out _, out var hexWritten);
                 if (status != OperationStatus.Done)
@@ -274,7 +302,8 @@ public static class BinaryTextEncoding
         format switch
         {
             BinaryTextFormat.Base64 => Base64.GetMaxEncodedToUtf8Length(byteLength),
-            BinaryTextFormat.Base64Url => Base64Url.GetEncodedLength(byteLength),
+            BinaryTextFormat.Base64Url or BinaryTextFormat.Base64UrlStrict =>
+                Base64Url.GetEncodedLength(byteLength),
             _ => checked(byteLength * 2),
         };
 
@@ -306,6 +335,7 @@ public static class BinaryTextEncoding
                 return base64Written;
 
             case BinaryTextFormat.Base64Url:
+            case BinaryTextFormat.Base64UrlStrict:
                 return Base64Url.EncodeToChars(bytes, destination);
 
             case BinaryTextFormat.HexUpper:

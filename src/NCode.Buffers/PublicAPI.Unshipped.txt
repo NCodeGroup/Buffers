@@ -1,1 +1,2 @@
 #nullable enable
+NCode.Buffers.BinaryTextFormat.Base64UrlStrict = 4 -> NCode.Buffers.BinaryTextFormat
