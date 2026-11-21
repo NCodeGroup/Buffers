@@ -198,17 +198,21 @@ public class BinaryTextEncodingTests
         });
     }
 
-    [Fact]
-    public void RentDecoded_InvalidTextWhenSensitive_ReturnsTheZeroedBuffer()
+    [Theory]
+    [InlineData("4141ZZ", BinaryTextFormat.HexUpper)]
+    [InlineData("QUJDAR", BinaryTextFormat.Base64UrlStrict)]
+    public void RentDecoded_InvalidTextWhenSensitive_ReturnsTheZeroedBuffer(
+        string text,
+        BinaryTextFormat format
+    )
     {
-        const string text = "4141ZZ";
         SecureMemoryPool<byte>.Shared.MemoryQueue.Clear();
 
         Assert.Throws<FormatException>(() =>
         {
             using var owner = BinaryTextEncoding.RentDecoded(
                 text,
-                BinaryTextFormat.HexUpper,
+                format,
                 isSensitive: true,
                 out Span<byte> _
             );
@@ -222,17 +226,21 @@ public class BinaryTextEncodingTests
         Assert.Equal(-1, firstNonZero);
     }
 
-    [Fact]
-    public void RentDecoded_InvalidTextWithMemoryWhenSensitive_ReturnsTheZeroedBuffer()
+    [Theory]
+    [InlineData("4141ZZ", BinaryTextFormat.HexUpper)]
+    [InlineData("QUJDAR", BinaryTextFormat.Base64UrlStrict)]
+    public void RentDecoded_InvalidTextWithMemoryWhenSensitive_ReturnsTheZeroedBuffer(
+        string text,
+        BinaryTextFormat format
+    )
     {
-        const string text = "4141ZZ";
         SecureMemoryPool<byte>.Shared.MemoryQueue.Clear();
 
         Assert.Throws<FormatException>(() =>
         {
             using var owner = BinaryTextEncoding.RentDecoded(
                 text,
-                BinaryTextFormat.HexUpper,
+                format,
                 isSensitive: true,
                 out Memory<byte> _
             );
