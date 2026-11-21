@@ -31,7 +31,7 @@ public static class BinaryTextEncoding
         "The text is not strict Base64url: only the unpadded URL-safe alphabet, with no padding, whitespace or unused bits set.";
 
     /// <summary>
-    /// The characters that strict Base64url text may contain.
+    /// Gets the characters that strict Base64url text may contain.
     /// </summary>
     private static SearchValues<char> Base64UrlAlphabet { get; } =
         SearchValues.Create("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
