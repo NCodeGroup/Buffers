@@ -33,9 +33,8 @@ public static class BinaryTextEncoding
     /// <summary>
     /// The characters that strict Base64url text may contain.
     /// </summary>
-    private static readonly SearchValues<char> Base64UrlAlphabet = SearchValues.Create(
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
-    );
+    private static SearchValues<char> Base64UrlAlphabet { get; } =
+        SearchValues.Create("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
 
     /// <summary>
     /// Decodes the text into a rented buffer that holds exactly the decoded bytes.
