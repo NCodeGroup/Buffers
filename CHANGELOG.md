@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Package validation compares each package with the published 5.5.0 package.
+- The project follows project-template v0.112.2: `scorecard.yml` pins `ossf/scorecard-action` v2.6.0, which runs Scorecard v5.7.0, `code-review.yml`'s header says the `code-review` environment holds the NCode Review Approver's key, and `AGENTS.md`, `CONTRIBUTING.md` and `GOVERNANCE.md` say that where NCode Review's approver is set up, its approval meets the ruleset's required approval ([ADR-0020](docs/decisions/project-template/0020-github-projects-are-scored-by-openssf-scorecard.md), [ADR-0036](docs/decisions/project-template/0036-a-required-approval-is-met-by-ncode-reviews-approver-app.md)).
 
 ### Fixed
 

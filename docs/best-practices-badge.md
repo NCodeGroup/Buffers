@@ -32,7 +32,7 @@ The silver criteria that need a document point to these:
 | Vulnerability response and credit | [SECURITY.md](../SECURITY.md) |
 | Coding standards and their enforcement | [CONTRIBUTING.md](../CONTRIBUTING.md), `.editorconfig`, CSharpier and the analyzers, in the gate |
 | Test coverage and policy | `./build/Test-Coverage.ps1` (98% line and branch) and [CONTRIBUTING.md](../CONTRIBUTING.md) |
-| Test policy (`test_policy_mandated`) | [CONTRIBUTING.md](../CONTRIBUTING.md), Make a Change, item 3 |
+| Test policy (`test_policy_mandated`) | [CONTRIBUTING.md](../CONTRIBUTING.md), which says that a change that adds or changes behavior adds or updates the automated tests that cover it |
 
 ## Needs a Person
 
