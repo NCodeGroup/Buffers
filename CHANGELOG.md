@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Package validation compares each package with the published 5.5.0 package.
+- The documentation site is built with NCodeGroup/docs v0.18.0, taken the day it was released, with NCode Brand 0.13.0: a page's content column is up to 52rem wide, the sidebar, the page and the "On this page" panel stay together in the middle of a wide window, and inline code sits on the brand's code tint; every page passes its layout check ([ADR-1024](docs/decisions/1024-ncodegroup-docs-releases-are-taken-without-a-cooldown-during-the-build-out.md)).
 - The project follows project-template v0.112.2: `scorecard.yml` pins `ossf/scorecard-action` v2.6.0, which runs Scorecard v5.7.0, `code-review.yml`'s header says the `code-review` environment holds the NCode Review Approver's key, and `AGENTS.md`, `CONTRIBUTING.md` and `GOVERNANCE.md` say that where NCode Review's approver is set up, its approval meets the ruleset's required approval ([ADR-0020](docs/decisions/project-template/0020-github-projects-are-scored-by-openssf-scorecard.md), [ADR-0036](docs/decisions/project-template/0036-a-required-approval-is-met-by-ncode-reviews-approver-app.md)).
 
 ### Fixed
